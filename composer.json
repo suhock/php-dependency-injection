@@ -1,0 +1,32 @@
+{
+    "name": "fivetwo/dependency-injection",
+    "type": "library",
+    "description": "The Five Two Dependency Injection Library",
+    "keywords": ["dependency injection","dependency","injection","di","inversion of control","ioc"],
+    "homepage": "https://www.fivetwo.org",
+    "license": "proprietary",
+    "authors": [
+        {
+            "name": "Matthew Suhocki",
+            "email": "matt@fivetwo.org"
+        }
+    ],
+    "required": {
+        "php": "^8.1"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9.5",
+        "psalm/plugin-phpunit": "^0.16",
+        "vimeo/psalm": ">=4.23.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "FiveTwo\\DependencyInjection\\": "src/FiveTwo/DependencyInjection/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "FiveTwo\\DependencyInjection\\": "tests/FiveTwo/DependencyInjection/"
+        }
+    }
+}
