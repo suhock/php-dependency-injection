@@ -183,6 +183,12 @@ class DependencyContainerTest extends TestCase
         $this->assertSingleton(NoConstructorTestClass::class);
     }
 
+    public function testAddSingletonInterface(): void
+    {
+        $this->container->addSingletonInterface(NoConstructorTestClass::class);
+        $this->assertSingleton(NoConstructorTestSubClass::class);
+    }
+
     /**
      * @param class-string $className
      * @param class-string $implementationClassName
@@ -300,6 +306,12 @@ class DependencyContainerTest extends TestCase
     {
         $this->container->addTransientNamespace(__NAMESPACE__);
         $this->assertTransient(NoConstructorTestClass::class);
+    }
+
+    public function testAddTransientInterface(): void
+    {
+        $this->container->addTransientInterface(NoConstructorTestClass::class);
+        $this->assertTransient(NoConstructorTestSubClass::class);
     }
 
     public function testTryGet_FactoryBeforeContainer(): void

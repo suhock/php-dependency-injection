@@ -7,27 +7,21 @@ declare(strict_types=1);
 
 namespace FiveTwo\DependencyInjection;
 
-/**
- * @psalm-type Lifetime = DependencyContainer::SINGLETON|DependencyContainer::TRANSIENT
- */
+use FiveTwo\DependencyInjection\Lifetime\SingletonStrategy;
+use FiveTwo\DependencyInjection\Lifetime\TransientStrategy;
+
 class DependencyContainer implements DependencyContainerInterface
 {
     use DependencyContainerSingletonTrait;
     use DependencyContainerTransientTrait;
-
-    public const SINGLETON = 1;
-    public const TRANSIENT = 2;
 
     private DependencyInjector $injector;
 
     /** @var array<class-string, DependencyDescriptor> */
     private array $factories = [];
 
-    /** @var array<array{int,DependencyContainerInterface}> */
+    /** @var array<ContainerDescriptor> */
     private array $containers = [];
-
-    /** @var array<string, int> */
-    private array $namespaces = [];
 
     public function __construct()
     {
@@ -49,31 +43,22 @@ class DependencyContainer implements DependencyContainerInterface
         return $this;
     }
 
-    protected function getInjector(): DependencyInjectorInterface
+    /**
+     * @return DependencyInjectorInterface A dependency injector backed by this container
+     */
+    public function getInjector(): DependencyInjectorInterface
     {
         return $this->injector;
     }
 
     /**
-     * @param string $namespace
-     * @param int $lifetime
+     * @param ContainerDescriptor $descriptor
      *
      * @return void
      */
-    protected function addNamespace(string $namespace, int $lifetime): void
+    protected function addContainer(ContainerDescriptor $descriptor): void
     {
-        $this->namespaces[$namespace] = $lifetime;
-    }
-
-    /**
-     * @param DependencyContainerInterface $container
-     * @param int $lifetime
-     *
-     * @return void
-     */
-    protected function addContainer(DependencyContainerInterface $container, int $lifetime): void
-    {
-        $this->containers[] = [$lifetime, $container];
+        $this->containers[] = $descriptor;
     }
 
     /**
@@ -83,7 +68,11 @@ class DependencyContainer implements DependencyContainerInterface
      */
     public function addSingletonContainer(DependencyContainerInterface $container): static
     {
-        $this->addContainer($container, self::SINGLETON);
+        $this->addContainer(new ContainerDescriptor(
+            $container,
+            $this->injector,
+            fn($className) => new SingletonStrategy($className)
+        ));
 
         return $this;
     }
@@ -95,7 +84,29 @@ class DependencyContainer implements DependencyContainerInterface
      */
     public function addSingletonNamespace(string $namespace): static
     {
-        $this->addNamespace($namespace, self::SINGLETON);
+        $this->addSingletonContainer(new NamespaceContainer(
+            $namespace,
+            /** @param class-string $className */
+            fn(string $className) => $this->injector->instantiate($className)
+        ));
+
+        return $this;
+    }
+
+    /**
+     * @template TInterface
+     *
+     * @param class-string<TInterface> $interfaceName
+     *
+     * @return $this
+     */
+    public function addSingletonInterface(string $interfaceName): static
+    {
+        $this->addSingletonContainer(new ImplementationContainer(
+            $interfaceName,
+            /** @param class-string $className */
+            fn(string $className) => $this->injector->instantiate($className)
+        ));
 
         return $this;
     }
@@ -107,7 +118,11 @@ class DependencyContainer implements DependencyContainerInterface
      */
     public function addTransientContainer(DependencyContainerInterface $container): static
     {
-        $this->addContainer($container, self::TRANSIENT);
+        $this->addContainer(new ContainerDescriptor(
+            $container,
+            $this->injector,
+            fn($className) => new TransientStrategy($className)
+        ));
 
         return $this;
     }
@@ -119,7 +134,29 @@ class DependencyContainer implements DependencyContainerInterface
      */
     public function addTransientNamespace(string $namespace): static
     {
-        $this->addNamespace($namespace, self::TRANSIENT);
+        $this->addTransientContainer(new NamespaceContainer(
+            $namespace,
+            /** @param class-string $className */
+            fn(string $className) => $this->injector->instantiate($className)
+        ));
+
+        return $this;
+    }
+
+    /**
+     * @template TInterface
+     *
+     * @param class-string<TInterface> $interfaceName
+     *
+     * @return $this
+     */
+    public function addTransientInterface(string $interfaceName): static
+    {
+        $this->addTransientContainer(new ImplementationContainer(
+            $interfaceName,
+            /** @param class-string $className */
+            fn(string $className) => $this->injector->instantiate($className)
+        ));
 
         return $this;
     }
@@ -137,8 +174,7 @@ class DependencyContainer implements DependencyContainerInterface
     public function get(string $className): ?object
     {
         if ($this->tryGetFromFactory($className, $instance) ||
-            $this->tryGetFromContainer($className, $instance) ||
-            $this->tryGetFromNamespace($className, $instance)) {
+            $this->tryGetFromContainer($className, $instance)) {
             return $instance;
         }
 
@@ -154,7 +190,7 @@ class DependencyContainer implements DependencyContainerInterface
      */
     public function has(string $className): bool
     {
-        return $this->hasFactory($className) || $this->hasContainer($className) || $this->hasNamespace($className);
+        return $this->hasFactory($className) || $this->hasContainer($className);
     }
 
     /**
@@ -190,65 +226,6 @@ class DependencyContainer implements DependencyContainerInterface
     }
 
     /**
-     * @template TDependency
-     *
-     * @param class-string<TDependency> $className
-     * @param TDependency|null $instance
-     *
-     * @return bool
-     * @throws CircularDependencyException
-     * @throws DependencyInjectionException
-     */
-    private function tryGetFromNamespace(string $className, ?object &$instance): bool
-    {
-        return $this->resolveNamespaceClass($className) &&
-            $this->tryGetFromFactory($className, $instance);
-    }
-
-    /**
-     * @template TDependency
-     *
-     * @param class-string<TDependency> $className
-     *
-     * @return bool
-     */
-    private function hasNamespace(string $className): bool
-    {
-        return $this->resolveNamespaceClass($className);
-    }
-
-    /**
-     * @template TDependency
-     *
-     * @param class-string<TDependency> $className
-     *
-     * @return bool
-     */
-    private function resolveNamespaceClass(string $className): bool
-    {
-        $namespacePrefix = $className;
-
-        do {
-            $separatorIndex = mb_strrpos($namespacePrefix, '\\');
-            $namespacePrefix = $separatorIndex !== false ? mb_substr($namespacePrefix, 0, $separatorIndex) : '';
-
-            if (array_key_exists($namespacePrefix, $this->namespaces)) {
-                switch ($this->namespaces[$namespacePrefix]) {
-                    case self::SINGLETON:
-                        $this->addSingletonClass($className);
-                        return true;
-
-                    case self::TRANSIENT:
-                        $this->addTransientClass($className);
-                        return true;
-                }
-            }
-        } while ($namespacePrefix !== '');
-
-        return false;
-    }
-
-    /**
      * @template TDependency as object
      *
      * @param class-string<TDependency> $className
@@ -272,17 +249,13 @@ class DependencyContainer implements DependencyContainerInterface
      */
     private function hasContainer(string $className): bool
     {
-        foreach ($this->containers as [$lifetime, $container]) {
-            if ($container->has($className)) {
-                switch ($lifetime) {
-                    case self::SINGLETON:
-                        $this->addSingletonFactory($className, fn() => $container->get($className));
-                        return true;
+        foreach ($this->containers as $containerDescriptor) {
+            $descriptor = $containerDescriptor->getDependencyDescriptor($className);
 
-                    case self::TRANSIENT:
-                        $this->addTransientFactory($className, fn() => $container->get($className));
-                        return true;
-                }
+            if ($descriptor) {
+                $this->addDescriptor($descriptor);
+
+                return true;
             }
         }
 
