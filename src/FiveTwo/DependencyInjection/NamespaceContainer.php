@@ -17,7 +17,7 @@ class NamespaceContainer implements DependencyContainerInterface
      * @template T
      *
      * @param string $namespace
-     * @param Closure(class-string<T>):?T $factory
+     * @param Closure(class-string<T>):(T|null) $factory
      */
     public function __construct(
         string $namespace,

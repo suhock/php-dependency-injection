@@ -7,10 +7,10 @@ declare(strict_types=1);
 
 namespace FiveTwo\DependencyInjection;
 
-use FiveTwo\DependencyInjection\Instantiation\ClassImplementationException;
 use FiveTwo\DependencyInjection\Instantiation\ClassInstanceFactory;
 use FiveTwo\DependencyInjection\Instantiation\ClosureInstanceFactory;
 use FiveTwo\DependencyInjection\Instantiation\DependencyTypeException;
+use FiveTwo\DependencyInjection\Instantiation\ImplementationException;
 use FiveTwo\DependencyInjection\Instantiation\ImplementationInstanceFactory;
 use FiveTwo\DependencyInjection\Instantiation\InstanceFactory;
 use FiveTwo\DependencyInjection\Instantiation\ObjectInstanceFactory;
@@ -18,11 +18,12 @@ use FiveTwo\DependencyInjection\Lifetime\SingletonStrategy;
 
 /**
  * Provides convenience methods for adding singletons to a container.
+ *
+ * @psalm-require-implements ContainerBuilderInterface
+ * @psalm-require-implements SingletonContainerBuilderInterface
  */
-trait DependencyContainerSingletonTrait
+trait SingletonContainerBuilderTrait
 {
-    protected abstract function addDescriptor(DependencyDescriptor $descriptor): static;
-
     protected abstract function getInjector(): DependencyInjectorInterface;
 
     /**
@@ -35,7 +36,7 @@ trait DependencyContainerSingletonTrait
      */
     public function addSingleton(string $className, InstanceFactory $instanceFactory): static
     {
-        self::addDescriptor(new DependencyDescriptor($className, new SingletonStrategy($className), $instanceFactory));
+        $this->add($className, new SingletonStrategy($className), $instanceFactory);
 
         return $this;
     }
@@ -48,15 +49,15 @@ trait DependencyContainerSingletonTrait
      * @param class-string<TImplementation> $implementationClassName
      *
      * @return $this
-     * @throws ClassImplementationException
+     * @throws ImplementationException
      * @psalm-param class-string<TImplementation>|'' $implementationClassName
      */
     public function addSingletonClass(string $className, string $implementationClassName = ''): static
     {
-        self::addSingleton(
+        $this->addSingleton(
             $className,
             ($implementationClassName === $className || $implementationClassName === '') ?
-                new ClassInstanceFactory($className, self::getInjector()) :
+                new ClassInstanceFactory($className, $this->getInjector()) :
                 new ImplementationInstanceFactory($className, $implementationClassName, $this)
         );
 
@@ -74,9 +75,9 @@ trait DependencyContainerSingletonTrait
      */
     public function addSingletonFactory(string $className, callable $factory): static
     {
-        self::addSingleton(
+        $this->addSingleton(
             $className,
-            new ClosureInstanceFactory($className, $factory(...), self::getInjector())
+            new ClosureInstanceFactory($className, $factory(...), $this->getInjector())
         );
 
         return $this;
@@ -93,10 +94,62 @@ trait DependencyContainerSingletonTrait
      */
     public function addSingletonInstance(string $className, ?object $instance): static
     {
-        self::addSingleton(
+        $this->addSingleton(
             $className,
             new ObjectInstanceFactory($className, $instance)
         );
+
+        return $this;
+    }
+
+    /**
+     * @param DependencyContainerInterface $container
+     *
+     * @return static
+     */
+    public function addSingletonContainer(DependencyContainerInterface $container): static
+    {
+        $this->addContainer($container, fn(string $className) => new SingletonStrategy($className));
+
+        return $this;
+    }
+
+    /**
+     * @param string $namespace
+     * @param null|callable(class-string):(object|null) $factory
+     *
+     * @return $this
+     */
+    public function addSingletonNamespace(string $namespace, ?callable $factory = null): static
+    {
+        $this->addSingletonContainer(new NamespaceContainer(
+            $namespace,
+            $factory !== null ?
+                $factory(...) :
+                /** @param class-string $className */
+                fn(string $className) => $this->getInjector()->instantiate($className)
+        ));
+
+        return $this;
+    }
+
+    /**
+     * @template TInterface
+     *
+     * @param class-string<TInterface> $interfaceName
+     * @param null|callable(class-string<TInterface>):(TInterface|null) $factory
+     *
+     * @return $this
+     */
+    public function addSingletonInterface(string $interfaceName, ?callable $factory = null): static
+    {
+        $this->addSingletonContainer(new ImplementationContainer(
+            $interfaceName,
+            $factory !== null ?
+                $factory(...) :
+                /** @param class-string $className */
+                fn(string $className) => $this->getInjector()->instantiate($className)
+        ));
 
         return $this;
     }

@@ -25,7 +25,7 @@ class ImplementationInstanceFactory implements InstanceFactory
      * @param class-string<TImplementation> $implementationClassName The name of the class providing the concrete
      * implementation
      *
-     * @throws ClassImplementationException If {@see $implementationClassName} is not a subclass of {@see $className}
+     * @throws ImplementationException If {@see $implementationClassName} is not a subclass of {@see $className}
      */
     public function __construct(
         string $className,
@@ -33,13 +33,13 @@ class ImplementationInstanceFactory implements InstanceFactory
         private readonly DependencyContainerInterface $container
     ) {
         if (!is_subclass_of($implementationClassName, $className)) {
-            throw new ClassImplementationException($className, $this->implementationClassName);
+            throw new ImplementationException($className, $this->implementationClassName);
         }
     }
 
     /**
      * @return TDependency|null
-     * @throws ClassImplementationException
+     * @throws ImplementationException
      * @throws CircularDependencyException
      * @throws UnresolvedClassException
      */

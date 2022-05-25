@@ -33,7 +33,7 @@ class ImplementationInstanceFactoryTest extends TestCase
 
     public function testGet_SameClass(): void
     {
-        self::expectException(ClassImplementationException::class);
+        self::expectException(ImplementationException::class);
         new ImplementationInstanceFactory(
             NoConstructorTestClass::class,
             NoConstructorTestClass::class,
@@ -43,7 +43,7 @@ class ImplementationInstanceFactoryTest extends TestCase
 
     public function testGet_WrongClass(): void
     {
-        self::expectException(ClassImplementationException::class);
+        self::expectException(ImplementationException::class);
         new ImplementationInstanceFactory(
             NoConstructorTestSubClass::class,
             NoConstructorTestClass::class,

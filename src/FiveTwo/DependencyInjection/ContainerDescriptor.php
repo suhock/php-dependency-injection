@@ -29,21 +29,26 @@ class ContainerDescriptor
      * @template TDependency
      *
      * @param class-string<TDependency> $className
+     * @param ContainerBuilderInterface $container
      *
-     * @return DependencyDescriptor<TDependency>|null
+     * @return bool
      */
-    public function getDependencyDescriptor(string $className): ?DependencyDescriptor
+    public function tryAddDependency(string $className, ContainerBuilderInterface $container): bool
     {
-        return $this->container->has($className) ?
-            new DependencyDescriptor(
+        if (!$this->container->has($className)) {
+            return false;
+        }
+
+        $container->add(
+            $className,
+            ($this->lifetimeStrategyFactory)($className),
+            new ClosureInstanceFactory(
                 $className,
-                ($this->lifetimeStrategyFactory)($className),
-                new ClosureInstanceFactory(
-                    $className,
-                    fn() => $this->container->get($className),
-                    $this->injector
-                )
-            ) :
-            null;
+                fn() => $this->container->get($className),
+                $this->injector
+            )
+        );
+
+        return true;
     }
 }

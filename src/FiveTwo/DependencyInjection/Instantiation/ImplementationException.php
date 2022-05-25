@@ -14,7 +14,7 @@ use Throwable;
  * @template TDependency
  * @template TActual
  */
-class ClassImplementationException extends DependencyInjectionException
+class ImplementationException extends DependencyInjectionException
 {
     /**
      * @param class-string<TDependency> $expectedClassName
