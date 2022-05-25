@@ -11,6 +11,7 @@
             "email": "matt@fivetwo.org"
         }
     ],
+    "minimum-stability": "stable",
     "required": {
         "php": "^8.1"
     },
@@ -18,17 +19,17 @@
         "ext-mbstring": "*",
         "ext-ctype":  "*",
         "ext-intl": "*",
+        "fivetwo/remove-symfony-polyfill": "^8.1",
         "phpunit/phpunit": "^9.5",
-        "psalm/plugin-phpunit": "^0.16",
+        "psalm/plugin-phpunit": ">=0.16",
         "vimeo/psalm": ">=4.23.0"
     },
-    "replace": {
-        "symfony/polyfill-ctype": "*",
-        "symfony/polyfill-intl-grapheme": "*",
-        "symfony/polyfill-intl-normalizer": "*",
-        "symfony/polyfill-mbstring": "*",
-        "symfony/polyfill-php80": "*"
-    },
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/fivetwo/remove-symfony-polyfill"
+        }
+    ],
     "autoload": {
         "psr-4": {
             "FiveTwo\\DependencyInjection\\": "src/FiveTwo/DependencyInjection/"

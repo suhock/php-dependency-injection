@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "89377805bdfe0b70785591b6bb5008d4",
+    "content-hash": "4f1fd61619f1bea4abfbaa7941e3234f",
     "packages": [],
     "packages-dev": [
         {
@@ -671,6 +671,61 @@
                 "source": "https://github.com/felixfbecker/php-language-server-protocol/tree/v1.5.2"
             },
             "time": "2022-03-02T22:36:06+00:00"
+        },
+        {
+            "name": "fivetwo/remove-symfony-polyfill",
+            "version": "8.1",
+            "source": {
+                "type": "git",
+                "url": "git@github.com:fivetwo/remove-symfony-polyfill.git",
+                "reference": "7636ae661330585e5a64d453cc980016fb5a42b3"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/fivetwo/remove-symfony-polyfill/zipball/7636ae661330585e5a64d453cc980016fb5a42b3",
+                "reference": "7636ae661330585e5a64d453cc980016fb5a42b3",
+                "shasum": ""
+            },
+            "replace": {
+                "symfony/polyfill-apcu": "*",
+                "symfony/polyfill-ctype": "*",
+                "symfony/polyfill-iconv": "*",
+                "symfony/polyfill-intl-grapheme": "*",
+                "symfony/polyfill-intl-icu": "*",
+                "symfony/polyfill-intl-idn": "*",
+                "symfony/polyfill-intl-messageformatter": "*",
+                "symfony/polyfill-intl-normalizer": "*",
+                "symfony/polyfill-mbstring": "*",
+                "symfony/polyfill-php72": "*",
+                "symfony/polyfill-php73": "*",
+                "symfony/polyfill-php74": "*",
+                "symfony/polyfill-php80": "*",
+                "symfony/polyfill-php81": "*",
+                "symfony/polyfill-util": "*",
+                "symfony/polyfill-uuid": "*",
+                "symfony/polyfill-xml": "*"
+            },
+            "type": "library",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Matthew Suhocki",
+                    "email": "matt@fivetwo.org"
+                }
+            ],
+            "description": "Remove Symfony polyfills",
+            "keywords": [
+                "polyfill",
+                "remove",
+                "symfony"
+            ],
+            "support": {
+                "source": "https://github.com/fivetwo/remove-symfony-polyfill/tree/8.1",
+                "issues": "https://github.com/fivetwo/remove-symfony-polyfill/issues"
+            },
+            "time": "2022-05-25T15:15:16+00:00"
         },
         {
             "name": "myclabs/deep-copy",
