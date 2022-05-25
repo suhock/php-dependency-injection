@@ -28,7 +28,10 @@ class DependencyContainer implements DependencyContainerInterface, ContainerBuil
     public function __construct(?DependencyInjectorInterface $injector = null)
     {
         $this->addSingletonInstance(self::class, $this);
+
         $this->injector = $injector ?? new DependencyInjector($this);
+        $this->addSingletonInstance($injector::class, $injector)
+            ->addSingletonInstance(DependencyInjectorInterface::class, $this->injector);
     }
 
     /**
@@ -40,6 +43,18 @@ class DependencyContainer implements DependencyContainerInterface, ContainerBuil
         InstanceFactory $instanceFactory
     ): static {
         $this->factories[$className] = new DependencyDescriptor($className, $lifetimeStrategy, $instanceFactory);
+
+        return $this;
+    }
+
+    /**
+     * @param class-string $className
+     *
+     * @return $this
+     */
+    public function remove(string $className): static
+    {
+        unset($this->factories[$className]);
 
         return $this;
     }
