@@ -21,7 +21,8 @@ class NamespaceContainer implements DependencyContainerInterface
      */
     public function __construct(
         string $namespace,
-        private readonly Closure $factory
+        private readonly Closure $factory,
+        private readonly DependencyInjectorInterface $injector
     ) {
         $this->namespace = trim($namespace, '\\');
     }
@@ -33,7 +34,7 @@ class NamespaceContainer implements DependencyContainerInterface
     public function get(string $className): ?object
     {
         return $this->has($className) ?
-            ($this->factory)($className) :
+            $this->injector->call($this->factory, [$className]) :
             throw new UnresolvedClassException($className);
     }
 

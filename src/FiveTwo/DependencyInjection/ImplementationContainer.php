@@ -22,7 +22,8 @@ class ImplementationContainer implements DependencyContainerInterface
      */
     public function __construct(
         private readonly string $interfaceName,
-        private readonly Closure $factory
+        private readonly Closure $factory,
+        private readonly DependencyInjectorInterface $injector
     ) {
     }
 
@@ -34,7 +35,7 @@ class ImplementationContainer implements DependencyContainerInterface
     public function get(string $className): ?object
     {
         return $this->has($className) ?
-            ($this->factory)($className) :
+            $this->injector->call($this->factory, [$className]) :
             throw new UnresolvedClassException($className);
     }
 

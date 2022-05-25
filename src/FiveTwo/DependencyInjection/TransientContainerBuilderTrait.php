@@ -105,7 +105,8 @@ trait TransientContainerBuilderTrait
             $factory !== null ?
                 $factory(...) :
                 /** @param class-string $className */
-                fn(string $className) => $this->getInjector()->instantiate($className)
+                fn(string $className) => $this->getInjector()->instantiate($className),
+            $this->injector
         ));
 
         return $this;
@@ -126,7 +127,8 @@ trait TransientContainerBuilderTrait
             $factory !== null ?
                 $factory(...) :
                 /** @param class-string $className */
-                fn(string $className) => $this->getInjector()->instantiate($className)
+                fn(string $className) => $this->getInjector()->instantiate($className),
+            $this->injector
         ));
 
         return $this;

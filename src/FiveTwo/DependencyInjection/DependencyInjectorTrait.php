@@ -29,18 +29,20 @@ trait DependencyInjectorTrait
      *
      * @return bool <code>true</code> if a value was resolved, <code>false</code> otherwise
      */
-    protected abstract function tryResolveParameter(ReflectionParameter $rParam, mixed &$paramValue): bool;
+    abstract protected function tryResolveParameter(ReflectionParameter $rParam, mixed &$paramValue): bool;
 
     /**
      * Calls the specified function, injecting any function parameter values.
      *
      * @param callable $function The function to call
+     * @param array $params A list of parameter values to provide to the function. String keys will be matched by name;
+     * integer keys will be matched by position.
      *
      * @return mixed The value returned by the function
      * @throws DependencyInjectionException If there was an error resolving values for the function parameters or
      * invoking the function
      */
-    public function call(callable $function): mixed
+    public function call(callable $function, array $params = []): mixed
     {
         is_callable($function, false, $functionName);
 
@@ -54,6 +56,7 @@ trait DependencyInjectorTrait
         return self::invoke(
             $rFunction->invokeArgs(...),
             $rFunction->getParameters(),
+            $params,
             $functionName
         );
     }
@@ -64,12 +67,14 @@ trait DependencyInjectorTrait
      * @template T
      *
      * @param class-string<T> $className The name of the class to instantiate
+     * @param array $params A list of parameter values to provide to the constructor. String keys will be matched by
+     * name; integer keys will be matched by position.
      *
      * @return T A new instance of the specified class
      * @throws DependencyInjectionException If there was an error resolving values for the constructor parameters or
      * invoking the constructor
      */
-    public function instantiate(string $className): object
+    public function instantiate(string $className, array $params = []): object
     {
         try {
             $rClass = new ReflectionClass($className);
@@ -84,6 +89,7 @@ trait DependencyInjectorTrait
         return self::invoke(
             $rClass->newInstanceArgs(...),
             $rClass->getConstructor()?->getParameters() ?? [],
+            $params,
             "$className::__construct()"
         );
     }
@@ -91,17 +97,18 @@ trait DependencyInjectorTrait
     /**
      * @param callable(array):mixed $function
      * @param ReflectionParameter[] $rParameters
+     * @param array $params
      * @param string $functionName
      *
      * @return mixed
      * @throws DependencyInjectionException If a value could not be resolved for any of the parameters
      */
-    private function invoke(callable $function, array $rParameters, string $functionName): mixed
+    private function invoke(callable $function, array $rParameters, array $params, string $functionName): mixed
     {
         $paramValues = [];
 
         foreach ($rParameters as $rParam) {
-            $paramValues[] = self::resolveParameter($rParam, $functionName);
+            $paramValues[] = self::resolveParameter($rParam, $params, $functionName);
         }
 
         return $function($paramValues);
@@ -109,15 +116,28 @@ trait DependencyInjectorTrait
 
     /**
      * @param ReflectionParameter $rParam
+     * @param array $params
      * @param string $functionName
      *
      * @return mixed|null
-     * @throws UnresolvedParameterException If a value could not be resolved for the parameter
      */
-    private function resolveParameter(ReflectionParameter $rParam, string $functionName): mixed
+    private function resolveParameter(ReflectionParameter $rParam, array $params, string $functionName): mixed
     {
-        if (self::tryResolveParameter($rParam, $paramValue)) {
-            return $paramValue;
+        if (array_key_exists($rParam->getPosition(), $params)) {
+            return $params[$rParam->getPosition()];
+        }
+
+        if (array_key_exists($rParam->getName(), $params)) {
+            return $params[$rParam->getName()];
+        }
+
+        $exception = null;
+
+        try {
+            if (self::tryResolveParameter($rParam, $paramValue)) {
+                return $paramValue;
+            }
+        } catch (DependencyInjectionException $exception) {
         }
 
         if ($rParam->isDefaultValueAvailable()) {
@@ -128,6 +148,7 @@ trait DependencyInjectorTrait
             $functionName,
             $rParam->getName(),
             $rParam->getType() instanceof ReflectionNamedType ? $rParam->getType()->getName() : null,
+            $exception
         );
     }
 }
