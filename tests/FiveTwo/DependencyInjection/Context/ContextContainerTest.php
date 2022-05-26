@@ -14,7 +14,7 @@ use PHPUnit\Framework\TestCase;
 
 class ContextContainerTest extends TestCase
 {
-    public function testGet_DefaultOnly()
+    public function testGet_DefaultOnly(): void
     {
         $container = new ContextContainer();
         $container->context()->addSingletonInstance(
@@ -25,7 +25,7 @@ class ContextContainerTest extends TestCase
         self::assertSame($instance, $container->get(NoConstructorTestClass::class));
     }
 
-    public function testGet_ContextStackPrecedence()
+    public function testGet_ContextStackPrecedence(): void
     {
         $container = new ContextContainer();
         $container->context()->addSingletonInstance(
@@ -44,7 +44,7 @@ class ContextContainerTest extends TestCase
         self::assertSame($defaultInstance, $container->get(NoConstructorTestClass::class));
     }
 
-    public function testGet_AtBottomOfStackOnly()
+    public function testGet_AtBottomOfStackOnly(): void
     {
         $container = new ContextContainer();
         $container->context()->addSingletonInstance(
@@ -62,7 +62,7 @@ class ContextContainerTest extends TestCase
         $container->get(NoConstructorTestClass::class, ['context']);
     }
 
-    public function testAddContext()
+    public function testAddContext(): void
     {
         $container = new ContextContainer();
         $container->addContext('context', $context = new DependencyContainer());
@@ -70,21 +70,21 @@ class ContextContainerTest extends TestCase
         self::assertSame($context, $container->getContext('context'));
     }
 
-    public function testContext_New()
+    public function testContext_New(): void
     {
         $container = new ContextContainer();
 
         self::assertInstanceOf(DependencyContainer::class, $container->context('context'));
     }
 
-    public function testContext_Existing()
+    public function testContext_Existing(): void
     {
         $container = new ContextContainer();
 
         self::assertSame($container->context('context'), $container->context('context'));
     }
 
-    public function testGetContext()
+    public function testGetContext(): void
     {
         $container = new ContextContainer();
         $container->addContext('context', $context = new DependencyContainer());
@@ -93,7 +93,7 @@ class ContextContainerTest extends TestCase
         self::assertSame($container->context(), $container->getContext(Context::DEFAULT));
     }
 
-    public function testGetContext_Invalid()
+    public function testGetContext_Invalid(): void
     {
         $container = new ContextContainer();
 

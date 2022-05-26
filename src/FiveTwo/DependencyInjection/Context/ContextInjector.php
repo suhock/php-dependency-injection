@@ -61,6 +61,7 @@ class ContextInjector implements DependencyInjectorInterface
     {
         foreach (array_reverse($rAttributes) as $rAttribute) {
             foreach (array_reverse($rAttribute->getArguments()) as $name) {
+                /** @var string $name */
                 $contextStack[] = $name;
             }
         }
