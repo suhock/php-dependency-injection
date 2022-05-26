@@ -18,6 +18,12 @@ class DependencyInjectionException extends LogicException
      */
     public function __construct(string $message, ?Throwable $previous = null)
     {
+        if ($previous instanceof DependencyInjectionException) {
+            $message = $message !== '' ? "$message\n=> " : '';
+            $message .= $previous->getMessage();
+            $previous = null;
+        }
+
         parent::__construct($message, previous: $previous);
     }
 }
