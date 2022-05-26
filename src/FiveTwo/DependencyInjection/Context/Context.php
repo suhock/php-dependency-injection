@@ -14,22 +14,25 @@ use Attribute;
     Attribute::TARGET_FUNCTION |
     Attribute::TARGET_METHOD |
     Attribute::TARGET_PARAMETER |
-    Attribute::TARGET_PROPERTY
+    Attribute::TARGET_PROPERTY |
+    Attribute::IS_REPEATABLE
 )]
 class Context
 {
     public const DEFAULT = '';
 
-    public function __construct(
-        private readonly string $name
-    ) {
+    private readonly array $names;
+
+    public function __construct(string $name, string ...$names)
+    {
+        $this->names = [$name, ...$names];
     }
 
     /**
-     * @return string
+     * @return string[]
      */
-    public function getName(): string
+    public function getNames(): array
     {
-        return $this->name;
+        return $this->names;
     }
 }
