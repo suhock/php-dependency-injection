@@ -30,7 +30,7 @@ class DependencyContainer implements DependencyContainerInterface, ContainerBuil
         $this->addSingletonInstance(self::class, $this);
 
         $this->injector = $injector ?? new DependencyInjector($this);
-        $this->addSingletonInstance($injector::class, $injector)
+        $this->addSingletonInstance($this->injector::class, $this->injector)
             ->addSingletonInstance(DependencyInjectorInterface::class, $this->injector);
     }
 
