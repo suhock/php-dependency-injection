@@ -100,14 +100,7 @@ trait TransientContainerBuilderTrait
      */
     public function addTransientNamespace(string $namespace, ?callable $factory = null): static
     {
-        $this->addTransientContainer(new NamespaceContainer(
-            $namespace,
-            $factory !== null ?
-                $factory(...) :
-                /** @param class-string $className */
-                fn(string $className) => $this->getInjector()->instantiate($className),
-            $this->injector
-        ));
+        $this->addTransientContainer(new NamespaceContainer($namespace, $this->injector, $factory));
 
         return $this;
     }
@@ -122,14 +115,8 @@ trait TransientContainerBuilderTrait
      */
     public function addTransientInterface(string $interfaceName, ?callable $factory = null): static
     {
-        $this->addTransientContainer(new ImplementationContainer(
-            $interfaceName,
-            $factory !== null ?
-                $factory(...) :
-                /** @param class-string $className */
-                fn(string $className) => $this->getInjector()->instantiate($className),
-            $this->injector
-        ));
+        /** @psalm-suppress ArgumentTypeCoercion argument types are the same... */
+        $this->addTransientContainer(new ImplementationContainer($interfaceName, $this->injector, $factory));
 
         return $this;
     }

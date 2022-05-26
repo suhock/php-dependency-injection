@@ -22,6 +22,7 @@ class NamespaceContainerTest extends TestCase
 
         $container = new NamespaceContainer(
             __NAMESPACE__,
+            $injector,
             /** @param class-string $className */
             fn(string $className) => $injector->instantiate($className)
         );
@@ -32,8 +33,7 @@ class NamespaceContainerTest extends TestCase
     public function testGet_ClassNotInNamespace(): void
     {
         $container = new NamespaceContainer(
-            __NAMESPACE__,
-            fn() => null
+            __NAMESPACE__, self::createMock(DependencyInjectorInterface::class), fn() => null
         );
 
         self::expectException(UnresolvedClassException::class);
@@ -43,8 +43,7 @@ class NamespaceContainerTest extends TestCase
     public function testHas(): void
     {
         $container = new NamespaceContainer(
-            __NAMESPACE__,
-            fn() => null
+            __NAMESPACE__, self::createMock(DependencyInjectorInterface::class), fn() => null
         );
 
         self::assertTrue($container->has(NoConstructorTestClass::class));
@@ -54,8 +53,7 @@ class NamespaceContainerTest extends TestCase
     public function testHas_Root(): void
     {
         $container = new NamespaceContainer(
-            '',
-            fn() => null
+            '', self::createMock(DependencyInjectorInterface::class), fn() => null
         );
 
         self::assertTrue($container->has(NoConstructorTestClass::class));

@@ -122,14 +122,7 @@ trait SingletonContainerBuilderTrait
      */
     public function addSingletonNamespace(string $namespace, ?callable $factory = null): static
     {
-        $this->addSingletonContainer(new NamespaceContainer(
-            $namespace,
-            $factory !== null ?
-                $factory(...) :
-                /** @param class-string $className */
-                fn(string $className) => $this->getInjector()->instantiate($className),
-            $this->injector
-        ));
+        $this->addSingletonContainer(new NamespaceContainer($namespace, $this->injector, $factory));
 
         return $this;
     }
@@ -144,14 +137,8 @@ trait SingletonContainerBuilderTrait
      */
     public function addSingletonInterface(string $interfaceName, ?callable $factory = null): static
     {
-        $this->addSingletonContainer(new ImplementationContainer(
-            $interfaceName,
-            $factory !== null ?
-                $factory(...) :
-                /** @param class-string $className */
-                fn(string $className) => $this->getInjector()->instantiate($className),
-            $this->injector
-        ));
+        /** @psalm-suppress ArgumentTypeCoercion argument types are the same... */
+        $this->addSingletonContainer(new ImplementationContainer($interfaceName, $this->injector, $factory));
 
         return $this;
     }

@@ -14,17 +14,26 @@ use Closure;
  */
 class ImplementationContainer implements DependencyContainerInterface
 {
+    /** @var Closure(class-string<TInterface>):(TInterface|null) $factory */
+    private readonly Closure $factory;
+
     /**
-     * @template T of TInterface
-     *
      * @param class-string<TInterface> $interfaceName
-     * @param Closure(class-string<T>):?T $factory
+     * @param DependencyInjectorInterface $injector
+     * @param null|callable(class-string<TInterface>):(TInterface|null) $factory
      */
     public function __construct(
         private readonly string $interfaceName,
-        private readonly Closure $factory,
-        private readonly DependencyInjectorInterface $injector
+        private readonly DependencyInjectorInterface $injector,
+        ?callable $factory = null
     ) {
+        $this->factory = $factory !== null ?
+            $factory(...) :
+            /**
+             * @param class-string<TInterface> $className
+             * @return TInterface
+             */
+            fn(string $className) => $this->injector->instantiate($className);
     }
 
     /**

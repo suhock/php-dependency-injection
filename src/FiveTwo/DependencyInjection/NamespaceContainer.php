@@ -13,18 +13,27 @@ class NamespaceContainer implements DependencyContainerInterface
 {
     private readonly string $namespace;
 
+    /** @var Closure(class-string):(object|null) */
+    private readonly Closure $factory;
+
     /**
-     * @template T
-     *
      * @param string $namespace
-     * @param Closure(class-string<T>):(T|null) $factory
+     * @param DependencyInjectorInterface $injector
+     * @param null|callable(class-string):(object|null) $factory
      */
     public function __construct(
         string $namespace,
-        private readonly Closure $factory,
-        private readonly DependencyInjectorInterface $injector
+        private readonly DependencyInjectorInterface $injector,
+        ?callable $factory = null
     ) {
         $this->namespace = trim($namespace, '\\');
+        $this->factory = $factory !== null ?
+            $factory(...) :
+            /**
+             * @param class-string $className
+             * @return object
+             */
+            fn(string $className) => $this->injector->instantiate($className);
     }
 
     /**
