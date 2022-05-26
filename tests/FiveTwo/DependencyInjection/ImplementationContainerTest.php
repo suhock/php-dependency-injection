@@ -13,20 +13,26 @@ class ImplementationContainerTest extends TestCase
 {
     public function testGet(): void
     {
-        $injector = self::createMock(DependencyInjectorInterface::class);
-        $injector->expects($this->once())
-            ->method('instantiate')
-            ->with(NoConstructorTestSubClass::class)
-            ->willReturn(new NoConstructorTestSubClass());
+        $container = self::createMock(DependencyContainerInterface::class);
+        $container->method('get')
+            ->with(NoConstructorTestClass::class)
+            ->willReturn(new NoConstructorTestClass());
+        $container->method('has')
+            ->with(NoConstructorTestClass::class)
+            ->willReturn(true);
+        $injector = new DependencyInjector($container);
 
-        $container = new ImplementationContainer(
+        $implContainer = new ImplementationContainer(
             NoConstructorTestClass::class,
             $injector,
             /** @param class-string $className */
             fn(string $className) => $injector->instantiate($className)
         );
 
-        self::assertInstanceOf(NoConstructorTestSubClass::class, $container->get(NoConstructorTestSubClass::class));
+        self::assertInstanceOf(
+            NoConstructorTestSubClass::class,
+            $implContainer->get(NoConstructorTestSubClass::class)
+        );
     }
 
     public function testGet_SameClass(): void

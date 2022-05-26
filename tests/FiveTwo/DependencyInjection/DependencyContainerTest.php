@@ -33,6 +33,15 @@ class DependencyContainerTest extends TestCase
         return $container;
     }
 
+    public function testRemove(): void
+    {
+        $this->container->addSingletonInstance(NoConstructorTestClass::class, null);
+        $this->container->remove(NoConstructorTestClass::class);
+
+        self::expectException(UnresolvedClassException::class);
+        $this->container->get(NoConstructorTestClass::class);
+    }
+
     public function testTryGet_FactoryBeforeContainer(): void
     {
         self::assertStringStartsWith(
@@ -86,7 +95,12 @@ class DependencyContainerTest extends TestCase
     public function testGet_CircularDependency(): void
     {
         $this->container->addSingletonFactory(NoConstructorTestClass::class, fn(NoConstructorTestClass $obj) => $obj);
-        self::expectExceptionObject(new CircularDependencyException(NoConstructorTestClass::class));
+        self::expectExceptionObject(new UnresolvedParameterException(
+            'Closure::__invoke',
+            'obj',
+            NoConstructorTestClass::class,
+            new CircularDependencyException(NoConstructorTestClass::class)
+        ));
         $this->container->get(NoConstructorTestClass::class);
     }
 

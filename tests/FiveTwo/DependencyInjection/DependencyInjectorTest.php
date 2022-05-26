@@ -87,6 +87,36 @@ class DependencyInjectorTest extends TestCase
         $this->injector->instantiate(ConstructorTestClass::class);
     }
 
+    public function testInstantiate_ExplicitArgs(): void
+    {
+        $this->classMapping = [
+            Throwable::class => new LogicException(),
+            RuntimeException::class => new RuntimeException()
+        ];
+
+        self::assertSame(
+            $override = new Exception(),
+            $this->injector->instantiate(ConstructorTestClass::class, [
+                'throwable' => $override
+            ])->throwable
+        );
+    }
+
+    public function testInstantiate_ExplicitArgsPositional(): void
+    {
+        $this->classMapping = [
+            Throwable::class => new LogicException(),
+            RuntimeException::class => new RuntimeException()
+        ];
+
+        self::assertSame(
+            $override = new RuntimeException(),
+            $this->injector->instantiate(ConstructorTestClass::class, [
+                1 => $override
+            ])->runtimeException
+        );
+    }
+
     public function testInstantiate_noConstructor(): void
     {
         $instance = $this->injector->instantiate(NoConstructorTestClass::class);

@@ -14,20 +14,26 @@ class NamespaceContainerTest extends TestCase
 {
     public function testGet(): void
     {
-        $injector = self::createMock(DependencyInjectorInterface::class);
-        $injector->expects($this->once())
-            ->method('instantiate')
+        $container = self::createMock(DependencyContainerInterface::class);
+        $container->method('get')
             ->with(NoConstructorTestClass::class)
             ->willReturn(new NoConstructorTestClass());
+        $container->method('has')
+            ->with(NoConstructorTestClass::class)
+            ->willReturn(true);
+        $injector = new DependencyInjector($container);
 
-        $container = new NamespaceContainer(
+        $namespaceContainer = new NamespaceContainer(
             __NAMESPACE__,
             $injector,
             /** @param class-string $className */
             fn(string $className) => $injector->instantiate($className)
         );
 
-        self::assertInstanceOf(NoConstructorTestClass::class, $container->get(NoConstructorTestClass::class));
+        self::assertInstanceOf(
+            NoConstructorTestClass::class,
+            $namespaceContainer->get(NoConstructorTestClass::class)
+        );
     }
 
     public function testGet_ClassNotInNamespace(): void
