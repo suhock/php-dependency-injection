@@ -14,8 +14,12 @@ use FiveTwo\DependencyInjection\Lifetime\LifetimeStrategy;
 /**
  * A default implementation for the {@see ContainerInterface}.
  */
-class Container implements ContainerInterface, ContainerBuilderInterface,
-                           ContainerSingletonBuilderInterface, ContainerTransientBuilderInterface, InjectorProvider
+class Container implements
+    ContainerInterface,
+    ContainerBuilderInterface,
+    ContainerSingletonBuilderInterface,
+    ContainerTransientBuilderInterface,
+    InjectorProvider
 {
     use ContainerSingletonBuilderTrait;
     use ContainerTransientBuilderTrait;
