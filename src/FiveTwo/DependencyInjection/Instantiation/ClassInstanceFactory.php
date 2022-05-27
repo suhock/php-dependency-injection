@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace FiveTwo\DependencyInjection\Instantiation;
 
 use FiveTwo\DependencyInjection\DependencyInjectionException;
-use FiveTwo\DependencyInjection\DependencyInjectorInterface;
+use FiveTwo\DependencyInjection\InjectorInterface;
 
 /**
  * @template TDependency
@@ -21,7 +21,7 @@ class ClassInstanceFactory implements InstanceFactory
      */
     public function __construct(
         private readonly string $className,
-        private readonly DependencyInjectorInterface $injector
+        private readonly InjectorInterface $injector
     ) {
     }
 

@@ -17,14 +17,14 @@ use FiveTwo\DependencyInjection\Instantiation\ObjectInstanceFactory;
 use FiveTwo\DependencyInjection\Lifetime\SingletonStrategy;
 
 /**
- * Provides convenience methods for adding singletons to a container.
+ * Implements convenience methods for adding singleton factories to a container.
  *
  * @psalm-require-implements ContainerBuilderInterface
- * @psalm-require-implements SingletonContainerBuilderInterface
+ * @psalm-require-implements ContainerSingletonBuilderInterface
  */
-trait SingletonContainerBuilderTrait
+trait ContainerSingletonBuilderTrait
 {
-    protected abstract function getInjector(): DependencyInjectorInterface;
+    abstract protected function getInjector(): InjectorInterface;
 
     /**
      * @template TDependency
@@ -103,11 +103,11 @@ trait SingletonContainerBuilderTrait
     }
 
     /**
-     * @param DependencyContainerInterface $container
+     * @param ContainerInterface $container
      *
      * @return static
      */
-    public function addSingletonContainer(DependencyContainerInterface $container): static
+    public function addSingletonContainer(ContainerInterface $container): static
     {
         $this->addContainer($container, fn(string $className) => new SingletonStrategy($className));
 

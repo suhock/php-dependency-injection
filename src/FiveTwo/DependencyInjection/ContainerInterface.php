@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace FiveTwo\DependencyInjection;
 
-interface DependencyContainerInterface
+interface ContainerInterface
 {
     /**
      * Retrieves an object or <code>null</code> from the container identified by its class name.
@@ -27,7 +27,7 @@ interface DependencyContainerInterface
      *
      * @template TDependency
      *
-     * @param class-string<TDependency> $className The name of the class to check
+     * @param class-string<TDependency> $className The name of the class to test
      *
      * @return bool <code>true</code> if the container can provide a value, <code>false</code> otherwise
      */

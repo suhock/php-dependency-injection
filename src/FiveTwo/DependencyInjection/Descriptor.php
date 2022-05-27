@@ -11,9 +11,10 @@ use FiveTwo\DependencyInjection\Instantiation\InstanceFactory;
 use FiveTwo\DependencyInjection\Lifetime\LifetimeStrategy;
 
 /**
+ * @internal
  * @template TDependency
  */
-class DependencyDescriptor
+class Descriptor
 {
     private bool $isResolving = false;
 

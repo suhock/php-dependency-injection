@@ -11,16 +11,19 @@ use Closure;
 use FiveTwo\DependencyInjection\Instantiation\ClosureInstanceFactory;
 use FiveTwo\DependencyInjection\Lifetime\LifetimeStrategy;
 
+/**
+ * @internal
+ */
 class ContainerDescriptor
 {
     /**
-     * @param DependencyContainerInterface $container
-     * @param DependencyInjectorInterface $injector
+     * @param ContainerInterface $container
+     * @param InjectorInterface $injector
      * @param Closure(class-string):LifetimeStrategy $lifetimeStrategyFactory
      */
     public function __construct(
-        private readonly DependencyContainerInterface $container,
-        private readonly DependencyInjectorInterface $injector,
+        private readonly ContainerInterface $container,
+        private readonly InjectorInterface $injector,
         private readonly Closure $lifetimeStrategyFactory
     ) {
     }

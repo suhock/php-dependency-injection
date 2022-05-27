@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace FiveTwo\DependencyInjection\Lifetime;
 
-use FiveTwo\DependencyInjection\DependencyContainerInterface;
+use FiveTwo\DependencyInjection\ContainerInterface;
 use FiveTwo\DependencyInjection\NoConstructorTestClass;
 use PHPUnit\Framework\TestCase;
 
@@ -45,7 +45,7 @@ class TransientStrategyTest extends TestCase
     public function testGet_NullCalledTwice(): void
     {
 
-        $stub = self::createMock(DependencyContainerInterface::class);
+        $stub = self::createMock(ContainerInterface::class);
         $stub->method('has')
             ->willReturn(true);
         $stub->expects($this->exactly(2))

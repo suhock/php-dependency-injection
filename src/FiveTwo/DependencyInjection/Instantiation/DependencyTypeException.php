@@ -16,9 +16,13 @@ use Throwable;
 class DependencyTypeException extends DependencyInjectionException
 {
     /**
-     * @param class-string<TDependency> $expectedClassName
-     * @param mixed $actualValue
-     * @param Throwable|null $previous
+     * @inheritDoc
+     *
+     * @param class-string<TDependency> $expectedClassName The name of the expected class
+     * @param mixed $actualValue The value actually received
+     * @param null|Throwable $previous [optional] The previous throwable used for exception chaining. If the throwable
+     * is an instance of {@see DependencyInjectionException} then its content will be consolidated into the new
+     * instance.
      */
     public function __construct(
         private readonly string $expectedClassName,
@@ -28,7 +32,7 @@ class DependencyTypeException extends DependencyInjectionException
         parent::__construct(
             "Expected object of type $this->expectedClassName, got " . (
                 is_object($actualValue) ?
-                    "object of type " . get_class($actualValue) :
+                    'object of type ' . get_class($actualValue) :
                     gettype($this->actualValue)
                 ),
             $previous
@@ -36,7 +40,7 @@ class DependencyTypeException extends DependencyInjectionException
     }
 
     /**
-     * @return class-string<TDependency>
+     * @return class-string<TDependency> The name of the expected class
      */
     public function getExpectedClassName(): string
     {
@@ -44,7 +48,7 @@ class DependencyTypeException extends DependencyInjectionException
     }
 
     /**
-     * @return mixed
+     * @return mixed The value actually received
      */
     public function getActualValue(): mixed
     {

@@ -9,21 +9,33 @@ namespace FiveTwo\DependencyInjection;
 
 use Closure;
 
-class NamespaceContainer implements DependencyContainerInterface
+/**
+ * Provides instances of classes within the given namespace.
+ */
+class NamespaceContainer implements ContainerInterface
 {
     private readonly string $namespace;
 
-    /** @var Closure(class-string):(object|null) */
+    /**
+     * @var Closure
+     * @psalm-var Closure(class-string):(object|null)
+     */
     private readonly Closure $factory;
 
     /**
-     * @param string $namespace
-     * @param DependencyInjectorInterface $injector
-     * @param null|callable(class-string):(object|null) $factory
+     * @param string $namespace The namespace from which to provide class instances
+     * @param InjectorInterface $injector The injector to use for calling the instance factory
+     * @param null|callable $factory [optional] A factory to use for acquiring instances of classes. The first argument
+     * will be the name of the class. Additional arguments can be provided from this container's {@see Injector}. If no
+     * factory is provided, a default factory that directly instantiates the class will be used.
+     * <code>
+     * function(class-string&lt;T&gt; $className, ...): null|T
+     * </code>
+     * @psalm-param null|callable(class-string):(object|null) $factory
      */
     public function __construct(
         string $namespace,
-        private readonly DependencyInjectorInterface $injector,
+        private readonly InjectorInterface $injector,
         ?callable $factory = null
     ) {
         $this->namespace = trim($namespace, '\\');
@@ -38,7 +50,8 @@ class NamespaceContainer implements DependencyContainerInterface
 
     /**
      * @inheritDoc
-     * @throws UnresolvedClassException
+     *
+     * @throws UnresolvedClassException If the specified class is not in the namespace
      */
     public function get(string $className): ?object
     {

@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace FiveTwo\DependencyInjection\Instantiation;
 
 use FiveTwo\DependencyInjection\CircularDependencyException;
-use FiveTwo\DependencyInjection\DependencyContainerInterface;
+use FiveTwo\DependencyInjection\ContainerInterface;
 use FiveTwo\DependencyInjection\UnresolvedClassException;
 
 /**
@@ -30,7 +30,7 @@ class ImplementationInstanceFactory implements InstanceFactory
     public function __construct(
         string $className,
         private readonly string $implementationClassName,
-        private readonly DependencyContainerInterface $container
+        private readonly ContainerInterface $container
     ) {
         if (!is_subclass_of($implementationClassName, $className)) {
             throw new ImplementationException($className, $this->implementationClassName);

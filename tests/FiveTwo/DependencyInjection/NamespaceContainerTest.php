@@ -14,14 +14,14 @@ class NamespaceContainerTest extends TestCase
 {
     public function testGet(): void
     {
-        $container = self::createMock(DependencyContainerInterface::class);
+        $container = self::createMock(ContainerInterface::class);
         $container->method('get')
             ->with(NoConstructorTestClass::class)
             ->willReturn(new NoConstructorTestClass());
         $container->method('has')
             ->with(NoConstructorTestClass::class)
             ->willReturn(true);
-        $injector = new DependencyInjector($container);
+        $injector = new Injector($container);
 
         $namespaceContainer = new NamespaceContainer(
             __NAMESPACE__,
@@ -39,7 +39,7 @@ class NamespaceContainerTest extends TestCase
     public function testGet_ClassNotInNamespace(): void
     {
         $container = new NamespaceContainer(
-            __NAMESPACE__, self::createMock(DependencyInjectorInterface::class), fn() => null
+            __NAMESPACE__, self::createMock(InjectorInterface::class), fn() => null
         );
 
         self::expectException(UnresolvedClassException::class);
@@ -49,7 +49,7 @@ class NamespaceContainerTest extends TestCase
     public function testHas(): void
     {
         $container = new NamespaceContainer(
-            __NAMESPACE__, self::createMock(DependencyInjectorInterface::class), fn() => null
+            __NAMESPACE__, self::createMock(InjectorInterface::class), fn() => null
         );
 
         self::assertTrue($container->has(NoConstructorTestClass::class));
@@ -59,7 +59,7 @@ class NamespaceContainerTest extends TestCase
     public function testHas_Root(): void
     {
         $container = new NamespaceContainer(
-            '', self::createMock(DependencyInjectorInterface::class), fn() => null
+            '', self::createMock(InjectorInterface::class), fn() => null
         );
 
         self::assertTrue($container->has(NoConstructorTestClass::class));

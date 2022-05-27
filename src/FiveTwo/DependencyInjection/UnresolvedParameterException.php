@@ -9,13 +9,20 @@ namespace FiveTwo\DependencyInjection;
 
 use Throwable;
 
+/**
+ * Indicates that the injector could not resolve a value for a function parameter.
+ */
 class UnresolvedParameterException extends UnresolvedDependencyException
 {
     /**
-     * @param string $functionName
-     * @param string $parameterName
-     * @param string|null $parameterType
-     * @param Throwable|null $previous
+     * @inheritDoc
+     *
+     * @param string $functionName The name of the function requiring the parameter
+     * @param string $parameterName The name of the unresolved parameter
+     * @param string|null $parameterType [optional] The type of the unresolved parameter
+     * @param null|Throwable $previous [optional] The previous throwable used for exception chaining. If the throwable
+     * is an instance of {@see DependencyInjectionException} then its content will be consolidated into the new
+     * instance.
      */
     public function __construct(
         private readonly string $functionName,
@@ -32,7 +39,7 @@ class UnresolvedParameterException extends UnresolvedDependencyException
     }
 
     /**
-     * @return string
+     * @return string The name of the function requiring the parameter
      */
     public function getFunctionName(): string
     {
@@ -40,7 +47,7 @@ class UnresolvedParameterException extends UnresolvedDependencyException
     }
 
     /**
-     * @return string
+     * @return string The name of the unresolved parameter
      */
     public function getParameterName(): string
     {
@@ -48,7 +55,7 @@ class UnresolvedParameterException extends UnresolvedDependencyException
     }
 
     /**
-     * @return string|null
+     * @return string|null The type of the unresolved parameter, or <code>null</code> if none is specified
      */
     public function getParameterType(): ?string
     {

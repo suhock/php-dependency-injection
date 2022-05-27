@@ -12,9 +12,9 @@ use FiveTwo\DependencyInjection\Instantiation\ImplementationException;
 use FiveTwo\DependencyInjection\Instantiation\InstanceFactory;
 
 /**
- * Provides convenience methods for adding singletons to a container.
+ * Provides convenience methods for adding singleton factories to a container.
  */
-interface SingletonContainerBuilderInterface
+interface ContainerSingletonBuilderInterface
 {
     /**
      * @template TDependency
@@ -62,11 +62,11 @@ interface SingletonContainerBuilderInterface
     public function addSingletonInstance(string $className, ?object $instance): static;
 
     /**
-     * @param DependencyContainerInterface $container
+     * @param ContainerInterface $container
      *
      * @return static
      */
-    public function addSingletonContainer(DependencyContainerInterface $container): static;
+    public function addSingletonContainer(ContainerInterface $container): static;
 
     /**
      * @param string $namespace

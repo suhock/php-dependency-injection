@@ -15,14 +15,14 @@ use FiveTwo\DependencyInjection\Instantiation\InstanceFactory;
 use FiveTwo\DependencyInjection\Lifetime\TransientStrategy;
 
 /**
- * Provides convenience methods for adding transients to a container.
+ * Implements convenience methods for adding transients to a container.
  *
  * @psalm-require-implements ContainerBuilderInterface
- * @psalm-require-implements TransientContainerBuilderInterface
+ * @psalm-require-implements ContainerTransientBuilderInterface
  */
-trait TransientContainerBuilderTrait
+trait ContainerTransientBuilderTrait
 {
-    protected abstract function getInjector(): DependencyInjectorInterface;
+    abstract protected function getInjector(): InjectorInterface;
 
     /**
      * @template TDependency
@@ -81,11 +81,11 @@ trait TransientContainerBuilderTrait
     }
 
     /**
-     * @param DependencyContainerInterface $container
+     * @param ContainerInterface $container
      *
      * @return static
      */
-    public function addTransientContainer(DependencyContainerInterface $container): static
+    public function addTransientContainer(ContainerInterface $container): static
     {
         $this->addContainer($container, fn(string $className) => new TransientStrategy($className));
 

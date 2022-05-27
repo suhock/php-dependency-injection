@@ -11,18 +11,18 @@ use DateTime;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
-class DependencyContainerTest extends TestCase
+class ContainerTest extends TestCase
 {
-    private DependencyContainer $container;
+    private Container $container;
 
     protected function setUp(): void
     {
-        $this->container = new DependencyContainer();
+        $this->container = new Container();
     }
 
-    private function getSubContainer(): DependencyContainerInterface|MockObject
+    private function getSubContainer(): ContainerInterface|MockObject
     {
-        $container = self::createMock(DependencyContainerInterface::class);
+        $container = self::createMock(ContainerInterface::class);
         $container->method('get')->willReturnCallback(
             /** @param class-string $className */
             fn(string $className) => new $className()
@@ -71,7 +71,7 @@ class DependencyContainerTest extends TestCase
         );
 
         $goodInstance = new NoConstructorTestSubClass();
-        $subContainer = self::createMock(DependencyContainerInterface::class);
+        $subContainer = self::createMock(ContainerInterface::class);
         $subContainer->method('get')->willReturn($goodInstance);
         $subContainer->method('has')->willReturn(true);
 

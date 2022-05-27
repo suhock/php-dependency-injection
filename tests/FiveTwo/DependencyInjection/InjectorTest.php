@@ -13,18 +13,18 @@ use PHPUnit\Framework\TestCase;
 use RuntimeException;
 use Throwable;
 
-class DependencyInjectorTest extends TestCase
+class InjectorTest extends TestCase
 {
-    private DependencyInjector $injector;
+    private Injector $injector;
 
     public array $classMapping = [];
 
     protected function setUp(): void
     {
-        $this->injector = new DependencyInjector(
-            new class($this) implements DependencyContainerInterface
+        $this->injector = new Injector(
+            new class($this) implements ContainerInterface
             {
-                public function __construct(private readonly DependencyInjectorTest $test)
+                public function __construct(private readonly InjectorTest $test)
                 {
                 }
 

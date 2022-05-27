@@ -8,6 +8,8 @@ declare(strict_types=1);
 namespace FiveTwo\DependencyInjection\Instantiation;
 
 /**
+ * Provides instances from an existing instance.
+ *
  * @template TDependency
  * @template-implements InstanceFactory<TDependency>
  */

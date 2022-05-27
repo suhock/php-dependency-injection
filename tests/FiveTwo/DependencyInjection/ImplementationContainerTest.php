@@ -13,14 +13,14 @@ class ImplementationContainerTest extends TestCase
 {
     public function testGet(): void
     {
-        $container = self::createMock(DependencyContainerInterface::class);
+        $container = self::createMock(ContainerInterface::class);
         $container->method('get')
             ->with(NoConstructorTestClass::class)
             ->willReturn(new NoConstructorTestClass());
         $container->method('has')
             ->with(NoConstructorTestClass::class)
             ->willReturn(true);
-        $injector = new DependencyInjector($container);
+        $injector = new Injector($container);
 
         $implContainer = new ImplementationContainer(
             NoConstructorTestClass::class,
@@ -38,7 +38,7 @@ class ImplementationContainerTest extends TestCase
     public function testGet_SameClass(): void
     {
         $container = new ImplementationContainer(
-            NoConstructorTestClass::class, self::createMock(DependencyInjectorInterface::class), fn() => null
+            NoConstructorTestClass::class, self::createMock(InjectorInterface::class), fn() => null
         );
 
         self::expectException(UnresolvedClassException::class);
@@ -48,17 +48,18 @@ class ImplementationContainerTest extends TestCase
     public function testGet_NotSubclass(): void
     {
         $container = new ImplementationContainer(
-            NoConstructorTestClass::class, self::createMock(DependencyInjectorInterface::class), fn() => null
+            NoConstructorTestClass::class, self::createMock(InjectorInterface::class), fn() => null
         );
 
         self::expectException(UnresolvedClassException::class);
+        /** @psalm-suppress InvalidArgument Testing for invalid argument here */
         $container->get(ConstructorTestClass::class);
     }
 
     public function testHas(): void
     {
         $container = new ImplementationContainer(
-            NoConstructorTestClass::class, self::createMock(DependencyInjectorInterface::class), fn() => null
+            NoConstructorTestClass::class, self::createMock(InjectorInterface::class), fn() => null
         );
 
         self::assertTrue($container->has(NoConstructorTestSubClass::class));

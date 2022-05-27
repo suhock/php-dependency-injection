@@ -7,16 +7,16 @@ declare(strict_types=1);
 
 namespace FiveTwo\DependencyInjection\Context;
 
-use FiveTwo\DependencyInjection\DependencyInjectorInterface;
-use FiveTwo\DependencyInjection\DependencyInjectorTrait;
+use FiveTwo\DependencyInjection\InjectorInterface;
+use FiveTwo\DependencyInjection\InjectorTrait;
 use ReflectionAttribute;
 use ReflectionMethod;
 use ReflectionNamedType;
 use ReflectionParameter;
 
-class ContextInjector implements DependencyInjectorInterface
+class ContextInjector implements InjectorInterface
 {
-    use DependencyInjectorTrait;
+    use InjectorTrait;
 
     public function __construct(
         private readonly ContextContainer $container

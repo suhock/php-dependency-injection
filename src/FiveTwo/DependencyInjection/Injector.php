@@ -11,18 +11,18 @@ use ReflectionNamedType;
 use ReflectionParameter;
 
 /**
- * Provides a default implementation for the {@see DependencyInjectorInterface} that injects parameters resolved from
+ * Provides a default implementation for the {@see InjectorInterface} that injects parameters resolved from
  * {@see $container}.
  */
-class DependencyInjector implements DependencyInjectorInterface
+class Injector implements InjectorInterface
 {
-    use DependencyInjectorTrait;
+    use InjectorTrait;
 
     /**
-     * @param DependencyContainerInterface $container The container from which to resolve parameter values.
+     * @param ContainerInterface $container The container from which to resolve parameter values.
      */
     public function __construct(
-        private readonly DependencyContainerInterface $container
+        private readonly ContainerInterface $container
     ) {
     }
 

@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace FiveTwo\DependencyInjection\Context;
 
-use FiveTwo\DependencyInjection\DependencyContainer;
+use FiveTwo\DependencyInjection\Container;
 use FiveTwo\DependencyInjection\DependencyInjectionException;
 use FiveTwo\DependencyInjection\NoConstructorTestClass;
 use PHPUnit\Framework\TestCase;
@@ -65,7 +65,7 @@ class ContextContainerTest extends TestCase
     public function testAddContext(): void
     {
         $container = new ContextContainer();
-        $container->addContext('context', $context = new DependencyContainer());
+        $container->addContext('context', $context = new Container());
 
         self::assertSame($context, $container->getContext('context'));
     }
@@ -74,7 +74,7 @@ class ContextContainerTest extends TestCase
     {
         $container = new ContextContainer();
 
-        self::assertInstanceOf(DependencyContainer::class, $container->context('context'));
+        self::assertInstanceOf(Container::class, $container->context('context'));
     }
 
     public function testContext_Existing(): void
@@ -87,7 +87,7 @@ class ContextContainerTest extends TestCase
     public function testGetContext(): void
     {
         $container = new ContextContainer();
-        $container->addContext('context', $context = new DependencyContainer());
+        $container->addContext('context', $context = new Container());
 
         self::assertSame($context, $container->getContext('context'));
         self::assertSame($container->context(), $container->getContext(Context::DEFAULT));

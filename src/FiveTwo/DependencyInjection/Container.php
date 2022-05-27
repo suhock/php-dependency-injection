@@ -11,27 +11,34 @@ use Closure;
 use FiveTwo\DependencyInjection\Instantiation\InstanceFactory;
 use FiveTwo\DependencyInjection\Lifetime\LifetimeStrategy;
 
-class DependencyContainer implements DependencyContainerInterface, ContainerBuilderInterface,
-    SingletonContainerBuilderInterface, TransientContainerBuilderInterface
+/**
+ * A default implementation for the {@see ContainerInterface}.
+ */
+class Container implements ContainerInterface, ContainerBuilderInterface,
+                           ContainerSingletonBuilderInterface, ContainerTransientBuilderInterface, InjectorProvider
 {
-    use SingletonContainerBuilderTrait;
-    use TransientContainerBuilderTrait;
+    use ContainerSingletonBuilderTrait;
+    use ContainerTransientBuilderTrait;
 
-    private DependencyInjectorInterface $injector;
+    private InjectorInterface $injector;
 
-    /** @var array<class-string, DependencyDescriptor> */
+    /** @var array<class-string, Descriptor> */
     private array $factories = [];
 
     /** @var array<ContainerDescriptor> */
     private array $containers = [];
 
-    public function __construct(?DependencyInjectorInterface $injector = null)
+    /**
+     * @param InjectorProvider|null $injectorProvider [optional] The source of an existing injector to use for injecting
+     * dependencies into factories
+     */
+    public function __construct(?InjectorProvider $injectorProvider = null)
     {
         $this->addSingletonInstance(self::class, $this);
 
-        $this->injector = $injector ?? new DependencyInjector($this);
+        $this->injector = $injectorProvider?->getInjector() ?? new Injector($this);
         $this->addSingletonInstance($this->injector::class, $this->injector)
-            ->addSingletonInstance(DependencyInjectorInterface::class, $this->injector);
+            ->addSingletonInstance(InjectorInterface::class, $this->injector);
     }
 
     /**
@@ -42,12 +49,14 @@ class DependencyContainer implements DependencyContainerInterface, ContainerBuil
         LifetimeStrategy $lifetimeStrategy,
         InstanceFactory $instanceFactory
     ): static {
-        $this->factories[$className] = new DependencyDescriptor($className, $lifetimeStrategy, $instanceFactory);
+        $this->factories[$className] = new Descriptor($className, $lifetimeStrategy, $instanceFactory);
 
         return $this;
     }
 
     /**
+     * Removes the specified factory and/or instance if they exist.
+     *
      * @param class-string $className
      *
      * @return $this
@@ -60,9 +69,9 @@ class DependencyContainer implements DependencyContainerInterface, ContainerBuil
     }
 
     /**
-     * @return DependencyInjectorInterface A dependency injector backed by this container
+     * @return InjectorInterface A dependency injector backed by this container
      */
-    public function getInjector(): DependencyInjectorInterface
+    public function getInjector(): InjectorInterface
     {
         return $this->injector;
     }
@@ -70,7 +79,7 @@ class DependencyContainer implements DependencyContainerInterface, ContainerBuil
     /**
      * @inheritDoc
      */
-    public function addContainer(DependencyContainerInterface $container, Closure $lifetimeStrategyFactory): static
+    public function addContainer(ContainerInterface $container, Closure $lifetimeStrategyFactory): static
     {
         $this->containers[] = new ContainerDescriptor($container, $this->injector, $lifetimeStrategyFactory);
 
@@ -78,11 +87,7 @@ class DependencyContainer implements DependencyContainerInterface, ContainerBuil
     }
 
     /**
-     * @template TDependency
-     *
-     * @param class-string<TDependency> $className
-     *
-     * @return TDependency|null
+     * @inheritDoc
      * @throws CircularDependencyException
      * @throws UnresolvedClassException
      * @throws DependencyInjectionException
@@ -98,11 +103,7 @@ class DependencyContainer implements DependencyContainerInterface, ContainerBuil
     }
 
     /**
-     * @template TDependency
-     *
-     * @param class-string<TDependency> $className
-     *
-     * @return bool
+     * @inheritDoc
      */
     public function has(string $className): bool
     {

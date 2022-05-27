@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace FiveTwo\DependencyInjection\Instantiation;
 
-use FiveTwo\DependencyInjection\DependencyContainerInterface;
+use FiveTwo\DependencyInjection\ContainerInterface;
 use FiveTwo\DependencyInjection\NoConstructorTestClass;
 use FiveTwo\DependencyInjection\NoConstructorTestSubClass;
 use PHPUnit\Framework\TestCase;
@@ -19,7 +19,7 @@ class ImplementationInstanceFactoryTest extends TestCase
         $factory = new ImplementationInstanceFactory(
             NoConstructorTestClass::class,
             NoConstructorTestSubClass::class,
-            $container = $this->createMock(DependencyContainerInterface::class)
+            $container = $this->createMock(ContainerInterface::class)
         );
 
         $container->method('has')->willReturn(true);
@@ -37,7 +37,7 @@ class ImplementationInstanceFactoryTest extends TestCase
         new ImplementationInstanceFactory(
             NoConstructorTestClass::class,
             NoConstructorTestClass::class,
-            $this->createMock(DependencyContainerInterface::class)
+            $this->createMock(ContainerInterface::class)
         );
     }
 
@@ -47,7 +47,7 @@ class ImplementationInstanceFactoryTest extends TestCase
         new ImplementationInstanceFactory(
             NoConstructorTestSubClass::class,
             NoConstructorTestClass::class,
-            $this->createMock(DependencyContainerInterface::class)
+            $this->createMock(ContainerInterface::class)
         );
     }
 }

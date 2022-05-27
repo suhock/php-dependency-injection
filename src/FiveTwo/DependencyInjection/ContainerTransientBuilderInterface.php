@@ -13,7 +13,7 @@ use FiveTwo\DependencyInjection\Instantiation\InstanceFactory;
 /**
  * Provides convenience methods for adding transients to a container.
  */
-interface TransientContainerBuilderInterface
+interface ContainerTransientBuilderInterface
 {
     /**
      * @template TDependency
@@ -49,11 +49,11 @@ interface TransientContainerBuilderInterface
     public function addTransientFactory(string $className, callable $factory): static;
 
     /**
-     * @param DependencyContainerInterface $container
+     * @param ContainerInterface $container
      *
      * @return static
      */
-    public function addTransientContainer(DependencyContainerInterface $container): static;
+    public function addTransientContainer(ContainerInterface $container): static;
 
     /**
      * @param string $namespace

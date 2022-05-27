@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace FiveTwo\DependencyInjection\Instantiation;
 
-use FiveTwo\DependencyInjection\DependencyInjectorInterface;
+use FiveTwo\DependencyInjection\InjectorInterface;
 use FiveTwo\DependencyInjection\NoConstructorTestClass;
 use FiveTwo\DependencyInjection\NoConstructorTestSubClass;
 use PHPUnit\Framework\TestCase;
@@ -19,7 +19,7 @@ class ClosureInstanceFactoryTest extends TestCase
         $factory = new ClosureInstanceFactory(
             NoConstructorTestClass::class,
             $factoryMethod = fn() => new NoConstructorTestClass(),
-            $injector = $this->createMock(DependencyInjectorInterface::class)
+            $injector = $this->createMock(InjectorInterface::class)
         );
 
         $injector->expects($this->once())
@@ -35,7 +35,7 @@ class ClosureInstanceFactoryTest extends TestCase
         $factory = new ClosureInstanceFactory(
             NoConstructorTestClass::class,
             $factoryMethod = fn() => null,
-            $injector = $this->createMock(DependencyInjectorInterface::class)
+            $injector = $this->createMock(InjectorInterface::class)
         );
 
         $injector->expects($this->once())
@@ -51,7 +51,7 @@ class ClosureInstanceFactoryTest extends TestCase
         $factory = new ClosureInstanceFactory(
             NoConstructorTestSubClass::class,
             $factoryMethod = fn() => new NoConstructorTestClass(),
-            $injector = $this->createMock(DependencyInjectorInterface::class)
+            $injector = $this->createMock(InjectorInterface::class)
         );
 
         $injector->expects($this->once())

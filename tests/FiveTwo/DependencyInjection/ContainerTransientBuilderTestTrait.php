@@ -11,13 +11,13 @@ use FiveTwo\DependencyInjection\Instantiation\DependencyTypeException;
 use FiveTwo\DependencyInjection\Instantiation\ImplementationException;
 use PHPUnit\Framework\TestCase;
 
-class TransientContainerBuilderTraitTest extends TestCase
+class ContainerTransientBuilderTestTrait extends TestCase
 {
-    private DependencyContainer $container;
+    private Container $container;
 
     protected function setUp(): void
     {
-        $this->container = new DependencyContainer();
+        $this->container = new Container();
     }
 
     /**
@@ -111,7 +111,7 @@ class TransientContainerBuilderTraitTest extends TestCase
 
     public function testAddTransientContainer(): void
     {
-        $this->container->addTransientContainer(new class implements DependencyContainerInterface {
+        $this->container->addTransientContainer(new class implements ContainerInterface {
             public function get(string $className): ?object
             {
                 return new $className();

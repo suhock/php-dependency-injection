@@ -14,11 +14,11 @@ use ReflectionNamedType;
 use ReflectionParameter;
 
 /**
- * Provides default boilerplate behavior for the {@see DependencyInjectorInterface} interface.
+ * Provides default boilerplate behavior for the {@see InjectorInterface} interface.
  *
- * @psalm-require-implements DependencyInjectorInterface
+ * @psalm-require-implements InjectorInterface
  */
-trait DependencyInjectorTrait
+trait InjectorTrait
 {
     /**
      * Attempts to resolve a value for the specified parameter. If the function fails to resolve a value and a default

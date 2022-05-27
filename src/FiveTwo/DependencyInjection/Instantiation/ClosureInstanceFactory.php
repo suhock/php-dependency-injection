@@ -9,7 +9,7 @@ namespace FiveTwo\DependencyInjection\Instantiation;
 
 use Closure;
 use FiveTwo\DependencyInjection\DependencyInjectionException;
-use FiveTwo\DependencyInjection\DependencyInjectorInterface;
+use FiveTwo\DependencyInjection\InjectorInterface;
 
 /**
  * @template TDependency
@@ -20,12 +20,12 @@ class ClosureInstanceFactory implements InstanceFactory
     /**
      * @param class-string<TDependency> $className
      * @param Closure $factory
-     * @param DependencyInjectorInterface $injector
+     * @param InjectorInterface $injector
      */
     public function __construct(
         private readonly string $className,
         private readonly Closure $factory,
-        private readonly DependencyInjectorInterface $injector
+        private readonly InjectorInterface $injector
     ) {
     }
 

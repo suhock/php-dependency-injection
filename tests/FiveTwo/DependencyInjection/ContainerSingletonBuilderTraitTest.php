@@ -15,13 +15,13 @@ use PHPUnit\Framework\TestCase;
 use RuntimeException;
 use Throwable;
 
-class SingletonContainerBuilderTraitTest extends TestCase
+class ContainerSingletonBuilderTraitTest extends TestCase
 {
-    private DependencyContainer $container;
+    private Container $container;
 
     protected function setUp(): void
     {
-        $this->container = new DependencyContainer();
+        $this->container = new Container();
     }
 
     /**
@@ -140,7 +140,7 @@ class SingletonContainerBuilderTraitTest extends TestCase
 
     public function testAddSingletonContainer(): void
     {
-        $this->container->addSingletonContainer(new class implements DependencyContainerInterface {
+        $this->container->addSingletonContainer(new class implements ContainerInterface {
             public function get(string $className): ?object
             {
                 return new $className();

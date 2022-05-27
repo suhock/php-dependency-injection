@@ -11,12 +11,18 @@ use Throwable;
 
 /**
  * @template TDependency
+ *
+ * Indicates that the dependency could not be resolved because it eventually depends on itself.
  */
 class CircularDependencyException extends DependencyInjectionException
 {
     /**
-     * @param class-string<TDependency> $className
-     * @param Throwable|null $previous
+     * @inheritDoc
+     *
+     * @param class-string<TDependency> $className The name of the class that could not be resolved
+     * @param null|Throwable $previous [optional] The previous throwable used for exception chaining. If the throwable
+     * is an instance of {@see DependencyInjectionException} then its content will be consolidated into the new
+     * instance.
      */
     public function __construct(
         private readonly string $className,
