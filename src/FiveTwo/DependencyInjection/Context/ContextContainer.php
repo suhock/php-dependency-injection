@@ -7,30 +7,44 @@ declare(strict_types=1);
 
 namespace FiveTwo\DependencyInjection\Context;
 
-use FiveTwo\DependencyInjection\Container;
-use FiveTwo\DependencyInjection\DependencyInjectionException;
+use Closure;
+use FiveTwo\DependencyInjection\ContainerInterface;
 use FiveTwo\DependencyInjection\InjectorInterface;
 use FiveTwo\DependencyInjection\InjectorProvider;
 use FiveTwo\DependencyInjection\UnresolvedClassException;
 
-class ContextContainer implements InjectorProvider
+/**
+ * @template TContainer of ContainerInterface
+ */
+class ContextContainer implements ContainerInterface, InjectorProvider
 {
     public const DEFAULT_CONTEXT_STACK = [Context::DEFAULT];
 
-    /** @var array<string, Container> */
+    private readonly InjectorInterface $injector;
+
+    /** @var array<string, TContainer> */
     private array $containers = [];
 
-    private InjectorInterface $injector;
+    /** @var list<string> */
+    private array $stack;
 
-    public function __construct()
-    {
+    /**
+     * @param Closure(InjectorProvider):TContainer $containerFactory
+     */
+    public function __construct(
+        private readonly Closure $containerFactory
+    ) {
         $this->injector = new ContextInjector($this);
         $this->containers[Context::DEFAULT] = $this->createContainer();
+        $this->resetStack();
     }
 
-    private function createContainer(): Container
+    /**
+     * @return TContainer
+     */
+    private function createContainer(): ContainerInterface
     {
-        return new Container($this);
+        return ($this->containerFactory)($this);
     }
 
     /**
@@ -41,34 +55,64 @@ class ContextContainer implements InjectorProvider
         return $this->injector;
     }
 
-    public function addContext(string $name, Container $container): static
+    /**
+     * @param string $name
+     *
+     * @return TContainer
+     */
+    public function context(string $name = Context::DEFAULT): ContainerInterface
     {
-        $this->containers[$name] = $container;
+        return $this->containers[$name] ??= $this->createContainer();
+    }
+
+    /**
+     * @param string $name
+     *
+     * @return $this
+     */
+    public function push(string $name): static
+    {
+        $this->stack[] = $name;
 
         return $this;
     }
 
-    public function getContext(string $name): Container
+    /**
+     * @return string
+     */
+    public function pop(): string
     {
-        return $this->containers[$name] ?? throw new DependencyInjectionException("Undefined container: $name");
+        return count($this->stack) > 1 ? array_pop($this->stack) : $this->stack[0];
     }
 
-    public function context(string $name = Context::DEFAULT): Container
+    /**
+     * @return list<string>
+     */
+    public function getStack(): array
     {
-        return $this->containers[$name] ??= $this->createContainer();
+        return $this->stack;
+    }
+
+    /**
+     * @return $this
+     */
+    public function resetStack(): static
+    {
+        $this->stack = [Context::DEFAULT];
+
+        return $this;
     }
 
     /**
      * @template TDependency
      *
      * @param class-string<TDependency> $className
-     * @param array<string> $contextStack
      *
-     * @return object|null
+     * @return TDependency|null
      */
-    public function get(string $className, array $contextStack = self::DEFAULT_CONTEXT_STACK): ?object
+    public function get(string $className): ?object
     {
-        for ($contextName = end($contextStack); $contextName !== false; $contextName = prev($contextStack)) {
+        for ($contextName = end($this->stack); key($this->stack) !== null; $contextName = prev($this->stack)) {
             if ($this->hasInContext($className, $contextName)) {
                 return $this->getFromContext($className, $contextName);
             }
@@ -81,13 +125,12 @@ class ContextContainer implements InjectorProvider
      * @template TDependency
      *
      * @param class-string<TDependency> $className
-     * @param array $contextStack
      *
      * @return bool
      */
-    public function has(string $className, array $contextStack = self::DEFAULT_CONTEXT_STACK): bool
+    public function has(string $className): bool
     {
-        for ($contextName = end($contextStack); $contextName !== false; $contextName = prev($contextStack)) {
+        for ($contextName = end($this->stack); key($this->stack) !== null; $contextName = prev($this->stack)) {
             if ($this->hasInContext($className, $contextName)) {
                 return true;
             }
@@ -102,7 +145,7 @@ class ContextContainer implements InjectorProvider
      * @param class-string<TDependency> $className
      * @param string $contextName
      *
-     * @return object|null
+     * @return TDependency|null
      */
     private function getFromContext(string $className, string $contextName): ?object
     {

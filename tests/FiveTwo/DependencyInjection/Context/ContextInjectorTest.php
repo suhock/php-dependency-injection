@@ -9,6 +9,8 @@ namespace FiveTwo\DependencyInjection\Context;
 
 use Exception;
 use FiveTwo\DependencyInjection\ConstructorTestClass;
+use FiveTwo\DependencyInjection\Container;
+use FiveTwo\DependencyInjection\InjectorProvider;
 use FiveTwo\DependencyInjection\NoConstructorTestClass;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
@@ -18,7 +20,7 @@ class ContextInjectorTest extends TestCase
 {
     public function testCall_NoContext(): void
     {
-        $container = new ContextContainer();
+        $container = $this->createContainer();
         $injector = $container->getInjector();
         $container->context()
             ->addSingletonInstance(NoConstructorTestClass::class, $instance = new NoConstructorTestClass());
@@ -28,7 +30,7 @@ class ContextInjectorTest extends TestCase
 
     public function testCall_ContextOverride(): void
     {
-        $container = new ContextContainer();
+        $container = $this->createContainer();
         $injector = $container->getInjector();
         $container->context()
             ->addSingletonInstance(NoConstructorTestClass::class, $instance0 = new NoConstructorTestClass());
@@ -64,7 +66,7 @@ class ContextInjectorTest extends TestCase
 
     public function testInstantiation_NoContext(): void
     {
-        $container = new ContextContainer();
+        $container = $this->createContainer();
         $injector = $container->getInjector();
         $container->context()->addSingletonClass(NoConstructorTestClass::class);
 
@@ -73,7 +75,7 @@ class ContextInjectorTest extends TestCase
 
     public function testInstantiation_ContextOverride(): void
     {
-        $container = new ContextContainer();
+        $container = $this->createContainer();
         $injector = $container->getInjector();
         $container->context()
             ->addSingletonInstance(Throwable::class, new Exception());
@@ -88,5 +90,13 @@ class ContextInjectorTest extends TestCase
 
         self::assertSame($throwable3, $injector->instantiate(ConstructorTestClass::class)->throwable);
         self::assertSame($runtime1, $injector->instantiate(ConstructorTestClass::class)->runtimeException);
+    }
+
+    /**
+     * @return ContextContainer<Container>
+     */
+    private function createContainer(): ContextContainer
+    {
+        return new ContextContainer(fn(InjectorProvider $injector) => new Container($injector));
     }
 }

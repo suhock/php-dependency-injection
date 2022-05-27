@@ -28,42 +28,56 @@ class ContextInjector implements InjectorInterface
      */
     protected function tryResolveParameter(ReflectionParameter $rParam, mixed &$paramValue): bool
     {
-        $contextStack = ContextContainer::DEFAULT_CONTEXT_STACK;
-        $rFunction = $rParam->getDeclaringFunction();
+        $contextCount = 0;
 
-        if ($rFunction instanceof ReflectionMethod)
-        {
-            self::addAttributes($contextStack, $rFunction->getDeclaringClass()->getAttributes(Context::class));
+        try {
+            $rFunction = $rParam->getDeclaringFunction();
+
+            if ($rFunction instanceof ReflectionMethod)
+            {
+                $contextCount += self::addAttributes(
+                    $rFunction->getDeclaringClass()->getAttributes(Context::class)
+                );
+            }
+
+            /** @psalm-suppress ArgumentTypeCoercion Psalm missing stub for ReflectionFunctionAbstract */
+            $contextCount += self::addAttributes($rFunction->getAttributes(Context::class));
+            $contextCount += self::addAttributes($rParam->getAttributes(Context::class));
+
+            if ($rParam->getType() instanceof ReflectionNamedType &&
+                !$rParam->getType()->isBuiltin() &&
+                $this->container->has($rParam->getType()->getName())) {
+                $paramValue = $this->container->get(
+                    $rParam->getType()->getName()
+                );
+
+                return true;
+            }
+
+            return false;
+        } finally {
+            while (--$contextCount >= 0) {
+                $this->container->pop();
+            }
         }
-
-        /** @psalm-suppress ArgumentTypeCoercion Psalm missing stub for ReflectionFunctionAbstract */
-        self::addAttributes($contextStack, $rFunction->getAttributes(Context::class));
-        self::addAttributes($contextStack, $rParam->getAttributes(Context::class));
-
-        if ($rParam->getType() instanceof ReflectionNamedType &&
-            !$rParam->getType()->isBuiltin() &&
-            $this->container->has($rParam->getType()->getName(), $contextStack)) {
-            $paramValue = $this->container->get($rParam->getType()->getName(), $contextStack);
-
-            return true;
-        }
-
-        return false;
     }
 
     /**
-     * @param array<string> $contextStack
      * @param array<ReflectionAttribute<Context>> $rAttributes
      *
-     * @return void
+     * @return int the number of contexts pushed onto the stack
      */
-    private static function addAttributes(array &$contextStack, array $rAttributes): void
+    private function addAttributes(array $rAttributes): int
     {
+        $count = 0;
+
         foreach (array_reverse($rAttributes) as $rAttribute) {
             foreach (array_reverse($rAttribute->getArguments()) as $name) {
-                /** @var string $name */
-                $contextStack[] = $name;
+                $this->container->push($name);
+                $count++;
             }
         }
+
+        return $count;
     }
 }
