@@ -11,26 +11,6 @@
             "email": "matt@fivetwo.org"
         }
     ],
-    "minimum-stability": "stable",
-    "required": {
-        "php": "^8.1"
-    },
-    "require-dev": {
-        "ext-mbstring": "*",
-        "ext-ctype":  "*",
-        "ext-intl": "*",
-        "fivetwo/remove-symfony-polyfill": "^8.1",
-        "friendsofphp/php-cs-fixer": ">=3.8.0",
-        "phpunit/phpunit": "^9.5",
-        "psalm/plugin-phpunit": ">=0.16",
-        "vimeo/psalm": ">=4.23.0"
-    },
-    "repositories": [
-        {
-            "type": "vcs",
-            "url": "https://github.com/fivetwo/remove-symfony-polyfill"
-        }
-    ],
     "autoload": {
         "psr-4": {
             "FiveTwo\\DependencyInjection\\": "src/FiveTwo/DependencyInjection/"
@@ -40,5 +20,28 @@
         "psr-4": {
             "FiveTwo\\DependencyInjection\\": "tests/FiveTwo/DependencyInjection/"
         }
+    },
+    "minimum-stability": "stable",
+    "required": {
+        "php": "^8.1"
+    },
+    "require-dev": {
+        "ext-mbstring": "*",
+        "ext-ctype":  "*",
+        "ext-intl": "*",
+        "fivetwo/remove-symfony-polyfill": "^8.1",
+        "friendsofphp/php-cs-fixer": "^3.8.0",
+        "phpunit/phpunit": "^9.5",
+        "psalm/plugin-phpunit": ">=0.16",
+        "vimeo/psalm": "^4.23"
+    },
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/fivetwo/remove-symfony-polyfill"
+        }
+    ],
+    "scripts": {
+        "test": "phpunit -c ."
     }
 }
