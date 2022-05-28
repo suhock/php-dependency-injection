@@ -18,14 +18,14 @@ class ClosureInstanceFactoryTest extends TestCase
     {
         $factory = new ClosureInstanceFactory(
             NoConstructorTestClass::class,
-            $factoryMethod = fn() => new NoConstructorTestClass(),
+            $factoryMethod = fn () => new NoConstructorTestClass(),
             $injector = $this->createMock(InjectorInterface::class)
         );
 
         $injector->expects($this->once())
             ->method('call')
             ->with($factoryMethod)
-            ->willReturnCallback(fn() => $factoryMethod());
+            ->willReturnCallback(fn () => $factoryMethod());
 
         self::assertInstanceOf(NoConstructorTestClass::class, $factory->get());
     }
@@ -34,14 +34,14 @@ class ClosureInstanceFactoryTest extends TestCase
     {
         $factory = new ClosureInstanceFactory(
             NoConstructorTestClass::class,
-            $factoryMethod = fn() => null,
+            $factoryMethod = fn () => null,
             $injector = $this->createMock(InjectorInterface::class)
         );
 
         $injector->expects($this->once())
             ->method('call')
             ->with($factoryMethod)
-            ->willReturnCallback(fn() => $factoryMethod());
+            ->willReturnCallback(fn () => $factoryMethod());
 
         self::assertNull($factory->get());
     }
@@ -50,16 +50,16 @@ class ClosureInstanceFactoryTest extends TestCase
     {
         $factory = new ClosureInstanceFactory(
             NoConstructorTestSubClass::class,
-            $factoryMethod = fn() => new NoConstructorTestClass(),
+            $factoryMethod = fn () => new NoConstructorTestClass(),
             $injector = $this->createMock(InjectorInterface::class)
         );
 
         $injector->expects($this->once())
             ->method('call')
             ->with($factoryMethod)
-            ->willReturn(fn() => $factoryMethod());
+            ->willReturn(fn () => $factoryMethod());
 
-        self::expectException(DependencyTypeException::class);
+        self::expectException(InstanceTypeException::class);
         $factory->get();
     }
 }

@@ -21,6 +21,7 @@ class Context
 {
     public const DEFAULT = '';
 
+    /** @var list<string> */
     private readonly array $names;
 
     public function __construct(string $name, string ...$names)
@@ -29,7 +30,7 @@ class Context
     }
 
     /**
-     * @return string[]
+     * @return list<string>
      */
     public function getNames(): array
     {

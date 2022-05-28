@@ -7,9 +7,9 @@ declare(strict_types=1);
 
 namespace FiveTwo\DependencyInjection;
 
-use FiveTwo\DependencyInjection\Instantiation\DependencyTypeException;
 use FiveTwo\DependencyInjection\Instantiation\ImplementationException;
 use FiveTwo\DependencyInjection\Instantiation\InstanceFactory;
+use FiveTwo\DependencyInjection\Instantiation\InstanceTypeException;
 
 /**
  * Provides convenience methods for adding singleton factories to a container.
@@ -57,7 +57,7 @@ interface ContainerSingletonBuilderInterface
      * @param TDependency|null $instance
      *
      * @return $this
-     * @throws DependencyTypeException
+     * @throws InstanceTypeException
      */
     public function addSingletonInstance(string $className, ?object $instance): static;
 

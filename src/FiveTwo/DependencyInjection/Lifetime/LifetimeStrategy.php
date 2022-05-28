@@ -34,5 +34,5 @@ abstract class LifetimeStrategy
      * @return TDependency|null
      * @psalm-param callable():(TDependency|null) $factory
      */
-    public abstract function get(callable $factory): ?object;
+    abstract public function get(callable $factory): ?object;
 }

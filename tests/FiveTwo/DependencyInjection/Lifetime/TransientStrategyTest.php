@@ -25,26 +25,25 @@ class TransientStrategyTest extends TestCase
     {
         self::assertInstanceOf(
             NoConstructorTestClass::class,
-            $this->strategy->get(fn() => new NoConstructorTestClass())
+            $this->strategy->get(fn () => new NoConstructorTestClass())
         );
     }
 
     public function testGet_NotSameInstance(): void
     {
         self::assertNotSame(
-            $this->strategy->get(fn() => new NoConstructorTestClass()),
-            $this->strategy->get(fn() => new NoConstructorTestClass())
+            $this->strategy->get(fn () => new NoConstructorTestClass()),
+            $this->strategy->get(fn () => new NoConstructorTestClass())
         );
     }
 
     public function testGet_Null(): void
     {
-        self::assertNull($this->strategy->get(fn() => null));
+        self::assertNull($this->strategy->get(fn () => null));
     }
 
     public function testGet_NullCalledTwice(): void
     {
-
         $stub = self::createMock(ContainerInterface::class);
         $stub->method('has')
             ->willReturn(true);
@@ -52,7 +51,7 @@ class TransientStrategyTest extends TestCase
             ->method('get')
             ->willReturn(null);
 
-        self::assertNull($this->strategy->get(fn() => $stub->get(NoConstructorTestClass::class)));
-        self::assertNull($this->strategy->get(fn() => $stub->get(NoConstructorTestClass::class)));
+        self::assertNull($this->strategy->get(fn () => $stub->get(NoConstructorTestClass::class)));
+        self::assertNull($this->strategy->get(fn () => $stub->get(NoConstructorTestClass::class)));
     }
 }

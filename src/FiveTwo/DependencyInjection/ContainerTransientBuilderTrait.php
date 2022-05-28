@@ -87,7 +87,7 @@ trait ContainerTransientBuilderTrait
      */
     public function addTransientContainer(ContainerInterface $container): static
     {
-        $this->addContainer($container, fn(string $className) => new TransientStrategy($className));
+        $this->addContainer($container, fn (string $className) => new TransientStrategy($className));
 
         return $this;
     }

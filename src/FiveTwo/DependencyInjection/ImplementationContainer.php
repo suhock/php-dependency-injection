@@ -44,7 +44,7 @@ class ImplementationContainer implements ContainerInterface
              * @param class-string<TInterface> $className
              * @return TInterface
              */
-            fn(string $className) => $this->injector->instantiate($className);
+            fn (string $className) => $this->injector->instantiate($className);
     }
 
     /**

@@ -9,15 +9,22 @@ namespace FiveTwo\DependencyInjection\Context;
 
 use FiveTwo\DependencyInjection\InjectorInterface;
 use FiveTwo\DependencyInjection\InjectorTrait;
+use InvalidArgumentException;
 use ReflectionAttribute;
 use ReflectionMethod;
 use ReflectionNamedType;
 use ReflectionParameter;
 
+/**
+ * Provides context-aware methods for injecting dependencies into function and constructor calls.
+ */
 class ContextInjector implements InjectorInterface
 {
     use InjectorTrait;
 
+    /**
+     * @param ContextContainer $container The container from which dependencies will be resolved
+     */
     public function __construct(
         private readonly ContextContainer $container
     ) {
@@ -33,8 +40,7 @@ class ContextInjector implements InjectorInterface
         try {
             $rFunction = $rParam->getDeclaringFunction();
 
-            if ($rFunction instanceof ReflectionMethod)
-            {
+            if ($rFunction instanceof ReflectionMethod) {
                 $contextCount += self::addAttributes(
                     $rFunction->getDeclaringClass()->getAttributes(Context::class)
                 );
@@ -72,9 +78,20 @@ class ContextInjector implements InjectorInterface
         $count = 0;
 
         foreach (array_reverse($rAttributes) as $rAttribute) {
+            /** @var mixed $name */
             foreach (array_reverse($rAttribute->getArguments()) as $name) {
-                $this->container->push($name);
-                $count++;
+                if (is_string($name)) {
+                    $this->container->push($name);
+                    $count++;
+                } else {
+                    while (--$count >= 0) {
+                        $this->container->pop();
+                    }
+
+                    throw new InvalidArgumentException(
+                        "Context arguments must be of type string, got " . gettype($name)
+                    );
+                }
             }
         }
 

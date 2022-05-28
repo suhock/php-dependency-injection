@@ -7,8 +7,8 @@ declare(strict_types=1);
 
 namespace FiveTwo\DependencyInjection;
 
-use FiveTwo\DependencyInjection\Instantiation\DependencyTypeException;
 use FiveTwo\DependencyInjection\Instantiation\ImplementationException;
+use FiveTwo\DependencyInjection\Instantiation\InstanceTypeException;
 use PHPUnit\Framework\TestCase;
 
 class ContainerTransientBuilderTestTrait extends TestCase
@@ -87,7 +87,7 @@ class ContainerTransientBuilderTestTrait extends TestCase
             $this->container,
             $this->container->addTransientFactory(
                 NoConstructorTestClass::class,
-                fn() => new NoConstructorTestSubClass()
+                fn () => new NoConstructorTestSubClass()
             )
         );
 
@@ -102,18 +102,19 @@ class ContainerTransientBuilderTestTrait extends TestCase
 
     public function testAddTransientFactory_WrongReturnType(): void
     {
-        $this->container->addTransientFactory(NoConstructorTestSubClass::class, fn() => new NoConstructorTestClass());
+        $this->container->addTransientFactory(NoConstructorTestSubClass::class, fn () => new NoConstructorTestClass());
         self::expectExceptionObject(
-            new DependencyTypeException(NoConstructorTestSubClass::class, new NoConstructorTestClass())
+            new InstanceTypeException(NoConstructorTestSubClass::class, new NoConstructorTestClass())
         );
         $this->container->get(NoConstructorTestSubClass::class);
     }
 
     public function testAddTransientContainer(): void
     {
-        $this->container->addTransientContainer(new class implements ContainerInterface {
+        $this->container->addTransientContainer(new class () implements ContainerInterface {
             public function get(string $className): ?object
             {
+                /** @psalm-suppress MixedMethodCall */
                 return new $className();
             }
 

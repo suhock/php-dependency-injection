@@ -79,6 +79,6 @@ class ContextContainerTest extends TestCase
      */
     private function createContainer(): ContextContainer
     {
-        return new ContextContainer(fn(InjectorProvider $injector) => new Container($injector));
+        return new ContextContainer(fn (InjectorProvider $injector) => new Container($injector));
     }
 }

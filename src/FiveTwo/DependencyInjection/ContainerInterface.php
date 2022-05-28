@@ -17,6 +17,7 @@ interface ContainerInterface
      * @param class-string<TDependency> $className The name of the class to retrieve
      *
      * @return TDependency|null An instance of {@see $className} or <code>null</code>
+     * @throws UnresolvedClassException If the container could not resolve a value for the specified class
      */
     public function get(string $className): ?object;
 

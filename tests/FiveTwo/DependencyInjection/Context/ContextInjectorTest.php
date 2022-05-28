@@ -25,7 +25,7 @@ class ContextInjectorTest extends TestCase
         $container->context()
             ->addSingletonInstance(NoConstructorTestClass::class, $instance = new NoConstructorTestClass());
 
-        self::assertSame($instance, $injector->call(fn(NoConstructorTestClass $obj) => $obj));
+        self::assertSame($instance, $injector->call(fn (NoConstructorTestClass $obj) => $obj));
     }
 
     public function testCall_ContextOverride(): void
@@ -40,26 +40,26 @@ class ContextInjectorTest extends TestCase
             ->addSingletonInstance(NoConstructorTestClass::class, $instance2 = new NoConstructorTestClass());
         $container->context('context3');
 
-        self::assertSame($instance0, $injector->call(fn(NoConstructorTestClass $obj) => $obj));
+        self::assertSame($instance0, $injector->call(fn (NoConstructorTestClass $obj) => $obj));
         self::assertSame(
             $instance1,
             $injector->call(
                 #[Context('context1')]
-                fn(NoConstructorTestClass $obj) => $obj
+                fn (NoConstructorTestClass $obj) => $obj
             )
         );
         self::assertSame(
             $instance2,
             $injector->call(
                 #[Context('context1')]
-                fn(#[Context('context2')] NoConstructorTestClass $obj) => $obj
+                fn (#[Context('context2')] NoConstructorTestClass $obj) => $obj
             )
         );
         self::assertSame(
             $instance1,
             $injector->call(
                 #[Context('context1')]
-                fn(#[Context('context3')] NoConstructorTestClass $obj) => $obj
+                fn (#[Context('context3')] NoConstructorTestClass $obj) => $obj
             )
         );
     }
@@ -97,6 +97,6 @@ class ContextInjectorTest extends TestCase
      */
     private function createContainer(): ContextContainer
     {
-        return new ContextContainer(fn(InjectorProvider $injector) => new Container($injector));
+        return new ContextContainer(fn (InjectorProvider $injector) => new Container($injector));
     }
 }

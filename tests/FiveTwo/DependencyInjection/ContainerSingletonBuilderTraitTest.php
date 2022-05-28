@@ -8,8 +8,8 @@ declare(strict_types=1);
 namespace FiveTwo\DependencyInjection;
 
 use Exception;
-use FiveTwo\DependencyInjection\Instantiation\DependencyTypeException;
 use FiveTwo\DependencyInjection\Instantiation\ImplementationException;
+use FiveTwo\DependencyInjection\Instantiation\InstanceTypeException;
 use LogicException;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
@@ -63,7 +63,7 @@ class ContainerSingletonBuilderTraitTest extends TestCase
     public function testAddSingletonInstance_WrongType(): void
     {
         self::expectExceptionObject(
-            new DependencyTypeException(NoConstructorTestSubClass::class, new NoConstructorTestClass())
+            new InstanceTypeException(NoConstructorTestSubClass::class, new NoConstructorTestClass())
         );
         $this->container->addSingletonInstance(NoConstructorTestSubClass::class, new NoConstructorTestClass());
     }
@@ -114,7 +114,7 @@ class ContainerSingletonBuilderTraitTest extends TestCase
             $this->container,
             $this->container->addSingletonFactory(
                 NoConstructorTestClass::class,
-                fn() => new NoConstructorTestSubClass()
+                fn () => new NoConstructorTestSubClass()
             )
         );
         $this->assertSingleton(NoConstructorTestClass::class, NoConstructorTestSubClass::class);
@@ -130,32 +130,23 @@ class ContainerSingletonBuilderTraitTest extends TestCase
     {
         $this->container->addSingletonFactory(
             NoConstructorTestClass::class,
-            fn() => new LogicException()
+            fn () => new LogicException()
         );
         self::expectExceptionObject(
-            new DependencyTypeException(NoConstructorTestClass::class, new LogicException())
+            new InstanceTypeException(NoConstructorTestClass::class, new LogicException())
         );
         $this->container->get(NoConstructorTestClass::class);
     }
 
     public function testAddSingletonContainer(): void
     {
-        $this->container->addSingletonContainer(new class implements ContainerInterface {
-            public function get(string $className): ?object
-            {
-                return new $className();
-            }
-
-            /**
-             * @param class-string $className
-             *
-             * @return bool
-             */
-            public function has(string $className): bool
-            {
-                return is_subclass_of($className, NoConstructorTestClass::class);
-            }
-        });
+        $this->container->addSingletonContainer(
+            $inner = self::createMock(ContainerInterface::class)
+        );
+        $inner->method('get')
+            ->willReturn(new NoConstructorTestSubClass());
+        $inner->method('has')
+            ->willReturnCallback(fn (string $className) => $className === NoConstructorTestSubClass::class);
 
         $this->assertSingleton(NoConstructorTestSubClass::class);
         self::expectExceptionObject(new UnresolvedClassException(NoConstructorTestClass::class));

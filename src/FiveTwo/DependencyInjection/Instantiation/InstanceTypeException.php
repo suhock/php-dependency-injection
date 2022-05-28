@@ -11,9 +11,11 @@ use FiveTwo\DependencyInjection\DependencyInjectionException;
 use Throwable;
 
 /**
+ * Indicates that the type returned by an {@see InstanceFactory} is different than expected.
+ *
  * @template TDependency
  */
-class DependencyTypeException extends DependencyInjectionException
+class InstanceTypeException extends DependencyInjectionException
 {
     /**
      * @inheritDoc
@@ -34,7 +36,7 @@ class DependencyTypeException extends DependencyInjectionException
                 is_object($actualValue) ?
                     'object of type ' . get_class($actualValue) :
                     gettype($this->actualValue)
-                ),
+            ),
             $previous
         );
     }

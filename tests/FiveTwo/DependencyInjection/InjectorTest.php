@@ -22,8 +22,7 @@ class InjectorTest extends TestCase
     protected function setUp(): void
     {
         $this->injector = new Injector(
-            new class($this) implements ContainerInterface
-            {
+            new class ($this) implements ContainerInterface {
                 public function __construct(private readonly InjectorTest $test)
                 {
                 }

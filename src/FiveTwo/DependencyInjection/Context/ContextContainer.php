@@ -14,22 +14,23 @@ use FiveTwo\DependencyInjection\InjectorProvider;
 use FiveTwo\DependencyInjection\UnresolvedClassException;
 
 /**
+ * Provides a {@see ContainerInterface} aggregate for resolving instances based on the current context.
+ *
  * @template TContainer of ContainerInterface
  */
 class ContextContainer implements ContainerInterface, InjectorProvider
 {
-    public const DEFAULT_CONTEXT_STACK = [Context::DEFAULT];
-
     private readonly InjectorInterface $injector;
 
     /** @var array<string, TContainer> */
     private array $containers = [];
 
     /** @var list<string> */
-    private array $stack;
+    private array $stack = [];
 
     /**
-     * @param Closure(InjectorProvider):TContainer $containerFactory
+     * @param Closure(InjectorProvider):TContainer $containerFactory A factory method for creating new container
+     * instances
      */
     public function __construct(
         private readonly Closure $containerFactory
@@ -48,7 +49,7 @@ class ContextContainer implements ContainerInterface, InjectorProvider
     }
 
     /**
-     * @return InjectorInterface
+     * @return InjectorInterface An injector backed by this container
      */
     public function getInjector(): InjectorInterface
     {
@@ -56,9 +57,12 @@ class ContextContainer implements ContainerInterface, InjectorProvider
     }
 
     /**
-     * @param string $name
+     * Returns a container by name. If the container does not already exist a new container instance with the specified
+     * name will be added.
      *
-     * @return TContainer
+     * @param string $name The name of the container
+     *
+     * @return TContainer The container identified by the specified name
      */
     public function context(string $name = Context::DEFAULT): ContainerInterface
     {
@@ -66,7 +70,9 @@ class ContextContainer implements ContainerInterface, InjectorProvider
     }
 
     /**
-     * @param string $name
+     * Pushes a context onto the current context stack by name.
+     *
+     * @param string $name The name of the context to push on the stack
      *
      * @return $this
      */
@@ -78,6 +84,9 @@ class ContextContainer implements ContainerInterface, InjectorProvider
     }
 
     /**
+     * Pops the most recently pushed context off the stack and returns it. The original default context will never be
+     * removed from the stack.
+     *
      * @return string
      */
     public function pop(): string
@@ -86,7 +95,7 @@ class ContextContainer implements ContainerInterface, InjectorProvider
     }
 
     /**
-     * @return list<string>
+     * @return list<string> The current context stack
      */
     public function getStack(): array
     {
@@ -94,6 +103,8 @@ class ContextContainer implements ContainerInterface, InjectorProvider
     }
 
     /**
+     * Resets the context stack to a state containing only the default context.
+     *
      * @return $this
      */
     public function resetStack(): static
@@ -104,11 +115,15 @@ class ContextContainer implements ContainerInterface, InjectorProvider
     }
 
     /**
+     * Retrieves an object or <code>null</code> from the container identified by its class name, prioritizing
+     * contexts by last pushed.
+     *
      * @template TDependency
      *
-     * @param class-string<TDependency> $className
+     * @param class-string<TDependency> $className The name of the class to retrieve
      *
-     * @return TDependency|null
+     * @return TDependency|null An instance of {@see $className} or <code>null</code>
+     * @throws UnresolvedClassException If a value could not be resolved for the class
      */
     public function get(string $className): ?object
     {
@@ -122,11 +137,7 @@ class ContextContainer implements ContainerInterface, InjectorProvider
     }
 
     /**
-     * @template TDependency
-     *
-     * @param class-string<TDependency> $className
-     *
-     * @return bool
+     * @inheritDoc
      */
     public function has(string $className): bool
     {

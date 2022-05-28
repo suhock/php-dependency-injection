@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace FiveTwo\DependencyInjection\Instantiation;
 
 /**
- * Provides instances from an existing instance.
+ * Provides an existing instance.
  *
  * @template TDependency
  * @template-implements InstanceFactory<TDependency>
@@ -16,22 +16,23 @@ namespace FiveTwo\DependencyInjection\Instantiation;
 class ObjectInstanceFactory implements InstanceFactory
 {
     /**
-     * @param class-string<TDependency> $className
-     * @param TDependency|null $instance
+     * @param class-string<TDependency> $className The name of the class or interface provided
+     * @param TDependency|null $instance An instance of the indicated class, or <code>null</code>
      *
-     * @throws DependencyTypeException
+     * @throws InstanceTypeException
      */
     public function __construct(
         string $className,
         private readonly ?object $instance
     ) {
         if ($instance !== null && !$instance instanceof $className) {
-            throw new DependencyTypeException($className, $instance);
+            throw new InstanceTypeException($className, $instance);
         }
     }
 
     /**
-     * @return TDependency|null
+     * @inheritDoc
+     * @return TDependency|null An instance of the class or <code>null</code>
      */
     public function get(): ?object
     {

@@ -7,12 +7,11 @@ declare(strict_types=1);
 
 namespace FiveTwo\DependencyInjection\Instantiation;
 
-use FiveTwo\DependencyInjection\CircularDependencyException;
 use FiveTwo\DependencyInjection\ContainerInterface;
 use FiveTwo\DependencyInjection\UnresolvedClassException;
 
 /**
- * Provides a concrete implementation for a given interface or class.
+ * Provides a concrete implementation for a given interface or class from a container.
  *
  * @template TDependency
  * @template TImplementation of TDependency
@@ -22,8 +21,8 @@ class ImplementationInstanceFactory implements InstanceFactory
 {
     /**
      * @param class-string<TDependency> $className The name of the class or interface provided
-     * @param class-string<TImplementation> $implementationClassName The name of the class providing the concrete
-     * implementation
+     * @param class-string<TImplementation> $implementationClassName The name of the class providing the implementation
+     * instance
      *
      * @throws ImplementationException If {@see $implementationClassName} is not a subclass of {@see $className}
      */
@@ -38,10 +37,9 @@ class ImplementationInstanceFactory implements InstanceFactory
     }
 
     /**
-     * @return TDependency|null
-     * @throws ImplementationException
-     * @throws CircularDependencyException
-     * @throws UnresolvedClassException
+     * @inheritDoc
+     * @return TDependency|null An instance of the class or <code>null</code>
+     * @throws UnresolvedClassException If the container could not resolve a value for the specified class
      */
     public function get(): ?object
     {

@@ -7,7 +7,6 @@ declare(strict_types=1);
 
 namespace FiveTwo\DependencyInjection;
 
-use Closure;
 use FiveTwo\DependencyInjection\Instantiation\InstanceFactory;
 use FiveTwo\DependencyInjection\Lifetime\LifetimeStrategy;
 
@@ -83,7 +82,7 @@ class Container implements
     /**
      * @inheritDoc
      */
-    public function addContainer(ContainerInterface $container, Closure $lifetimeStrategyFactory): static
+    public function addContainer(ContainerInterface $container, callable $lifetimeStrategyFactory): static
     {
         $this->containers[] = new ContainerDescriptor($container, $this->injector, $lifetimeStrategyFactory);
 
@@ -94,7 +93,6 @@ class Container implements
      * @inheritDoc
      * @throws CircularDependencyException
      * @throws UnresolvedClassException
-     * @throws DependencyInjectionException
      */
     public function get(string $className): ?object
     {
@@ -129,9 +127,22 @@ class Container implements
             return false;
         }
 
-        $instance = $this->factories[$className]->getDependency();
+        $instance = $this->getFactory($className)->getDependency();
 
         return true;
+    }
+
+    /**
+     * @template TDependency
+     *
+     * @param class-string<TDependency> $className
+     *
+     * @return Descriptor<TDependency>
+     * @psalm-suppress MixedReturnTypeCoercion can't property track type in array
+     */
+    private function getFactory(string $className): Descriptor
+    {
+        return $this->factories[$className];
     }
 
     /**

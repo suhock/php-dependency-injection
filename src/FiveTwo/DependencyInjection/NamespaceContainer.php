@@ -45,7 +45,7 @@ class NamespaceContainer implements ContainerInterface
              * @param class-string $className
              * @return object
              */
-            fn(string $className) => $this->injector->instantiate($className);
+            fn (string $className) => $this->injector->instantiate($className);
     }
 
     /**

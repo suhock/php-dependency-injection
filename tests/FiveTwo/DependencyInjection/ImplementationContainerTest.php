@@ -26,7 +26,7 @@ class ImplementationContainerTest extends TestCase
             NoConstructorTestClass::class,
             $injector,
             /** @param class-string $className */
-            fn(string $className) => $injector->instantiate($className)
+            fn (string $className) => $injector->instantiate($className)
         );
 
         self::assertInstanceOf(
@@ -38,7 +38,9 @@ class ImplementationContainerTest extends TestCase
     public function testGet_SameClass(): void
     {
         $container = new ImplementationContainer(
-            NoConstructorTestClass::class, self::createMock(InjectorInterface::class), fn() => null
+            NoConstructorTestClass::class,
+            self::createMock(InjectorInterface::class),
+            fn () => null
         );
 
         self::expectException(UnresolvedClassException::class);
@@ -48,7 +50,9 @@ class ImplementationContainerTest extends TestCase
     public function testGet_NotSubclass(): void
     {
         $container = new ImplementationContainer(
-            NoConstructorTestClass::class, self::createMock(InjectorInterface::class), fn() => null
+            NoConstructorTestClass::class,
+            self::createMock(InjectorInterface::class),
+            fn () => null
         );
 
         self::expectException(UnresolvedClassException::class);
@@ -59,7 +63,9 @@ class ImplementationContainerTest extends TestCase
     public function testHas(): void
     {
         $container = new ImplementationContainer(
-            NoConstructorTestClass::class, self::createMock(InjectorInterface::class), fn() => null
+            NoConstructorTestClass::class,
+            self::createMock(InjectorInterface::class),
+            fn () => null
         );
 
         self::assertTrue($container->has(NoConstructorTestSubClass::class));

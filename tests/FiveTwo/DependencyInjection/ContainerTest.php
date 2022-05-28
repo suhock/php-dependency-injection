@@ -24,11 +24,14 @@ class ContainerTest extends TestCase
     {
         $container = self::createMock(ContainerInterface::class);
         $container->method('get')->willReturnCallback(
-            /** @param class-string $className */
-            fn(string $className) => new $className()
+            /**
+             * @param class-string $className
+             * @psalm-suppress MixedMethodCall
+             */
+            fn (string $className) => new $className()
         );
         $container->method('has')
-            ->willReturnCallback(fn(string $className) => is_subclass_of($className, NoConstructorTestClass::class));
+            ->willReturnCallback(fn (string $className) => is_subclass_of($className, NoConstructorTestClass::class));
 
         return $container;
     }
@@ -53,7 +56,7 @@ class ContainerTest extends TestCase
         $goodInstance = new NoConstructorTestSubClass();
         $this->container->addSingletonFactory(
             NoConstructorTestSubClass::class,
-            fn() => $goodInstance
+            fn () => $goodInstance
         );
 
         /** @psalm-suppress PossiblyInvalidArgument can't use intersection types yet with Psalm */
@@ -80,7 +83,7 @@ class ContainerTest extends TestCase
         $this->container->addSingletonNamespace(__NAMESPACE__);
         $this->container->addSingletonFactory(
             NoConstructorTestClass::class,
-            fn() => new NoConstructorTestSubClass()
+            fn () => new NoConstructorTestSubClass()
         );
 
         self::assertSame($goodInstance, $this->container->get(NoConstructorTestSubClass::class));
@@ -94,7 +97,7 @@ class ContainerTest extends TestCase
 
     public function testGet_CircularDependency(): void
     {
-        $this->container->addSingletonFactory(NoConstructorTestClass::class, fn(NoConstructorTestClass $obj) => $obj);
+        $this->container->addSingletonFactory(NoConstructorTestClass::class, fn (NoConstructorTestClass $obj) => $obj);
         self::expectExceptionObject(new UnresolvedParameterException(
             'Closure::__invoke',
             'obj',
@@ -118,7 +121,7 @@ class ContainerTest extends TestCase
 
     public function testHas_FromFactory(): void
     {
-        $this->container->addSingletonFactory(NoConstructorTestClass::class, fn() => new NoConstructorTestClass());
+        $this->container->addSingletonFactory(NoConstructorTestClass::class, fn () => new NoConstructorTestClass());
         self::assertTrue($this->container->has(NoConstructorTestClass::class));
         self::assertFalse($this->container->has(NoConstructorTestSubClass::class));
     }

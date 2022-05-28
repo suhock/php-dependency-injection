@@ -7,10 +7,12 @@ declare(strict_types=1);
 
 namespace FiveTwo\DependencyInjection;
 
-use Closure;
 use FiveTwo\DependencyInjection\Instantiation\InstanceFactory;
 use FiveTwo\DependencyInjection\Lifetime\LifetimeStrategy;
 
+/**
+ * @psalm-import-type LifetimeStrategyFactory from ContainerDescriptor
+ */
 interface ContainerBuilderInterface
 {
     /**
@@ -34,11 +36,13 @@ interface ContainerBuilderInterface
      * Adds a nested container with a factory for generating lifetime strategies to manage instances within
      * <em>this</em> container. Nested containers are searched sequentially in the order they are added.
      *
-     * @param ContainerInterface $container The nested container to add
-     * @param Closure(class-string):LifetimeStrategy $lifetimeStrategyFactory A factory methods for generating lifetime
-     * strategies to manage instances within the container being built
+     * @template T
      *
+     * @param ContainerInterface $container The nested container to add
+     * @param callable $lifetimeStrategyFactory A factory methods for generating lifetime strategies to manage instances
+     * within the container being built
+     * @psalm-param LifetimeStrategyFactory $lifetimeStrategyFactory
      * @return $this
      */
-    public function addContainer(ContainerInterface $container, Closure $lifetimeStrategyFactory): static;
+    public function addContainer(ContainerInterface $container, callable $lifetimeStrategyFactory): static;
 }

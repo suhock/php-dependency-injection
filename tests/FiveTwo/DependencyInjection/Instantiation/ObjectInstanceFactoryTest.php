@@ -45,7 +45,7 @@ class ObjectInstanceFactoryTest extends TestCase
 
     public function testGet_WrongClass(): void
     {
-        self::expectException(DependencyTypeException::class);
+        self::expectException(InstanceTypeException::class);
         new ObjectInstanceFactory(
             NoConstructorTestSubClass::class,
             new NoConstructorTestClass()

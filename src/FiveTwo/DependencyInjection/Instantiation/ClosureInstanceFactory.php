@@ -12,15 +12,17 @@ use FiveTwo\DependencyInjection\DependencyInjectionException;
 use FiveTwo\DependencyInjection\InjectorInterface;
 
 /**
+ * A factory for providing instances using a factory method.
+ *
  * @template TDependency
  * @template-implements InstanceFactory<TDependency>
  */
 class ClosureInstanceFactory implements InstanceFactory
 {
     /**
-     * @param class-string<TDependency> $className
-     * @param Closure $factory
-     * @param InjectorInterface $injector
+     * @param class-string<TDependency> $className The name of the class this factory will provide
+     * @param Closure $factory The factory that will be used for providing instances
+     * @param InjectorInterface $injector The injector that will be used for invoking the factory method
      */
     public function __construct(
         private readonly string $className,
@@ -30,8 +32,9 @@ class ClosureInstanceFactory implements InstanceFactory
     }
 
     /**
-     * @return TDependency|null
-     * @throws DependencyTypeException
+     * @inheritDoc
+     * @return TDependency|null An instance of the class or <code>null</code>
+     * @throws InstanceTypeException
      * @throws DependencyInjectionException
      */
     public function get(): ?object
@@ -39,7 +42,7 @@ class ClosureInstanceFactory implements InstanceFactory
         $result = $this->injector->call($this->factory);
 
         if ($result !== null && !$result instanceof $this->className) {
-            throw new DependencyTypeException($this->className, $result);
+            throw new InstanceTypeException($this->className, $result);
         }
 
         return $result;

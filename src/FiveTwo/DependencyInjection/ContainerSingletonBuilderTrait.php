@@ -9,10 +9,10 @@ namespace FiveTwo\DependencyInjection;
 
 use FiveTwo\DependencyInjection\Instantiation\ClassInstanceFactory;
 use FiveTwo\DependencyInjection\Instantiation\ClosureInstanceFactory;
-use FiveTwo\DependencyInjection\Instantiation\DependencyTypeException;
 use FiveTwo\DependencyInjection\Instantiation\ImplementationException;
 use FiveTwo\DependencyInjection\Instantiation\ImplementationInstanceFactory;
 use FiveTwo\DependencyInjection\Instantiation\InstanceFactory;
+use FiveTwo\DependencyInjection\Instantiation\InstanceTypeException;
 use FiveTwo\DependencyInjection\Instantiation\ObjectInstanceFactory;
 use FiveTwo\DependencyInjection\Lifetime\SingletonStrategy;
 
@@ -90,7 +90,7 @@ trait ContainerSingletonBuilderTrait
      * @param TDependency|null $instance
      *
      * @return $this
-     * @throws DependencyTypeException
+     * @throws InstanceTypeException
      */
     public function addSingletonInstance(string $className, ?object $instance): static
     {
@@ -109,7 +109,7 @@ trait ContainerSingletonBuilderTrait
      */
     public function addSingletonContainer(ContainerInterface $container): static
     {
-        $this->addContainer($container, fn(string $className) => new SingletonStrategy($className));
+        $this->addContainer($container, fn (string $className) => new SingletonStrategy($className));
 
         return $this;
     }

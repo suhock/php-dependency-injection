@@ -13,19 +13,25 @@ use FiveTwo\DependencyInjection\Lifetime\LifetimeStrategy;
 
 /**
  * @internal
+ * @psalm-type LifetimeStrategyFactory = callable(class-string):LifetimeStrategy
  */
 class ContainerDescriptor
 {
+    /** @var Closure(class-string):LifetimeStrategy */
+    private readonly Closure $lifetimeStrategyFactory;
+
     /**
      * @param ContainerInterface $container
      * @param InjectorInterface $injector
-     * @param Closure(class-string):LifetimeStrategy $lifetimeStrategyFactory
+     * @param callable $lifetimeStrategyFactory
+     * @psalm-param LifetimeStrategyFactory $lifetimeStrategyFactory
      */
     public function __construct(
         private readonly ContainerInterface $container,
         private readonly InjectorInterface $injector,
-        private readonly Closure $lifetimeStrategyFactory
+        callable $lifetimeStrategyFactory
     ) {
+        $this->lifetimeStrategyFactory = $lifetimeStrategyFactory(...);
     }
 
     /**
@@ -44,14 +50,27 @@ class ContainerDescriptor
 
         $container->add(
             $className,
-            ($this->lifetimeStrategyFactory)($className),
+            $this->createLifetimeStrategy($className),
             new ClosureInstanceFactory(
                 $className,
-                fn() => $this->container->get($className),
+                fn () => $this->container->get($className),
                 $this->injector
             )
         );
 
         return true;
+    }
+
+    /**
+     * @template TDependency
+     *
+     * @param class-string<TDependency> $className
+     *
+     * @return LifetimeStrategy<TDependency>
+     * @psalm-suppress MixedReturnTypeCoercion
+     */
+    private function createLifetimeStrategy(string $className): LifetimeStrategy
+    {
+        return ($this->lifetimeStrategyFactory)($className);
     }
 }
