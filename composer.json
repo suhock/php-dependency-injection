@@ -33,13 +33,9 @@
         "psalm/plugin-phpunit": ">=0.16",
         "vimeo/psalm": "^4.23"
     },
-    "repositories": [
-        {
-            "type": "vcs",
-            "url": "https://github.com/fivetwo/remove-symfony-polyfill"
-        }
-    ],
     "scripts": {
+        "phpstan": "phpstan analyse -c phpstan.neon",
+        "psalm": "psalm --show-info=true -c psalm.xml",
         "test": "phpunit -c ."
     }
 }
