@@ -7,8 +7,8 @@ declare(strict_types=1);
 
 namespace FiveTwo\DependencyInjection\Instantiation;
 
-use FiveTwo\DependencyInjection\NoConstructorTestClass;
-use FiveTwo\DependencyInjection\NoConstructorTestSubClass;
+use FiveTwo\DependencyInjection\FakeNoConstructorClass;
+use FiveTwo\DependencyInjection\FakeNoConstructorSubclass;
 use PHPUnit\Framework\TestCase;
 
 class ObjectInstanceFactoryTest extends TestCase
@@ -16,8 +16,8 @@ class ObjectInstanceFactoryTest extends TestCase
     public function testGet(): void
     {
         $factory = new ObjectInstanceFactory(
-            NoConstructorTestClass::class,
-            $instance = new NoConstructorTestClass()
+            FakeNoConstructorClass::class,
+            $instance = new FakeNoConstructorClass()
         );
 
         self::assertSame($instance, $factory->get());
@@ -26,7 +26,7 @@ class ObjectInstanceFactoryTest extends TestCase
     public function testGet_Null(): void
     {
         $factory = new ObjectInstanceFactory(
-            NoConstructorTestClass::class,
+            FakeNoConstructorClass::class,
             null
         );
 
@@ -36,8 +36,8 @@ class ObjectInstanceFactoryTest extends TestCase
     public function testGet_SubClass(): void
     {
         $factory = new ObjectInstanceFactory(
-            NoConstructorTestClass::class,
-            $instance = new NoConstructorTestSubClass()
+            FakeNoConstructorClass::class,
+            $instance = new FakeNoConstructorSubclass()
         );
 
         self::assertSame($instance, $factory->get());
@@ -47,8 +47,8 @@ class ObjectInstanceFactoryTest extends TestCase
     {
         self::expectException(InstanceTypeException::class);
         new ObjectInstanceFactory(
-            NoConstructorTestSubClass::class,
-            new NoConstructorTestClass()
+            FakeNoConstructorSubclass::class,
+            new FakeNoConstructorClass()
         );
     }
 }

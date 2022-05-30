@@ -13,14 +13,14 @@ use Throwable;
 /**
  * Indicates that the type returned by an {@see InstanceFactory} is different than expected.
  *
- * @template TDependency
+ * @template TExpected of object
  */
 class InstanceTypeException extends DependencyInjectionException
 {
     /**
      * @inheritDoc
      *
-     * @param class-string<TDependency> $expectedClassName The name of the expected class
+     * @param class-string<TExpected> $expectedClassName The name of the expected class
      * @param mixed $actualValue The value actually received
      * @param null|Throwable $previous [optional] The previous throwable used for exception chaining. If the throwable
      * is an instance of {@see DependencyInjectionException} then its content will be consolidated into the new
@@ -42,7 +42,7 @@ class InstanceTypeException extends DependencyInjectionException
     }
 
     /**
-     * @return class-string<TDependency> The name of the expected class
+     * @return class-string<TExpected> The name of the expected class
      */
     public function getExpectedClassName(): string
     {

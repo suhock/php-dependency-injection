@@ -25,7 +25,7 @@ class Container implements
 
     private InjectorInterface $injector;
 
-    /** @var array<class-string, Descriptor> */
+    /** @var array<class-string, Descriptor<object>> */
     private array $factories = [];
 
     /** @var array<ContainerDescriptor> */
@@ -81,6 +81,9 @@ class Container implements
 
     /**
      * @inheritDoc
+     *
+     * @phpstan-ignore-next-line PHPStan does not support callable-level generics but complains that LifetimeStrategy
+     * does not have its generic type specified
      */
     public function addContainer(ContainerInterface $container, callable $lifetimeStrategyFactory): static
     {
@@ -113,10 +116,10 @@ class Container implements
     }
 
     /**
-     * @template TDependency
+     * @template TClass of object
      *
-     * @param class-string<TDependency> $className
-     * @param TDependency|null $instance
+     * @param class-string<TClass> $className
+     * @param TClass|null $instance
      *
      * @return bool
      * @throws CircularDependencyException
@@ -127,28 +130,32 @@ class Container implements
             return false;
         }
 
-        $instance = $this->getFactory($className)->getDependency();
+        $instance = $this->getFactory($className)->getInstance();
 
         return true;
     }
 
     /**
-     * @template TDependency
+     * @template TClass of object
      *
-     * @param class-string<TDependency> $className
+     * @param class-string<TClass> $className
      *
-     * @return Descriptor<TDependency>
-     * @psalm-suppress MixedReturnTypeCoercion can't property track type in array
+     * @return Descriptor<TClass>
+     * @psalm-suppress InvalidReturnType Psalm does not support class-mapped arrays
      */
     private function getFactory(string $className): Descriptor
     {
+        /**
+         * @psalm-suppress InvalidReturnStatement Psalm does not support class-mapped arrays
+         * @phpstan-ignore-next-line PHPStan does not support class-mapped arrays
+         */
         return $this->factories[$className];
     }
 
     /**
-     * @template TDependency
+     * @template TClass of object
      *
-     * @param class-string<TDependency> $className
+     * @param class-string<TClass> $className
      *
      * @return bool
      */
@@ -158,10 +165,10 @@ class Container implements
     }
 
     /**
-     * @template TDependency as object
+     * @template TClass as object
      *
-     * @param class-string<TDependency> $className
-     * @param TDependency|null $instance
+     * @param class-string<TClass> $className
+     * @param TClass|null $instance
      *
      * @return bool
      * @throws CircularDependencyException
@@ -173,16 +180,16 @@ class Container implements
     }
 
     /**
-     * @template TDependency
+     * @template TClass of object
      *
-     * @param class-string<TDependency> $className
+     * @param class-string<TClass> $className
      *
      * @return bool
      */
     private function hasContainer(string $className): bool
     {
         foreach ($this->containers as $containerDescriptor) {
-            if ($containerDescriptor->tryAddDependency($className, $this)) {
+            if ($containerDescriptor->tryAdd($className, $this)) {
                 return true;
             }
         }

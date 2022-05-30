@@ -7,23 +7,25 @@ declare(strict_types=1);
 
 namespace FiveTwo\DependencyInjection\Context;
 
+use FiveTwo\DependencyInjection\InjectorHelper;
 use FiveTwo\DependencyInjection\InjectorInterface;
 use FiveTwo\DependencyInjection\InjectorTrait;
 use InvalidArgumentException;
 use ReflectionAttribute;
 use ReflectionMethod;
-use ReflectionNamedType;
 use ReflectionParameter;
 
 /**
  * Provides context-aware methods for injecting dependencies into function and constructor calls.
+ *
+ * @template TContainer of \FiveTwo\DependencyInjection\ContainerInterface
  */
 class ContextInjector implements InjectorInterface
 {
     use InjectorTrait;
 
     /**
-     * @param ContextContainer $container The container from which dependencies will be resolved
+     * @param ContextContainer<TContainer> $container The container from which dependencies will be resolved
      */
     public function __construct(
         private readonly ContextContainer $container
@@ -50,12 +52,10 @@ class ContextInjector implements InjectorInterface
             $contextCount += self::addAttributes($rFunction->getAttributes(Context::class));
             $contextCount += self::addAttributes($rParam->getAttributes(Context::class));
 
-            if ($rParam->getType() instanceof ReflectionNamedType &&
-                !$rParam->getType()->isBuiltin() &&
-                $this->container->has($rParam->getType()->getName())) {
-                $paramValue = $this->container->get(
-                    $rParam->getType()->getName()
-                );
+            $className = InjectorHelper::getClassNameFromParameter($rParam);
+
+            if ($className !== null && $this->container->has($className)) {
+                $paramValue = $this->container->get($className);
 
                 return true;
             }
@@ -89,7 +89,7 @@ class ContextInjector implements InjectorInterface
                     }
 
                     throw new InvalidArgumentException(
-                        "Context arguments must be of type string, got " . gettype($name)
+                        'Context arguments must be of type string, got ' . gettype($name)
                     );
                 }
             }

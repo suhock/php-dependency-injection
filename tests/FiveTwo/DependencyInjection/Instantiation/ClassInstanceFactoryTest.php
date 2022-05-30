@@ -7,8 +7,8 @@ declare(strict_types=1);
 
 namespace FiveTwo\DependencyInjection\Instantiation;
 
+use FiveTwo\DependencyInjection\FakeNoConstructorClass;
 use FiveTwo\DependencyInjection\InjectorInterface;
-use FiveTwo\DependencyInjection\NoConstructorTestClass;
 use PHPUnit\Framework\TestCase;
 
 class ClassInstanceFactoryTest extends TestCase
@@ -16,14 +16,14 @@ class ClassInstanceFactoryTest extends TestCase
     public function testGet(): void
     {
         $factory = new ClassInstanceFactory(
-            NoConstructorTestClass::class,
+            FakeNoConstructorClass::class,
             $injector = $this->createMock(InjectorInterface::class)
         );
 
-        $injector->expects($this->once())
+        $injector->expects(self::once())
             ->method('instantiate')
-            ->willReturn(new NoConstructorTestClass());
+            ->willReturn(new FakeNoConstructorClass());
 
-        self::assertInstanceOf(NoConstructorTestClass::class, $factory->get());
+        self::assertInstanceOf(FakeNoConstructorClass::class, $factory->get());
     }
 }

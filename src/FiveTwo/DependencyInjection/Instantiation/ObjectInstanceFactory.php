@@ -10,14 +10,14 @@ namespace FiveTwo\DependencyInjection\Instantiation;
 /**
  * Provides an existing instance.
  *
- * @template TDependency
- * @template-implements InstanceFactory<TDependency>
+ * @template TClass of object
+ * @template-implements InstanceFactory<TClass>
  */
 class ObjectInstanceFactory implements InstanceFactory
 {
     /**
-     * @param class-string<TDependency> $className The name of the class or interface provided
-     * @param TDependency|null $instance An instance of the indicated class, or <code>null</code>
+     * @param class-string<TClass> $className The name of the class or interface provided
+     * @param TClass|null $instance An instance of the indicated class, or <code>null</code>
      *
      * @throws InstanceTypeException
      */
@@ -32,7 +32,7 @@ class ObjectInstanceFactory implements InstanceFactory
 
     /**
      * @inheritDoc
-     * @return TDependency|null An instance of the class or <code>null</code>
+     * @return TClass|null An instance of the class or <code>null</code>
      */
     public function get(): ?object
     {

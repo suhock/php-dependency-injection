@@ -16,35 +16,45 @@ use FiveTwo\DependencyInjection\Instantiation\InstanceFactory;
 interface ContainerTransientBuilderInterface
 {
     /**
-     * @template TDependency
+     * @template TClass of object
      *
-     * @param class-string<TDependency> $className
-     * @param InstanceFactory<TDependency> $instanceFactory
+     * @param class-string<TClass> $className
+     * @param InstanceFactory<TClass> $instanceFactory
      *
      * @return $this
      */
     public function addTransient(string $className, InstanceFactory $instanceFactory): static;
 
     /**
-     * @template TDependency
-     * @template TImplementation of TDependency
+     * @template TClass of object
      *
-     * @param class-string<TDependency> $className
-     * @param class-string<TImplementation>|'' $implementationClassName
+     * @param class-string<TClass> $className
      *
      * @return $this
      * @throws ImplementationException
      */
-    public function addTransientClass(string $className, string $implementationClassName = ''): static;
+    public function addTransientClass(string $className): static;
 
     /**
-     * @template TDependency
+     * @template TClass of object
+     * @template TImplementation of TClass
      *
-     * @param class-string<TDependency> $className
-     * @param callable():TDependency $factory
+     * @param class-string<TClass> $className
+     * @param class-string<TImplementation> $implementationClassName
      *
      * @return $this
-     * @psalm-param callable(...):(TDependency|null) $factory
+     * @throws ImplementationException
+     */
+    public function addTransientImplementation(string $className, string $implementationClassName): static;
+
+    /**
+     * @template TClass of object
+     *
+     * @param class-string<TClass> $className
+     * @param callable():TClass $factory
+     *
+     * @return $this
+     * @psalm-param callable(...):(TClass|null) $factory
      */
     public function addTransientFactory(string $className, callable $factory): static;
 
@@ -63,7 +73,7 @@ interface ContainerTransientBuilderInterface
     public function addTransientNamespace(string $namespace): static;
 
     /**
-     * @template TInterface
+     * @template TInterface of object
      *
      * @param class-string<TInterface> $interfaceName
      *

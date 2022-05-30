@@ -15,8 +15,12 @@ interface InjectorInterface
     /**
      * Calls the specified function, injecting any function parameter values.
      *
-     * @param callable $function The function to call
-     * @param array $params [optional] A list of parameter values to provide to the function. String keys will be
+     * @template TReturn
+     *
+     * @param callable():TReturn $function The function to call
+     * @psalm-param callable(mixed ...):TReturn $function
+     * @phpstan-param callable(mixed ...):TReturn $function
+     * @param array<mixed> $params [optional] A list of parameter values to provide to the function. String keys will be
      * matched by name; integer keys will be matched by position.
      *
      * @return mixed The value returned by the function
@@ -28,11 +32,11 @@ interface InjectorInterface
     /**
      * Creates a new instance of the specified class, injecting any constructor parameter values.
      *
-     * @template T
+     * @template T of object
      *
      * @param class-string<T> $className The name of the class to instantiate
-     * @param array $params [optional] A list of parameter values to provide to the constructor. String keys will be
-     * matched by name; integer keys will be matched by position.
+     * @param array<mixed> $params [optional] A list of parameter values to provide to the constructor. String keys will
+     * be matched by name; integer keys will be matched by position.
      *
      * @return T A new instance of the specified class
      * @throws DependencyInjectionException If there was an error resolving values for the constructor parameters or

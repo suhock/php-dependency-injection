@@ -8,8 +8,8 @@ declare(strict_types=1);
 namespace FiveTwo\DependencyInjection\Context;
 
 use FiveTwo\DependencyInjection\Container;
+use FiveTwo\DependencyInjection\FakeNoConstructorClass;
 use FiveTwo\DependencyInjection\InjectorProvider;
-use FiveTwo\DependencyInjection\NoConstructorTestClass;
 use PHPUnit\Framework\TestCase;
 
 class ContextContainerTest extends TestCase
@@ -17,46 +17,63 @@ class ContextContainerTest extends TestCase
     public function testGet_DefaultOnly(): void
     {
         $container = $this->createContainer();
-        $container->context()->addSingletonInstance(
-            NoConstructorTestClass::class,
-            $instance = new NoConstructorTestClass()
+        $container->context('default')->addSingletonInstance(
+            FakeNoConstructorClass::class,
+            $instance = new FakeNoConstructorClass()
         );
 
-        self::assertSame($instance, $container->get(NoConstructorTestClass::class));
+        self::assertSame($instance, $container->push('default')->get(FakeNoConstructorClass::class));
     }
 
     public function testGet_ContextStackPrecedence(): void
     {
         $container = $this->createContainer();
-        $container->context()->addSingletonInstance(
-            NoConstructorTestClass::class,
-            $defaultInstance = new NoConstructorTestClass()
+        $container->context('default')->addSingletonInstance(
+            FakeNoConstructorClass::class,
+            $defaultInstance = new FakeNoConstructorClass()
         );
-        $container->context('context')->addSingletonInstance(
-            NoConstructorTestClass::class,
-            $contextInstance = new NoConstructorTestClass()
+        $container->context('new')->addSingletonInstance(
+            FakeNoConstructorClass::class,
+            $contextInstance = new FakeNoConstructorClass()
         );
 
         self::assertSame(
             $contextInstance,
-            $container->push('context')->get(NoConstructorTestClass::class)
+            $container
+                ->push('default')
+                ->push('new')
+                ->get(FakeNoConstructorClass::class)
         );
-        self::assertSame($defaultInstance, $container->resetStack()->get(NoConstructorTestClass::class));
+        self::assertSame(
+            $defaultInstance,
+            $container->resetStack()
+                ->push('default')
+                ->get(FakeNoConstructorClass::class)
+        );
     }
 
     public function testGet_AtBottomOfStackOnly(): void
     {
         $container = $this->createContainer();
-        $container->context()->addSingletonInstance(
-            NoConstructorTestClass::class,
-            $defaultInstance = new NoConstructorTestClass()
+        $container->context('default')->addSingletonInstance(
+            FakeNoConstructorClass::class,
+            $defaultInstance = new FakeNoConstructorClass()
         );
-        $container->context('context');
+        $container->context('new');
 
-        self::assertSame($defaultInstance, $container->get(NoConstructorTestClass::class));
         self::assertSame(
             $defaultInstance,
-            $container->push('context')->get(NoConstructorTestClass::class)
+            $container
+                ->push('default')
+                ->push('new')
+                ->get(FakeNoConstructorClass::class)
+        );
+
+        $container->resetStack();
+
+        self::assertSame(
+            $defaultInstance,
+            $container->push('default')->get(FakeNoConstructorClass::class)
         );
     }
 
@@ -64,14 +81,14 @@ class ContextContainerTest extends TestCase
     {
         $container = $this->createContainer();
 
-        self::assertInstanceOf(Container::class, $container->context('context'));
+        self::assertInstanceOf(Container::class, $container->context('default'));
     }
 
     public function testContext_Existing(): void
     {
         $container = $this->createContainer();
 
-        self::assertSame($container->context('context'), $container->context('context'));
+        self::assertSame($container->context('default'), $container->context('default'));
     }
 
     /**

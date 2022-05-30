@@ -7,9 +7,9 @@ declare(strict_types=1);
 
 namespace FiveTwo\DependencyInjection\Instantiation;
 
+use FiveTwo\DependencyInjection\FakeNoConstructorClass;
+use FiveTwo\DependencyInjection\FakeNoConstructorSubclass;
 use FiveTwo\DependencyInjection\InjectorInterface;
-use FiveTwo\DependencyInjection\NoConstructorTestClass;
-use FiveTwo\DependencyInjection\NoConstructorTestSubClass;
 use PHPUnit\Framework\TestCase;
 
 class ClosureInstanceFactoryTest extends TestCase
@@ -17,28 +17,28 @@ class ClosureInstanceFactoryTest extends TestCase
     public function testGet(): void
     {
         $factory = new ClosureInstanceFactory(
-            NoConstructorTestClass::class,
-            $factoryMethod = fn () => new NoConstructorTestClass(),
+            FakeNoConstructorClass::class,
+            $factoryMethod = fn () => new FakeNoConstructorClass(),
             $injector = $this->createMock(InjectorInterface::class)
         );
 
-        $injector->expects($this->once())
+        $injector->expects(self::once())
             ->method('call')
             ->with($factoryMethod)
             ->willReturnCallback(fn () => $factoryMethod());
 
-        self::assertInstanceOf(NoConstructorTestClass::class, $factory->get());
+        self::assertInstanceOf(FakeNoConstructorClass::class, $factory->get());
     }
 
     public function testGet_Null(): void
     {
         $factory = new ClosureInstanceFactory(
-            NoConstructorTestClass::class,
+            FakeNoConstructorClass::class,
             $factoryMethod = fn () => null,
             $injector = $this->createMock(InjectorInterface::class)
         );
 
-        $injector->expects($this->once())
+        $injector->expects(self::once())
             ->method('call')
             ->with($factoryMethod)
             ->willReturnCallback(fn () => $factoryMethod());
@@ -49,12 +49,12 @@ class ClosureInstanceFactoryTest extends TestCase
     public function testGet_WrongClass(): void
     {
         $factory = new ClosureInstanceFactory(
-            NoConstructorTestSubClass::class,
-            $factoryMethod = fn () => new NoConstructorTestClass(),
+            FakeNoConstructorSubclass::class,
+            $factoryMethod = fn () => new FakeNoConstructorClass(),
             $injector = $this->createMock(InjectorInterface::class)
         );
 
-        $injector->expects($this->once())
+        $injector->expects(self::once())
             ->method('call')
             ->with($factoryMethod)
             ->willReturn(fn () => $factoryMethod());

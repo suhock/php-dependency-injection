@@ -10,16 +10,16 @@ namespace FiveTwo\DependencyInjection;
 use Throwable;
 
 /**
- * @template TDependency
- *
  * Indicates that the dependency could not be resolved because it eventually depends on itself.
+ *
+ * @template TClass of object
  */
 class CircularDependencyException extends DependencyInjectionException
 {
     /**
      * @inheritDoc
      *
-     * @param class-string<TDependency> $className The name of the class that could not be resolved
+     * @param class-string<TClass> $className The name of the class that could not be resolved
      * @param null|Throwable $previous [optional] The previous throwable used for exception chaining. If the throwable
      * is an instance of {@see DependencyInjectionException} then its content will be consolidated into the new
      * instance.
@@ -32,7 +32,7 @@ class CircularDependencyException extends DependencyInjectionException
     }
 
     /**
-     * @return class-string<TDependency>
+     * @return class-string<TClass>
      */
     public function getClassName(): string
     {

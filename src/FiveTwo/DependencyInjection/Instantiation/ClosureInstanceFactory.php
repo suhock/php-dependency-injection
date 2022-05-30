@@ -14,13 +14,13 @@ use FiveTwo\DependencyInjection\InjectorInterface;
 /**
  * A factory for providing instances using a factory method.
  *
- * @template TDependency
- * @template-implements InstanceFactory<TDependency>
+ * @template TClass of object
+ * @template-implements InstanceFactory<TClass>
  */
 class ClosureInstanceFactory implements InstanceFactory
 {
     /**
-     * @param class-string<TDependency> $className The name of the class this factory will provide
+     * @param class-string<TClass> $className The name of the class this factory will provide
      * @param Closure $factory The factory that will be used for providing instances
      * @param InjectorInterface $injector The injector that will be used for invoking the factory method
      */
@@ -33,7 +33,7 @@ class ClosureInstanceFactory implements InstanceFactory
 
     /**
      * @inheritDoc
-     * @return TDependency|null An instance of the class or <code>null</code>
+     * @return TClass|null An instance of the class or <code>null</code>
      * @throws InstanceTypeException
      * @throws DependencyInjectionException
      */

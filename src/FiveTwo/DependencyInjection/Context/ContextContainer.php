@@ -9,6 +9,7 @@ namespace FiveTwo\DependencyInjection\Context;
 
 use Closure;
 use FiveTwo\DependencyInjection\ContainerInterface;
+use FiveTwo\DependencyInjection\DependencyInjectionException;
 use FiveTwo\DependencyInjection\InjectorInterface;
 use FiveTwo\DependencyInjection\InjectorProvider;
 use FiveTwo\DependencyInjection\UnresolvedClassException;
@@ -35,9 +36,8 @@ class ContextContainer implements ContainerInterface, InjectorProvider
     public function __construct(
         private readonly Closure $containerFactory
     ) {
+        /** @psalm-suppress MixedArgumentTypeCoercion Psalm cannot infer $this generic type in constructor */
         $this->injector = new ContextInjector($this);
-        $this->containers[Context::DEFAULT] = $this->createContainer();
-        $this->resetStack();
     }
 
     /**
@@ -64,7 +64,7 @@ class ContextContainer implements ContainerInterface, InjectorProvider
      *
      * @return TContainer The container identified by the specified name
      */
-    public function context(string $name = Context::DEFAULT): ContainerInterface
+    public function context(string $name): ContainerInterface
     {
         return $this->containers[$name] ??= $this->createContainer();
     }
@@ -84,14 +84,17 @@ class ContextContainer implements ContainerInterface, InjectorProvider
     }
 
     /**
-     * Pops the most recently pushed context off the stack and returns it. The original default context will never be
-     * removed from the stack.
+     * Pops the most recently pushed context off the stack and returns it.
      *
      * @return string
      */
     public function pop(): string
     {
-        return count($this->stack) > 1 ? array_pop($this->stack) : $this->stack[0];
+        if (count($this->stack) === 0) {
+            throw new DependencyInjectionException('Context stack is empty');
+        }
+
+        return array_pop($this->stack);
     }
 
     /**
@@ -109,7 +112,7 @@ class ContextContainer implements ContainerInterface, InjectorProvider
      */
     public function resetStack(): static
     {
-        $this->stack = [Context::DEFAULT];
+        $this->stack = [];
 
         return $this;
     }
@@ -118,16 +121,16 @@ class ContextContainer implements ContainerInterface, InjectorProvider
      * Retrieves an object or <code>null</code> from the container identified by its class name, prioritizing
      * contexts by last pushed.
      *
-     * @template TDependency
+     * @template TClass of object
      *
-     * @param class-string<TDependency> $className The name of the class to retrieve
+     * @param class-string<TClass> $className The name of the class to retrieve
      *
-     * @return TDependency|null An instance of {@see $className} or <code>null</code>
+     * @return TClass|null An instance of {@see $className} or <code>null</code>
      * @throws UnresolvedClassException If a value could not be resolved for the class
      */
     public function get(string $className): ?object
     {
-        for ($contextName = end($this->stack); key($this->stack) !== null; $contextName = prev($this->stack)) {
+        for ($contextName = end($this->stack); $contextName !== false; $contextName = prev($this->stack)) {
             if ($this->hasInContext($className, $contextName)) {
                 return $this->getFromContext($className, $contextName);
             }
@@ -141,7 +144,7 @@ class ContextContainer implements ContainerInterface, InjectorProvider
      */
     public function has(string $className): bool
     {
-        for ($contextName = end($this->stack); key($this->stack) !== null; $contextName = prev($this->stack)) {
+        for ($contextName = end($this->stack); $contextName !== false; $contextName = prev($this->stack)) {
             if ($this->hasInContext($className, $contextName)) {
                 return true;
             }
@@ -151,12 +154,12 @@ class ContextContainer implements ContainerInterface, InjectorProvider
     }
 
     /**
-     * @template TDependency
+     * @template TClass of object
      *
-     * @param class-string<TDependency> $className
+     * @param class-string<TClass> $className
      * @param string $contextName
      *
-     * @return TDependency|null
+     * @return TClass|null
      */
     private function getFromContext(string $className, string $contextName): ?object
     {
@@ -166,9 +169,9 @@ class ContextContainer implements ContainerInterface, InjectorProvider
     }
 
     /**
-     * @template TDependency
+     * @template TClass of object
      *
-     * @param class-string<TDependency> $className
+     * @param class-string<TClass> $className
      * @param string $contextName
      *
      * @return bool

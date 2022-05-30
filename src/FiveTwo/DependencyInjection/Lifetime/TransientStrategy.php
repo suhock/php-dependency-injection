@@ -8,16 +8,13 @@ declare(strict_types=1);
 namespace FiveTwo\DependencyInjection\Lifetime;
 
 /**
- * @template TDependency
- * @extends LifetimeStrategy<TDependency>
+ * @template TClass of object
+ * @extends LifetimeStrategy<TClass>
  */
 class TransientStrategy extends LifetimeStrategy
 {
     /**
-     * @param callable():TDependency $factory
-     *
-     * @return TDependency|null
-     * @psalm-param callable():(TDependency|null) $factory
+     * @inheritDoc
      */
     public function get(callable $factory): ?object
     {

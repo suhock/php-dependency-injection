@@ -18,7 +18,7 @@ class NamespaceContainer implements ContainerInterface
 
     /**
      * @var Closure
-     * @psalm-var Closure(class-string):(object|null)
+     * @psalm-var Closure(class-string, mixed ...):(object|null)
      */
     private readonly Closure $factory;
 
@@ -31,7 +31,7 @@ class NamespaceContainer implements ContainerInterface
      * <code>
      * function(class-string&lt;T&gt; $className, ...): null|T
      * </code>
-     * @psalm-param null|callable(class-string):(object|null) $factory
+     * @psalm-param null|callable(class-string, mixed ...):(object|null) $factory
      */
     public function __construct(
         string $namespace,
@@ -39,22 +39,26 @@ class NamespaceContainer implements ContainerInterface
         ?callable $factory = null
     ) {
         $this->namespace = trim($namespace, '\\');
+
+        /** @psalm-suppress PropertyTypeCoercion Psalm seems confused */
         $this->factory = $factory !== null ?
             $factory(...) :
-            /**
-             * @param class-string $className
-             * @return object
-             */
-            fn (string $className) => $this->injector->instantiate($className);
+            $this->injector->instantiate(...);
     }
 
     /**
      * @inheritDoc
      *
      * @throws UnresolvedClassException If the specified class is not in the namespace
+     *
+     * @psalm-suppress MixedInferredReturnType Psalm cannot infer a return type from a generic return type on a callable
      */
     public function get(string $className): ?object
     {
+        /**
+         * @psalm-suppress MixedReturnStatement Psalm cannot infer a return type from a generic return type on a
+         * callable
+         */
         return $this->has($className) ?
             $this->injector->call($this->factory, [$className]) :
             throw new UnresolvedClassException($className);

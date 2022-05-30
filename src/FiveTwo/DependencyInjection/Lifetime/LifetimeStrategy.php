@@ -8,12 +8,12 @@ declare(strict_types=1);
 namespace FiveTwo\DependencyInjection\Lifetime;
 
 /**
- * @template TDependency
+ * @template TClass of object
  */
 abstract class LifetimeStrategy
 {
     /**
-     * @param class-string<TDependency> $className
+     * @param class-string<TClass> $className
      */
     public function __construct(
         private readonly string $className
@@ -21,7 +21,7 @@ abstract class LifetimeStrategy
     }
 
     /**
-     * @return class-string<TDependency>
+     * @return class-string<TClass>
      */
     public function getClassName(): string
     {
@@ -29,10 +29,11 @@ abstract class LifetimeStrategy
     }
 
     /**
-     * @param callable():TDependency $factory
+     * @param callable $factory
+     * @psalm-param callable(mixed ...):(TClass|null) $factory
+     * @phpstan-param callable(mixed ...):(TClass|null) $factory
      *
-     * @return TDependency|null
-     * @psalm-param callable():(TDependency|null) $factory
+     * @return TClass|null
      */
     abstract public function get(callable $factory): ?object;
 }

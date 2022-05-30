@@ -27,10 +27,10 @@ trait ContainerSingletonBuilderTrait
     abstract protected function getInjector(): InjectorInterface;
 
     /**
-     * @template TDependency
+     * @template TClass of object
      *
-     * @param class-string<TDependency> $className
-     * @param InstanceFactory<TDependency> $instanceFactory
+     * @param class-string<TClass> $className
+     * @param InstanceFactory<TClass> $instanceFactory
      *
      * @return $this
      */
@@ -42,36 +42,51 @@ trait ContainerSingletonBuilderTrait
     }
 
     /**
-     * @template TDependency
-     * @template TImplementation of TDependency
+     * @template TClass of object
      *
-     * @param class-string<TDependency> $className
+     * @param class-string<TClass> $className
+     *
+     * @return $this
+     * @throws ImplementationException
+     */
+    public function addSingletonClass(string $className): static
+    {
+        $this->addSingleton(
+            $className,
+            new ClassInstanceFactory($className, $this->getInjector())
+        );
+
+        return $this;
+    }
+    /**
+     * @template TClass of object
+     * @template TImplementation of TClass
+     *
+     * @param class-string<TClass> $className
      * @param class-string<TImplementation> $implementationClassName
      *
      * @return $this
      * @throws ImplementationException
-     * @psalm-param class-string<TImplementation>|'' $implementationClassName
      */
-    public function addSingletonClass(string $className, string $implementationClassName = ''): static
+    public function addSingletonImplementation(string $className, string $implementationClassName): static
     {
         $this->addSingleton(
             $className,
-            ($implementationClassName === $className || $implementationClassName === '') ?
-                new ClassInstanceFactory($className, $this->getInjector()) :
-                new ImplementationInstanceFactory($className, $implementationClassName, $this)
+            new ImplementationInstanceFactory($className, $implementationClassName, $this)
         );
 
         return $this;
     }
 
     /**
-     * @template TDependency
+     * @template TClass of object
      *
-     * @param class-string<TDependency> $className
-     * @param callable():TDependency $factory
+     * @param class-string<TClass> $className
+     * @param callable $factory
+     * @psalm-param callable(mixed ...$params):(TClass|null) $factory
+     * @phpstan-param callable(mixed ...$params):(TClass|null) $factory
      *
      * @return $this
-     * @psalm-param callable(...):(TDependency|null) $factory
      */
     public function addSingletonFactory(string $className, callable $factory): static
     {
@@ -84,10 +99,10 @@ trait ContainerSingletonBuilderTrait
     }
 
     /**
-     * @template TDependency
+     * @template TClass of object
      *
-     * @param class-string<TDependency> $className
-     * @param TDependency|null $instance
+     * @param class-string<TClass> $className
+     * @param TClass|null $instance
      *
      * @return $this
      * @throws InstanceTypeException
@@ -109,7 +124,11 @@ trait ContainerSingletonBuilderTrait
      */
     public function addSingletonContainer(ContainerInterface $container): static
     {
-        $this->addContainer($container, fn (string $className) => new SingletonStrategy($className));
+        $this->addContainer(
+            $container,
+            /** @param class-string $className */
+            fn (string $className) => new SingletonStrategy($className)
+        );
 
         return $this;
     }
@@ -128,7 +147,7 @@ trait ContainerSingletonBuilderTrait
     }
 
     /**
-     * @template TInterface
+     * @template TInterface of object
      *
      * @param class-string<TInterface> $interfaceName
      * @param null|callable(class-string<TInterface>):(TInterface|null) $factory

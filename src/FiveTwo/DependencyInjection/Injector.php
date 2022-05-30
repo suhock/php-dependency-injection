@@ -7,7 +7,6 @@ declare(strict_types=1);
 
 namespace FiveTwo\DependencyInjection;
 
-use ReflectionNamedType;
 use ReflectionParameter;
 
 /**
@@ -31,10 +30,10 @@ class Injector implements InjectorInterface
      */
     protected function tryResolveParameter(ReflectionParameter $rParam, mixed &$paramValue): bool
     {
-        if ($rParam->getType() instanceof ReflectionNamedType &&
-            !$rParam->getType()->isBuiltin() &&
-            $this->container->has($rParam->getType()->getName())) {
-            $paramValue = $this->container->get($rParam->getType()->getName());
+        $className = InjectorHelper::getClassNameFromParameter($rParam);
+
+        if ($className !== null && $this->container->has($className)) {
+            $paramValue = $this->container->get($className);
 
             return true;
         }

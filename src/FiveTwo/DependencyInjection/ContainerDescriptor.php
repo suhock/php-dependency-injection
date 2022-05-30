@@ -13,18 +13,23 @@ use FiveTwo\DependencyInjection\Lifetime\LifetimeStrategy;
 
 /**
  * @internal
- * @psalm-type LifetimeStrategyFactory = callable(class-string):LifetimeStrategy
  */
 class ContainerDescriptor
 {
-    /** @var Closure(class-string):LifetimeStrategy */
+    /**
+     * @var Closure(class-string):LifetimeStrategy
+     * @phpstan-ignore-next-line PHPStan does not support callable-level generics but complains that LifetimeStrategy
+     * does not have its generic type specified
+     */
     private readonly Closure $lifetimeStrategyFactory;
 
     /**
      * @param ContainerInterface $container
      * @param InjectorInterface $injector
-     * @param callable $lifetimeStrategyFactory
-     * @psalm-param LifetimeStrategyFactory $lifetimeStrategyFactory
+     * @param callable(class-string):LifetimeStrategy $lifetimeStrategyFactory
+     *
+     * @phpstan-ignore-next-line PHPStan does not support callable-level generics but complains that LifetimeStrategy
+     * does not have its generic type specified
      */
     public function __construct(
         private readonly ContainerInterface $container,
@@ -35,14 +40,14 @@ class ContainerDescriptor
     }
 
     /**
-     * @template TDependency
+     * @template TClass
      *
-     * @param class-string<TDependency> $className
+     * @param class-string<TClass> $className
      * @param ContainerBuilderInterface $container
      *
      * @return bool
      */
-    public function tryAddDependency(string $className, ContainerBuilderInterface $container): bool
+    public function tryAdd(string $className, ContainerBuilderInterface $container): bool
     {
         if (!$this->container->has($className)) {
             return false;
@@ -50,9 +55,11 @@ class ContainerDescriptor
 
         $container->add(
             $className,
+            /** @phpstan-ignore-next-line PHPStan gets confused resolving generic for add() */
             $this->createLifetimeStrategy($className),
             new ClosureInstanceFactory(
                 $className,
+                /** @phpstan-ignore-next-line PHPStan gets confused resolving generic for add() */
                 fn () => $this->container->get($className),
                 $this->injector
             )
@@ -62,11 +69,11 @@ class ContainerDescriptor
     }
 
     /**
-     * @template TDependency
+     * @template TClass of object
      *
-     * @param class-string<TDependency> $className
+     * @param class-string<TClass> $className
      *
-     * @return LifetimeStrategy<TDependency>
+     * @return LifetimeStrategy<TClass>
      * @psalm-suppress MixedReturnTypeCoercion
      */
     private function createLifetimeStrategy(string $className): LifetimeStrategy

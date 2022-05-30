@@ -16,10 +16,10 @@ class NamespaceContainerTest extends TestCase
     {
         $container = self::createMock(ContainerInterface::class);
         $container->method('get')
-            ->with(NoConstructorTestClass::class)
-            ->willReturn(new NoConstructorTestClass());
+            ->with(FakeNoConstructorClass::class)
+            ->willReturn(new FakeNoConstructorClass());
         $container->method('has')
-            ->with(NoConstructorTestClass::class)
+            ->with(FakeNoConstructorClass::class)
             ->willReturn(true);
         $injector = new Injector($container);
 
@@ -31,8 +31,8 @@ class NamespaceContainerTest extends TestCase
         );
 
         self::assertInstanceOf(
-            NoConstructorTestClass::class,
-            $namespaceContainer->get(NoConstructorTestClass::class)
+            FakeNoConstructorClass::class,
+            $namespaceContainer->get(FakeNoConstructorClass::class)
         );
     }
 
@@ -56,7 +56,7 @@ class NamespaceContainerTest extends TestCase
             fn () => null
         );
 
-        self::assertTrue($container->has(NoConstructorTestClass::class));
+        self::assertTrue($container->has(FakeNoConstructorClass::class));
         self::assertFalse($container->has(DateTime::class));
     }
 
@@ -68,7 +68,7 @@ class NamespaceContainerTest extends TestCase
             fn () => null
         );
 
-        self::assertTrue($container->has(NoConstructorTestClass::class));
+        self::assertTrue($container->has(FakeNoConstructorClass::class));
         self::assertTrue($container->has(DateTime::class));
     }
 }

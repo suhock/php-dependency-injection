@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace FiveTwo\DependencyInjection;
 
-abstract class AbstractTestClass
+abstract class FakeAbstractClass
 {
 
 }

@@ -13,13 +13,13 @@ use FiveTwo\DependencyInjection\InjectorInterface;
 /**
  * A factory for creating instances using a class's constructor.
  *
- * @template TDependency
- * @template-implements InstanceFactory<TDependency>
+ * @template TClass of object
+ * @template-implements InstanceFactory<TClass>
  */
 class ClassInstanceFactory implements InstanceFactory
 {
     /**
-     * @param class-string<TDependency> $className The name of the class this factory will instantiate
+     * @param class-string<TClass> $className The name of the class this factory will instantiate
      * @param InjectorInterface $injector The injector that will be used for instantiation
      */
     public function __construct(
@@ -29,7 +29,7 @@ class ClassInstanceFactory implements InstanceFactory
     }
 
     /**
-     * @return TDependency A new instance of {@see $className}
+     * @return TClass A new instance of {@see $className}
      * @throws DependencyInjectionException If there was an error resolving values for the constructor parameters or
      * invoking the constructor
      */

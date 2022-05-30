@@ -34,9 +34,13 @@ trait InjectorTrait
     /**
      * Calls the specified function, injecting any function parameter values.
      *
-     * @param callable $function The function to call
-     * @param array $params A list of parameter values to provide to the function. String keys will be matched by name;
-     * integer keys will be matched by position.
+     * @template TReturn
+     *
+     * @param callable():TReturn $function The function to call
+     * @psalm-param callable(mixed ...):TReturn $function
+     * @phpstan-param callable(mixed ...):TReturn $function
+     * @param array<mixed> $params A list of parameter values to provide to the function. String keys will be matched by
+     * name; integer keys will be matched by position.
      *
      * @return mixed The value returned by the function
      * @throws DependencyInjectionException If there was an error resolving values for the function parameters or
@@ -64,20 +68,26 @@ trait InjectorTrait
     /**
      * Creates a new instance of the specified class, injecting any constructor parameter values.
      *
-     * @template T
+     * @template T of object
      *
      * @param class-string<T> $className The name of the class to instantiate
-     * @param array $params A list of parameter values to provide to the constructor. String keys will be matched by
-     * name; integer keys will be matched by position.
+     * @param array<mixed> $params A list of parameter values to provide to the constructor. String keys will be matched
+     * by name; integer keys will be matched by position.
      *
      * @return T A new instance of the specified class
      * @throws DependencyInjectionException If there was an error resolving values for the constructor parameters or
      * invoking the constructor
+     *
+     * @psalm-suppress InvalidReturnType Psalm unable to infer correct return type from
+     * ReflectionClass::newInstanceArgs()
      */
     public function instantiate(string $className, array $params = []): object
     {
         try {
             $rClass = new ReflectionClass($className);
+            /** @phpstan-ignore-next-line PHPStan assumes an exception can never be thrown because the static analysis
+             * infers that $className will always be a valid. Don't want to assume this.
+             */
         } catch (ReflectionException $e) {
             throw new DependencyInjectionException("Class $className does not exist", $e);
         }
@@ -95,12 +105,14 @@ trait InjectorTrait
     }
 
     /**
-     * @param callable(array):mixed $function
-     * @param ReflectionParameter[] $rParameters
-     * @param array $params
+     * @template TResult
+     *
+     * @param callable(list<mixed>):TResult $function
+     * @param array<ReflectionParameter> $rParameters
+     * @param array<mixed> $params
      * @param string $functionName
      *
-     * @return mixed
+     * @return TResult
      * @throws DependencyInjectionException If a value could not be resolved for any of the parameters
      */
     private function invoke(callable $function, array $rParameters, array $params, string $functionName): mixed
@@ -108,6 +120,7 @@ trait InjectorTrait
         $paramValues = [];
 
         foreach ($rParameters as $rParam) {
+            /** @psalm-suppress MixedAssignment Type of assignment not need for analysis */
             $paramValues[] = self::resolveParameter($rParam, $params, $functionName);
         }
 
@@ -116,7 +129,7 @@ trait InjectorTrait
 
     /**
      * @param ReflectionParameter $rParam
-     * @param array $params
+     * @param array<mixed> $params
      * @param string $functionName
      *
      * @return mixed|null

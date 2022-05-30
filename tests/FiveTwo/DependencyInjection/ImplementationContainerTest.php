@@ -15,62 +15,62 @@ class ImplementationContainerTest extends TestCase
     {
         $container = self::createMock(ContainerInterface::class);
         $container->method('get')
-            ->with(NoConstructorTestClass::class)
-            ->willReturn(new NoConstructorTestClass());
+            ->with(FakeNoConstructorClass::class)
+            ->willReturn(new FakeNoConstructorClass());
         $container->method('has')
-            ->with(NoConstructorTestClass::class)
+            ->with(FakeNoConstructorClass::class)
             ->willReturn(true);
         $injector = new Injector($container);
 
         $implContainer = new ImplementationContainer(
-            NoConstructorTestClass::class,
+            FakeNoConstructorClass::class,
             $injector,
             /** @param class-string $className */
             fn (string $className) => $injector->instantiate($className)
         );
 
         self::assertInstanceOf(
-            NoConstructorTestSubClass::class,
-            $implContainer->get(NoConstructorTestSubClass::class)
+            FakeNoConstructorSubclass::class,
+            $implContainer->get(FakeNoConstructorSubclass::class)
         );
     }
 
     public function testGet_SameClass(): void
     {
         $container = new ImplementationContainer(
-            NoConstructorTestClass::class,
+            FakeNoConstructorClass::class,
             self::createMock(InjectorInterface::class),
             fn () => null
         );
 
         self::expectException(UnresolvedClassException::class);
-        $container->get(NoConstructorTestClass::class);
+        $container->get(FakeNoConstructorClass::class);
     }
 
     public function testGet_NotSubclass(): void
     {
         $container = new ImplementationContainer(
-            NoConstructorTestClass::class,
+            FakeNoConstructorClass::class,
             self::createMock(InjectorInterface::class),
             fn () => null
         );
 
         self::expectException(UnresolvedClassException::class);
         /** @psalm-suppress InvalidArgument Testing for invalid argument here */
-        $container->get(ConstructorTestClass::class);
+        $container->get(FakeContextAwareClass::class);
     }
 
     public function testHas(): void
     {
         $container = new ImplementationContainer(
-            NoConstructorTestClass::class,
+            FakeNoConstructorClass::class,
             self::createMock(InjectorInterface::class),
             fn () => null
         );
 
-        self::assertTrue($container->has(NoConstructorTestSubClass::class));
-        self::assertFalse($container->has(NoConstructorTestClass::class));
+        self::assertTrue($container->has(FakeNoConstructorSubclass::class));
+        self::assertFalse($container->has(FakeNoConstructorClass::class));
         /** @psalm-suppress InvalidArgument */
-        self::assertFalse($container->has(ConstructorTestClass::class));
+        self::assertFalse($container->has(FakeContextAwareClass::class));
     }
 }

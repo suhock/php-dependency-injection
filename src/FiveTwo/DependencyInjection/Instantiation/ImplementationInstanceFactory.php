@@ -13,14 +13,14 @@ use FiveTwo\DependencyInjection\UnresolvedClassException;
 /**
  * Provides a concrete implementation for a given interface or class from a container.
  *
- * @template TDependency
- * @template TImplementation of TDependency
- * @template-implements InstanceFactory<TDependency>
+ * @template TClass of object
+ * @template TImplementation of TClass
+ * @template-implements InstanceFactory<TClass>
  */
 class ImplementationInstanceFactory implements InstanceFactory
 {
     /**
-     * @param class-string<TDependency> $className The name of the class or interface provided
+     * @param class-string<TClass> $className The name of the class or interface provided
      * @param class-string<TImplementation> $implementationClassName The name of the class providing the implementation
      * instance
      *
@@ -38,7 +38,9 @@ class ImplementationInstanceFactory implements InstanceFactory
 
     /**
      * @inheritDoc
-     * @return TDependency|null An instance of the class or <code>null</code>
+     * @return TClass|null An instance of the class or <code>null</code>
+     * @psalm-return TClass|null
+     * @phpstan-return TImplementation|null
      * @throws UnresolvedClassException If the container could not resolve a value for the specified class
      */
     public function get(): ?object

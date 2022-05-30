@@ -7,6 +7,6 @@ declare(strict_types=1);
 
 namespace FiveTwo\DependencyInjection;
 
-class NoConstructorTestSubClass extends NoConstructorTestClass
+class FakeNoConstructorSubclass extends FakeNoConstructorClass
 {
 }

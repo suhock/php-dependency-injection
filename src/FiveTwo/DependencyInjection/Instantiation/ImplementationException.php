@@ -13,13 +13,13 @@ use Throwable;
 /**
  * Indicates that a class does not actually implement or extend an expected interface or base class.
  *
- * @template TDependency
- * @template TActual
+ * @template TExpected of object
+ * @template TActual of object
  */
 class ImplementationException extends DependencyInjectionException
 {
     /**
-     * @param class-string<TDependency> $expectedClassName The name of the expected base class
+     * @param class-string<TExpected> $expectedClassName The name of the expected base class
      * @param class-string<TActual> $actualClassName The name of the incorrect implementation class
      * @param null|Throwable $previous [optional] The previous throwable used for exception chaining
      */
@@ -29,13 +29,13 @@ class ImplementationException extends DependencyInjectionException
         ?Throwable $previous = null
     ) {
         parent::__construct(
-            "Class $this->actualClassName is not of type $this->expectedClassName",
+            "Class $this->actualClassName is not a subclass of $this->expectedClassName",
             $previous
         );
     }
 
     /**
-     * @return class-string<TDependency> The name of the expected base class
+     * @return class-string<TExpected> The name of the expected base class
      */
     public function getExpectedClassName(): string
     {

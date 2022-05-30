@@ -12,16 +12,16 @@ use FiveTwo\DependencyInjection\Lifetime\LifetimeStrategy;
 
 /**
  * @internal
- * @template TDependency
+ * @template TClass as object
  */
 class Descriptor
 {
     private bool $isResolving = false;
 
     /**
-     * @param class-string<TDependency> $className
-     * @param LifetimeStrategy<TDependency> $lifetimeStrategy
-     * @param InstanceFactory<TDependency> $instanceFactory
+     * @param class-string<TClass> $className
+     * @param LifetimeStrategy<TClass> $lifetimeStrategy
+     * @param InstanceFactory<TClass> $instanceFactory
      */
     public function __construct(
         private readonly string $className,
@@ -31,7 +31,7 @@ class Descriptor
     }
 
     /**
-     * @return class-string<TDependency>
+     * @return class-string<TClass>
      */
     public function getClassName(): string
     {
@@ -39,10 +39,10 @@ class Descriptor
     }
 
     /**
-     * @return TDependency|null
+     * @return TClass|null
      * @throws CircularDependencyException
      */
-    public function getDependency(): ?object
+    public function getInstance(): ?object
     {
         if ($this->isResolving) {
             throw new CircularDependencyException($this->className);
@@ -51,6 +51,7 @@ class Descriptor
         $this->isResolving = true;
 
         try {
+            /** @psalm-suppress InvalidArgument Psalm is incorrectly inferring TClass as Descriptor for some reason */
             $instance = $this->lifetimeStrategy->get($this->instanceFactory->get(...));
         } catch (CircularDependencyException $e) {
             throw new CircularDependencyException($this->className, $e);

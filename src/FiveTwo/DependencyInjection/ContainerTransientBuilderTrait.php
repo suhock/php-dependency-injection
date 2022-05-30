@@ -25,10 +25,10 @@ trait ContainerTransientBuilderTrait
     abstract protected function getInjector(): InjectorInterface;
 
     /**
-     * @template TDependency
+     * @template TClass of object
      *
-     * @param class-string<TDependency> $className
-     * @param InstanceFactory<TDependency> $instanceFactory
+     * @param class-string<TClass> $className
+     * @param InstanceFactory<TClass> $instanceFactory
      *
      * @return $this
      */
@@ -40,35 +40,51 @@ trait ContainerTransientBuilderTrait
     }
 
     /**
-     * @template TDependency
-     * @template TImplementation of TDependency
+     * @template TClass of object
      *
-     * @param class-string<TDependency> $className
-     * @param class-string<TImplementation>|'' $implementationClassName
+     * @param class-string<TClass> $className
      *
      * @return $this
      * @throws ImplementationException
      */
-    public function addTransientClass(string $className, string $implementationClassName = ''): static
+    public function addTransientClass(string $className): static
     {
         $this->addTransient(
             $className,
-            ($implementationClassName === $className || $implementationClassName === '') ?
-                new ClassInstanceFactory($className, $this->getInjector()) :
-                new ImplementationInstanceFactory($className, $implementationClassName, $this)
+            new ClassInstanceFactory($className, $this->getInjector())
+        );
+
+        return $this;
+    }
+    /**
+     * @template TClass of object
+     * @template TImplementation of TClass
+     *
+     * @param class-string<TClass> $className
+     * @param class-string<TImplementation> $implementationClassName
+     *
+     * @return $this
+     * @throws ImplementationException
+     */
+    public function addTransientImplementation(string $className, string $implementationClassName): static
+    {
+        $this->addTransient(
+            $className,
+            new ImplementationInstanceFactory($className, $implementationClassName, $this)
         );
 
         return $this;
     }
 
     /**
-     * @template TDependency
+     * @template TClass of object
      *
-     * @param class-string<TDependency> $className
-     * @param callable():TDependency $factory
+     * @param class-string<TClass> $className
+     * @param callable $factory
+     * @psalm-param callable(mixed ...$params):(TClass|null) $factory
+     * @phpstan-param callable(mixed ...$params):(TClass|null) $factory
      *
      * @return $this
-     * @psalm-param callable(...):(TDependency|null) $factory
      */
     public function addTransientFactory(string $className, callable $factory): static
     {
@@ -87,7 +103,11 @@ trait ContainerTransientBuilderTrait
      */
     public function addTransientContainer(ContainerInterface $container): static
     {
-        $this->addContainer($container, fn (string $className) => new TransientStrategy($className));
+        $this->addContainer(
+            $container,
+            /** @param class-string $className */
+            fn (string $className) => new TransientStrategy($className)
+        );
 
         return $this;
     }
@@ -106,7 +126,7 @@ trait ContainerTransientBuilderTrait
     }
 
     /**
-     * @template TInterface
+     * @template TInterface of object
      *
      * @param class-string<TInterface> $interfaceName
      * @param null|callable(class-string<TInterface>):TInterface|null $factory

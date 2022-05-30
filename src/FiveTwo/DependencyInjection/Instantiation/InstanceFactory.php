@@ -10,12 +10,12 @@ namespace FiveTwo\DependencyInjection\Instantiation;
 /**
  * Provides instances of one class.
  *
- * @template TDependency
+ * @template TClass of object
  */
 interface InstanceFactory
 {
     /**
-     * @return TDependency|null An instance of the class or <code>null</code>
+     * @return TClass|null An instance of the class or <code>null</code>
      */
     public function get(): ?object;
 }

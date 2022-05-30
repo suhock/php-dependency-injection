@@ -17,44 +17,53 @@ use FiveTwo\DependencyInjection\Instantiation\InstanceTypeException;
 interface ContainerSingletonBuilderInterface
 {
     /**
-     * @template TDependency
+     * @template TClass of object
      *
-     * @param class-string<TDependency> $className
-     * @param InstanceFactory<TDependency> $instanceFactory
+     * @param class-string<TClass> $className
+     * @param InstanceFactory<TClass> $instanceFactory
      *
      * @return $this
      */
     public function addSingleton(string $className, InstanceFactory $instanceFactory): static;
 
     /**
-     * @template TDependency
-     * @template TImplementation of TDependency
+     * @template TClass of object
      *
-     * @param class-string<TDependency> $className
+     * @param class-string<TClass> $className
+     *
+     * @return $this
+     * @throws ImplementationException
+     */
+    public function addSingletonClass(string $className): static;
+
+    /**
+     * @template TClass of object
+     * @template TImplementation of TClass
+     *
+     * @param class-string<TClass> $className
      * @param class-string<TImplementation> $implementationClassName
      *
      * @return $this
      * @throws ImplementationException
-     * @psalm-param class-string<TImplementation>|'' $implementationClassName
      */
-    public function addSingletonClass(string $className, string $implementationClassName = ''): static;
+    public function addSingletonImplementation(string $className, string $implementationClassName): static;
 
     /**
-     * @template TDependency
+     * @template TClass of object
      *
-     * @param class-string<TDependency> $className
-     * @param callable():TDependency $factory
+     * @param class-string<TClass> $className
+     * @param callable():TClass $factory
      *
      * @return $this
-     * @psalm-param callable(...):(TDependency|null) $factory
+     * @psalm-param callable(...):(TClass|null) $factory
      */
     public function addSingletonFactory(string $className, callable $factory): static;
 
     /**
-     * @template TDependency
+     * @template TClass of object
      *
-     * @param class-string<TDependency> $className
-     * @param TDependency|null $instance
+     * @param class-string<TClass> $className
+     * @param TClass|null $instance
      *
      * @return $this
      * @throws InstanceTypeException
@@ -76,7 +85,7 @@ interface ContainerSingletonBuilderInterface
     public function addSingletonNamespace(string $namespace): static;
 
     /**
-     * @template TInterface
+     * @template TInterface of object
      *
      * @param class-string<TInterface> $interfaceName
      *

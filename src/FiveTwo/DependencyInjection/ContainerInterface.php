@@ -12,11 +12,11 @@ interface ContainerInterface
     /**
      * Retrieves an object or <code>null</code> from the container identified by its class name.
      *
-     * @template TDependency
+     * @template TClass of object
      *
-     * @param class-string<TDependency> $className The name of the class to retrieve
+     * @param class-string<TClass> $className The name of the class to retrieve
      *
-     * @return TDependency|null An instance of {@see $className} or <code>null</code>
+     * @return TClass|null An instance of {@see $className} or <code>null</code>
      * @throws UnresolvedClassException If the container could not resolve a value for the specified class
      */
     public function get(string $className): ?object;
@@ -26,9 +26,9 @@ interface ContainerInterface
      * <em>does not</em> indicate whether the {@see get()} method will not throw an error when attempting to retrieve an
      * object.
      *
-     * @template TDependency
+     * @template TClass of object
      *
-     * @param class-string<TDependency> $className The name of the class to test
+     * @param class-string<TClass> $className The name of the class to test
      *
      * @return bool <code>true</code> if the container can provide a value, <code>false</code> otherwise
      */

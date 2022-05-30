@@ -24,8 +24,13 @@ class Context
     /** @var list<string> */
     private readonly array $names;
 
+    /**
+     * @param string $name
+     * @param string ...$names
+     */
     public function __construct(string $name, string ...$names)
     {
+        /** @var list<string> $names */
         $this->names = [$name, ...$names];
     }
 

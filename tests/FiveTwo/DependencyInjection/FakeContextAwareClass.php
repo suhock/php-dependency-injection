@@ -12,7 +12,7 @@ use RuntimeException;
 use Throwable;
 
 #[Context('context1')]
-class ConstructorTestClass
+class FakeContextAwareClass
 {
     public readonly RuntimeException $runtimeException;
 
