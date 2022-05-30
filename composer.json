@@ -26,9 +26,6 @@
         "php": "^8.1"
     },
     "require-dev": {
-        "ext-mbstring": "*",
-        "ext-ctype":  "*",
-        "ext-intl": "*",
         "fivetwo/remove-symfony-polyfill": "^8.1",
         "friendsofphp/php-cs-fixer": "^3.8",
         "phpstan/phpstan": "^1.7",
