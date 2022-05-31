@@ -7,13 +7,15 @@ declare(strict_types=1);
 
 namespace FiveTwo\DependencyInjection\Instantiation;
 
+use FiveTwo\DependencyInjection\ContainerInterface;
 use FiveTwo\DependencyInjection\FakeNoConstructorClass;
+use FiveTwo\DependencyInjection\Injector;
 use FiveTwo\DependencyInjection\InjectorInterface;
 use PHPUnit\Framework\TestCase;
 
 class ClassInstanceFactoryTest extends TestCase
 {
-    public function testGet(): void
+    public function testGet_NoMutator(): void
     {
         $factory = new ClassInstanceFactory(
             FakeNoConstructorClass::class,
@@ -25,5 +27,16 @@ class ClassInstanceFactoryTest extends TestCase
             ->willReturn(new FakeNoConstructorClass());
 
         self::assertInstanceOf(FakeNoConstructorClass::class, $factory->get());
+    }
+
+    public function testGet_WithMutator(): void
+    {
+        self::assertSame('test', (new ClassInstanceFactory(
+            FakeNoConstructorClass::class,
+            new Injector(self::createMock(ContainerInterface::class)),
+            function (FakeNoConstructorClass $obj) {
+                $obj->string = 'test';
+            }
+        ))->get()->string);
     }
 }

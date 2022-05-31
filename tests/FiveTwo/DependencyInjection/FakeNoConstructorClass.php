@@ -9,4 +9,5 @@ namespace FiveTwo\DependencyInjection;
 
 class FakeNoConstructorClass
 {
+    public string $string = '';
 }

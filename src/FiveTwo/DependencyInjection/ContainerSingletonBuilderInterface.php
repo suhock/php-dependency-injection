@@ -30,11 +30,12 @@ interface ContainerSingletonBuilderInterface
      * @template TClass of object
      *
      * @param class-string<TClass> $className
+     * @param null|callable(TClass):void $mutator
      *
      * @return $this
      * @throws ImplementationException
      */
-    public function addSingletonClass(string $className): static;
+    public function addSingletonClass(string $className, ?callable $mutator = null): static;
 
     /**
      * @template TClass of object

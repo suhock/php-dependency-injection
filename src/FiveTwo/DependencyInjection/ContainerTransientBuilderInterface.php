@@ -29,11 +29,12 @@ interface ContainerTransientBuilderInterface
      * @template TClass of object
      *
      * @param class-string<TClass> $className
+     * @param null|callable(TClass):void $mutator
      *
      * @return $this
      * @throws ImplementationException
      */
-    public function addTransientClass(string $className): static;
+    public function addTransientClass(string $className, ?callable $mutator = null): static;
 
     /**
      * @template TClass of object

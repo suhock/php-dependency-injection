@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace FiveTwo\DependencyInjection\Instantiation;
 
+use Closure;
 use FiveTwo\DependencyInjection\DependencyInjectionException;
 use FiveTwo\DependencyInjection\InjectorInterface;
 
@@ -21,10 +22,16 @@ class ClassInstanceFactory implements InstanceFactory
     /**
      * @param class-string<TClass> $className The name of the class this factory will instantiate
      * @param InjectorInterface $injector The injector that will be used for instantiation
+     * @param null|Closure(TClass):void $mutator [Optional] Mutator function that allows additional changes to the
+     * instantiated instance. The first parameter will be the new object instance. Any other parameters will be
+     * injected.
+     * @psalm-param null|Closure(TClass, mixed...):void $mutator
+     * @phpstan-param null|Closure(TClass, mixed...):void $mutator
      */
     public function __construct(
         private readonly string $className,
-        private readonly InjectorInterface $injector
+        private readonly InjectorInterface $injector,
+        private readonly ?Closure $mutator = null
     ) {
     }
 
@@ -35,6 +42,12 @@ class ClassInstanceFactory implements InstanceFactory
      */
     public function get(): object
     {
-        return $this->injector->instantiate($this->className);
+        $instance = $this->injector->instantiate($this->className);
+
+        if ($this->mutator !== null) {
+            $this->injector->call($this->mutator, [$instance]);
+        }
+
+        return $instance;
     }
 }

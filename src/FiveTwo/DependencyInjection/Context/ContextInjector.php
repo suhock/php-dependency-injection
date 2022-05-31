@@ -7,10 +7,10 @@ declare(strict_types=1);
 
 namespace FiveTwo\DependencyInjection\Context;
 
+use FiveTwo\DependencyInjection\DependencyInjectionException;
 use FiveTwo\DependencyInjection\InjectorHelper;
 use FiveTwo\DependencyInjection\InjectorInterface;
 use FiveTwo\DependencyInjection\InjectorTrait;
-use InvalidArgumentException;
 use ReflectionAttribute;
 use ReflectionMethod;
 use ReflectionParameter;
@@ -43,9 +43,7 @@ class ContextInjector implements InjectorInterface
             $rFunction = $rParam->getDeclaringFunction();
 
             if ($rFunction instanceof ReflectionMethod) {
-                $contextCount += self::addAttributes(
-                    $rFunction->getDeclaringClass()->getAttributes(Context::class)
-                );
+                $contextCount += self::addAttributes($rFunction->getDeclaringClass()->getAttributes(Context::class));
             }
 
             /** @psalm-suppress ArgumentTypeCoercion Psalm missing stub for ReflectionFunctionAbstract */
@@ -77,21 +75,18 @@ class ContextInjector implements InjectorInterface
     {
         $count = 0;
 
-        foreach (array_reverse($rAttributes) as $rAttribute) {
-            /** @var mixed $name */
-            foreach (array_reverse($rAttribute->getArguments()) as $name) {
-                if (is_string($name)) {
-                    $this->container->push($name);
+        foreach ($rAttributes as $rAttribute) {
+            try {
+                foreach ($rAttribute->newInstance()->getNames() as $contextName) {
+                    $this->container->push($contextName);
                     $count++;
-                } else {
-                    while (--$count >= 0) {
-                        $this->container->pop();
-                    }
-
-                    throw new InvalidArgumentException(
-                        'Context arguments must be of type string, got ' . gettype($name)
-                    );
                 }
+            } catch (\Throwable $e) {
+                while (--$count >= 0) {
+                    $this->container->pop();
+                }
+
+                throw new DependencyInjectionException('Error parsing context attribute for parameter', $e);
             }
         }
 

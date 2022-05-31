@@ -7,56 +7,58 @@ declare(strict_types=1);
 
 namespace FiveTwo\DependencyInjection;
 
-use Exception;
 use FiveTwo\DependencyInjection\Instantiation\ImplementationException;
 use FiveTwo\DependencyInjection\Instantiation\InstanceTypeException;
 use LogicException;
 use PHPUnit\Framework\TestCase;
-use RuntimeException;
-use Throwable;
 
 class ContainerSingletonBuilderTraitTest extends TestCase
 {
-    private Container $container;
-
-    protected function setUp(): void
+    private function createContainer(): Container
     {
-        $this->container = new Container();
+        return new Container();
     }
 
     /**
      * @template TClass of object
      * @template TImplementation of TClass
      *
+     * @param Container $container
      * @param class-string<TClass> $className
      * @param class-string<TImplementation>|null $implementationClassName
      *
      * @return void
      */
-    private function assertSingleton(string $className, ?string $implementationClassName = null): void
-    {
-        if ($implementationClassName === null) {
-            $implementationClassName = $className;
-        }
+    private function assertSingleton(
+        Container $container,
+        string $className,
+        ?string $implementationClassName = null
+    ): void {
+        $implementationClassName ??= $className;
 
-        $instance = $this->container->get($className);
+        $instance = $container->get($className);
         self::assertInstanceOf($implementationClassName, $instance);
-        self::assertSame($instance, $this->container->get($className));
+        self::assertSame($instance, $container->get($className));
     }
 
     public function testAddSingletonInstance(): void
     {
+        $container = $this->createContainer();
+
         self::assertSame(
-            $this->container,
-            $this->container->addSingletonInstance(FakeNoConstructorClass::class, new FakeNoConstructorClass())
+            $container,
+            $container->addSingletonInstance(FakeNoConstructorClass::class, new FakeNoConstructorClass())
         );
-        $this->assertSingleton(FakeNoConstructorClass::class);
+        $this->assertSingleton($container, FakeNoConstructorClass::class, FakeNoConstructorClass::class);
     }
 
     public function testAddSingletonInstance_null(): void
     {
-        $this->container->addSingletonInstance(FakeNoConstructorClass::class, null);
-        self::assertNull($this->container->get(FakeNoConstructorClass::class));
+        self::assertNull(
+            $this->createContainer()
+                ->addSingletonInstance(FakeNoConstructorClass::class, null)
+                ->get(FakeNoConstructorClass::class)
+        );
     }
 
     public function testAddSingletonInstance_WrongType(): void
@@ -64,102 +66,146 @@ class ContainerSingletonBuilderTraitTest extends TestCase
         self::expectExceptionObject(
             new InstanceTypeException(FakeNoConstructorSubclass::class, new FakeNoConstructorClass())
         );
-        $this->container->addSingletonInstance(FakeNoConstructorSubclass::class, new FakeNoConstructorClass());
+
+        $this->createContainer()
+            ->addSingletonInstance(FakeNoConstructorSubclass::class, new FakeNoConstructorClass());
     }
 
-    public function testAddSingletonClass(): void
+    public function testAddSingletonClass_NoMutator(): void
     {
-        self::assertSame(
-            $this->container,
-            $this->container->addSingletonClass(FakeNoConstructorClass::class)
-        );
-        $this->assertSingleton(FakeNoConstructorClass::class);
-    }
-
-    public function testAddSingletonClass_Implementation(): void
-    {
-        $this->container->addSingletonClass(FakeNoConstructorSubclass::class);
+        $container = $this->createContainer();
 
         self::assertSame(
-            $this->container,
-            $this->container->addSingletonImplementation(FakeNoConstructorClass::class, FakeNoConstructorSubclass::class)
+            $container,
+            $container->addSingletonClass(FakeNoConstructorClass::class)
         );
-        $this->assertSingleton(FakeNoConstructorClass::class, FakeNoConstructorSubclass::class);
+        $this->assertSingleton($container, FakeNoConstructorClass::class, FakeNoConstructorClass::class);
     }
 
-    public function testAddSingletonClass_SameImplementation(): void
+    public function testAddSingletonClass_WithMutator(): void
+    {
+        self::assertSame(
+            'test',
+            $this->createContainer()
+                ->addSingletonClass(
+                    FakeNoConstructorClass::class,
+                    function (FakeNoConstructorClass $obj) {
+                        $obj->string = 'test';
+                    }
+                )
+                ->get(FakeNoConstructorClass::class)
+                ?->string
+        );
+    }
+
+    public function testAddSingletonImplementation(): void
+    {
+        $container = $this->createContainer()
+            ->addSingletonClass(FakeNoConstructorSubclass::class);
+
+        self::assertSame(
+            $container,
+            $container->addSingletonImplementation(FakeNoConstructorClass::class, FakeNoConstructorSubclass::class)
+        );
+        $this->assertSingleton(
+            $container,
+            FakeNoConstructorClass::class,
+            FakeNoConstructorSubclass::class
+        );
+    }
+
+    public function testAddSingletonImplementation_SameImplementation(): void
     {
         self::expectExceptionObject(
             new ImplementationException(FakeNoConstructorClass::class, FakeNoConstructorClass::class)
         );
-        $this->container->addSingletonImplementation(FakeNoConstructorClass::class, FakeNoConstructorClass::class);
+        $this->createContainer()
+            ->addSingletonImplementation(FakeNoConstructorClass::class, FakeNoConstructorClass::class);
     }
 
-    public function testAddSingletonClass_WrongImplementation(): void
+    public function testAddSingletonImplementation_WrongImplementation(): void
     {
-        $this->container->addSingletonInstance(Throwable::class, new Exception());
-        $this->container->addSingletonInstance(RuntimeException::class, new RuntimeException());
-
         self::expectExceptionObject(
             new ImplementationException(FakeNoConstructorSubclass::class, FakeNoConstructorClass::class)
         );
-        $this->container->addSingletonImplementation(FakeNoConstructorSubclass::class, FakeNoConstructorClass::class);
+
+        $this->createContainer()
+            ->addSingletonImplementation(FakeNoConstructorSubclass::class, FakeNoConstructorClass::class);
     }
 
     public function testAddSingletonFactory(): void
     {
+        $container = $this->createContainer();
+
         self::assertSame(
-            $this->container,
-            $this->container->addSingletonFactory(
+            $container,
+            $container->addSingletonFactory(
                 FakeNoConstructorClass::class,
                 fn () => new FakeNoConstructorSubclass()
             )
         );
-        $this->assertSingleton(FakeNoConstructorClass::class, FakeNoConstructorSubclass::class);
+        $this->assertSingleton(
+            $container,
+            FakeNoConstructorClass::class,
+            FakeNoConstructorSubclass::class
+        );
     }
 
     public function testAddSingletonFactory_null(): void
     {
-        $this->container->addSingletonFactory(FakeNoConstructorClass::class, fn () => null);
-        self::assertNull($this->container->get(FakeNoConstructorClass::class));
+        self::assertNull(
+            $this->createContainer()
+                ->addSingletonFactory(FakeNoConstructorClass::class, fn () => null)
+                ->get(FakeNoConstructorClass::class)
+        );
     }
 
     public function testAddSingletonFactory_WrongReturnType(): void
     {
-        $this->container->addSingletonFactory(
-            FakeNoConstructorClass::class,
-            fn () => new LogicException()
-        );
         self::expectExceptionObject(
             new InstanceTypeException(FakeNoConstructorClass::class, new LogicException())
         );
-        $this->container->get(FakeNoConstructorClass::class);
+
+        $this->createContainer()
+            ->addSingletonFactory(
+                FakeNoConstructorClass::class,
+                fn () => new LogicException()
+            )
+            ->get(FakeNoConstructorClass::class);
     }
 
     public function testAddSingletonContainer(): void
     {
-        $this->container->addSingletonContainer(
-            $inner = self::createMock(ContainerInterface::class)
-        );
+        $container = $this->createContainer()
+            ->addSingletonContainer($inner = self::createMock(ContainerInterface::class));
+
         $inner->method('get')
             ->willReturn(new FakeNoConstructorSubclass());
         $inner->method('has')
             ->willReturnCallback(fn (string $className) => $className === FakeNoConstructorSubclass::class);
 
-        $this->assertSingleton(FakeNoConstructorSubclass::class);
+        $this->assertSingleton($container, FakeNoConstructorSubclass::class, FakeNoConstructorSubclass::class);
         self::expectExceptionObject(new UnresolvedClassException(FakeNoConstructorClass::class));
-        $this->container->get(FakeNoConstructorClass::class);
+        $container->get(FakeNoConstructorClass::class);
     }
 
     public function testAddSingletonNamespace(): void
     {
-        $this->container->addSingletonNamespace(__NAMESPACE__);
-        $this->assertSingleton(FakeNoConstructorClass::class);
+        $this->assertSingleton(
+            $this->createContainer()
+                ->addSingletonNamespace(__NAMESPACE__),
+            FakeNoConstructorClass::class,
+            FakeNoConstructorClass::class
+        );
     }
 
     public function testAddSingletonInterface(): void
     {
-        $this->container->addSingletonInterface(FakeNoConstructorClass::class);
-        $this->assertSingleton(FakeNoConstructorSubclass::class);
+        $this->assertSingleton(
+            $this->createContainer()
+                ->addSingletonInterface(FakeNoConstructorClass::class),
+            FakeNoConstructorSubclass::class,
+            FakeNoConstructorSubclass::class
+        );
     }
 }

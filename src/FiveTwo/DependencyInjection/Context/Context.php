@@ -8,6 +8,8 @@ declare(strict_types=1);
 namespace FiveTwo\DependencyInjection\Context;
 
 use Attribute;
+use BackedEnum;
+use UnitEnum;
 
 #[Attribute(
     Attribute::TARGET_CLASS |
@@ -25,13 +27,17 @@ class Context
     private readonly array $names;
 
     /**
-     * @param string $name
-     * @param string ...$names
+     * @param string|UnitEnum $name
+     * @param string|UnitEnum ...$names
      */
-    public function __construct(string $name, string ...$names)
+    public function __construct(string|UnitEnum $name, string|UnitEnum ...$names)
     {
         /** @var list<string> $names */
-        $this->names = [$name, ...$names];
+        $this->names = array_map(fn (string|UnitEnum $name): string => match (true) {
+            is_string($name) => $name,
+            $name instanceof BackedEnum && is_string($name->value) => $name->value,
+            default => $name->name
+        }, [$name, ...$names]);
     }
 
     /**

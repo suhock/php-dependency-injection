@@ -45,15 +45,18 @@ trait ContainerSingletonBuilderTrait
      * @template TClass of object
      *
      * @param class-string<TClass> $className
+     * @param null|callable(TClass):void $mutator
+     * @psalm-param null|callable(TClass, mixed...):void $mutator
+     * @phpstan-param null|callable(TClass, mixed...):void $mutator
      *
      * @return $this
      * @throws ImplementationException
      */
-    public function addSingletonClass(string $className): static
+    public function addSingletonClass(string $className, ?callable $mutator = null): static
     {
         $this->addSingleton(
             $className,
-            new ClassInstanceFactory($className, $this->getInjector())
+            new ClassInstanceFactory($className, $this->getInjector(), $mutator !== null ? $mutator(...) : null)
         );
 
         return $this;
