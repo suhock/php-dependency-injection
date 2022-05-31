@@ -55,15 +55,7 @@ class ContextInjector implements InjectorInterface
             $contextCount += self::addAttributes($rFunction->getAttributes(Context::class));
             $contextCount += self::addAttributes($rParam->getAttributes(Context::class));
 
-            $className = InjectorHelper::getClassNameFromParameter($rParam);
-
-            if ($className !== null && $this->container->has($className)) {
-                $paramValue = $this->container->get($className);
-
-                return true;
-            }
-
-            return false;
+            return InjectorHelper::getInstanceFromParameter($this->container, $rParam, $paramValue);
         } finally {
             while (--$contextCount >= 0) {
                 $this->container->pop();

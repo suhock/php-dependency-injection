@@ -11,8 +11,11 @@ declare(strict_types=1);
 
 namespace FiveTwo\DependencyInjection;
 
+use ReflectionIntersectionType;
 use ReflectionNamedType;
 use ReflectionParameter;
+use ReflectionType;
+use ReflectionUnionType;
 
 class InjectorHelper
 {
@@ -21,15 +24,129 @@ class InjectorHelper
     }
 
     /**
+     * @param ContainerInterface $container
+     * @param ReflectionParameter $rParam
+     * @param mixed $result
+     * @param-out object|null $result
+     *
+     * @return bool
+     */
+    public static function getInstanceFromParameter(
+        ContainerInterface $container,
+        ReflectionParameter $rParam,
+        mixed &$result
+    ): bool {
+        foreach (self::getClassNamesFromParameter($container, $rParam) as $className) {
+            if ($container->has($className)) {
+                $result = $container->get($className);
+
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @param ContainerInterface $container
      * @param ReflectionParameter $rParam
      *
-     * @return class-string|null
+     * @return list<class-string>
      */
-    public static function getClassNameFromParameter(ReflectionParameter $rParam): string|null
+    private static function getClassNamesFromParameter(
+        ContainerInterface $container,
+        ReflectionParameter $rParam
+    ): array {
+        return $rParam->getType() !== null ? self::getClassNamesFromType($container, $rParam->getType()) : [];
+    }
+
+    /**
+     * @param ContainerInterface $container
+     * @param ReflectionType $rType
+     *
+     * @return list<class-string>
+     */
+    private static function getClassNamesFromType(ContainerInterface $container, ReflectionType $rType): array
     {
-        /** @phpstan-ignore-next-line ReflectionType::getName() will return a class name given the condition */
-        return ($rParam->getType() instanceof ReflectionNamedType && !$rParam->getType()->isBuiltin()) ?
-            $rParam->getType()->getName() :
-            null;
+        $classNames = [];
+
+        if ($rType instanceof ReflectionUnionType) {
+            self::addClassNamesFromUnionType($classNames, $rType);
+        } elseif ($rType instanceof ReflectionIntersectionType) {
+            self::addClassNameFromIntersectionType($classNames, $container, $rType);
+        } elseif ($rType instanceof ReflectionNamedType) {
+            self::addClassNameFromNamedType($classNames, $rType);
+        }
+
+        return $classNames;
+    }
+
+    /**
+     * @param list<class-string> $classNames
+     * @param ReflectionUnionType $rType
+     *
+     * @return void
+     */
+    private static function addClassNamesFromUnionType(array &$classNames, ReflectionUnionType $rType): void
+    {
+        foreach ($rType->getTypes() as $rInnerType) {
+            self::addClassNameFromNamedType($classNames, $rInnerType);
+        }
+    }
+
+    /**
+     * @param list<class-string> $classNames
+     * @param ContainerInterface $container
+     * @param ReflectionIntersectionType $rType
+     *
+     * @return void
+     */
+    private static function addClassNameFromIntersectionType(
+        array &$classNames,
+        ContainerInterface $container,
+        ReflectionIntersectionType $rType
+    ): void {
+        foreach ($rType->getTypes() as $rInnerType) {
+            if (!$rInnerType instanceof ReflectionNamedType) {
+                return;
+            }
+
+            /** @var class-string $className */
+            $className = $rInnerType->getName();
+
+            if (!$container->has($className)) {
+                continue;
+            }
+
+            $instance = $container->get($className);
+
+            foreach ($rType->getTypes() as $rTestType) {
+                if (!$rTestType instanceof ReflectionNamedType) {
+                    return;
+                }
+
+                $testClassName = $rTestType->getName();
+
+                if (!$instance instanceof $testClassName) {
+                    continue 2;
+                }
+            }
+
+            $classNames[] = $className;
+            return;
+        }
+    }
+
+    /**
+     * @param list<class-string> $classNames
+     * @param ReflectionNamedType $rType
+     *
+     * @return void
+     */
+    private static function addClassNameFromNamedType(array &$classNames, ReflectionNamedType $rType): void
+    {
+        if (!$rType->isBuiltin()) {
+            $classNames[] = $rType->getName();
+        }
     }
 }

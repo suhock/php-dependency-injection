@@ -11,7 +11,7 @@ declare(strict_types=1);
 
 namespace FiveTwo\DependencyInjection;
 
-class FakeNoConstructorClass implements FakeInterfaceOne, FakeInterfaceTwo
+interface FakeInterfaceOne
 {
-    public string $string = '';
+
 }

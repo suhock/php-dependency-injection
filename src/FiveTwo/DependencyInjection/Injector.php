@@ -34,14 +34,6 @@ class Injector implements InjectorInterface
      */
     protected function tryResolveParameter(ReflectionParameter $rParam, mixed &$paramValue): bool
     {
-        $className = InjectorHelper::getClassNameFromParameter($rParam);
-
-        if ($className !== null && $this->container->has($className)) {
-            $paramValue = $this->container->get($className);
-
-            return true;
-        }
-
-        return false;
+        return InjectorHelper::getInstanceFromParameter($this->container, $rParam, $paramValue);
     }
 }

@@ -156,4 +156,62 @@ class InjectorTest extends TestCase
         /** @phpstan-ignore-next-line PHPStan does not understand splat in parameter lists */
         $injector->call(fn (Throwable $e1, RuntimeException $e2) => [$e1, $e2]);
     }
+
+    public function testCall_UnionType_First(): void
+    {
+        [$injector, $container] = $this->create();
+
+        $container->classMapping[FakeNoConstructorClass::class] = new FakeNoConstructorClass();
+
+        self::assertSame(
+            $container->classMapping[FakeNoConstructorClass::class],
+            $injector->call(fn (FakeNoConstructorClass|string|FakeContextAwareClass $obj) => $obj)
+        );
+    }
+
+    public function testCall_UnionType_Third(): void
+    {
+        [$injector, $container] = $this->create();
+
+        $container->classMapping[FakeNoConstructorClass::class] = new FakeNoConstructorClass();
+
+        self::assertSame(
+            $container->classMapping[FakeNoConstructorClass::class],
+            $injector->call(fn (FakeContextAwareClass|string|FakeNoConstructorClass $obj) => $obj)
+        );
+    }
+
+    public function testCall_IntersectionType_First(): void
+    {
+        [$injector, $container] = $this->create();
+
+        $container->classMapping[FakeInterfaceOne::class] = new FakeNoConstructorClass();
+
+        self::assertSame(
+            $container->classMapping[FakeInterfaceOne::class],
+            $injector->call(fn (FakeInterfaceOne&FakeInterfaceTwo $obj) => $obj)
+        );
+    }
+
+    public function testCall_IntersectionType_Second(): void
+    {
+        [$injector, $container] = $this->create();
+
+        $container->classMapping[FakeInterfaceTwo::class] = new FakeNoConstructorClass();
+
+        self::assertSame(
+            $container->classMapping[FakeInterfaceTwo::class],
+            $injector->call(fn (FakeInterfaceOne&FakeInterfaceTwo $obj) => $obj)
+        );
+    }
+
+    public function testCall_IntersectionType_MissingOne(): void
+    {
+        [$injector, $container] = $this->create();
+
+        $container->classMapping[FakeInterfaceOne::class] = new FakeNoConstructorClass();
+
+        self::expectException(UnresolvedParameterException::class);
+        $injector->call(fn (FakeInterfaceOne&FakeInterfaceThree $obj) => $obj);
+    }
 }
