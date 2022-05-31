@@ -2,9 +2,16 @@
     "name": "fivetwo/dependency-injection",
     "type": "library",
     "description": "The Five Two Dependency Injection Library",
-    "keywords": ["dependency injection","dependency","injection","di","inversion of control","ioc"],
+    "keywords": [
+        "dependency injection",
+        "dependency",
+        "injection",
+        "di",
+        "inversion of control",
+        "ioc"
+    ],
     "homepage": "https://www.fivetwo.org",
-    "license": "proprietary",
+    "license": "MIT",
     "authors": [
         {
             "name": "Matthew Suhocki",
