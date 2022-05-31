@@ -14,6 +14,7 @@ use FiveTwo\DependencyInjection\InjectorTrait;
 use ReflectionAttribute;
 use ReflectionMethod;
 use ReflectionParameter;
+use Throwable;
 
 /**
  * Provides context-aware methods for injecting dependencies into function and constructor calls.
@@ -81,7 +82,7 @@ class ContextInjector implements InjectorInterface
                     $this->container->push($contextName);
                     $count++;
                 }
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 while (--$count >= 0) {
                     $this->container->pop();
                 }
