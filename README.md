@@ -166,22 +166,34 @@ default ``Container`` provides the convenience methods ``addSingletonInterface``
 adding interface implementation containers.
 
 ```php
+use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityRepository;
+
 $container
-    ->addSingletonInterface(HttpClient::class)
-    ->addTransientInterface(
-        Mailer::class,
-        fn (string $className, AppConfig $config) => new $className($config->transport)
+    ->addSingletonInterface(
+        EntityNameProvider::class,
+        fn (string $className, EntityManager $em) => $em->getRepository($className::getEntityName())
     )
-    ->addSingletonImplementation(
-        HttpClient::class,
-        CurlHttpClient::class,
-        function (CurlHttpClient $client) {
-            $client->setOption(CURLOPT_TIMEOUT, 30);
-        }
+    ->addTransientInterface(Logger::class)
+    ->addSingletonFactory(
+        MyRepository::class,
+        fn (EntityManger $em, Logger $logger) => $em->getRepository(MyEntity::class)->setLogger($logger)
     );
 
-$app = $container->get(PhpHttpClient::class); // uses the nested implementation container
-$client = $container->get(CurlHttpClient::class); // uses the implementation factory
+$app = $container->get(UserRepository::class); // uses the nested implementation container
+$client = $container->get(MyRepository::class); // uses the class-specific factory
+
+class UserRepository extends EntityRepository implements EntityNameProvider
+{
+    public static function getName(): string {
+        return User::class;
+    }
+}
+
+class MyRepository extends EntityRepository implements EntityNameProvider
+{
+    // ...
+}
 ```
 
 ## Context Container
