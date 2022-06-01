@@ -1,10 +1,10 @@
 # Five Two Dependency Injection Framework for PHP
 
-The Five Two Dependency Injection Framework provides a highly customizable dependency injection framework for projects
-running on PHP 8.1 or later. This framework focuses on facilitating sound OOP practices, refactoring, and static
-analysis by emphasizing factory methods as the primary means of building complex dependencies. Thus, by design the
-framework can only resolve and inject ``object`` dependencies and does not rely on configuration files for setting up
-dependencies.
+The Five Two Dependency Injection Framework provides a highly customizable dependency injection
+framework for projects running on PHP 8.1 or later. This framework focuses on facilitating sound OOP
+practices, refactoring, and static analysis by emphasizing factory methods as the primary means of
+building complex dependencies. Thus, by design the framework can only resolve and inject ``object``
+dependencies and does not rely on configuration files for setting up dependencies.
 
 ```php
 $container = (new FiveTwo\DependencyInjection\Container())
@@ -15,12 +15,13 @@ $container = (new FiveTwo\DependencyInjection\Container())
 ```
 
 Out of the box, the framework provides [singleton](#singleton) and [transient](#transient)
-[lifetime strategies](#lifetime-strategies) and a variety of [instance factory](#instance-strategies) strategies, in
-addition to nested [namespace](#namespace-container) and [interface implementation](#implementation-container)
-containers. You can easily extend the default ``Container`` implementation with your own custom lifetime strategies,
-instance factory strategies, or nested containers to fit your needs.
+[lifetime strategies](#lifetime-strategies) and a variety of
+[instance factory](#instance-strategies) strategies, in addition to nested
+[namespace](#namespace-container) and [interface implementation](#implementation-container)
+containers. You can easily extend the default ``Container`` implementation with your own custom
+lifetime strategies, instance factory strategies, or nested containers to fit your needs.
 
-The framework also introduces the concept of [context containers](#context-container) for cascading dependency
+The framework also provides [context containers](#context-container) for cascading dependency
 resolution down a nested context hierarchy.
 
 ## Table of Contents
@@ -43,7 +44,8 @@ resolution down a nested context hierarchy.
 
 ## Installation
 
-Add ``fivetwo/dependency-injection`` to the ``require`` section of your application's ``composer.json`` file.
+Add ``fivetwo/dependency-injection`` to the ``require`` section of your
+application's ``composer.json`` file.
 
 ```json
 {
@@ -79,17 +81,17 @@ There are two builtin lifetime strategies for classes: singleton and transient.
 
 #### Singleton
 
-When a singleton strategy receives a request for a class for the first time, it calls the class's factory, stores the
-result, and returns it. All subsequent requests for that class return that same instance for the lifetime of the
-container. The default ``Container`` provides convenience methods starting with the prefix ``addSingleton`` for adding
-singleton factories.
+When a singleton strategy receives a request for a class for the first time, it calls the class's
+factory, stores the result, and returns it. All subsequent requests for that class return that same
+instance for the lifetime of the container. The default ``Container`` provides convenience 
+methods starting with the prefix ``addSingleton`` for adding singleton factories.
 
 #### Transient
 
-Each time a transient strategy receives a request for a class, it calls the class's factory and returns the result. The
-transient strategy does not restore the result and will request a new instance from the factory each time it is called.
-The default ``Container`` provides convenience methods starting with the prefix ``addTransient`` for adding transient
-factories.
+Each time a transient strategy receives a request for a class, it calls the class's factory and
+returns the result. The transient strategy does not restore the result and will request a new 
+instance from the factory each time it is called. The default ``Container`` provides 
+convenience methods starting with the prefix ``addTransient`` for adding transient factories.
 
 #### Custom Strategies
 
@@ -97,15 +99,16 @@ Custom lifetime strategies can also be added by implementing the ``LifetimeStrat
 
 ### Instance Factories
 
-Instance factories provide object instances when requested from a ``LifetimeStrategy``. The default ``Container``
-provides convenience methods for each of the built-in instance factories.
+Instance factories provide object instances when requested from a ``LifetimeStrategy``. The 
+default ``Container`` provides convenience methods for each of the built-in instance factories.
 
 #### Class Instantiation
 
-``ClassInstanceFactory`` creates instances by invoking the class's constructor (if it exists) with its parameters
-injected from the container.
+``ClassInstanceFactory`` creates instances by invoking the class's constructor (if it exists) with
+its parameters injected from the container.
 
-The optional ``$mutator`` callback allows additional configuration of the object after it has been instantiated.
+The optional ``$mutator`` callback allows additional configuration of the object after it has been
+instantiated.
 
 ```php
 /* Convenience methods for adding class instantiation factories. */
@@ -138,9 +141,9 @@ $container->addTransient(
 
 #### Implementation Mapping
 
-``ImplementationInstanceFactory`` maps an interface or base class to a concrete implementation. When an instance of the
-interface or base class is requested, the factory will request an instance of the implementation class from the
-container.
+``ImplementationInstanceFactory`` maps an interface or base class to a concrete implementation. When
+an instance of the interface or base class is requested, the factory will request an instance of the
+implementation class from the container.
 
 ```php
 /* Convenience methods for adding implementation factories */
@@ -164,14 +167,22 @@ $container->addSingletonImplementation(HttpClient::class, CurlHttpClient::class)
 
 #### Factory Method Invocation
 
-The ``ClosureInstanceFactory`` requests instances of a class from a factory method provided as a ``Closure``.
+The ``ClosureInstanceFactory`` requests instances of a class from a factory method provided as a 
+``Closure``.
 
 ```php
 /* Convenience methods for adding closure factories */
 
 class Container {
-    function addSingletonFactory<T>(string<T> $className, callable(...):(T|null) $factory): static;
-    function addTransientFactory<T>(string<T> $className, callable(...):(T|null) $factory): static;
+    function addSingletonFactory<T>(
+        string<T> $className,
+        callable(...):(T|null) $factory
+    ): static;
+    
+    function addTransientFactory<T>(
+        string<T> $className,
+        callable(...):(T|null) $factory
+    ): static;
 }
 
 /* Examples */
@@ -211,14 +222,16 @@ $container->addSingletonInstance(Request::class, $currentRequest);
 
 ### Nested Containers
 
-The default ``Container`` will also search nested instances of ``ContainerInterface`` in the order they are added for
-instances of a dependency if no factory for a given class exists in the outer container.
+The default ``Container`` will also search nested instances of ``ContainerInterface`` in the order
+they are added for instances of a dependency if no factory for a given class exists in the outer 
+container.
 
 #### Namespace Container
 
-``NamespaceContainer`` will provide an instance of the requested class if it is in the specified namespace. Instances
-are acquired from the given factory, or by auto-wiring the constructor if no factory is provided. The factory must take
-the class name as the first parameter. Additional parameters will be injected.
+``NamespaceContainer`` will provide an instance of the requested class if it is in the specified
+namespace. Instances are acquired from the given factory, or by auto-wiring the constructor if 
+no factory is provided. The factory must take the class name as the first parameter. Additional 
+parameters will be injected.
 
 ```php
 /* Convenience methods for adding namespace containers */
@@ -247,16 +260,17 @@ $container->addSingletonImplementation(MyNamespace\HttpClient::class, MyNamespac
 // will use the namespace container
 $app = $container->get(MyNamespace\MyApplication::class);
 
-// will resolve HttpClient to the concrete class CurlHttpClient and then instantiate it using its constructor because
-// CurlHttpClient is found in the namespace container
+// will resolve HttpClient to the concrete class CurlHttpClient and then instantiate it using its
+// constructor because CurlHttpClient is found in the namespace container
 $client = $container->get(MyNamespace\HttpClient::class);
 ```
 
 #### Implementation Container
 
-``ImplementationContainer`` will provide an instance of the requested class if it is a subclass of the specified
-interface or base class. Instances are acquired from the given factory, or by auto-wiring the constructor if no factory
-is provided. The factory must take the class name as the first parameter. Additional parameters will be injected.
+``ImplementationContainer`` will provide an instance of the requested class if it is a subclass of
+the specified interface or base class. Instances are acquired from the given factory, or by
+auto-wiring the constructor if no factory is provided. The factory must take the class name as the
+first parameter. Additional parameters will be injected.
 
 ```php
 /* Convenience methods for adding implementation containers */
@@ -278,11 +292,13 @@ class Container {
 $container
     ->addSingletonInterface(
         EntityNameProvider::class,
-        fn (string $className, EntityManager $em) => $em->getRepository($className::getEntityName())
+        fn (string $className, EntityManager $em) =>
+            $em->getRepository($className::getEntityName())
     )
     ->addSingletonFactory(
         MyRepository::class,
-        fn (EntityManger $em, Logger $logger) => $em->getRepository(MyEntity::class)->setLogger($logger)
+        fn (EntityManger $em, Logger $logger) =>
+            $em->getRepository(MyEntity::class)->setLogger($logger)
     );
 
 // will use the nested implementation container's factory
@@ -298,8 +314,8 @@ $client = $container->get(MyRepository::class);
 use FiveTwo\DependencyInjection\Context\ContextContainerFactory;
 use FiveTwo\DependencyInjection\Context\Context;
 
-// Strings or enums can be used as identifiers for contexts. To help ease analysis and future refactorings, enums or
-// string-typed constants are recommended.
+// Strings or enums can be used as identifiers for contexts. To help ease analysis and future
+// refactorings, enums or string-typed constants are recommended.
 enum MyContexts {
     case Default;
     case Admin;
@@ -329,7 +345,8 @@ $container
     ->get(MyApplication::class)
     ->run();
 
-// The container will search the Admin context then the Default context for each dependency in the following class 
+// The container will search the Admin context then the Default context for each dependency in the
+// following class 
 #[Context(MyContexts::Admin)]
 class AdminEditDefaultSettingsController {
 
@@ -342,7 +359,8 @@ class AdminEditDefaultSettingsController {
         #[Context(MyContexts::Default)]
         private readonly Settings $defaultSettings,
         
-        // The container will not find HttpClient in Admin context, so it will use the factory in the Default context
+        // The container will not find HttpClient in Admin context, so it will use the factory in
+        // the Default context
         private readonly HttpClient $httpClient
     ) {
     }
