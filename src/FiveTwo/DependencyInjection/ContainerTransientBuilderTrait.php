@@ -48,7 +48,9 @@ trait ContainerTransientBuilderTrait
      * @template TClass of object
      *
      * @param class-string<TClass> $className
-     * @param null|callable(TClass):void $mutator
+     * @param null|callable $mutator
+     * @psalm-param null|callable(TClass, mixed ...):void $mutator
+     * @phpstan-param null|callable(TClass, mixed ...):void $mutator
      *
      * @return $this
      * @throws ImplementationException

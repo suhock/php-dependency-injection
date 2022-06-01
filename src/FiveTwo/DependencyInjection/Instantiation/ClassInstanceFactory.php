@@ -29,8 +29,8 @@ class ClassInstanceFactory implements InstanceFactory
      * @param null|Closure(TClass):void $mutator [Optional] Mutator function that allows additional changes to the
      * instantiated instance. The first parameter will be the new object instance. Any other parameters will be
      * injected.
-     * @psalm-param null|Closure(TClass, mixed...):void $mutator
-     * @phpstan-param null|Closure(TClass, mixed...):void $mutator
+     * @psalm-param null|Closure(TClass, mixed ...):void $mutator
+     * @phpstan-param null|Closure(TClass, mixed ...):void $mutator
      */
     public function __construct(
         private readonly string $className,
