@@ -12,7 +12,7 @@ declare(strict_types=1);
 namespace FiveTwo\DependencyInjection;
 
 /**
- * Indicates that a dependency could not be resolved.
+ * Exception that indicates a dependency could not be resolved.
  */
 class UnresolvedDependencyException extends DependencyInjectionException
 {

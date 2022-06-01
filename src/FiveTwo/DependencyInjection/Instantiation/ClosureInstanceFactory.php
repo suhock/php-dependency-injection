@@ -16,7 +16,7 @@ use FiveTwo\DependencyInjection\DependencyInjectionException;
 use FiveTwo\DependencyInjection\InjectorInterface;
 
 /**
- * A factory for providing instances using a factory method.
+ * Factory that provides instances of a class by using a factory method.
  *
  * @template TClass of object
  * @template-implements InstanceFactory<TClass>

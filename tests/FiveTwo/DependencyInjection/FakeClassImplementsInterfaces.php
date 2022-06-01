@@ -11,7 +11,10 @@ declare(strict_types=1);
 
 namespace FiveTwo\DependencyInjection;
 
-interface InjectorProvider
+/**
+ * Fakes a class implementing multiple interfaces.
+ */
+class FakeClassImplementsInterfaces implements FakeInterfaceOne, FakeInterfaceTwo
 {
-    public function getInjector(): InjectorInterface;
+    public string $string = '';
 }

@@ -15,7 +15,8 @@ use FiveTwo\DependencyInjection\ContainerInterface;
 use FiveTwo\DependencyInjection\UnresolvedClassException;
 
 /**
- * Provides a concrete implementation for a given interface or class from a container.
+ * Factory that provides instances of a class by requesting an instance of a concrete implementation of that class from
+ * the container.
  *
  * @template TClass of object
  * @template TImplementation of TClass

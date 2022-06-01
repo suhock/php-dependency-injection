@@ -14,19 +14,25 @@ namespace FiveTwo\DependencyInjection;
 use ReflectionParameter;
 
 /**
- * Provides a default implementation for the {@see InjectorInterface} that injects parameters resolved from
- * {@see $container}.
+ * Default implementation for the {@see InjectorInterface} that injects missing parameter values from a
+ * {@see ContainerInterface}
  */
 class Injector implements InjectorInterface
 {
     use InjectorTrait;
+    use ContainerInjectorTrait;
 
     /**
-     * @param ContainerInterface $container The container from which to resolve parameter values.
+     * @param ContainerInterface $container The container from which to resolve parameter values
      */
     public function __construct(
         private readonly ContainerInterface $container
     ) {
+    }
+
+    protected function getContainer(): ContainerInterface
+    {
+        return $this->container;
     }
 
     /**
@@ -34,6 +40,6 @@ class Injector implements InjectorInterface
      */
     protected function tryResolveParameter(ReflectionParameter $rParam, mixed &$paramValue): bool
     {
-        return InjectorHelper::getInstanceFromParameter($this->container, $rParam, $paramValue);
+        return $this->getInstanceFromParameter($rParam, $paramValue);
     }
 }

@@ -19,7 +19,8 @@ use FiveTwo\DependencyInjection\Instantiation\InstanceFactory;
 use FiveTwo\DependencyInjection\Lifetime\TransientStrategy;
 
 /**
- * Implements convenience methods for adding transients to a container.
+ * Default implementation for {@see ContainerTransientBuilderInterface}. Classes using this trait must implement
+ * {@see ContainerBuilderInterface}.
  *
  * @psalm-require-implements ContainerBuilderInterface
  * @psalm-require-implements ContainerTransientBuilderInterface
@@ -125,7 +126,7 @@ trait ContainerTransientBuilderTrait
      */
     public function addTransientNamespace(string $namespace, ?callable $factory = null): static
     {
-        $this->addTransientContainer(new NamespaceContainer($namespace, $this->injector, $factory));
+        $this->addTransientContainer(new NamespaceContainer($namespace, $this->getInjector(), $factory));
 
         return $this;
     }
@@ -141,7 +142,7 @@ trait ContainerTransientBuilderTrait
     public function addTransientInterface(string $interfaceName, ?callable $factory = null): static
     {
         /** @psalm-suppress ArgumentTypeCoercion argument types are the same... */
-        $this->addTransientContainer(new ImplementationContainer($interfaceName, $this->injector, $factory));
+        $this->addTransientContainer(new InterfaceContainer($interfaceName, $this->getInjector(), $factory));
 
         return $this;
     }

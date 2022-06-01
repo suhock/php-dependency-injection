@@ -15,7 +15,7 @@ use FiveTwo\DependencyInjection\DependencyInjectionException;
 use Throwable;
 
 /**
- * Indicates that the type returned by an {@see InstanceFactory} is different than expected.
+ * Exception that indicates the type returned by an {@see InstanceFactory} is different from the expected type.
  *
  * @template TExpected of object
  */

@@ -14,7 +14,7 @@ namespace FiveTwo\DependencyInjection;
 use Throwable;
 
 /**
- * Indicates that the container could not resolve a value for the specified class.
+ * Exception that indicates the container could not resolve a value for the specified class.
  *
  * @template TClass of object
  */

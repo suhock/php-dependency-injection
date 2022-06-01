@@ -14,7 +14,7 @@ namespace FiveTwo\DependencyInjection;
 use Throwable;
 
 /**
- * Indicates that the injector could not resolve a value for a function parameter.
+ * Exception that indicates the injector could not resolve a value for a function parameter.
  */
 class UnresolvedParameterException extends UnresolvedDependencyException
 {

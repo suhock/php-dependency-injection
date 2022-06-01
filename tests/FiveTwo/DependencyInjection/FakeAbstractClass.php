@@ -11,6 +11,9 @@ declare(strict_types=1);
 
 namespace FiveTwo\DependencyInjection;
 
+/**
+ * Fakes a simple abstract class.
+ */
 abstract class FakeAbstractClass
 {
 

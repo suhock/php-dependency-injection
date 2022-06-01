@@ -12,6 +12,8 @@ declare(strict_types=1);
 namespace FiveTwo\DependencyInjection\Lifetime;
 
 /**
+ * Manages the lifetime of a transient object.
+ *
  * @template TClass of object
  * @extends LifetimeStrategy<TClass>
  */

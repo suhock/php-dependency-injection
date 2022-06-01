@@ -12,35 +12,38 @@ declare(strict_types=1);
 namespace FiveTwo\DependencyInjection\Instantiation;
 
 use FiveTwo\DependencyInjection\ContainerInterface;
-use FiveTwo\DependencyInjection\FakeNoConstructorClass;
-use FiveTwo\DependencyInjection\FakeNoConstructorSubclass;
+use FiveTwo\DependencyInjection\FakeClassExtendsNoConstructor;
+use FiveTwo\DependencyInjection\FakeClassNoConstructor;
 use PHPUnit\Framework\TestCase;
 
+/**
+ * Test suite for {@see ImplementationInstanceFactory}.
+ */
 class ImplementationInstanceFactoryTest extends TestCase
 {
     public function testGet(): void
     {
         $factory = new ImplementationInstanceFactory(
-            FakeNoConstructorClass::class,
-            FakeNoConstructorSubclass::class,
+            FakeClassNoConstructor::class,
+            FakeClassExtendsNoConstructor::class,
             $container = $this->createMock(ContainerInterface::class)
         );
 
         $container->method('has')->willReturn(true);
         $container->expects(self::once())
             ->method('get')
-            ->with(FakeNoConstructorSubclass::class)
-            ->willReturn(new FakeNoConstructorSubclass());
+            ->with(FakeClassExtendsNoConstructor::class)
+            ->willReturn(new FakeClassExtendsNoConstructor());
 
-        self::assertInstanceOf(FakeNoConstructorSubclass::class, $factory->get());
+        self::assertInstanceOf(FakeClassExtendsNoConstructor::class, $factory->get());
     }
 
     public function testGet_SameClass(): void
     {
         self::expectException(ImplementationException::class);
         new ImplementationInstanceFactory(
-            FakeNoConstructorClass::class,
-            FakeNoConstructorClass::class,
+            FakeClassNoConstructor::class,
+            FakeClassNoConstructor::class,
             $this->createMock(ContainerInterface::class)
         );
     }
@@ -49,8 +52,8 @@ class ImplementationInstanceFactoryTest extends TestCase
     {
         self::expectException(ImplementationException::class);
         new ImplementationInstanceFactory(
-            FakeNoConstructorSubclass::class,
-            FakeNoConstructorClass::class,
+            FakeClassExtendsNoConstructor::class,
+            FakeClassNoConstructor::class,
             $this->createMock(ContainerInterface::class)
         );
     }

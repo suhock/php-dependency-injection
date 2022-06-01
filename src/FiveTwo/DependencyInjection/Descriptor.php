@@ -15,6 +15,8 @@ use FiveTwo\DependencyInjection\Instantiation\InstanceFactory;
 use FiveTwo\DependencyInjection\Lifetime\LifetimeStrategy;
 
 /**
+ * Contains information about how to resolve a dependency.
+ *
  * @internal
  * @template TClass as object
  */

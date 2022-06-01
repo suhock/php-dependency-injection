@@ -15,15 +15,15 @@ use Closure;
 use FiveTwo\DependencyInjection\ContainerInterface;
 use FiveTwo\DependencyInjection\DependencyInjectionException;
 use FiveTwo\DependencyInjection\InjectorInterface;
-use FiveTwo\DependencyInjection\InjectorProvider;
 use FiveTwo\DependencyInjection\UnresolvedClassException;
 
 /**
- * Provides a {@see ContainerInterface} aggregate for resolving instances based on the current context.
+ * Manages a collection of named {@see ContainerInterface} instances and resolves objects from them based on a context
+ * stack
  *
  * @template TContainer of ContainerInterface
  */
-class ContextContainer implements ContainerInterface, InjectorProvider
+class ContextContainer implements ContainerInterface
 {
     private readonly InjectorInterface $injector;
 
@@ -34,7 +34,7 @@ class ContextContainer implements ContainerInterface, InjectorProvider
     private array $stack = [];
 
     /**
-     * @param Closure(InjectorProvider):TContainer $containerFactory A factory method for creating new container
+     * @param Closure(InjectorInterface):TContainer $containerFactory A factory method for creating new container
      * instances
      */
     public function __construct(
@@ -49,7 +49,7 @@ class ContextContainer implements ContainerInterface, InjectorProvider
      */
     private function createContainer(): ContainerInterface
     {
-        return ($this->containerFactory)($this);
+        return ($this->containerFactory)($this->injector);
     }
 
     /**

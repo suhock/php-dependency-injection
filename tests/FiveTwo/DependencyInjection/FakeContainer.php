@@ -11,6 +11,9 @@ declare(strict_types=1);
 
 namespace FiveTwo\DependencyInjection;
 
+/**
+ * Fakes a simple container.
+ */
 class FakeContainer implements ContainerInterface
 {
     /** @var array<class-string, object|null> */

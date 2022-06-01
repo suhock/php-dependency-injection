@@ -11,6 +11,9 @@ declare(strict_types=1);
 
 namespace FiveTwo\DependencyInjection;
 
+/**
+ * Interface for retrieving dependencies from a container.
+ */
 interface ContainerInterface
 {
     /**

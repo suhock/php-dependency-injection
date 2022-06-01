@@ -14,7 +14,7 @@ namespace FiveTwo\DependencyInjection;
 use Throwable;
 
 /**
- * Indicates that the dependency could not be resolved because it eventually depends on itself.
+ * Exception that indicates the dependency could not be resolved because it eventually depends on itself.
  *
  * @template TClass of object
  */

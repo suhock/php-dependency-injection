@@ -15,7 +15,7 @@ use LogicException;
 use Throwable;
 
 /**
- * Indicates an exception that occurred as part of the dependency injection process.
+ * Exception that indicates an error occurred as part of the dependency injection process.
  */
 class DependencyInjectionException extends LogicException
 {

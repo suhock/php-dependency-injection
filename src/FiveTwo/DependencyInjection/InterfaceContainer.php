@@ -14,11 +14,11 @@ namespace FiveTwo\DependencyInjection;
 use Closure;
 
 /**
- * Provides instances of classes that inherit from the specified interface or base class.
+ * Provides instances of classes that inherit from the given interface or base class.
  *
  * @template TInterface of object
  */
-class ImplementationContainer implements ContainerInterface
+class InterfaceContainer implements ContainerInterface
 {
     /**
      * @var Closure<TInterface, TInterface|null> $factory

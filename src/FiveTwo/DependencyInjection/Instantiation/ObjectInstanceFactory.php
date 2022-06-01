@@ -12,7 +12,7 @@ declare(strict_types=1);
 namespace FiveTwo\DependencyInjection\Instantiation;
 
 /**
- * Provides an existing instance.
+ * Factory that provides a previously constructed instance of the class.
  *
  * @template TClass of object
  * @template-implements InstanceFactory<TClass>

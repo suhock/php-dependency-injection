@@ -21,8 +21,7 @@ class Container implements
     ContainerInterface,
     ContainerBuilderInterface,
     ContainerSingletonBuilderInterface,
-    ContainerTransientBuilderInterface,
-    InjectorProvider
+    ContainerTransientBuilderInterface
 {
     use ContainerSingletonBuilderTrait;
     use ContainerTransientBuilderTrait;
@@ -36,16 +35,21 @@ class Container implements
     private array $containers = [];
 
     /**
-     * @param InjectorProvider|null $injectorProvider [optional] The source of an existing injector to use for injecting
-     * dependencies into factories
+     * @param InjectorInterface|null $injector [Optional] An existing injector to use for injecting dependencies into
+     * factories
      */
-    public function __construct(?InjectorProvider $injectorProvider = null)
+    public function __construct(?InjectorInterface $injector = null)
     {
         $this->addSingletonInstance(self::class, $this);
 
-        $this->injector = $injectorProvider?->getInjector() ?? new Injector($this);
+        $this->injector = $injector ?? new Injector($this);
         $this->addSingletonInstance($this->injector::class, $this->injector)
             ->addSingletonInstance(InjectorInterface::class, $this->injector);
+    }
+
+    protected function getInjector(): InjectorInterface
+    {
+        return $this->injector;
     }
 
     /**
@@ -73,14 +77,6 @@ class Container implements
         unset($this->factories[$className]);
 
         return $this;
-    }
-
-    /**
-     * @return InjectorInterface A dependency injector backed by this container
-     */
-    public function getInjector(): InjectorInterface
-    {
-        return $this->injector;
     }
 
     /**

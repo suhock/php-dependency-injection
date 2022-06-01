@@ -14,16 +14,19 @@ namespace FiveTwo\DependencyInjection;
 use DateTime;
 use PHPUnit\Framework\TestCase;
 
+/**
+ * Test suite for {@see NamespaceContainer}.
+ */
 class NamespaceContainerTest extends TestCase
 {
     public function testGet(): void
     {
         $container = self::createMock(ContainerInterface::class);
         $container->method('get')
-            ->with(FakeNoConstructorClass::class)
-            ->willReturn(new FakeNoConstructorClass());
+            ->with(FakeClassNoConstructor::class)
+            ->willReturn(new FakeClassNoConstructor());
         $container->method('has')
-            ->with(FakeNoConstructorClass::class)
+            ->with(FakeClassNoConstructor::class)
             ->willReturn(true);
         $injector = new Injector($container);
 
@@ -35,8 +38,8 @@ class NamespaceContainerTest extends TestCase
         );
 
         self::assertInstanceOf(
-            FakeNoConstructorClass::class,
-            $namespaceContainer->get(FakeNoConstructorClass::class)
+            FakeClassNoConstructor::class,
+            $namespaceContainer->get(FakeClassNoConstructor::class)
         );
     }
 
@@ -60,7 +63,7 @@ class NamespaceContainerTest extends TestCase
             fn () => null
         );
 
-        self::assertTrue($container->has(FakeNoConstructorClass::class));
+        self::assertTrue($container->has(FakeClassNoConstructor::class));
         self::assertFalse($container->has(DateTime::class));
     }
 
@@ -72,7 +75,7 @@ class NamespaceContainerTest extends TestCase
             fn () => null
         );
 
-        self::assertTrue($container->has(FakeNoConstructorClass::class));
+        self::assertTrue($container->has(FakeClassNoConstructor::class));
         self::assertTrue($container->has(DateTime::class));
     }
 }

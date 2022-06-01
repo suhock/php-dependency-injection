@@ -16,7 +16,7 @@ use FiveTwo\DependencyInjection\DependencyInjectionException;
 use FiveTwo\DependencyInjection\InjectorInterface;
 
 /**
- * A factory for creating instances using a class's constructor.
+ * Factory that provides instances of a class by directly instantiating the class.
  *
  * @template TClass of object
  * @template-implements InstanceFactory<TClass>

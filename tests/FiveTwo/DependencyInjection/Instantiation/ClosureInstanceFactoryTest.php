@@ -11,18 +11,21 @@ declare(strict_types=1);
 
 namespace FiveTwo\DependencyInjection\Instantiation;
 
-use FiveTwo\DependencyInjection\FakeNoConstructorClass;
-use FiveTwo\DependencyInjection\FakeNoConstructorSubclass;
+use FiveTwo\DependencyInjection\FakeClassExtendsNoConstructor;
+use FiveTwo\DependencyInjection\FakeClassNoConstructor;
 use FiveTwo\DependencyInjection\InjectorInterface;
 use PHPUnit\Framework\TestCase;
 
+/**
+ * Test suite for {@see ClosureInstanceFactory}.
+ */
 class ClosureInstanceFactoryTest extends TestCase
 {
     public function testGet(): void
     {
         $factory = new ClosureInstanceFactory(
-            FakeNoConstructorClass::class,
-            $factoryMethod = fn () => new FakeNoConstructorClass(),
+            FakeClassNoConstructor::class,
+            $factoryMethod = fn () => new FakeClassNoConstructor(),
             $injector = $this->createMock(InjectorInterface::class)
         );
 
@@ -31,13 +34,13 @@ class ClosureInstanceFactoryTest extends TestCase
             ->with($factoryMethod)
             ->willReturnCallback(fn () => $factoryMethod());
 
-        self::assertInstanceOf(FakeNoConstructorClass::class, $factory->get());
+        self::assertInstanceOf(FakeClassNoConstructor::class, $factory->get());
     }
 
     public function testGet_Null(): void
     {
         $factory = new ClosureInstanceFactory(
-            FakeNoConstructorClass::class,
+            FakeClassNoConstructor::class,
             $factoryMethod = fn () => null,
             $injector = $this->createMock(InjectorInterface::class)
         );
@@ -53,8 +56,8 @@ class ClosureInstanceFactoryTest extends TestCase
     public function testGet_WrongClass(): void
     {
         $factory = new ClosureInstanceFactory(
-            FakeNoConstructorSubclass::class,
-            $factoryMethod = fn () => new FakeNoConstructorClass(),
+            FakeClassExtendsNoConstructor::class,
+            $factoryMethod = fn () => new FakeClassNoConstructor(),
             $injector = $this->createMock(InjectorInterface::class)
         );
 

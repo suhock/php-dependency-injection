@@ -15,8 +15,11 @@ use FiveTwo\DependencyInjection\Context\Context;
 use RuntimeException;
 use Throwable;
 
+/**
+ * Fakes a simple class which specifies contexts at various scopes.
+ */
 #[Context('context1')]
-class FakeContextAwareClass
+class FakeClassUsingContexts
 {
     public readonly RuntimeException $runtimeException;
 

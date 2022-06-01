@@ -13,68 +13,71 @@ namespace FiveTwo\DependencyInjection;
 
 use PHPUnit\Framework\TestCase;
 
-class ImplementationContainerTest extends TestCase
+/**
+ * Test suite for {@see InterfaceContainer}.
+ */
+class InterfaceContainerTest extends TestCase
 {
     public function testGet(): void
     {
         $container = self::createMock(ContainerInterface::class);
         $container->method('get')
-            ->with(FakeNoConstructorClass::class)
-            ->willReturn(new FakeNoConstructorClass());
+            ->with(FakeClassNoConstructor::class)
+            ->willReturn(new FakeClassNoConstructor());
         $container->method('has')
-            ->with(FakeNoConstructorClass::class)
+            ->with(FakeClassNoConstructor::class)
             ->willReturn(true);
         $injector = new Injector($container);
 
-        $implContainer = new ImplementationContainer(
-            FakeNoConstructorClass::class,
+        $implContainer = new InterfaceContainer(
+            FakeClassNoConstructor::class,
             $injector,
             /** @param class-string $className */
             fn (string $className) => $injector->instantiate($className)
         );
 
         self::assertInstanceOf(
-            FakeNoConstructorSubclass::class,
-            $implContainer->get(FakeNoConstructorSubclass::class)
+            FakeClassExtendsNoConstructor::class,
+            $implContainer->get(FakeClassExtendsNoConstructor::class)
         );
     }
 
     public function testGet_SameClass(): void
     {
-        $container = new ImplementationContainer(
-            FakeNoConstructorClass::class,
+        $container = new InterfaceContainer(
+            FakeClassNoConstructor::class,
             self::createMock(InjectorInterface::class),
             fn () => null
         );
 
         self::expectException(UnresolvedClassException::class);
-        $container->get(FakeNoConstructorClass::class);
+        $container->get(FakeClassNoConstructor::class);
     }
 
     public function testGet_NotSubclass(): void
     {
-        $container = new ImplementationContainer(
-            FakeNoConstructorClass::class,
+        $container = new InterfaceContainer(
+            FakeClassNoConstructor::class,
             self::createMock(InjectorInterface::class),
             fn () => null
         );
 
         self::expectException(UnresolvedClassException::class);
         /** @psalm-suppress InvalidArgument Testing for invalid argument here */
-        $container->get(FakeContextAwareClass::class);
+        $container->get(FakeClassUsingContexts::class);
     }
 
     public function testHas(): void
     {
-        $container = new ImplementationContainer(
-            FakeNoConstructorClass::class,
+        $container = new InterfaceContainer(
+            FakeClassNoConstructor::class,
             self::createMock(InjectorInterface::class),
             fn () => null
         );
 
-        self::assertTrue($container->has(FakeNoConstructorSubclass::class));
-        self::assertFalse($container->has(FakeNoConstructorClass::class));
+        self::assertTrue($container->has(FakeClassExtendsNoConstructor::class));
+        self::assertFalse($container->has(FakeClassNoConstructor::class));
         /** @psalm-suppress InvalidArgument */
-        self::assertFalse($container->has(FakeContextAwareClass::class));
+        self::assertFalse($container->has(FakeClassUsingContexts::class));
     }
 }

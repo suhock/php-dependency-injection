@@ -12,6 +12,8 @@ declare(strict_types=1);
 namespace FiveTwo\DependencyInjection\Lifetime;
 
 /**
+ * Interface for classes that manage the lifetime of an object instance.
+ *
  * @template TClass of object
  */
 abstract class LifetimeStrategy
@@ -20,24 +22,18 @@ abstract class LifetimeStrategy
      * @param class-string<TClass> $className
      */
     public function __construct(
-        private readonly string $className
+        protected readonly string $className
     ) {
     }
 
     /**
-     * @return class-string<TClass>
-     */
-    public function getClassName(): string
-    {
-        return $this->className;
-    }
-
-    /**
-     * @param callable $factory
+     * Returns an instance of this strategy's class by invoking the given factory, based on the strategy's rules.
+     *
+     * @param callable $factory A factory function that should be called when an instance of the class is needed
      * @psalm-param callable(mixed ...):(TClass|null) $factory
      * @phpstan-param callable(mixed ...):(TClass|null) $factory
      *
-     * @return TClass|null
+     * @return TClass|null An instance of the class, or <code>null</code>
      */
     abstract public function get(callable $factory): ?object;
 }

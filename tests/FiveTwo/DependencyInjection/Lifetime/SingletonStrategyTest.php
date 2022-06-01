@@ -12,13 +12,16 @@ declare(strict_types=1);
 namespace FiveTwo\DependencyInjection\Lifetime;
 
 use FiveTwo\DependencyInjection\ContainerInterface;
-use FiveTwo\DependencyInjection\FakeNoConstructorClass;
+use FiveTwo\DependencyInjection\FakeClassNoConstructor;
 use PHPUnit\Framework\TestCase;
 
+/**
+ * Test suite for {@see SingletonStrategy}.
+ */
 class SingletonStrategyTest extends TestCase
 {
     /**
-     * @return SingletonStrategy<FakeNoConstructorClass>
+     * @return SingletonStrategy<FakeClassNoConstructor>
      */
     protected function createStrategy(): SingletonStrategy
     {
@@ -26,14 +29,14 @@ class SingletonStrategyTest extends TestCase
          * @phpstan-ignore-next-line PHPStan does not support generics on inherited constructors without repeating the
          * constructor {@link https://github.com/phpstan/phpstan/issues/3537#issuecomment-710038367}
          */
-        return new SingletonStrategy(FakeNoConstructorClass::class);
+        return new SingletonStrategy(FakeClassNoConstructor::class);
     }
 
     public function testGet(): void
     {
         self::assertInstanceOf(
-            FakeNoConstructorClass::class,
-            $this->createStrategy()->get(fn () => new FakeNoConstructorClass())
+            FakeClassNoConstructor::class,
+            $this->createStrategy()->get(fn () => new FakeClassNoConstructor())
         );
     }
 
@@ -42,8 +45,8 @@ class SingletonStrategyTest extends TestCase
         $strategy = $this->createStrategy();
 
         self::assertSame(
-            $strategy->get(fn () => new FakeNoConstructorClass()),
-            $strategy->get(fn () => new FakeNoConstructorClass())
+            $strategy->get(fn () => new FakeClassNoConstructor()),
+            $strategy->get(fn () => new FakeClassNoConstructor())
         );
     }
 
@@ -62,7 +65,7 @@ class SingletonStrategyTest extends TestCase
             ->willReturn(null);
         $strategy = $this->createStrategy();
 
-        self::assertNull($strategy->get(fn () => $stub->get(FakeNoConstructorClass::class)));
-        self::assertNull($strategy->get(fn () => $stub->get(FakeNoConstructorClass::class)));
+        self::assertNull($strategy->get(fn () => $stub->get(FakeClassNoConstructor::class)));
+        self::assertNull($strategy->get(fn () => $stub->get(FakeClassNoConstructor::class)));
     }
 }

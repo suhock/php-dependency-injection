@@ -12,7 +12,7 @@ declare(strict_types=1);
 namespace FiveTwo\DependencyInjection\Instantiation;
 
 /**
- * Provides instances of one class.
+ * Interface for classes that manage the provision of objects.
  *
  * @template TClass of object
  */

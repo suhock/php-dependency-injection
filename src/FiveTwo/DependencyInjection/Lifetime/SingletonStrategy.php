@@ -12,6 +12,8 @@ declare(strict_types=1);
 namespace FiveTwo\DependencyInjection\Lifetime;
 
 /**
+ * Manages the lifetime of a singleton object.
+ *
  * @template TClass of object
  * @extends LifetimeStrategy<TClass>
  */

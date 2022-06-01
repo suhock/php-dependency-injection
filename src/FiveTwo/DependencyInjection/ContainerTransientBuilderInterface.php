@@ -15,7 +15,7 @@ use FiveTwo\DependencyInjection\Instantiation\ImplementationException;
 use FiveTwo\DependencyInjection\Instantiation\InstanceFactory;
 
 /**
- * Provides convenience methods for adding transients to a container.
+ * Interface for adding transient factories to a container.
  */
 interface ContainerTransientBuilderInterface
 {

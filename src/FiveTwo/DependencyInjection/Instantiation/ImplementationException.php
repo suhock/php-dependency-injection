@@ -15,7 +15,7 @@ use FiveTwo\DependencyInjection\DependencyInjectionException;
 use Throwable;
 
 /**
- * Indicates that a class does not actually implement or extend an expected interface or base class.
+ * Exception that indicates a class does not actually implement or extend the expected interface or base class.
  *
  * @template TExpected of object
  * @template TActual of object

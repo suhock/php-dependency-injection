@@ -11,6 +11,10 @@ declare(strict_types=1);
 
 namespace FiveTwo\DependencyInjection;
 
-class FakeNoConstructorSubclass extends FakeNoConstructorClass
+/**
+ * Fakes a class with no constructor.
+ */
+class FakeClassNoConstructor
 {
+    public string $string = '';
 }

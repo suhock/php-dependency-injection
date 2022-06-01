@@ -11,23 +11,24 @@ declare(strict_types=1);
 
 namespace FiveTwo\DependencyInjection\Context;
 
-use FiveTwo\DependencyInjection\DependencyInjectionException;
-use FiveTwo\DependencyInjection\InjectorHelper;
+use FiveTwo\DependencyInjection\ContainerInjectorTrait;
+use FiveTwo\DependencyInjection\ContainerInterface;
 use FiveTwo\DependencyInjection\InjectorInterface;
 use FiveTwo\DependencyInjection\InjectorTrait;
 use ReflectionAttribute;
 use ReflectionMethod;
 use ReflectionParameter;
-use Throwable;
+use UnitEnum;
 
 /**
- * Provides context-aware methods for injecting dependencies into function and constructor calls.
+ * Context-aware injector for injecting dependencies into function and constructor calls.
  *
- * @template TContainer of \FiveTwo\DependencyInjection\ContainerInterface
+ * @template TContainer of ContainerInterface
  */
 class ContextInjector implements InjectorInterface
 {
     use InjectorTrait;
+    use ContainerInjectorTrait;
 
     /**
      * @param ContextContainer<TContainer> $container The container from which dependencies will be resolved
@@ -35,6 +36,11 @@ class ContextInjector implements InjectorInterface
     public function __construct(
         private readonly ContextContainer $container
     ) {
+    }
+
+    protected function getContainer(): ContainerInterface
+    {
+        return $this->container;
     }
 
     /**
@@ -45,48 +51,53 @@ class ContextInjector implements InjectorInterface
         $contextCount = 0;
 
         try {
-            $rFunction = $rParam->getDeclaringFunction();
+            $this->pushContextsFromParameter($contextCount, $rParam);
 
-            if ($rFunction instanceof ReflectionMethod) {
-                $contextCount += self::addAttributes($rFunction->getDeclaringClass()->getAttributes(Context::class));
-            }
-
-            /** @psalm-suppress ArgumentTypeCoercion Psalm missing stub for ReflectionFunctionAbstract */
-            $contextCount += self::addAttributes($rFunction->getAttributes(Context::class));
-            $contextCount += self::addAttributes($rParam->getAttributes(Context::class));
-
-            return InjectorHelper::getInstanceFromParameter($this->container, $rParam, $paramValue);
+            return $this->getInstanceFromParameter($rParam, $paramValue);
         } finally {
-            while (--$contextCount >= 0) {
-                $this->container->pop();
+            $this->popContexts($contextCount);
+        }
+    }
+
+    private function pushContextsFromParameter(int &$contextCount, ReflectionParameter $rParam): void
+    {
+        $rFunction = $rParam->getDeclaringFunction();
+
+        if ($rFunction instanceof ReflectionMethod) {
+            $this->pushContextFromAttributes(
+                $contextCount,
+                $rFunction->getDeclaringClass()->getAttributes(Context::class)
+            );
+        }
+
+        /** @psalm-suppress ArgumentTypeCoercion Psalm missing stub for ReflectionFunctionAbstract */
+        $this->pushContextFromAttributes($contextCount, $rFunction->getAttributes(Context::class));
+        $this->pushContextFromAttributes($contextCount, $rParam->getAttributes(Context::class));
+    }
+
+    /**
+     * @param int $contextCount
+     * @param array<ReflectionAttribute<Context>> $rAttributes
+     *
+     * @return void
+     */
+    private function pushContextFromAttributes(int &$contextCount, array $rAttributes): void
+    {
+        foreach ($rAttributes as $rAttribute) {
+            /** @var list<string|UnitEnum> $args */
+            $args = $rAttribute->getArguments();
+
+            if (count($args) > 0) {
+                $this->container->push(Context::getNameFromStringOrEnum($args[0]));
+                $contextCount++;
             }
         }
     }
 
-    /**
-     * @param array<ReflectionAttribute<Context>> $rAttributes
-     *
-     * @return int the number of contexts pushed onto the stack
-     */
-    private function addAttributes(array $rAttributes): int
+    private function popContexts(int $contextCount): void
     {
-        $count = 0;
-
-        foreach ($rAttributes as $rAttribute) {
-            try {
-                foreach ($rAttribute->newInstance()->getNames() as $contextName) {
-                    $this->container->push($contextName);
-                    $count++;
-                }
-            } catch (Throwable $e) {
-                while (--$count >= 0) {
-                    $this->container->pop();
-                }
-
-                throw new DependencyInjectionException('Error parsing context attribute for parameter', $e);
-            }
+        for ($i = 0; $i < $contextCount; $i++) {
+            $this->container->pop();
         }
-
-        return $count;
     }
 }

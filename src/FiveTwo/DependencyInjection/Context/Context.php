@@ -15,6 +15,10 @@ use Attribute;
 use BackedEnum;
 use UnitEnum;
 
+/**
+ * Pushes the specified context onto the context stack of the {@see ContextContainer} that is being used to inject
+ * dependencies. The context will be scoped to the class, function, or function parameter to which it is applied.
+ */
 #[Attribute(
     Attribute::TARGET_CLASS |
     Attribute::TARGET_FUNCTION |
@@ -25,30 +29,30 @@ use UnitEnum;
 )]
 class Context
 {
-    public const DEFAULT = '';
-
-    /** @var list<string> */
-    private readonly array $names;
+    private string $name;
 
     /**
-     * @param string|UnitEnum $name
-     * @param string|UnitEnum ...$names
+     * @param string|UnitEnum $name The name of the context as a string or an enum
      */
-    public function __construct(string|UnitEnum $name, string|UnitEnum ...$names)
+    public function __construct(string|UnitEnum $name)
     {
-        /** @var list<string> $names */
-        $this->names = array_map(fn (string|UnitEnum $name): string => match (true) {
-            is_string($name) => $name,
-            $name instanceof BackedEnum && is_string($name->value) => $name->value,
-            default => $name->name
-        }, [$name, ...$names]);
+        $this->name = self::getNameFromStringOrEnum($name);
     }
 
     /**
-     * @return list<string>
+     * @return string
      */
-    public function getNames(): array
+    public function getName(): string
     {
-        return $this->names;
+        return $this->name;
+    }
+
+    public static function getNameFromStringOrEnum(string|UnitEnum $name): string
+    {
+        return match (true) {
+            is_string($name) => $name,
+            $name instanceof BackedEnum && is_string($name->value) => $name->value,
+            default => $name->name
+        };
     }
 }

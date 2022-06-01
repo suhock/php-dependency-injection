@@ -11,6 +11,9 @@ declare(strict_types=1);
 
 namespace FiveTwo\DependencyInjection;
 
+/**
+ * Fake for a simple interface.
+ */
 interface FakeInterfaceOne
 {
 

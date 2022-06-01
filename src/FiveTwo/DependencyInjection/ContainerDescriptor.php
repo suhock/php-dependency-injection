@@ -16,6 +16,8 @@ use FiveTwo\DependencyInjection\Instantiation\ClosureInstanceFactory;
 use FiveTwo\DependencyInjection\Lifetime\LifetimeStrategy;
 
 /**
+ * Holds information about nested containers.
+ *
  * @internal
  */
 class ContainerDescriptor

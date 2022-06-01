@@ -17,6 +17,9 @@ use PHPUnit\Framework\TestCase;
 use RuntimeException;
 use Throwable;
 
+/**
+ * Test suite for {@see Injector}.
+ */
 class InjectorTest extends TestCase
 {
     /**
@@ -41,8 +44,8 @@ class InjectorTest extends TestCase
             RuntimeException::class => new RuntimeException()
         ];
 
-        $instance = $injector->instantiate(FakeContextAwareClass::class);
-        self::assertInstanceOf(FakeContextAwareClass::class, $instance);
+        $instance = $injector->instantiate(FakeClassUsingContexts::class);
+        self::assertInstanceOf(FakeClassUsingContexts::class, $instance);
         self::assertSame($container->classMapping[Throwable::class], $instance->throwable);
         self::assertSame($container->classMapping[RuntimeException::class], $instance->runtimeException);
     }
@@ -85,7 +88,7 @@ class InjectorTest extends TestCase
         ];
 
         self::expectException(DependencyInjectionException::class);
-        $injector->instantiate(FakeContextAwareClass::class);
+        $injector->instantiate(FakeClassUsingContexts::class);
     }
 
     public function testInstantiate_ExplicitArgs(): void
@@ -99,7 +102,7 @@ class InjectorTest extends TestCase
 
         self::assertSame(
             $override = new Exception(),
-            $injector->instantiate(FakeContextAwareClass::class, [
+            $injector->instantiate(FakeClassUsingContexts::class, [
                 'throwable' => $override
             ])->throwable
         );
@@ -116,7 +119,7 @@ class InjectorTest extends TestCase
 
         self::assertSame(
             $override = new RuntimeException(),
-            $injector->instantiate(FakeContextAwareClass::class, [
+            $injector->instantiate(FakeClassUsingContexts::class, [
                 1 => $override
             ])->runtimeException
         );
@@ -126,8 +129,8 @@ class InjectorTest extends TestCase
     {
         [$injector] = $this->create();
 
-        $instance = $injector->instantiate(FakeNoConstructorClass::class);
-        self::assertInstanceOf(FakeNoConstructorClass::class, $instance);
+        $instance = $injector->instantiate(FakeClassNoConstructor::class);
+        self::assertInstanceOf(FakeClassNoConstructor::class, $instance);
     }
 
     public function testCall(): void
@@ -161,11 +164,11 @@ class InjectorTest extends TestCase
     {
         [$injector, $container] = $this->create();
 
-        $container->classMapping[FakeNoConstructorClass::class] = new FakeNoConstructorClass();
+        $container->classMapping[FakeInterfaceOne::class] = new FakeClassImplementsInterfaces();
 
         self::assertSame(
-            $container->classMapping[FakeNoConstructorClass::class],
-            $injector->call(fn (FakeNoConstructorClass|string|FakeContextAwareClass $obj) => $obj)
+            $container->classMapping[FakeInterfaceOne::class],
+            $injector->call(fn (FakeInterfaceOne|string|FakeInterfaceTwo $obj) => $obj)
         );
     }
 
@@ -173,11 +176,11 @@ class InjectorTest extends TestCase
     {
         [$injector, $container] = $this->create();
 
-        $container->classMapping[FakeNoConstructorClass::class] = new FakeNoConstructorClass();
+        $instance = $container->classMapping[FakeInterfaceTwo::class] = new FakeClassImplementsInterfaces();
 
         self::assertSame(
-            $container->classMapping[FakeNoConstructorClass::class],
-            $injector->call(fn (FakeContextAwareClass|string|FakeNoConstructorClass $obj) => $obj)
+            $container->classMapping[FakeInterfaceTwo::class],
+            $injector->call(fn (FakeInterfaceOne|string|FakeInterfaceTwo $obj) => $obj)
         );
     }
 
@@ -185,7 +188,7 @@ class InjectorTest extends TestCase
     {
         [$injector, $container] = $this->create();
 
-        $container->classMapping[FakeInterfaceOne::class] = new FakeNoConstructorClass();
+        $container->classMapping[FakeInterfaceOne::class] = new FakeClassImplementsInterfaces();
 
         self::assertSame(
             $container->classMapping[FakeInterfaceOne::class],
@@ -197,7 +200,7 @@ class InjectorTest extends TestCase
     {
         [$injector, $container] = $this->create();
 
-        $container->classMapping[FakeInterfaceTwo::class] = new FakeNoConstructorClass();
+        $container->classMapping[FakeInterfaceTwo::class] = new FakeClassImplementsInterfaces();
 
         self::assertSame(
             $container->classMapping[FakeInterfaceTwo::class],
@@ -209,7 +212,7 @@ class InjectorTest extends TestCase
     {
         [$injector, $container] = $this->create();
 
-        $container->classMapping[FakeInterfaceOne::class] = new FakeNoConstructorClass();
+        $container->classMapping[FakeInterfaceOne::class] = new FakeClassImplementsInterfaces();
 
         self::expectException(UnresolvedParameterException::class);
         $injector->call(fn (FakeInterfaceOne&FakeInterfaceThree $obj) => $obj);

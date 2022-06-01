@@ -12,7 +12,7 @@ declare(strict_types=1);
 namespace FiveTwo\DependencyInjection\Context;
 
 use FiveTwo\DependencyInjection\Container;
-use FiveTwo\DependencyInjection\InjectorProvider;
+use FiveTwo\DependencyInjection\InjectorInterface;
 
 /**
  * Provides factory methods for creating {@see ContextContainer} instances.
@@ -24,6 +24,6 @@ class ContextContainerFactory
      */
     public static function createForDefaultContainer(): ContextContainer
     {
-        return new ContextContainer(fn (InjectorProvider $injector) => new Container($injector));
+        return new ContextContainer(fn (InjectorInterface $injector) => new Container($injector));
     }
 }

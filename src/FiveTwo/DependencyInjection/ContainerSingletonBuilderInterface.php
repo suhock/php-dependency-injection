@@ -16,7 +16,7 @@ use FiveTwo\DependencyInjection\Instantiation\InstanceFactory;
 use FiveTwo\DependencyInjection\Instantiation\InstanceTypeException;
 
 /**
- * Provides convenience methods for adding singleton factories to a container.
+ * Interface for adding singleton factories to a container.
  */
 interface ContainerSingletonBuilderInterface
 {

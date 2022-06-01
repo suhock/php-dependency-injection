@@ -13,13 +13,16 @@ namespace FiveTwo\DependencyInjection\Context;
 
 use Exception;
 use FiveTwo\DependencyInjection\Container;
-use FiveTwo\DependencyInjection\FakeContextAwareClass;
-use FiveTwo\DependencyInjection\FakeNoConstructorClass;
-use FiveTwo\DependencyInjection\InjectorProvider;
+use FiveTwo\DependencyInjection\FakeClassNoConstructor;
+use FiveTwo\DependencyInjection\FakeClassUsingContexts;
+use FiveTwo\DependencyInjection\InjectorInterface;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 use Throwable;
 
+/**
+ * Test suite for {@see ContextInjector}.
+ */
 class ContextInjectorTest extends TestCase
 {
     public function testCall_NoContext(): void
@@ -27,10 +30,10 @@ class ContextInjectorTest extends TestCase
         $container = $this->createContainer();
         $injector = $container->getInjector();
         $container->context('default')
-            ->addSingletonInstance(FakeNoConstructorClass::class, $instance = new FakeNoConstructorClass());
+            ->addSingletonInstance(FakeClassNoConstructor::class, $instance = new FakeClassNoConstructor());
         $container->push('default');
 
-        self::assertSame($instance, $injector->call(fn (FakeNoConstructorClass $obj) => $obj));
+        self::assertSame($instance, $injector->call(fn (FakeClassNoConstructor $obj) => $obj));
     }
 
     public function testCall_ContextOverride(): void
@@ -39,37 +42,37 @@ class ContextInjectorTest extends TestCase
         $injector = $container->getInjector();
 
         $container->context('default')
-            ->addSingletonInstance(FakeNoConstructorClass::class, $instance0 = new FakeNoConstructorClass());
+            ->addSingletonInstance(FakeClassNoConstructor::class, $instance0 = new FakeClassNoConstructor());
         $container->context('context1')
-            ->addSingletonInstance(FakeNoConstructorClass::class, $instance1 = new FakeNoConstructorClass());
+            ->addSingletonInstance(FakeClassNoConstructor::class, $instance1 = new FakeClassNoConstructor());
         $container->context('context2')
-            ->addSingletonInstance(FakeNoConstructorClass::class, $instance2 = new FakeNoConstructorClass());
+            ->addSingletonInstance(FakeClassNoConstructor::class, $instance2 = new FakeClassNoConstructor());
         $container->context('context3');
 
         $container->push('default');
         self::assertSame(
             $instance0,
-            $injector->call(fn (FakeNoConstructorClass $obj) => $obj)
+            $injector->call(fn (FakeClassNoConstructor $obj) => $obj)
         );
         self::assertSame(
             $instance1,
             $injector->call(
                 #[Context('context1')]
-                fn (FakeNoConstructorClass $obj) => $obj
+                fn (FakeClassNoConstructor $obj) => $obj
             )
         );
         self::assertSame(
             $instance2,
             $injector->call(
                 #[Context('context1')]
-                fn (#[Context('context2')] FakeNoConstructorClass $obj) => $obj
+                fn (#[Context('context2')] FakeClassNoConstructor $obj) => $obj
             )
         );
         self::assertSame(
             $instance1,
             $injector->call(
                 #[Context('context1')]
-                fn (#[Context('context3')] FakeNoConstructorClass $obj) => $obj
+                fn (#[Context('context3')] FakeClassNoConstructor $obj) => $obj
             )
         );
     }
@@ -79,12 +82,12 @@ class ContextInjectorTest extends TestCase
         $container = $this->createContainer();
         $injector = $container->getInjector();
         $container->context('default')
-            ->addSingletonClass(FakeNoConstructorClass::class);
+            ->addSingletonClass(FakeClassNoConstructor::class);
         $container->push('default');
 
         self::assertInstanceOf(
-            FakeNoConstructorClass::class,
-            $injector->instantiate(FakeNoConstructorClass::class)
+            FakeClassNoConstructor::class,
+            $injector->instantiate(FakeClassNoConstructor::class)
         );
     }
 
@@ -103,8 +106,8 @@ class ContextInjectorTest extends TestCase
             ->addSingletonInstance(Throwable::class, $throwable3 = new Exception());
         $container->context('context4');
 
-        self::assertSame($throwable3, $injector->instantiate(FakeContextAwareClass::class)->throwable);
-        self::assertSame($runtime1, $injector->instantiate(FakeContextAwareClass::class)->runtimeException);
+        self::assertSame($throwable3, $injector->instantiate(FakeClassUsingContexts::class)->throwable);
+        self::assertSame($runtime1, $injector->instantiate(FakeClassUsingContexts::class)->runtimeException);
     }
 
     /**
@@ -112,6 +115,6 @@ class ContextInjectorTest extends TestCase
      */
     private function createContainer(): ContextContainer
     {
-        return new ContextContainer(fn (InjectorProvider $injector) => new Container($injector));
+        return new ContextContainer(fn (InjectorInterface $injector) => new Container($injector));
     }
 }

@@ -21,7 +21,8 @@ use FiveTwo\DependencyInjection\Instantiation\ObjectInstanceFactory;
 use FiveTwo\DependencyInjection\Lifetime\SingletonStrategy;
 
 /**
- * Implements convenience methods for adding singleton factories to a container.
+ * Default implementation for {@see ContainerSingletonBuilderInterface}. Classes using this trait must implement
+ * implement {@see ContainerBuilderInterface}.
  *
  * @psalm-require-implements ContainerBuilderInterface
  * @psalm-require-implements ContainerSingletonBuilderInterface
@@ -148,7 +149,7 @@ trait ContainerSingletonBuilderTrait
      */
     public function addSingletonNamespace(string $namespace, ?callable $factory = null): static
     {
-        $this->addSingletonContainer(new NamespaceContainer($namespace, $this->injector, $factory));
+        $this->addSingletonContainer(new NamespaceContainer($namespace, $this->getInjector(), $factory));
 
         return $this;
     }
@@ -164,7 +165,7 @@ trait ContainerSingletonBuilderTrait
     public function addSingletonInterface(string $interfaceName, ?callable $factory = null): static
     {
         /** @psalm-suppress ArgumentTypeCoercion argument types are the same... */
-        $this->addSingletonContainer(new ImplementationContainer($interfaceName, $this->injector, $factory));
+        $this->addSingletonContainer(new InterfaceContainer($interfaceName, $this->getInjector(), $factory));
 
         return $this;
     }

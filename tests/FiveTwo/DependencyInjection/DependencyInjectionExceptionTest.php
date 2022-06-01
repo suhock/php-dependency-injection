@@ -14,6 +14,9 @@ namespace FiveTwo\DependencyInjection;
 use Exception;
 use PHPUnit\Framework\TestCase;
 
+/**
+ * Test suite for {@see DependencyInjectionException}.
+ */
 class DependencyInjectionExceptionTest extends TestCase
 {
     public function test__construct_NoComposition(): void

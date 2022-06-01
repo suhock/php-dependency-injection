@@ -14,6 +14,9 @@ namespace FiveTwo\DependencyInjection;
 use FiveTwo\DependencyInjection\Instantiation\InstanceFactory;
 use FiveTwo\DependencyInjection\Lifetime\LifetimeStrategy;
 
+/**
+ * Interface for building a dependency container.
+ */
 interface ContainerBuilderInterface
 {
     /**
@@ -34,8 +37,8 @@ interface ContainerBuilderInterface
     ): static;
 
     /**
-     * Adds a nested container with a factory for generating lifetime strategies to manage instances within
-     * <em>this</em> container. Nested containers are searched sequentially in the order they are added.
+     * Adds a nested container with a factory for generating lifetime strategies to manage instances within the outer
+     * container. Nested containers are searched sequentially in the order they are added.
      *
      * @param ContainerInterface $container The nested container to add
      * @param callable(class-string):LifetimeStrategy $lifetimeStrategyFactory A factory method for generating lifetime

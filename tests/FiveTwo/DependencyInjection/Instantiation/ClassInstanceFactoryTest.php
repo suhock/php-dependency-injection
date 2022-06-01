@@ -12,33 +12,36 @@ declare(strict_types=1);
 namespace FiveTwo\DependencyInjection\Instantiation;
 
 use FiveTwo\DependencyInjection\ContainerInterface;
-use FiveTwo\DependencyInjection\FakeNoConstructorClass;
+use FiveTwo\DependencyInjection\FakeClassNoConstructor;
 use FiveTwo\DependencyInjection\Injector;
 use FiveTwo\DependencyInjection\InjectorInterface;
 use PHPUnit\Framework\TestCase;
 
+/**
+ * Test suite for {@see ClassInstanceFactory}.
+ */
 class ClassInstanceFactoryTest extends TestCase
 {
     public function testGet_NoMutator(): void
     {
         $factory = new ClassInstanceFactory(
-            FakeNoConstructorClass::class,
+            FakeClassNoConstructor::class,
             $injector = $this->createMock(InjectorInterface::class)
         );
 
         $injector->expects(self::once())
             ->method('instantiate')
-            ->willReturn(new FakeNoConstructorClass());
+            ->willReturn(new FakeClassNoConstructor());
 
-        self::assertInstanceOf(FakeNoConstructorClass::class, $factory->get());
+        self::assertInstanceOf(FakeClassNoConstructor::class, $factory->get());
     }
 
     public function testGet_WithMutator(): void
     {
         self::assertSame('test', (new ClassInstanceFactory(
-            FakeNoConstructorClass::class,
+            FakeClassNoConstructor::class,
             new Injector(self::createMock(ContainerInterface::class)),
-            function (FakeNoConstructorClass $obj) {
+            function (FakeClassNoConstructor $obj) {
                 $obj->string = 'test';
             }
         ))->get()->string);
