@@ -40,9 +40,12 @@
         "psalm/plugin-phpunit": ">=0.16",
         "vimeo/psalm": "^4.23"
     },
+    "allow-plugins": {
+        "psalm/plugin-phpunit": true
+    },
     "scripts": {
-        "phpstan": "phpstan analyse -c phpstan.neon",
-        "psalm": "psalm --show-info=true -c psalm.xml",
+        "phpstan": "phpstan analyse -c phpstan.neon.dist",
+        "psalm": "psalm --show-info=true -c psalm.xml.dist",
         "test": "phpunit -c ."
     }
 }
