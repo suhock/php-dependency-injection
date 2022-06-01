@@ -55,9 +55,7 @@ Add ``fivetwo/dependency-injection`` to the ``require`` section of your applicat
 
 ## Basic Container Setup
 
-The basic ``Container`` class contains methods for building the container and retrieving instances. Singleton instances
-persist for the lifetime of the container. Transient instances are unique to each invocation of ``Container::get()``.
-Custom ``LifetimeStrategy`` implementations can also be created.
+The basic ``Container`` class contains methods for building the container and retrieving instances.
 
 ```php
 use FiveTwo\DependencyInjection\Container;
@@ -97,73 +95,117 @@ factories.
 
 Custom lifetime strategies can also be added by implementing the ``LifetimeStrategy`` interface.
 
-### Instance Strategies
+### Instance Factories
 
-Instance factories handle the provision of instances to the lifetime strategy. The default ``Container`` provides
-convenience methods for each of the built-in instance factories.
+Instance factories provide object instances when requested from a ``LifetimeStrategy``. The default ``Container``
+provides convenience methods for each of the built-in instance factories.
 
 #### Class Instantiation
 
-The ``ClassInstanceFactory`` creates instances by invoking the class's constructor (if it exists) with its parameters
-injected from the container. The default ``Container`` provides the convenience methods ``addSingletonClass`` and
-``addTransientClass`` for adding class factories.
-
-```php
-$container
-    ->addSingletonClass(MyDependency::class)
-    ->addTransientClass(CurlHttpClient::class);
-```
+``ClassInstanceFactory`` creates instances by invoking the class's constructor (if it exists) with its parameters
+injected from the container.
 
 The optional ``$mutator`` callback allows additional configuration of the object after it has been instantiated.
 
 ```php
-$container->addSingletonClass(
+/* Convenience methods for adding class instantiation factories. */
+
+class Container {
+    function addSingletonClass<T>(
+        string<T> $className,
+        callable(T $newInstance, ...):void $mutator = null
+    ): static;
+    
+    function addTransientClass<T>(
+        string<T> $className,
+        callable(T $newInstance, ...):void $mutator = null
+    ): static;
+}
+
+/* Examples */
+
+// Instantiate by auto-wiring the constructor
+$container->addSingletonClass(MyDependency::class);
+
+// Instantiate by auto-wiring the constructor and inject additional optional properties
+$container->addTransient(
     MyDependency::class,
     function (MyDependency $obj, Logger $logger) {
-        $obj->setLogger($logger);
+        $obj->setOptionalLogger($logger);
     }
 );
 ```
 
-#### Implementation Aliasing
+#### Implementation Mapping
 
-The ``ImplementationInstanceFactory`` aliases an interface or base class to an implementation class. When an instance of
-the interface or base class is requested, the factory will request an instance of the implementation class from the
-container. The default ``Container`` provides the convenience methods ``addSingletonImplementation`` and
-``addTransientImplementation`` for adding interface aliases.
+``ImplementationInstanceFactory`` maps an interface or base class to a concrete implementation. When an instance of the
+interface or base class is requested, the factory will request an instance of the implementation class from the
+container.
 
 ```php
-$container
-    ->addSingletonImplementation(Logger::class, FileLogger::class)
-    ->addTransientClass(HttpClient::class, CurlHttpClient::class);
+/* Convenience methods for adding implementation factories */
+
+class Container {
+    function addSingletonImplementation<T, I implements T>(
+        string<T> $className,
+        string<I> $implementationClassName
+    ): static;
+    
+    function addTransientImplementation<T, I implements T>(
+        string<T> $className,
+        string<I> $implementationClassName
+    ): static;
+}
+
+/* Examples */
+
+$container->addSingletonImplementation(HttpClient::class, CurlHttpClient::class);
 ```
 
 #### Factory Method Invocation
 
-The ``ClosureInstanceFactory`` requests instances of a class from a factory method provided as a ``Closure``. The
-default ``Container`` provides the convenience methods ``addSingletonFactory`` and``addTransientFactory`` for adding
-factory methods.
+The ``ClosureInstanceFactory`` requests instances of a class from a factory method provided as a ``Closure``.
 
 ```php
-$container
-    ->addSingletonFactory(
-        DbConnector::class,
-        fn (AppConfig $config) => new DbConnector(
-            $config->db->hostname,
-            $config->db->username,
-            $config->db->password,
-            $config->db->database
-        )
-    )
-    ->addTransientFactory(Mailer::class, fn () => new Mailer('sendmail'));
+/* Convenience methods for adding closure factories */
+
+class Container {
+    function addSingletonFactory<T>(string<T> $className, callable(...):(T|null) $factory): static;
+    function addTransientFactory<T>(string<T> $className, callable(...):(T|null) $factory): static;
+}
+
+/* Examples */
+
+// Wire parameters from a configuration
+$container->addSingletonFactory(
+    Mailer::class,
+    fn (AppConfig $config) => new Mailer($config->mailerTransport)
+);
+    
+// Provide an inline implementation for an interface
+$container->addTransientFactory(
+    Logger::class,
+    fn (FileWriter $writer) => new class($writer) implements Logger {
+        public function __construct(FileWriter $writer) { /* ... */ }
+        /* ... */
+    }
+);
 ```
 
 #### Object Instance
 
-The ``ObjectInstanceFactory`` provides a single, pre-existing class instance. The default ``Container`` provides the
-convenience method ``addSingletonInstance`` for adding object instances.
+The ``ObjectInstanceFactory`` provides a single, pre-existing class instance.
 
 ```php
+/* Convenience methods for adding object instance factories */
+
+class Container {
+    function addSingletonInstance<T>(string<T> $className, T|null $instance): static;
+    function addTransientInstance<T>(string<T> $className, T|null $instance): static;
+}
+
+/* Examples */
+
 $container->addSingletonInstance(Request::class, $currentRequest);
 ```
 
@@ -176,59 +218,78 @@ instances of a dependency if no factory for a given class exists in the outer co
 
 ``NamespaceContainer`` will provide an instance of the requested class if it is in the specified namespace. Instances
 are acquired from the given factory, or by auto-wiring the constructor if no factory is provided. The factory must take
-the class name as the first parameter. Additional parameters will be injected. The default ``Container`` provides the
-convenience methods ``addSingletonNamespace`` and ``addTransientNamespace`` for adding namespaces.
+the class name as the first parameter. Additional parameters will be injected.
 
 ```php
-$container
-    ->addSingletonNamespace('MyNamespace')
-    ->addTransientNamespace(
-        'MyMailers',
-        fn (string $className, AppConfig $config) => new $className($config->transport)
-    )
-    ->addSingletonImplementation(MyNamespace\HttpClient::class, MyNamespace\CurlHttpClient::class);
+/* Convenience methods for adding namespace containers */
 
-$app = $container->get(MyNamespace\MyApplication::class); // uses the nested namespace container
-$client = $container->get(MyNamespace\HttpClient::class); // uses the implementation factory
+class Container {
+    function addSingletonNamespace(
+        string $namespace,
+        callable<T>(string<T> $className, ...):(T|null) $factory = null
+    ): static;
+    
+    function addTransientNamespace(
+        string $namespace,
+        callable<T>(string<T> $className, ...):(T|null) $factory = null
+    ): static;
+}
+
+/* Examples */
+
+$container->addSingletonNamespace('MyNamespace');
+$container->addTransientNamespace(
+    'MyMailers',
+    fn (string $className, AppConfig $config) => new $className($config->mailerTransport)
+);
+$container->addSingletonImplementation(MyNamespace\HttpClient::class, MyNamespace\CurlHttpClient::class);
+
+// will use the namespace container
+$app = $container->get(MyNamespace\MyApplication::class);
+
+// will resolve HttpClient to the concrete class CurlHttpClient and then instantiate it using its constructor because
+// CurlHttpClient is found in the namespace container
+$client = $container->get(MyNamespace\HttpClient::class);
 ```
 
 #### Implementation Container
 
 ``ImplementationContainer`` will provide an instance of the requested class if it is a subclass of the specified
 interface or base class. Instances are acquired from the given factory, or by auto-wiring the constructor if no factory
-is provided. The factory must take the class name as the first parameter. Additional parameters will be injected. The
-default ``Container`` provides the convenience methods ``addSingletonInterface`` and ``addTransientInterface`` for
-adding interface implementation containers.
+is provided. The factory must take the class name as the first parameter. Additional parameters will be injected.
 
 ```php
-use Doctrine\ORM\EntityManager;
-use Doctrine\ORM\EntityRepository;
+/* Convenience methods for adding implementation containers */
+
+class Container {
+    function addSingletonInterface<T>(
+        string<T> $className,
+        callable<I implements T>(string<I> $className, ...):(I|null) $factory = null
+    ): static;
+    
+    function addTransientInterface<T>(
+        string<T> $className,
+        callable<I implements T>(string<I> $className, ...):(I|null) $factory = null
+    ): static;
+}
+
+/* Examples */
 
 $container
     ->addSingletonInterface(
         EntityNameProvider::class,
         fn (string $className, EntityManager $em) => $em->getRepository($className::getEntityName())
     )
-    ->addTransientInterface(Logger::class)
     ->addSingletonFactory(
         MyRepository::class,
         fn (EntityManger $em, Logger $logger) => $em->getRepository(MyEntity::class)->setLogger($logger)
     );
 
-$app = $container->get(UserRepository::class); // uses the nested implementation container
-$client = $container->get(MyRepository::class); // uses the class-specific factory
+// will use the nested implementation container's factory
+$app = $container->get(UserRepository::class); 
 
-class UserRepository extends EntityRepository implements EntityNameProvider
-{
-    public static function getName(): string {
-        return User::class;
-    }
-}
-
-class MyRepository extends EntityRepository implements EntityNameProvider
-{
-    // ...
-}
+// will use class-specific factory defined for MyRepository
+$client = $container->get(MyRepository::class);
 ```
 
 ## Context Container
