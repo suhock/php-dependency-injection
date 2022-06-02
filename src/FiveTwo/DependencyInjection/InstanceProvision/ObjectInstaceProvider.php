@@ -9,15 +9,15 @@
 
 declare(strict_types=1);
 
-namespace FiveTwo\DependencyInjection\Instantiation;
+namespace FiveTwo\DependencyInjection\InstanceProvision;
 
 /**
  * Factory that provides a previously constructed instance of the class.
  *
  * @template TClass of object
- * @template-implements InstanceFactory<TClass>
+ * @template-implements InstaceProvider<TClass>
  */
-class ObjectInstanceFactory implements InstanceFactory
+class ObjectInstaceProvider implements InstaceProvider
 {
     /**
      * @param class-string<TClass> $className The name of the class or interface provided

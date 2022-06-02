@@ -11,11 +11,11 @@ declare(strict_types=1);
 
 namespace FiveTwo\DependencyInjection;
 
-use FiveTwo\DependencyInjection\Instantiation\ClassInstanceFactory;
-use FiveTwo\DependencyInjection\Instantiation\ClosureInstanceFactory;
-use FiveTwo\DependencyInjection\Instantiation\ImplementationException;
-use FiveTwo\DependencyInjection\Instantiation\ImplementationInstanceFactory;
-use FiveTwo\DependencyInjection\Instantiation\InstanceFactory;
+use FiveTwo\DependencyInjection\InstanceProvision\ClassInstaceProvider;
+use FiveTwo\DependencyInjection\InstanceProvision\ClosureInstaceProvider;
+use FiveTwo\DependencyInjection\InstanceProvision\ImplementationException;
+use FiveTwo\DependencyInjection\InstanceProvision\ImplementationInstaceProvider;
+use FiveTwo\DependencyInjection\InstanceProvision\InstaceProvider;
 use FiveTwo\DependencyInjection\Lifetime\TransientStrategy;
 
 /**
@@ -33,13 +33,13 @@ trait ContainerTransientBuilderTrait
      * @template TClass of object
      *
      * @param class-string<TClass> $className
-     * @param InstanceFactory<TClass> $instanceFactory
+     * @param InstaceProvider<TClass> $instanceProvider
      *
      * @return $this
      */
-    public function addTransient(string $className, InstanceFactory $instanceFactory): static
+    public function addTransient(string $className, InstaceProvider $instanceProvider): static
     {
-        $this->add($className, new TransientStrategy($className), $instanceFactory);
+        $this->add($className, new TransientStrategy($className), $instanceProvider);
 
         return $this;
     }
@@ -59,7 +59,7 @@ trait ContainerTransientBuilderTrait
     {
         $this->addTransient(
             $className,
-            new ClassInstanceFactory($className, $this->getInjector(), $mutator !== null ? $mutator(...) : null)
+            new ClassInstaceProvider($className, $this->getInjector(), $mutator !== null ? $mutator(...) : null)
         );
 
         return $this;
@@ -78,7 +78,7 @@ trait ContainerTransientBuilderTrait
     {
         $this->addTransient(
             $className,
-            new ImplementationInstanceFactory($className, $implementationClassName, $this)
+            new ImplementationInstaceProvider($className, $implementationClassName, $this)
         );
 
         return $this;
@@ -98,7 +98,7 @@ trait ContainerTransientBuilderTrait
     {
         $this->addTransient(
             $className,
-            new ClosureInstanceFactory($className, $factory(...), $this->getInjector())
+            new ClosureInstaceProvider($className, $factory(...), $this->getInjector())
         );
 
         return $this;

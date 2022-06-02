@@ -9,20 +9,20 @@
 
 declare(strict_types=1);
 
-namespace FiveTwo\DependencyInjection\Instantiation;
+namespace FiveTwo\DependencyInjection\InstanceProvision;
 
 use FiveTwo\DependencyInjection\FakeClassExtendsNoConstructor;
 use FiveTwo\DependencyInjection\FakeClassNoConstructor;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Test suite for {@see ObjectInstanceFactory}.
+ * Test suite for {@see ObjectInstaceProvider}.
  */
-class ObjectInstanceFactoryTest extends TestCase
+class ObjectInstanceProviderTest extends TestCase
 {
     public function testGet(): void
     {
-        $factory = new ObjectInstanceFactory(
+        $factory = new ObjectInstaceProvider(
             FakeClassNoConstructor::class,
             $instance = new FakeClassNoConstructor()
         );
@@ -32,7 +32,7 @@ class ObjectInstanceFactoryTest extends TestCase
 
     public function testGet_Null(): void
     {
-        $factory = new ObjectInstanceFactory(
+        $factory = new ObjectInstaceProvider(
             FakeClassNoConstructor::class,
             null
         );
@@ -42,7 +42,7 @@ class ObjectInstanceFactoryTest extends TestCase
 
     public function testGet_SubClass(): void
     {
-        $factory = new ObjectInstanceFactory(
+        $factory = new ObjectInstaceProvider(
             FakeClassNoConstructor::class,
             $instance = new FakeClassExtendsNoConstructor()
         );
@@ -53,7 +53,7 @@ class ObjectInstanceFactoryTest extends TestCase
     public function testGet_WrongClass(): void
     {
         self::expectException(InstanceTypeException::class);
-        new ObjectInstanceFactory(
+        new ObjectInstaceProvider(
             FakeClassExtendsNoConstructor::class,
             new FakeClassNoConstructor()
         );

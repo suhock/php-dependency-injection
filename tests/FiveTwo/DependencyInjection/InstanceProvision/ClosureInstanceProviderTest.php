@@ -9,7 +9,7 @@
 
 declare(strict_types=1);
 
-namespace FiveTwo\DependencyInjection\Instantiation;
+namespace FiveTwo\DependencyInjection\InstanceProvision;
 
 use FiveTwo\DependencyInjection\FakeClassExtendsNoConstructor;
 use FiveTwo\DependencyInjection\FakeClassNoConstructor;
@@ -17,13 +17,13 @@ use FiveTwo\DependencyInjection\InjectorInterface;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Test suite for {@see ClosureInstanceFactory}.
+ * Test suite for {@see ClosureInstaceProvider}.
  */
-class ClosureInstanceFactoryTest extends TestCase
+class ClosureInstanceProviderTest extends TestCase
 {
     public function testGet(): void
     {
-        $factory = new ClosureInstanceFactory(
+        $factory = new ClosureInstaceProvider(
             FakeClassNoConstructor::class,
             $factoryMethod = fn () => new FakeClassNoConstructor(),
             $injector = $this->createMock(InjectorInterface::class)
@@ -39,7 +39,7 @@ class ClosureInstanceFactoryTest extends TestCase
 
     public function testGet_Null(): void
     {
-        $factory = new ClosureInstanceFactory(
+        $factory = new ClosureInstaceProvider(
             FakeClassNoConstructor::class,
             $factoryMethod = fn () => null,
             $injector = $this->createMock(InjectorInterface::class)
@@ -55,7 +55,7 @@ class ClosureInstanceFactoryTest extends TestCase
 
     public function testGet_WrongClass(): void
     {
-        $factory = new ClosureInstanceFactory(
+        $factory = new ClosureInstaceProvider(
             FakeClassExtendsNoConstructor::class,
             $factoryMethod = fn () => new FakeClassNoConstructor(),
             $injector = $this->createMock(InjectorInterface::class)

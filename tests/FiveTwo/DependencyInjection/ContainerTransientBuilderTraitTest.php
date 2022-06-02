@@ -11,8 +11,8 @@ declare(strict_types=1);
 
 namespace FiveTwo\DependencyInjection;
 
-use FiveTwo\DependencyInjection\Instantiation\ImplementationException;
-use FiveTwo\DependencyInjection\Instantiation\InstanceTypeException;
+use FiveTwo\DependencyInjection\InstanceProvision\ImplementationException;
+use FiveTwo\DependencyInjection\InstanceProvision\InstanceTypeException;
 use PHPUnit\Framework\TestCase;
 
 /**

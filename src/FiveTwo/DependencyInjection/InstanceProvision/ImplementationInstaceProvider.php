@@ -9,7 +9,7 @@
 
 declare(strict_types=1);
 
-namespace FiveTwo\DependencyInjection\Instantiation;
+namespace FiveTwo\DependencyInjection\InstanceProvision;
 
 use FiveTwo\DependencyInjection\ContainerInterface;
 use FiveTwo\DependencyInjection\UnresolvedClassException;
@@ -20,9 +20,9 @@ use FiveTwo\DependencyInjection\UnresolvedClassException;
  *
  * @template TClass of object
  * @template TImplementation of TClass
- * @template-implements InstanceFactory<TClass>
+ * @template-implements InstaceProvider<TClass>
  */
-class ImplementationInstanceFactory implements InstanceFactory
+class ImplementationInstaceProvider implements InstaceProvider
 {
     /**
      * @param class-string<TClass> $className The name of the class or interface provided

@@ -11,13 +11,13 @@ declare(strict_types=1);
 
 namespace FiveTwo\DependencyInjection;
 
-use FiveTwo\DependencyInjection\Instantiation\ClassInstanceFactory;
-use FiveTwo\DependencyInjection\Instantiation\ClosureInstanceFactory;
-use FiveTwo\DependencyInjection\Instantiation\ImplementationException;
-use FiveTwo\DependencyInjection\Instantiation\ImplementationInstanceFactory;
-use FiveTwo\DependencyInjection\Instantiation\InstanceFactory;
-use FiveTwo\DependencyInjection\Instantiation\InstanceTypeException;
-use FiveTwo\DependencyInjection\Instantiation\ObjectInstanceFactory;
+use FiveTwo\DependencyInjection\InstanceProvision\ClassInstaceProvider;
+use FiveTwo\DependencyInjection\InstanceProvision\ClosureInstaceProvider;
+use FiveTwo\DependencyInjection\InstanceProvision\ImplementationException;
+use FiveTwo\DependencyInjection\InstanceProvision\ImplementationInstaceProvider;
+use FiveTwo\DependencyInjection\InstanceProvision\InstaceProvider;
+use FiveTwo\DependencyInjection\InstanceProvision\InstanceTypeException;
+use FiveTwo\DependencyInjection\InstanceProvision\ObjectInstaceProvider;
 use FiveTwo\DependencyInjection\Lifetime\SingletonStrategy;
 
 /**
@@ -35,13 +35,13 @@ trait ContainerSingletonBuilderTrait
      * @template TClass of object
      *
      * @param class-string<TClass> $className
-     * @param InstanceFactory<TClass> $instanceFactory
+     * @param InstaceProvider<TClass> $instanceProvider
      *
      * @return $this
      */
-    public function addSingleton(string $className, InstanceFactory $instanceFactory): static
+    public function addSingleton(string $className, InstaceProvider $instanceProvider): static
     {
-        $this->add($className, new SingletonStrategy($className), $instanceFactory);
+        $this->add($className, new SingletonStrategy($className), $instanceProvider);
 
         return $this;
     }
@@ -61,7 +61,7 @@ trait ContainerSingletonBuilderTrait
     {
         $this->addSingleton(
             $className,
-            new ClassInstanceFactory($className, $this->getInjector(), $mutator !== null ? $mutator(...) : null)
+            new ClassInstaceProvider($className, $this->getInjector(), $mutator !== null ? $mutator(...) : null)
         );
 
         return $this;
@@ -80,7 +80,7 @@ trait ContainerSingletonBuilderTrait
     {
         $this->addSingleton(
             $className,
-            new ImplementationInstanceFactory($className, $implementationClassName, $this)
+            new ImplementationInstaceProvider($className, $implementationClassName, $this)
         );
 
         return $this;
@@ -100,7 +100,7 @@ trait ContainerSingletonBuilderTrait
     {
         $this->addSingleton(
             $className,
-            new ClosureInstanceFactory($className, $factory(...), $this->getInjector())
+            new ClosureInstaceProvider($className, $factory(...), $this->getInjector())
         );
 
         return $this;
@@ -119,7 +119,7 @@ trait ContainerSingletonBuilderTrait
     {
         $this->addSingleton(
             $className,
-            new ObjectInstanceFactory($className, $instance)
+            new ObjectInstaceProvider($className, $instance)
         );
 
         return $this;

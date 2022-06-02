@@ -11,7 +11,7 @@ declare(strict_types=1);
 
 namespace FiveTwo\DependencyInjection;
 
-use FiveTwo\DependencyInjection\Instantiation\InstanceFactory;
+use FiveTwo\DependencyInjection\InstanceProvision\InstaceProvider;
 use FiveTwo\DependencyInjection\Lifetime\LifetimeStrategy;
 
 /**
@@ -26,14 +26,14 @@ interface ContainerBuilderInterface
      *
      * @param class-string<TClass> $className The name of the class to add
      * @param LifetimeStrategy<TClass> $lifetimeStrategy The lifetime strategy to use to manage instances
-     * @param InstanceFactory<TClass> $instanceFactory The instance factory to use to create new instances
+     * @param InstaceProvider<TClass> $instanceProvider The instance factory to use to create new instances
      *
      * @return $this
      */
     public function add(
         string $className,
         LifetimeStrategy $lifetimeStrategy,
-        InstanceFactory $instanceFactory
+        InstaceProvider $instanceProvider
     ): static;
 
     /**

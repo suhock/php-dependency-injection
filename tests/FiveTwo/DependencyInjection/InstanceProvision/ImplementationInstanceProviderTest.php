@@ -9,7 +9,7 @@
 
 declare(strict_types=1);
 
-namespace FiveTwo\DependencyInjection\Instantiation;
+namespace FiveTwo\DependencyInjection\InstanceProvision;
 
 use FiveTwo\DependencyInjection\ContainerInterface;
 use FiveTwo\DependencyInjection\FakeClassExtendsNoConstructor;
@@ -17,13 +17,13 @@ use FiveTwo\DependencyInjection\FakeClassNoConstructor;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Test suite for {@see ImplementationInstanceFactory}.
+ * Test suite for {@see ImplementationInstaceProvider}.
  */
-class ImplementationInstanceFactoryTest extends TestCase
+class ImplementationInstanceProviderTest extends TestCase
 {
     public function testGet(): void
     {
-        $factory = new ImplementationInstanceFactory(
+        $factory = new ImplementationInstaceProvider(
             FakeClassNoConstructor::class,
             FakeClassExtendsNoConstructor::class,
             $container = $this->createMock(ContainerInterface::class)
@@ -41,7 +41,7 @@ class ImplementationInstanceFactoryTest extends TestCase
     public function testGet_SameClass(): void
     {
         self::expectException(ImplementationException::class);
-        new ImplementationInstanceFactory(
+        new ImplementationInstaceProvider(
             FakeClassNoConstructor::class,
             FakeClassNoConstructor::class,
             $this->createMock(ContainerInterface::class)
@@ -51,7 +51,7 @@ class ImplementationInstanceFactoryTest extends TestCase
     public function testGet_WrongClass(): void
     {
         self::expectException(ImplementationException::class);
-        new ImplementationInstanceFactory(
+        new ImplementationInstaceProvider(
             FakeClassExtendsNoConstructor::class,
             FakeClassNoConstructor::class,
             $this->createMock(ContainerInterface::class)

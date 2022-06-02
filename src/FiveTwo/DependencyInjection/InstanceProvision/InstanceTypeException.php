@@ -9,13 +9,13 @@
 
 declare(strict_types=1);
 
-namespace FiveTwo\DependencyInjection\Instantiation;
+namespace FiveTwo\DependencyInjection\InstanceProvision;
 
 use FiveTwo\DependencyInjection\DependencyInjectionException;
 use Throwable;
 
 /**
- * Exception that indicates the type returned by an {@see InstanceFactory} is different from the expected type.
+ * Exception that indicates the type returned by an {@see InstaceProvider} is different from the expected type.
  *
  * @template TExpected of object
  */

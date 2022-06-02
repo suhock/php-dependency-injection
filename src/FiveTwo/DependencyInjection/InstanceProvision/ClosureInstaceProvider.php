@@ -9,7 +9,7 @@
 
 declare(strict_types=1);
 
-namespace FiveTwo\DependencyInjection\Instantiation;
+namespace FiveTwo\DependencyInjection\InstanceProvision;
 
 use Closure;
 use FiveTwo\DependencyInjection\DependencyInjectionException;
@@ -19,9 +19,9 @@ use FiveTwo\DependencyInjection\InjectorInterface;
  * Factory that provides instances of a class by using a factory method.
  *
  * @template TClass of object
- * @template-implements InstanceFactory<TClass>
+ * @template-implements InstaceProvider<TClass>
  */
-class ClosureInstanceFactory implements InstanceFactory
+class ClosureInstaceProvider implements InstaceProvider
 {
     /**
      * @param class-string<TClass> $className The name of the class this factory will provide

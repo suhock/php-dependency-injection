@@ -9,14 +9,14 @@
 
 declare(strict_types=1);
 
-namespace FiveTwo\DependencyInjection\Instantiation;
+namespace FiveTwo\DependencyInjection\InstanceProvision;
 
 /**
  * Interface for classes that manage the provision of objects.
  *
  * @template TClass of object
  */
-interface InstanceFactory
+interface InstaceProvider
 {
     /**
      * @return TClass|null An instance of the class or <code>null</code>

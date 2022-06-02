@@ -11,8 +11,8 @@ declare(strict_types=1);
 
 namespace FiveTwo\DependencyInjection;
 
-use FiveTwo\DependencyInjection\Instantiation\ImplementationException;
-use FiveTwo\DependencyInjection\Instantiation\InstanceFactory;
+use FiveTwo\DependencyInjection\InstanceProvision\ImplementationException;
+use FiveTwo\DependencyInjection\InstanceProvision\InstaceProvider;
 
 /**
  * Interface for adding transient factories to a container.
@@ -23,11 +23,11 @@ interface ContainerTransientBuilderInterface
      * @template TClass of object
      *
      * @param class-string<TClass> $className
-     * @param InstanceFactory<TClass> $instanceFactory
+     * @param InstaceProvider<TClass> $instanceProvider
      *
      * @return $this
      */
-    public function addTransient(string $className, InstanceFactory $instanceFactory): static;
+    public function addTransient(string $className, InstaceProvider $instanceProvider): static;
 
     /**
      * @template TClass of object
