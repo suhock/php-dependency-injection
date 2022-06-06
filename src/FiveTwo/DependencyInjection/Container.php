@@ -11,7 +11,7 @@ declare(strict_types=1);
 
 namespace FiveTwo\DependencyInjection;
 
-use FiveTwo\DependencyInjection\InstanceProvision\InstaceProvider;
+use FiveTwo\DependencyInjection\InstanceProvision\InstanceProvider;
 use FiveTwo\DependencyInjection\Lifetime\LifetimeStrategy;
 
 /**
@@ -58,7 +58,7 @@ class Container implements
     public function add(
         string $className,
         LifetimeStrategy $lifetimeStrategy,
-        InstaceProvider $instanceProvider
+        InstanceProvider $instanceProvider
     ): static {
         $this->factories[$className] = new Descriptor($className, $lifetimeStrategy, $instanceProvider);
 

@@ -19,9 +19,9 @@ use FiveTwo\DependencyInjection\InjectorInterface;
  * Factory that provides instances of a class by directly instantiating the class.
  *
  * @template TClass of object
- * @template-implements InstaceProvider<TClass>
+ * @template-implements InstanceProvider<TClass>
  */
-class ClassInstaceProvider implements InstaceProvider
+class ClassInstanceProvider implements InstanceProvider
 {
     /**
      * @param class-string<TClass> $className The name of the class this factory will instantiate

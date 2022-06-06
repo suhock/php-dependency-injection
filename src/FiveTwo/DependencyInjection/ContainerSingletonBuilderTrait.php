@@ -11,13 +11,13 @@ declare(strict_types=1);
 
 namespace FiveTwo\DependencyInjection;
 
-use FiveTwo\DependencyInjection\InstanceProvision\ClassInstaceProvider;
-use FiveTwo\DependencyInjection\InstanceProvision\ClosureInstaceProvider;
+use FiveTwo\DependencyInjection\InstanceProvision\ClassInstanceProvider;
+use FiveTwo\DependencyInjection\InstanceProvision\ClosureInstanceProvider;
 use FiveTwo\DependencyInjection\InstanceProvision\ImplementationException;
-use FiveTwo\DependencyInjection\InstanceProvision\ImplementationInstaceProvider;
-use FiveTwo\DependencyInjection\InstanceProvision\InstaceProvider;
+use FiveTwo\DependencyInjection\InstanceProvision\ImplementationInstanceProvider;
+use FiveTwo\DependencyInjection\InstanceProvision\InstanceProvider;
 use FiveTwo\DependencyInjection\InstanceProvision\InstanceTypeException;
-use FiveTwo\DependencyInjection\InstanceProvision\ObjectInstaceProvider;
+use FiveTwo\DependencyInjection\InstanceProvision\ObjectInstanceProvider;
 use FiveTwo\DependencyInjection\Lifetime\SingletonStrategy;
 
 /**
@@ -35,11 +35,11 @@ trait ContainerSingletonBuilderTrait
      * @template TClass of object
      *
      * @param class-string<TClass> $className
-     * @param InstaceProvider<TClass> $instanceProvider
+     * @param InstanceProvider<TClass> $instanceProvider
      *
      * @return $this
      */
-    public function addSingleton(string $className, InstaceProvider $instanceProvider): static
+    public function addSingleton(string $className, InstanceProvider $instanceProvider): static
     {
         $this->add($className, new SingletonStrategy($className), $instanceProvider);
 
@@ -61,7 +61,7 @@ trait ContainerSingletonBuilderTrait
     {
         $this->addSingleton(
             $className,
-            new ClassInstaceProvider($className, $this->getInjector(), $mutator !== null ? $mutator(...) : null)
+            new ClassInstanceProvider($className, $this->getInjector(), $mutator !== null ? $mutator(...) : null)
         );
 
         return $this;
@@ -80,7 +80,7 @@ trait ContainerSingletonBuilderTrait
     {
         $this->addSingleton(
             $className,
-            new ImplementationInstaceProvider($className, $implementationClassName, $this)
+            new ImplementationInstanceProvider($className, $implementationClassName, $this)
         );
 
         return $this;
@@ -100,7 +100,7 @@ trait ContainerSingletonBuilderTrait
     {
         $this->addSingleton(
             $className,
-            new ClosureInstaceProvider($className, $factory(...), $this->getInjector())
+            new ClosureInstanceProvider($className, $factory(...), $this->getInjector())
         );
 
         return $this;
@@ -119,7 +119,7 @@ trait ContainerSingletonBuilderTrait
     {
         $this->addSingleton(
             $className,
-            new ObjectInstaceProvider($className, $instance)
+            new ObjectInstanceProvider($className, $instance)
         );
 
         return $this;

@@ -15,9 +15,9 @@ namespace FiveTwo\DependencyInjection\InstanceProvision;
  * Factory that provides a previously constructed instance of the class.
  *
  * @template TClass of object
- * @template-implements InstaceProvider<TClass>
+ * @template-implements InstanceProvider<TClass>
  */
-class ObjectInstaceProvider implements InstaceProvider
+class ObjectInstanceProvider implements InstanceProvider
 {
     /**
      * @param class-string<TClass> $className The name of the class or interface provided

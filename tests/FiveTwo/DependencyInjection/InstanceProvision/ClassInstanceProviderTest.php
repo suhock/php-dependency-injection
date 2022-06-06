@@ -18,13 +18,13 @@ use FiveTwo\DependencyInjection\InjectorInterface;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Test suite for {@see ClassInstaceProvider}.
+ * Test suite for {@see ClassInstanceProvider}.
  */
 class ClassInstanceProviderTest extends TestCase
 {
     public function testGet_NoMutator(): void
     {
-        $factory = new ClassInstaceProvider(
+        $factory = new ClassInstanceProvider(
             FakeClassNoConstructor::class,
             $injector = $this->createMock(InjectorInterface::class)
         );
@@ -38,7 +38,7 @@ class ClassInstanceProviderTest extends TestCase
 
     public function testGet_WithMutator(): void
     {
-        self::assertSame('test', (new ClassInstaceProvider(
+        self::assertSame('test', (new ClassInstanceProvider(
             FakeClassNoConstructor::class,
             new Injector(self::createMock(ContainerInterface::class)),
             function (FakeClassNoConstructor $obj) {

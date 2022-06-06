@@ -17,13 +17,13 @@ use FiveTwo\DependencyInjection\FakeClassNoConstructor;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Test suite for {@see ImplementationInstaceProvider}.
+ * Test suite for {@see ImplementationInstanceProvider}.
  */
 class ImplementationInstanceProviderTest extends TestCase
 {
     public function testGet(): void
     {
-        $factory = new ImplementationInstaceProvider(
+        $factory = new ImplementationInstanceProvider(
             FakeClassNoConstructor::class,
             FakeClassExtendsNoConstructor::class,
             $container = $this->createMock(ContainerInterface::class)
@@ -41,7 +41,7 @@ class ImplementationInstanceProviderTest extends TestCase
     public function testGet_SameClass(): void
     {
         self::expectException(ImplementationException::class);
-        new ImplementationInstaceProvider(
+        new ImplementationInstanceProvider(
             FakeClassNoConstructor::class,
             FakeClassNoConstructor::class,
             $this->createMock(ContainerInterface::class)
@@ -51,7 +51,7 @@ class ImplementationInstanceProviderTest extends TestCase
     public function testGet_WrongClass(): void
     {
         self::expectException(ImplementationException::class);
-        new ImplementationInstaceProvider(
+        new ImplementationInstanceProvider(
             FakeClassExtendsNoConstructor::class,
             FakeClassNoConstructor::class,
             $this->createMock(ContainerInterface::class)

@@ -16,7 +16,7 @@ namespace FiveTwo\DependencyInjection\InstanceProvision;
  *
  * @template TClass of object
  */
-interface InstaceProvider
+interface InstanceProvider
 {
     /**
      * @return TClass|null An instance of the class or <code>null</code>

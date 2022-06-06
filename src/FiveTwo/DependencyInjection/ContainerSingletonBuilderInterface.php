@@ -12,7 +12,7 @@ declare(strict_types=1);
 namespace FiveTwo\DependencyInjection;
 
 use FiveTwo\DependencyInjection\InstanceProvision\ImplementationException;
-use FiveTwo\DependencyInjection\InstanceProvision\InstaceProvider;
+use FiveTwo\DependencyInjection\InstanceProvision\InstanceProvider;
 use FiveTwo\DependencyInjection\InstanceProvision\InstanceTypeException;
 
 /**
@@ -24,11 +24,11 @@ interface ContainerSingletonBuilderInterface
      * @template TClass of object
      *
      * @param class-string<TClass> $className
-     * @param InstaceProvider<TClass> $instanceProvider
+     * @param InstanceProvider<TClass> $instanceProvider
      *
      * @return $this
      */
-    public function addSingleton(string $className, InstaceProvider $instanceProvider): static;
+    public function addSingleton(string $className, InstanceProvider $instanceProvider): static;
 
     /**
      * @template TClass of object

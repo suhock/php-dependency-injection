@@ -11,7 +11,7 @@ declare(strict_types=1);
 
 namespace FiveTwo\DependencyInjection;
 
-use FiveTwo\DependencyInjection\InstanceProvision\InstaceProvider;
+use FiveTwo\DependencyInjection\InstanceProvision\InstanceProvider;
 use FiveTwo\DependencyInjection\Lifetime\LifetimeStrategy;
 
 /**
@@ -27,12 +27,12 @@ class Descriptor
     /**
      * @param class-string<TClass> $className
      * @param LifetimeStrategy<TClass> $lifetimeStrategy
-     * @param InstaceProvider<TClass> $instanceProvider
+     * @param InstanceProvider<TClass> $instanceProvider
      */
     public function __construct(
         private readonly string $className,
         private readonly LifetimeStrategy $lifetimeStrategy,
-        private readonly InstaceProvider $instanceProvider
+        private readonly InstanceProvider $instanceProvider
     ) {
     }
 

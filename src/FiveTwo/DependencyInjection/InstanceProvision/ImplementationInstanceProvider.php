@@ -20,9 +20,9 @@ use FiveTwo\DependencyInjection\UnresolvedClassException;
  *
  * @template TClass of object
  * @template TImplementation of TClass
- * @template-implements InstaceProvider<TClass>
+ * @template-implements InstanceProvider<TClass>
  */
-class ImplementationInstaceProvider implements InstaceProvider
+class ImplementationInstanceProvider implements InstanceProvider
 {
     /**
      * @param class-string<TClass> $className The name of the class or interface provided

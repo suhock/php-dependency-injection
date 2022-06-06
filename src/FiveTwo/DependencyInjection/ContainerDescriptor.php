@@ -12,7 +12,7 @@ declare(strict_types=1);
 namespace FiveTwo\DependencyInjection;
 
 use Closure;
-use FiveTwo\DependencyInjection\InstanceProvision\ClosureInstaceProvider;
+use FiveTwo\DependencyInjection\InstanceProvision\ClosureInstanceProvider;
 use FiveTwo\DependencyInjection\Lifetime\LifetimeStrategy;
 
 /**
@@ -63,7 +63,7 @@ class ContainerDescriptor
             $className,
             /** @phpstan-ignore-next-line PHPStan gets confused resolving generic for add() */
             $this->createLifetimeStrategy($className),
-            new ClosureInstaceProvider(
+            new ClosureInstanceProvider(
                 $className,
                 /** @phpstan-ignore-next-line PHPStan gets confused resolving generic for add() */
                 fn () => $this->container->get($className),
