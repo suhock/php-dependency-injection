@@ -12,8 +12,10 @@ declare(strict_types=1);
 namespace FiveTwo\DependencyInjection\Context;
 
 use FiveTwo\DependencyInjection\Container;
+use FiveTwo\DependencyInjection\DependencyInjectionException;
 use FiveTwo\DependencyInjection\FakeClassNoConstructor;
 use FiveTwo\DependencyInjection\InjectorInterface;
+use FiveTwo\DependencyInjection\UnresolvedDependencyException;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -84,6 +86,18 @@ class ContextContainerTest extends TestCase
         );
     }
 
+    public function testGet_EmptyStack(): void
+    {
+        $container = $this->createContainer();
+        $container->context('default')->addSingletonInstance(
+            FakeClassNoConstructor::class,
+            $defaultInstance = new FakeClassNoConstructor()
+        );
+
+        self::expectException(UnresolvedDependencyException::class);
+        $container->get(FakeClassNoConstructor::class);
+    }
+
     public function testContext_New(): void
     {
         $container = $this->createContainer();
@@ -96,6 +110,41 @@ class ContextContainerTest extends TestCase
         $container = $this->createContainer();
 
         self::assertSame($container->context('default'), $container->context('default'));
+    }
+
+    public function testPush(): void
+    {
+        $container = $this->createContainer();
+        $container->push('test1');
+        $container->push('test2');
+
+        self::assertEquals(['test1', 'test2'], $container->getStack());
+    }
+
+    public function testPop(): void
+    {
+        $container = $this->createContainer();
+        $container->push('test1');
+        $container->pop();
+
+        self::assertEmpty($container->getStack());
+    }
+
+    public function testPop_AlreadyEmpty(): void
+    {
+        $container = $this->createContainer();
+
+        self::expectException(DependencyInjectionException::class);
+        $container->pop();
+    }
+
+    public function testResetStack(): void
+    {
+        $container = $this->createContainer();
+        $container->push('test');
+        $container->resetStack();
+
+        self::assertEmpty($container->getStack());
     }
 
     /**

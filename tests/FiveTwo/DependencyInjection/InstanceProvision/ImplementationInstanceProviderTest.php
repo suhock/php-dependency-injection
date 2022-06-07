@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace FiveTwo\DependencyInjection\InstanceProvision;
 
 use FiveTwo\DependencyInjection\ContainerInterface;
+use FiveTwo\DependencyInjection\ExpectExceptionCallbackTrait;
 use FiveTwo\DependencyInjection\FakeClassExtendsNoConstructor;
 use FiveTwo\DependencyInjection\FakeClassNoConstructor;
 use PHPUnit\Framework\TestCase;
@@ -21,6 +22,8 @@ use PHPUnit\Framework\TestCase;
  */
 class ImplementationInstanceProviderTest extends TestCase
 {
+    use ExpectExceptionCallbackTrait;
+
     public function testGet(): void
     {
         $factory = new ImplementationInstanceProvider(
@@ -50,7 +53,11 @@ class ImplementationInstanceProviderTest extends TestCase
 
     public function testGet_WrongClass(): void
     {
-        self::expectException(ImplementationException::class);
+        self::expectExceptionCallback(function (ImplementationException $exception) {
+            self::assertSame(FakeClassExtendsNoConstructor::class, $exception->getExpectedClassName());
+            self::assertSame(FakeClassNoConstructor::class, $exception->getActualClassName());
+        });
+
         new ImplementationInstanceProvider(
             FakeClassExtendsNoConstructor::class,
             FakeClassNoConstructor::class,

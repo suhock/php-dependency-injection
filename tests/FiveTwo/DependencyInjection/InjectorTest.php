@@ -176,12 +176,22 @@ class InjectorTest extends TestCase
     {
         [$injector, $container] = $this->create();
 
-        $instance = $container->classMapping[FakeInterfaceTwo::class] = new FakeClassImplementsInterfaces();
+        $container->classMapping[FakeInterfaceTwo::class] = new FakeClassImplementsInterfaces();
 
         self::assertSame(
             $container->classMapping[FakeInterfaceTwo::class],
             $injector->call(fn (FakeInterfaceOne|string|FakeInterfaceTwo $obj) => $obj)
         );
+    }
+
+    public function testCall_UnionType_NoMatch(): void
+    {
+        [$injector, $container] = $this->create();
+
+        $container->classMapping[FakeClassImplementsInterfaces::class] = new FakeClassImplementsInterfaces();
+
+        self::expectException(UnresolvedParameterException::class);
+        $injector->call(fn (FakeInterfaceOne|FakeInterfaceTwo $obj) => $obj);
     }
 
     public function testCall_IntersectionType_First(): void
