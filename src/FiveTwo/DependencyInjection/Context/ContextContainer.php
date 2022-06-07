@@ -134,13 +134,10 @@ class ContextContainer implements ContainerInterface
      */
     public function get(string $className): ?object
     {
-        for ($contextName = end($this->stack); $contextName !== false; $contextName = prev($this->stack)) {
-            if ($this->hasInContext($className, $contextName)) {
-                return $this->getFromContext($className, $contextName);
-            }
-        }
-
-        throw new UnresolvedClassException($className);
+        return $this->getFromContext(
+            $className,
+            $this->findContext($className) ?? throw new UnresolvedClassException($className)
+        );
     }
 
     /**
@@ -148,13 +145,25 @@ class ContextContainer implements ContainerInterface
      */
     public function has(string $className): bool
     {
+        return $this->findContext($className) !== null;
+    }
+
+    /**
+     * @template TClass of object
+     *
+     * @param class-string<TClass> $className
+     *
+     * @return string|null
+     */
+    private function findContext(string $className): ?string
+    {
         for ($contextName = end($this->stack); $contextName !== false; $contextName = prev($this->stack)) {
             if ($this->hasInContext($className, $contextName)) {
-                return true;
+                return $contextName;
             }
         }
 
-        return false;
+        return null;
     }
 
     /**
@@ -167,9 +176,7 @@ class ContextContainer implements ContainerInterface
      */
     private function getFromContext(string $className, string $contextName): ?object
     {
-        return $this->hasInContext($className, $contextName) ?
-            $this->containers[$contextName]->get($className) :
-            throw new UnresolvedClassException($className);
+        return $this->containers[$contextName]->get($className);
     }
 
     /**

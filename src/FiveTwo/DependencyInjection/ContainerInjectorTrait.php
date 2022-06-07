@@ -45,15 +45,12 @@ trait ContainerInjectorTrait
      */
     private function tryGetInstanceFromType(ReflectionType $rType, mixed &$result): bool
     {
-        if ($rType instanceof ReflectionNamedType) {
-            return $this->tryGetFromNamedType($rType, $result);
-        } elseif ($rType instanceof ReflectionUnionType) {
-            return $this->tryGetFromUnionType($rType, $result);
-        } elseif ($rType instanceof ReflectionIntersectionType) {
-            return $this->tryGetFromIntersectionType($rType, $result);
-        }
-
-        return false;
+        return match (true) {
+            $rType instanceof ReflectionNamedType => $this->tryGetFromNamedType($rType, $result),
+            $rType instanceof ReflectionUnionType => $this->tryGetFromUnionType($rType, $result),
+            $rType instanceof ReflectionIntersectionType => $this->tryGetFromIntersectionType($rType, $result),
+            default => false // encountered an unknown ReflectionType
+        };
     }
 
     /**
@@ -107,41 +104,46 @@ trait ContainerInjectorTrait
     ): bool {
         foreach ($rType->getTypes() as $rInnerType) {
             if (!$rInnerType instanceof ReflectionNamedType) {
+                // Future-proofing. As of PHP 8.1, only named types are supported in intersection types.
                 return false;
             }
-        }
 
-        foreach ($rType->getTypes() as $rInnerType) {
-            /**
-             * @psalm-suppress UndefinedMethod
-             * @var class-string $className
-             */
+            /** @var class-string $className */
             $className = $rInnerType->getName();
 
             if (!$this->getContainer()->has($className)) {
                 continue;
             }
 
-            // only way to tell if it's a match is to instantiate it
+            // only way to tell if it's a match is to get an instance and check
             $instance = $this->getContainer()->get($className);
 
-            foreach ($rType->getTypes() as $rTestType) {
-                /**
-                 * @psalm-suppress UndefinedMethod
-                 * @var class-string $testClassName
-                 */
-                $testClassName = $rTestType->getName();
+            if ($instance !== null && $this->isIntersectionMatch($rType, $instance)) {
+                $result = $instance;
 
-                if (!$instance instanceof $testClassName) {
-                    continue 2;
-                }
+                return true;
             }
-
-            $result = $instance;
-
-            return true;
         }
 
         return false;
+    }
+
+    private function isIntersectionMatch(ReflectionIntersectionType $rType, object $instance): bool
+    {
+        foreach ($rType->getTypes() as $rInnerType) {
+            if (!$rInnerType instanceof ReflectionNamedType) {
+                // Future-proofing. As of PHP 8.1, only named types are supported in intersection types.
+                return false;
+            }
+
+            /** @var class-string $testClassName */
+            $testClassName = $rInnerType->getName();
+
+            if (!$instance instanceof $testClassName) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }
