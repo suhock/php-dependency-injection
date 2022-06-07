@@ -3,10 +3,10 @@
 The Five Two Dependency Injection library provides a highly customizable
 dependency injection framework for projects running on PHP 8.1 or later. This
 library focuses on facilitating sound OOP practices, testing, refactoring, and
-static analysis by emphasizing factory methods as the primary means of building
-complex dependencies. Thus, by design the framework can only resolve and inject
-`object` dependencies and does not rely on configuration files for setting up
-dependencies.
+static analysis by emphasizing factory methods and class constructors as the 
+primary means of building complex dependencies. By design the framework can only
+resolve and inject `object`-typed dependencies and does not rely on
+configuration files for the container specification.
 
 ```php
 $container = (new FiveTwo\DependencyInjection\Container())
@@ -29,22 +29,25 @@ dependency resolution down a nested context hierarchy.
 
 ## Table of Contents
 
--   [Installation](#installation)
--   [Basic Container Setup](#basic-container-setup)
--   [Adding Dependencies to the Container](#adding-dependencies-to-the-container)
-    -   [Lifetime Strategies](#lifetime-strategies)
-        -   [Singleton](#singleton)
-        -   [Transient](#transient)
-        -   [Custom Strategies](#custom-strategies)
-    -   [Adding Dependencies to the Container](#adding-dependencies-to-the-container)
-        -   [Class Constructor Autowiring](#class-constructor-autowiring)
-        -   [Interface-Implementation Mapping](#interface-implementation-mapping)
-        -   [Factory Method Invocation](#factory-method-invocation)
-        -   [Object Instance Provision](#object-instance-provision)
-    -   [Nested Containers](#nested-containers)
-        -   [Namespace Container](#namespace-container)
-        -   [Interface Container](#interface-container)
--   [Context Container](#context-container)
+- [Installation](#installation)
+- [Basic Container Setup](#basic-container-setup)
+- [Adding Dependencies to the Container](#adding-dependencies-to-the-container)
+    - [Lifetime Strategies](#lifetime-strategies)
+        - [Singleton](#singleton)
+        - [Transient](#transient)
+        - [Custom Strategies](#custom-strategies)
+    - [Adding Dependencies to the Container](#adding-dependencies-to-the-container)
+        - [Class Constructor Autowiring](#class-constructor-autowiring)
+        - [Interface-Implementation Mapping](#interface-implementation-mapping)
+        - [Factory Method Invocation](#factory-method-invocation)
+        - [Object Instance Provision](#object-instance-provision)
+    - [Nested Containers](#nested-containers)
+        - [Namespace Container](#namespace-container)
+        - [Interface Container](#interface-container)
+- [Context Container](#context-container)
+- [Dependency Injector](#dependency-injector)
+- [Appendix](#appendix)
+  - [API Syntax](#api-syntax)
 
 ## Installation
 
@@ -129,40 +132,8 @@ Instance providers object instances when required by the class's lifetime
 strategy. The default `Container` provides convenience methods for each of the
 built-in instance providers.
 
-***A note on API syntax***
-
-This library places a high emphasis on strict type safety, something for which
-PHP is still in its infancy. Correspondingly, the existing syntax of PHP,
-PHPDoc, and popular static analysis tools are lacking, especially when it comes
-to expressing callable-scoped generics. This document utilizes a modified PHP
-syntax inspired heavily by the C# and TypeScript approaches.
-
-```php
-function exampleFunction<TClass>(string<TClass> $className): TClass;
-```
-
-The above `exampleFunction` takes a generic type `TClass` (in this document, all
-generics are implicitly `object` types). The function takes a `string`,
-`$className`, which contains the fully qualified name of the class (i.e.,
-`TClass::class`). The function will return a value of type `TClass`.
-
-```php
-callable ExampleFunctionType<TClass, TSubclass of TClass>(
-    string<TClass> $className,
-    string<TSubclass> $subclassName
-): void;
-
-function anotherFunction<TClass, TSubclass of TClass>(
-    string<T> $className,
-    ExampleFunctionType<TClass, TSubclass> $callback
-): void;
-```
-
-The above `callable` declaration is analogous to the `delegate` keyword in C#,
-in this case defining a custom `callable` type, `ExampleFunctionType`. The
-template takes two classes: `TClass` and another class `TSubclass` which must
-be of type `TClass`. The custom type is then taken as a parameter in
-`anotherFunction`.
+For more information on the syntax used in this document for API information,
+please refer to the [API Syntax](#api-syntax) appendix.
 
 #### Class Constructor Autowiring
 
@@ -192,7 +163,7 @@ class Container {
 }
 ```
 
-**_Examples:_**
+***Examples:***
 
 ```php
 $container->addSingletonClass(MyService::class);
@@ -241,7 +212,7 @@ class Container {
 }
 ```
 
-**_Examples:_**
+***Examples:***
 
 ```php
 $container
@@ -302,7 +273,7 @@ class Container {
 }
 ```
 
-**_Examples:_**
+***Examples:***
 
 ```php
 $container->addSingletonFactory(
@@ -334,14 +305,14 @@ The container will provide a single, pre-specified instance of a class.
 
 ```php
 class Container {
-    function addSingletonInstance<T>(
-        string<T> $className,
-        T|null $instance
+    function addSingletonInstance<TClass>(
+        string<TClass> $className,
+        TClass|null $instance
     ): static;
 }
 ```
 
-**_Examples:_**
+***Examples:***
 
 ```php
 $request = new Request($_GET, $_POST);
@@ -391,7 +362,7 @@ class Container {
 }
 ```
 
-**_Examples:_**
+***Examples:***
 
 ```php
 $container->addSingletonNamespace('Http');
@@ -441,7 +412,7 @@ class Container {
 }
 ```
 
-**_Examples:_**
+***Examples:***
 
 ```php
 $container
@@ -490,7 +461,7 @@ $httpClient = $container->get(Http\CurlHttpClient::class);
 
 Implement `LifetimeStrategy`
 
-**_Example:_**
+***Example:***
 
 ```php
 use FiveTwo\DependencyInjection\LifetimeStrategy;
@@ -603,3 +574,92 @@ class AdminEditDefaultSettingsController {
     }
 }
 ```
+
+## Dependency Injector
+
+```php
+use FiveTwo\DependencyInjection\Container;
+use FiveTwo\DependencyInjection\Injector;
+
+// Create the container and build it
+$container = new Container();
+// ... build the container ...
+
+// Create an injector backed by the container
+$injector = new Injector($container);
+
+// Fetch the application router from the container
+$router = $container->get(Router::class);
+
+// Get the appropriate controller from the request path 
+$controller = $router->getControllerFromRequest($_SERVER);
+
+// Call the controller's handleGet() method, injecting the indicated parameter
+// values in addition to any additional dependencies in the parameter list. 
+$page = $injector
+    ->call(
+        $controller->handleGet(...),
+        map_query_to_param_assoc_array($_GET)
+    )
+
+// Then, call the render() function on the return value.  
+$page->render();
+
+class ProjectListController
+{
+    public function handleGet(
+        // Parameter below will be injected from the container.
+        ProjectRepository $projectRepository,
+        
+        // Parameter below will be populated from the value provided in the
+        // $injector->call() parameter array. The default value will be used if
+        // the key 'filter' is not present in the array.
+        string $filter = ''
+    ): PageInterface {
+        $projects = $projectRepository->query($filter);
+        
+        return new ProjectListPage($projects);
+    }
+}
+
+interface PageInterface {
+    public function render(): void;
+}
+```
+
+## Appendix
+
+### API syntax
+
+This library places a high emphasis on strict type safety, something for which
+PHP is still in its infancy. Correspondingly, the existing syntax of PHP,
+PHPDoc, and popular static analysis tools are lacking, especially when it comes
+to expressing callable-scoped generics. This document utilizes a modified PHP
+syntax inspired heavily by the C# and TypeScript approaches.
+
+```php
+function exampleFunction<TClass>(string<TClass> $className): TClass;
+```
+
+The above `exampleFunction` takes a generic type `TClass` (in this document, all
+generics are implicitly `object` types). The function takes a `string`,
+`$className`, which contains the fully qualified name of the class (i.e.,
+`TClass::class`). The function will return a value of type `TClass`.
+
+```php
+callable ExampleFunctionType<TClass, TSubclass of TClass>(
+    string<TClass> $className,
+    string<TSubclass> $subclassName
+): void;
+
+function anotherFunction<TClass, TSubclass of TClass>(
+    string<TClass> $className,
+    ExampleFunctionType<TClass, TSubclass> $callback
+): void;
+```
+
+The above `callable` declaration is analogous to the `delegate` keyword in C#,
+in this case defining a custom `callable` type, `ExampleFunctionType`. The
+template takes two classes: `TClass` and another class `TSubclass` which must
+be of type `TClass`. The custom type is then taken as a parameter in
+`anotherFunction`.
