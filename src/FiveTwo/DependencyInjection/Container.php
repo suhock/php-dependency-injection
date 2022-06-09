@@ -40,11 +40,7 @@ class Container implements
      */
     public function __construct(?InjectorInterface $injector = null)
     {
-        $this->addSingletonInstance(self::class, $this);
-
         $this->injector = $injector ?? new Injector($this);
-        $this->addSingletonInstance($this->injector::class, $this->injector)
-            ->addSingletonInstance(InjectorInterface::class, $this->injector);
     }
 
     protected function getInjector(): InjectorInterface
