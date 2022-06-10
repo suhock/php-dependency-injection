@@ -2,7 +2,7 @@
 
 The Five Two Dependency Injection library provides a highly customizable
 dependency injection framework for projects running on PHP 8.1 or later. This
-library focuses on facilitating sound object-oriented practices, testing, 
+library focuses on facilitating sound object-oriented practices, testing,
 refactoring, and static analysis by emphasizing factory methods and class
 constructors as the primary means of building complex dependencies. By design
 the framework can only resolve and inject `object`-typed dependencies and does
@@ -18,7 +18,7 @@ $container->addSingletonClass(MyApplication::class)
 
 Out of the box, this library provides [singleton](#singleton) and
 [transient](#transient) lifetime strategies and a variety ways of
-[provisioning instances](#adding-dependencies-to-the-container) of specific 
+[provisioning instances](#adding-dependencies-to-the-container) of specific
 types, as well as specifying factories for all classes in a particular
 [namespace](#namespace-container) or implementing a specific
 [interface](#interface-container). You can easily extend the default `Container`
@@ -31,26 +31,26 @@ dependency resolution down a nested context hierarchy.
 ## Table of Contents
 
 - [Installation](#installation)
-- [Basic Usage](#basic-usage)
-- [Instance Lifetime](#instance-lifetime)
+- [Basic usage](#basic-usage)
+- [Instance lifetime](#instance-lifetime)
     - [Singleton](#singleton)
     - [Transient](#transient)
-- [Adding Dependencies to the Container](#adding-dependencies-to-the-container)
-    - [Class Constructor Autowiring](#class-constructor-autowiring)
-    - [Interface-Implementation Mapping](#interface-implementation-mapping)
-    - [Factory Method Invocation](#factory-method-invocation)
-    - [Object Instance Provision](#object-instance-provision)
-- [Nested Containers](#nested-containers)
-    - [Namespace Container](#namespace-container)
-    - [Interface Container](#interface-container)
-- [Customizing the Container](#customizing-the-container)
-  - [Custom Lifetime Strategies](#custom-lifetime-strategies)
-  - [Custom Instance Providers](#custom-instance-providers)
-  - [Custom Nested Containers](#custom-nested-containers)
-- [Context Container](#context-container)
-- [Dependency Injector](#dependency-injector)
+- [Adding dependencies to the container](#adding-dependencies-to-the-container)
+    - [Autowire the class's constructor](#autowire-the-classs-constructor)
+    - [Map an interface to an implementation](#map-an-interface-to-an-implementation)
+    - [Call a factory method](#call-a-factory-method)
+    - [Provide a specific instance](#provide-a-specific-instance)
+- [Nested containers](#nested-containers)
+    - [Namespace container](#namespace-container)
+    - [Interface container](#interface-container)
+- [Customizing the container](#customizing-the-container)
+  - [Custom lifetime strategies](#custom-lifetime-strategies)
+  - [Custom instance providers](#custom-instance-providers)
+  - [Custom nested containers](#custom-nested-containers)
+- [Context container](#context-container)
+- [Dependency injector](#dependency-injector)
 - [Appendix](#appendix)
-  - [API Syntax](#api-syntax)
+  - [API syntax](#api-syntax)
 
 ## Installation
 
@@ -63,6 +63,12 @@ application's `composer.json` file.
         "fivetwo/dependency-injection": "*"
     }
 }
+```
+
+Alternatively, use the CLI from your projects root directory.
+
+```shell
+php composer.phar require "fivetwo/dependency-injection:*"
 ```
 
 ## Basic Usage
@@ -83,13 +89,13 @@ specific dependencies in your application.
 $container
     // Autowire the constructor
     ->addSingletonClass(MyApplication::class)
-    
+
     // Manually construct an instance with factory
     ->addSingletonFactory(Logger::class, fn () => new FileLogger('myapp.log'))
-    
+
     // Alias an interface to an implementing type
     ->addTransientImplementation(HttpClient::class, CurlHttpClient::class)
-    
+
     // Add optional values with a mutator after autowiring the constructor
     ->addTransientClass(
         CurlHttpClient::class,
@@ -108,8 +114,23 @@ $container
     ->handleRequest();
 ```
 
-If your application has other entry points (e.g. controllers), it might be 
-useful to inject the controller into the part of your application that invokes
+The container will autowire the class constructor and provide your application
+the instance.
+
+```php
+class MyApplication
+{
+    // The constructor arguments will be provided by the container
+    public function __construct(
+        private readonly HttpClient $client,
+        private readonly Logger $logger
+    ) {
+    }
+}
+```
+
+If your application has other entry points (e.g. controllers), it might be
+useful to inject the container into the part of your application that invokes
 those entry points (e.g. a router).
 
 ```php
@@ -117,10 +138,11 @@ $container->addSingletonInstance(Container::class, $container);
 
 class MyRouter
 {
-    public function __construct(private readonly Container $container)
-    {
+    public function __construct(
+        private readonly Container $container
+    ) {
     }
-    
+
     public function routeRequest(string $method, string $path): void
     {
         $controllerClassName = $this->getControllerClassName($path);
@@ -132,23 +154,29 @@ class MyRouter
 
 ### A note on the service locators pattern
 
-Please note that while `Container` is functionally equivalent to a service 
-locator, the service locator pattern should usually be avoided because it makes
-testing and refactoring more difficult, and generally makes it more difficult to
-reason about your application.
+The previous example resembles a service locator pattern. Please note that while
+the `Container` class is functionally equivalent to a service locator, it is
+usually best to avoid the service locator pattern, since it makes testing,
+refactoring, and reasoning about your application more difficult.
 
-Only your application's entry points should invoke the container's `get()`
-method. If you know the specific object type required before runtime, you should
-rely on the container's automatic dependency injection capabilities instead of
-directly invoking the container's `get()` method.
+Only places in your application that invoke entry points should directly use the
+container. If you know the specific object type required before runtime, you
+should rely on the container's automatic dependency injection capabilities
+instead of directly invoking the container. In the prior example, the
+application cannot know which container to invoke until it receives an actual
+request, so injecting the container is necessary.
+
+The following is an example of what not to do.
 
 ```php
 /* Do NOT do this! */
 
 class MyApiCaller
 {
-    public function __construct(private readonly Container $container) {
-     }
+    public function __construct(
+        private readonly Container $container
+    ) {
+    }
 
     public function callApi(): HttpResponse
     {
@@ -159,9 +187,9 @@ class MyApiCaller
 ```
 
 In the above example, the required type, `HttpClient` is known before runtime
-and can be requested directly by the constructor. This change will make 
-`MyClass`'s actual dependencies much clearer and thereby make testing and 
-refactoring it far easier. 
+and can be requested directly by the constructor. This change will make
+`MyClass`'s actual dependencies much clearer thereby making testing and
+refactoring far easier.
 
 ```php
 /* Do this instead! */
@@ -170,7 +198,8 @@ class MyApiCaller
 {
     public function __construct(
         private readonly HttpClient $httpClient
-    ) { }
+    ) {
+    }
 
     public function callApi(): HttpResponse
     {
@@ -193,32 +222,32 @@ dependency injection, the singleton container can be removed.
 
 ```php
 /* TODO: Refactor this! */
-public function myBloatedFunction(...$args)
+public function myFragileBloatedFunction(...$args)
 {
     // ...
+
+    // $httpClient = new CurlHttpClient();
+    // $logger = new FileLogger('myapp.log');
+    // $httpClient->setLogger($logger);
+
+    // Replaced the above duplicated construction logic with a call to the
+    // container
     $httpClient = getAppContainer()->get(HttpClient::class);
-    $result = $httpClient->get('https://www.example.com/api');
+
+    $result = $httpClient->get('https://www.example.com/api/' . $args[42]);
     // ...
 }
 
-/* TODO: Refactor this! */
-public function myLegacyFunction(...$args)
-{
-    // ...
-    myBloatedFunction($args[1], 'magic string', 42, $args[17]);
-    // ...
-}
-
-/* TODO: Eliminate all uses of this and remove! */
+/* TODO: Eliminate all references to the singleton container and remove this! */
 function getAppContainer(): Container
 {
     static $container;
     return $container ??= new Container();
 }
 ```
- 
 
-### Instance Lifetime
+
+### Instance lifetime
 
 The lifetime of an instance determines when the container should request a fresh
 instance of a class. There are two builtin lifetime strategies for classes:
@@ -227,39 +256,39 @@ singleton and transient. You can also add your own custom
 
 #### Singleton
 
-Singleton instances are persisted for the lifetime of the container. When the 
+Singleton instances are persisted for the lifetime of the container. When the
 container receives a request for a singleton instance for the first time, it
 will call the factory that you specified for that class, store the result, and
-then return it. Any time the container receives a subsequent request for that 
+then return it. Any time the container receives a subsequent request for that
 class, it will return that same instance. The default `Container` provides
 convenience methods for adding singleton factories, all starting with the prefix
 `addSingleton`.
 
 #### Transient
 
-Transient instances are never persisted and the container provides a fresh 
-value each time an instance is requested. Each time the container receives a 
+Transient instances are never persisted and the container provides a fresh
+value each time an instance is requested. Each time the container receives a
 request for a transient instance, it will call the factory you specified for
-that class. The default `Container` provides convenience methods for adding 
+that class. The default `Container` provides convenience methods for adding
 transient factories, all starting with the prefix `addTransient`.
 
-### Adding Dependencies to the Container
+### Adding dependencies to the container
 
-There are a number of built-in ways to specify how new instances should be 
+There are a number of built-in ways to specify how new instances should be
 created.
 
- - [Class Constructor Autowiring](#class-constructor-autowiring)
- - [Interface-Implementation Mapping](#interface-implementation-mapping)
- - [Factory Method Invocation](#factory-method-invocation)
- - [Object Instance Provision](#object-instance-provision)
+ - [Autowire the class's constructor](#autowire-the-classs-constructor)
+ - [Map an interface to an implementation](#map-an-interface-to-an-implementation)
+ - [Call a factory method](#call-a-factory-method)
+ - [Provide a specific instance](#provide-a-specific-instance)
 
 If needed, can also specify your own custom
 [instance providers](#custom-instance-providers).
 
-For more information on the syntax used in this document for API information,
-please refer to the [API Syntax](#api-syntax) appendix.
+This document uses a modified PHP syntax for conveying API information. Please
+refer to the [API syntax](#api-syntax) section for details.
 
-#### Class Constructor Autowiring
+#### Autowire the class's constructor
 
 The container will construct classes by calling the class's constructor,
 automatically resolving any dependencies in the constructor's parameter list.
@@ -274,7 +303,8 @@ callable Mutator<TClass>(
     object|null ...$dependencies
 ): void;
 
-class Container {
+class Container
+{
     function addSingletonClass<TClass>(
         string<TClass> $className,
         Mutator<TClass>|null $mutator = null
@@ -289,7 +319,7 @@ class Container {
 
 ##### Examples
 
-###### Basic usage
+###### Autowiring a class constructor
 
 In the following example, when the container provides an instance of `MyService`
 it will automatically inject all dependencies into its constructor to create an
@@ -313,14 +343,15 @@ $container->addTransientClass(
 );
 ```
 
-#### Interface-Implementation Mapping
+#### Map an interface to an implementation
 
 The container will provide classes by using the instance provider of the
 specified implementing subclass. You must therefore also add the implementing
 class to the container.
 
 ```php
-class Container {
+class Container
+{
     function addSingletonImplementation<TClass, TImpl of TClass>(
         string<TClass> $className,
         string<TImpl> $implementationClassName
@@ -335,7 +366,7 @@ class Container {
 
 ##### Examples
 
-###### Basic usage
+###### Mapping an interface to a concrete implementation
 
 ```php
 $container
@@ -360,7 +391,9 @@ When your application requests an instance of `Throwable`, the container will
 see that it should actually provide an instance of `Exception`. Next it will
 see that instances of `Exception` should be created using `LogicException`.
 Finally, it will provide an instance of `LogicException` for `Throwable` by
-autowiring its constructor.
+autowiring its constructor. If your application instead requests an instance of
+`Exception` then the container will also provide an instance of
+`LogicException`.
 
 ###### Unresolved mappings
 
@@ -370,14 +403,14 @@ be thrown:
 ```php
 $container->addSingletonClass(HttpClient::class, CurlHttpClient::class);
 
-/* 
+/*
  * The container will throw an UnresolvedDependencyException because it does
  * not know how to provide an instance of CurlHttpClient.
  */
 $container->get(HttpClient::class);
 ```
 
-#### Factory Method Invocation
+#### Call a factory method
 
 The container will provide class instances by requesting them from a factory
 method. Any parameters in the factory method will be autowired.
@@ -385,7 +418,8 @@ method. Any parameters in the factory method will be autowired.
 ```php
 callable Factory<TClass>(object|null ...$dependencies): TClass|null;
 
-class Container {
+class Container
+{
     function addSingletonFactory<TClass>(
         string<TClass> $className,
         Factory<TClass> $factory
@@ -400,7 +434,7 @@ class Container {
 
 ##### Examples
 
-###### Basic usage
+###### Inject a configuration value
 
 ```php
 $container->addSingletonFactory(
@@ -410,11 +444,11 @@ $container->addSingletonFactory(
 ```
 
 When your application requests an instance of `Mailer` from the container, it
-will call the specified factory, injecting the `AppConfig` dependency. The 
+will call the specified factory, injecting the `AppConfig` dependency. The
 factory then manually constructs an instance, specifying the mailer transport
 from that config.
 
-###### Inline class implementations
+###### Inline class implementation
 
 ```php
 $container->addTransientFactory(
@@ -423,7 +457,7 @@ $container->addTransientFactory(
         public function __construct(private readonly FileWriter $writer)
         {
         }
-        
+
         public function log(string $message): void
         {
             $this->writer->writeLine($message);
@@ -432,12 +466,13 @@ $container->addTransientFactory(
 );
 ```
 
-#### Object Instance Provision
+#### Provide a specific instance
 
 The container will provide a pre-constructed instance of a class.
 
 ```php
-class Container {
+class Container
+{
     function addSingletonInstance<TClass>(
         string<TClass> $className,
         TClass|null $instance
@@ -457,7 +492,7 @@ $container->addSingletonInstance(Request::class, $request);
 Anytime your application requires a `Request` object, the container will provide
 the exact same instance that was passed in with the `$request` variable.
 
-### Nested Containers
+### Nested containers
 
 If the container cannot find a way to provide an instance of a specific class,
 it will next check to see if there are any nested containers that can provide
@@ -466,7 +501,7 @@ and implementation. You can also add custom containers that implement
 `ContainerInterface` using the `addContainer()` method. Nested containers are
 searched sequentially in the order they are added.
 
-#### Namespace Container
+#### Namespace container
 
 Namespace containers provide an instance of the requested class if it is in the
 configured namespace. By default, the namespace container will autowire the
@@ -483,7 +518,8 @@ callable ClassFactory<TClass>(
     object|null ...$dependencies
 ): TClass|null;
 
-class Container {
+class Container
+{
     function addSingletonNamespace(
         string $namespace,
         ClassFactory<TClass>|null $factory = null
@@ -519,7 +555,7 @@ $container->addSingletonImplementation(
 $httpClient = $container->get(Http\HttpClient::class);
 ```
 
-#### Interface Container
+#### Interface container
 
 Interface containers provide an instance of the requested class if it is a
 subclass of the specified interface or base class. Instances are acquired from
@@ -533,7 +569,8 @@ callable ClassFactory<TClass>(
     object|null ...$dependencies
 ): TClass|null;
 
-class Container {
+class Container
+{
     function addSingletonInterface<TClass>(
         string<TClass> $className,
         ClassFactory<TImpl of TClass>|null $factory = null
@@ -555,7 +592,7 @@ library's container.
 $container->addSingletonInterface(
     EntityNameProvider::class,
     /**
-     * @template T of EntityNameProvider 
+     * @template T of EntityNameProvider
      * @var class-string<T> $className
      * @return T
      */
@@ -591,18 +628,19 @@ add methods. You can also extend `Container` to add convenience methods for
 using your new instance provider.
 
 ```php
-class Container {
+class Container
+{
     public function add<TClass>(
         string<TClass> $className,
         LifetimeStrategy<TClass> $lifetimeStrategy,
         InstanceProvider $instanceProvider
     ): static;
-    
+
     public function addSingleton<TClass>(
         string<TClass> $className,
         InstanceProvider $instanceProvider
     ): static;
-    
+
     public function addTransient<TClass>(
         string<TClass> $className,
         InstanceProvider $instanceProvider
@@ -619,23 +657,33 @@ you can pass in the outer container to its constructor.
 ```php
 callable LifetimeStrategyFactory<T>(string<T> $className): LifetimeStrategy<T>;
 
-class Container {
+class Container
+{
     public function addContainer(
         ContainerInterface $container,
-        callable<T>(string<T> $className): LifetimeStrategy<T> 
+        callable<T>(string<T> $className): LifetimeStrategy<T>
     ): static;
-    
+
     public function addSingletonContainer(
         ContainerInterface $container
     ): static;
-    
+
     public function addTransientContainer(
         ContainerInterface $container
     ): static;
 }
 ```
 
-## Context Container
+## Context container
+
+The `ContextContainer` class provides a collection of named containers
+(contexts) that can be used for providing different construction for the same
+class in different parts of your application. Contexts can be named with strings
+or enum values.
+
+The context container utilizes a context stack for resolving dependencies. The
+stack can be managed by the `push()` and `pop()` methods, or using the `Context`
+attribute on class, function, or parameter declarations.
 
 ```php
 use FiveTwo\DependencyInjection\Context\ContextContainerFactory;
@@ -643,7 +691,7 @@ use FiveTwo\DependencyInjection\Context\Context;
 
 /*
  * Strings or enums can be used as identifiers for contexts. To help ease
- * analysis and future refactorings, enums or string-typed constants are 
+ * analysis and future refactorings, enums or string-typed constants are
  * recommended.
  */
 enum MyContexts {
@@ -676,6 +724,7 @@ $container->context(MyContexts::Admin)
 $container
     /*
      * Make Default the default, fallback context.
+     * Stack: Default
      */
     ->push(MyContexts::Default)
 
@@ -686,27 +735,41 @@ $container
     ->run();
 
 /*
+ * Stack: Default, Admin
+ *
  * The container will search the Admin context then the Default context for
  * each dependency in the following class.
  */
 #[Context(MyContexts::Admin)]
 class AdminEditDefaultSettingsController {
+    /*
+     * Stack: Default, Admin
+     *
+     * Since no context is explicitly specified, the stack is inherited as-is
+     * from the class.
+     */
     public function __construct(
         /*
+         * Stack: Default, Admin
+         *
          * The container will resolve $settings using the Settings factory in
          * the Admin context, since Admin is at the top of the context stack.
          */
         private readonly Settings $settings,
 
         /*
-         * The container will resolve $defaultSettings using the Settings 
-         * factory in the Default context, since the attribute below will 
+         * Stack: Default, Admin, Default
+         *
+         * The container will resolve $defaultSettings using the Settings
+         * factory in the Default context, since the attribute below will
          * place Default at the top of the context stack for this parameter.
          */
         #[Context(MyContexts::Default)]
         private readonly Settings $defaultSettings,
 
         /*
+         * Stack: Default, Admin
+         *
          * The container will first attempt to resolve $httpClient using the
          * Admin context. However, since HttpClient does not exist in the
          * the Admin context, the container will resolve it using the factory
@@ -719,6 +782,14 @@ class AdminEditDefaultSettingsController {
 ```
 
 ## Dependency Injector
+
+The library also provides a dependency injector, `Injector` that can be used for
+directly calling constructors and functions, injecting any dependencies from a
+container. The injector also lets you directly inject specific values for named
+or indexed parameters.
+
+The following is an example where dependencies need to be injected into a
+function in a controller instead of the constructor.
 
 ```php
 use FiveTwo\DependencyInjection\Container;
@@ -734,18 +805,18 @@ $injector = new Injector($container);
 // Fetch the application router from the container
 $router = $container->get(Router::class);
 
-// Get the appropriate controller from the request path 
+// Get the appropriate controller from the request path
 $controller = $router->getControllerFromRequest($_SERVER);
 
 // Call the controller's handleGet() method, injecting the indicated parameter
-// values in addition to any additional dependencies in the parameter list. 
+// values in addition to any additional dependencies in the parameter list.
 $page = $injector
     ->call(
         $controller->handleGet(...),
         map_query_to_param_assoc_array($_GET)
     )
 
-// Then, call the render() function on the return value.  
+// Then, call the render() function on the return value.
 $page->render();
 
 class ProjectListController
@@ -753,14 +824,14 @@ class ProjectListController
     public function handleGet(
         // Parameter below will be injected from the container.
         ProjectRepository $projectRepository,
-        
+
         // Parameter below will be populated from the value provided in the
         // $injector->call() parameter array. The default value will be used if
         // the key 'filter' is not present in the array.
         string $filter = ''
     ): PageInterface {
         $projects = $projectRepository->query($filter);
-        
+
         return new ProjectListPage($projects);
     }
 }
