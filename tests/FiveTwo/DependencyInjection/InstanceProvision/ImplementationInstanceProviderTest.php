@@ -12,7 +12,6 @@ declare(strict_types=1);
 namespace FiveTwo\DependencyInjection\InstanceProvision;
 
 use FiveTwo\DependencyInjection\ContainerInterface;
-use FiveTwo\DependencyInjection\ExpectExceptionCallbackTrait;
 use FiveTwo\DependencyInjection\FakeClassExtendsNoConstructor;
 use FiveTwo\DependencyInjection\FakeClassNoConstructor;
 use PHPUnit\Framework\TestCase;
@@ -22,46 +21,49 @@ use PHPUnit\Framework\TestCase;
  */
 class ImplementationInstanceProviderTest extends TestCase
 {
-    use ExpectExceptionCallbackTrait;
-
     public function testGet(): void
     {
-        $factory = new ImplementationInstanceProvider(
-            FakeClassNoConstructor::class,
-            FakeClassExtendsNoConstructor::class,
-            $container = $this->createMock(ContainerInterface::class)
-        );
-
+        $container = $this->createMock(ContainerInterface::class);
         $container->method('has')->willReturn(true);
         $container->expects(self::once())
             ->method('get')
             ->with(FakeClassExtendsNoConstructor::class)
             ->willReturn(new FakeClassExtendsNoConstructor());
 
-        self::assertInstanceOf(FakeClassExtendsNoConstructor::class, $factory->get());
-    }
-
-    public function testGet_SameClass(): void
-    {
-        self::expectException(ImplementationException::class);
-        new ImplementationInstanceProvider(
-            FakeClassNoConstructor::class,
-            FakeClassNoConstructor::class,
-            $this->createMock(ContainerInterface::class)
+        self::assertInstanceOf(
+            FakeClassExtendsNoConstructor::class,
+            (new ImplementationInstanceProvider(
+                FakeClassNoConstructor::class,
+                FakeClassExtendsNoConstructor::class,
+                $container
+            ))->get()
         );
     }
 
-    public function testGet_WrongClass(): void
+    public function testGet_Exception_ImplementationSameAsInterface(): void
     {
-        self::expectExceptionCallback(function (ImplementationException $exception) {
-            self::assertSame(FakeClassExtendsNoConstructor::class, $exception->getExpectedClassName());
-            self::assertSame(FakeClassNoConstructor::class, $exception->getActualClassName());
-        });
+        $this->expectExceptionObject(new ImplementationException(
+            FakeClassNoConstructor::class,
+            FakeClassNoConstructor::class
+        ));
+        new ImplementationInstanceProvider(
+            FakeClassNoConstructor::class,
+            FakeClassNoConstructor::class,
+            $this->createStub(ContainerInterface::class)
+        );
+    }
+
+    public function testGet_Exception_ImplementationNotSubclass(): void
+    {
+        $this->expectExceptionObject(new ImplementationException(
+            FakeClassExtendsNoConstructor::class,
+            FakeClassNoConstructor::class
+        ));
 
         new ImplementationInstanceProvider(
             FakeClassExtendsNoConstructor::class,
             FakeClassNoConstructor::class,
-            $this->createMock(ContainerInterface::class)
+            $this->createStub(ContainerInterface::class)
         );
     }
 }

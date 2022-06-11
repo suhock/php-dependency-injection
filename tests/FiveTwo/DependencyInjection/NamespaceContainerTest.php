@@ -51,7 +51,7 @@ class NamespaceContainerTest extends TestCase
             fn () => null
         );
 
-        self::expectException(UnresolvedClassException::class);
+        $this->expectException(UnresolvedClassException::class);
         $container->get(DateTime::class);
     }
 

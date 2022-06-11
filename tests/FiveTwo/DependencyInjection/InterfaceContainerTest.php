@@ -50,7 +50,7 @@ class InterfaceContainerTest extends TestCase
             fn () => null
         );
 
-        self::expectException(UnresolvedClassException::class);
+        $this->expectException(UnresolvedClassException::class);
         $container->get(FakeClassNoConstructor::class);
     }
 
@@ -62,7 +62,7 @@ class InterfaceContainerTest extends TestCase
             fn () => null
         );
 
-        self::expectException(UnresolvedClassException::class);
+        $this->expectException(UnresolvedClassException::class);
         /** @psalm-suppress InvalidArgument Testing for invalid argument here */
         $container->get(FakeClassUsingContexts::class);
     }

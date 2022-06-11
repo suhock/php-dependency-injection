@@ -16,8 +16,15 @@ namespace FiveTwo\DependencyInjection;
  */
 class FakeContainer implements ContainerInterface
 {
-    /** @var array<class-string, object|null> */
-    public array $classMapping = [];
+    /**
+     * @param array<callable> $classMapping
+     * @psalm-param array<class-string, callable():object> $classMapping
+     * @phpstan-param array<class-string, callable():object> $classMapping
+     */
+    public function __construct(
+        public array $classMapping = []
+    ) {
+    }
 
     /** @psalm-suppress InvalidReturnType */
     public function get(string $className): ?object
@@ -27,7 +34,7 @@ class FakeContainer implements ContainerInterface
          * @phpstan-ignore-next-line PHPStan does not support array class mappings
          */
         return $this->has($className) ?
-            $this->classMapping[$className] :
+            ($this->classMapping[$className])() :
             throw new UnresolvedClassException($className);
     }
 

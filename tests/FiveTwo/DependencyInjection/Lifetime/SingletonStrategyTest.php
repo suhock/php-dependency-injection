@@ -40,7 +40,7 @@ class SingletonStrategyTest extends TestCase
         );
     }
 
-    public function testGet_SameInstance(): void
+    public function testGet_FactoryCalledOnlyOnce(): void
     {
         $strategy = $this->createStrategy();
 
@@ -50,12 +50,12 @@ class SingletonStrategyTest extends TestCase
         );
     }
 
-    public function testGet_Null(): void
+    public function testGet_SupportsNull(): void
     {
         self::assertNull($this->createStrategy()->get(fn () => null));
     }
 
-    public function testGet_NullCalledOnce(): void
+    public function testGet_FactoryCalledOnlyOnceForNull(): void
     {
         $stub = self::createMock(ContainerInterface::class);
         $stub->method('has')

@@ -22,209 +22,174 @@ use Throwable;
  */
 class InjectorTest extends TestCase
 {
-    /**
-     * @return array{Injector, FakeContainer}
-     */
-    protected function create(): array
-    {
-        $container = new FakeContainer();
-        $injector = new Injector($container);
-
-        return [$injector, $container];
-    }
-
     public function testInstantiate(): void
     {
-        [$injector, $container] = $this->create();
-
         $logicException = new LogicException();
-        $container->classMapping = [
-            Throwable::class => $logicException,
-            LogicException::class => $logicException,
-            RuntimeException::class => new RuntimeException()
-        ];
+        $instance = $this->create([
+            Throwable::class => fn() => $logicException,
+            LogicException::class => fn() => $logicException,
+            RuntimeException::class => fn() => new RuntimeException('test')
+        ])->instantiate(FakeClassUsingContexts::class);
 
-        $instance = $injector->instantiate(FakeClassUsingContexts::class);
         self::assertInstanceOf(FakeClassUsingContexts::class, $instance);
-        self::assertSame($container->classMapping[Throwable::class], $instance->throwable);
-        self::assertSame($container->classMapping[RuntimeException::class], $instance->runtimeException);
+        self::assertSame($logicException, $instance->throwable);
+        self::assertSame('test', $instance->runtimeException->getMessage());
     }
 
-    public function testInstantiate_MissingClass(): void
+    /**
+     * @param array<callable> $classMapping
+     *
+     * @psalm-param array<class-string, callable():object> $classMapping
+     * @phpstan-param array<class-string, callable():object> $classMapping
+     * @return Injector
+     */
+    protected function create(array $classMapping = []): Injector
     {
-        [$injector] = $this->create();
-
-        self::expectException(DependencyInjectionException::class);
-        /**
-         * @psalm-suppress ArgumentTypeCoercion,UndefinedClass warns about issue under test
-         * @phpstan-ignore-next-line warns about issue under test
-         */
-        $injector->instantiate('NoSuchClass');
+        return new Injector(new FakeContainer($classMapping));
     }
 
-    public function testInstantiate_NotInstantiable(): void
+    public function testInstantiate_ConstructorWithDefaultValues(): void
     {
-        [$injector] = $this->create();
-
-        self::expectException(DependencyInjectionException::class);
-        $injector->instantiate(FakeAbstractClass::class);
-    }
-
-    public function testInstantiate_DefaultParameterValues(): void
-    {
-        [$injector] = $this->create();
+        $injector = $this->create();
 
         self::assertInstanceOf(Exception::class, $injector->instantiate(Exception::class));
     }
 
-    public function testInstantiate_MissingArgs(): void
+    public function testInstantiate_Exception_ClassMissing(): void
     {
-        [$injector, $container] = $this->create();
-
-        $logicException = new LogicException();
-        $container->classMapping = [
-            Throwable::class => $logicException,
-            LogicException::class => $logicException
-        ];
-
-        self::expectException(DependencyInjectionException::class);
-        $injector->instantiate(FakeClassUsingContexts::class);
+        $this->expectException(DependencyInjectionException::class);
+        /**
+         * @psalm-suppress ArgumentTypeCoercion,UndefinedClass warns about issue currently under test
+         * @phpstan-ignore-next-line warns about issue currently under test
+         */
+        $this->create()->instantiate('NoSuchClass');
     }
 
-    public function testInstantiate_ExplicitArgs(): void
+    public function testInstantiate_Exception_NotInstantiable(): void
     {
-        [$injector, $container] = $this->create();
+        $this->expectException(DependencyInjectionException::class);
+        $this->create()->instantiate(FakeAbstractClass::class);
+    }
 
-        $container->classMapping = [
-            Throwable::class => new LogicException(),
-            RuntimeException::class => new RuntimeException()
-        ];
+    public function testInstantiate_Exception_MissingArgs(): void
+    {
+        // missing argument of type RuntimeException
+        $this->expectException(DependencyInjectionException::class);
 
+        $this->create([Throwable::class => fn() => new LogicException()])
+            ->instantiate(FakeClassUsingContexts::class);
+    }
+
+    public function testInstantiate_NamedParamsOverrideContainer(): void
+    {
         self::assertSame(
-            $override = new Exception(),
-            $injector->instantiate(FakeClassUsingContexts::class, [
-                'throwable' => $override
-            ])->throwable
+            $override = new RuntimeException(),
+            $this->create([
+                Throwable::class => fn() => new LogicException(),
+                RuntimeException::class => fn() => new RuntimeException()
+            ])->instantiate(FakeClassUsingContexts::class, [
+                'runtimeException' => $override
+            ])->runtimeException
         );
     }
 
-    public function testInstantiate_ExplicitArgsPositional(): void
+    public function testInstantiate_PositionalParamsOverrideContainer(): void
     {
-        [$injector, $container] = $this->create();
-
-        $container->classMapping = [
-            Throwable::class => new LogicException(),
-            RuntimeException::class => new RuntimeException()
-        ];
-
         self::assertSame(
             $override = new RuntimeException(),
-            $injector->instantiate(FakeClassUsingContexts::class, [
+            $this->create([
+                Throwable::class => fn() => new LogicException(),
+                RuntimeException::class => fn() => new RuntimeException()
+            ])->instantiate(FakeClassUsingContexts::class, [
                 1 => $override
             ])->runtimeException
         );
     }
 
-    public function testInstantiate_noConstructor(): void
+    public function testInstantiate_WithNoConstructor(): void
     {
-        [$injector] = $this->create();
-
-        $instance = $injector->instantiate(FakeClassNoConstructor::class);
+        $instance = $this->create()
+            ->instantiate(FakeClassNoConstructor::class);
         self::assertInstanceOf(FakeClassNoConstructor::class, $instance);
     }
 
     public function testCall(): void
     {
-        [$injector, $container] = $this->create();
-
         $logicException = new LogicException('Message 1');
-        $container->classMapping = [
-            Throwable::class => $logicException,
-            LogicException::class => $logicException,
-            RuntimeException::class => new RuntimeException('Message 2')
-        ];
+        $runtimeException = new RuntimeException('Message 2');
 
         self::assertSame(
-            [$container->classMapping[Throwable::class], $container->classMapping[RuntimeException::class]],
+            [$logicException, $runtimeException],
+            $this->create([
+                Throwable::class => fn() => $logicException,
+                LogicException::class => fn() => $logicException,
+                RuntimeException::class => fn() => $runtimeException
             /** @phpstan-ignore-next-line PHPStan does not understand splat in parameter lists */
-            $injector->call(fn (Throwable $e1, RuntimeException $e2) => [$e1, $e2])
+            ])->call(fn(Throwable $e1, RuntimeException $e2) => [$e1, $e2])
+
         );
     }
 
-    public function testCall_MissingArgs(): void
+    public function testCall_Exception_MissingArgs(): void
     {
-        [$injector] = $this->create();
-
-        self::expectException(DependencyInjectionException::class);
+        $this->expectException(DependencyInjectionException::class);
         /** @phpstan-ignore-next-line PHPStan does not understand splat in parameter lists */
-        $injector->call(fn (Throwable $e1, RuntimeException $e2) => [$e1, $e2]);
+        $this->create()->call(fn(Throwable $e1, RuntimeException $e2) => [$e1, $e2]);
     }
 
     public function testCall_UnionType_First(): void
     {
-        [$injector, $container] = $this->create();
-
-        $container->classMapping[FakeInterfaceOne::class] = new FakeClassImplementsInterfaces();
-
+        $instance = new FakeClassImplementsInterfaces();
         self::assertSame(
-            $container->classMapping[FakeInterfaceOne::class],
-            $injector->call(fn (FakeInterfaceOne|string|FakeInterfaceTwo $obj) => $obj)
+            $instance,
+            $this->create([
+                FakeInterfaceOne::class => fn() => $instance
+            ])->call(fn(FakeInterfaceOne|string|FakeInterfaceTwo $obj) => $obj)
         );
     }
 
     public function testCall_UnionType_Third(): void
     {
-        [$injector, $container] = $this->create();
-
-        $container->classMapping[FakeInterfaceTwo::class] = new FakeClassImplementsInterfaces();
-
+        $instance = new FakeClassImplementsInterfaces();
         self::assertSame(
-            $container->classMapping[FakeInterfaceTwo::class],
-            $injector->call(fn (FakeInterfaceOne|string|FakeInterfaceTwo $obj) => $obj)
+            $instance,
+            $this->create([
+                FakeInterfaceTwo::class => fn() => $instance
+            ])->call(fn(FakeInterfaceOne|string|FakeInterfaceTwo $obj) => $obj)
         );
     }
 
-    public function testCall_UnionType_NoMatch(): void
+    public function testCall_Exception_NoMatchInUnionType(): void
     {
-        [$injector, $container] = $this->create();
-
-        $container->classMapping[FakeClassImplementsInterfaces::class] = new FakeClassImplementsInterfaces();
-
-        self::expectException(UnresolvedParameterException::class);
-        $injector->call(fn (FakeInterfaceOne|FakeInterfaceTwo $obj) => $obj);
+        $this->expectException(UnresolvedParameterException::class);
+        $this->create([FakeClassImplementsInterfaces::class => fn() => new FakeClassImplementsInterfaces()])
+            ->call(fn(FakeInterfaceOne|FakeInterfaceTwo $obj) => $obj);
     }
 
     public function testCall_IntersectionType_First(): void
     {
-        [$injector, $container] = $this->create();
-
-        $container->classMapping[FakeInterfaceOne::class] = new FakeClassImplementsInterfaces();
-
+        $instance = new FakeClassImplementsInterfaces();
         self::assertSame(
-            $container->classMapping[FakeInterfaceOne::class],
-            $injector->call(fn (FakeInterfaceOne&FakeInterfaceTwo $obj) => $obj)
+            $instance,
+            $this->create([FakeInterfaceOne::class => fn() => $instance])
+                ->call(fn(FakeInterfaceOne&FakeInterfaceTwo $obj) => $obj)
         );
     }
 
     public function testCall_IntersectionType_Second(): void
     {
-        [$injector, $container] = $this->create();
-
-        $container->classMapping[FakeInterfaceTwo::class] = new FakeClassImplementsInterfaces();
-
+        $instance = new FakeClassImplementsInterfaces();
         self::assertSame(
-            $container->classMapping[FakeInterfaceTwo::class],
-            $injector->call(fn (FakeInterfaceOne&FakeInterfaceTwo $obj) => $obj)
+            $instance,
+            $this->create([FakeInterfaceTwo::class => fn() => $instance])
+                ->call(fn(FakeInterfaceOne&FakeInterfaceTwo $obj) => $obj)
         );
     }
 
-    public function testCall_IntersectionType_MissingOne(): void
+    public function testCall_Exception_MissingOneInIntersectionType(): void
     {
-        [$injector, $container] = $this->create();
-
-        $container->classMapping[FakeInterfaceOne::class] = new FakeClassImplementsInterfaces();
-
-        self::expectException(UnresolvedParameterException::class);
-        $injector->call(fn (FakeInterfaceOne&FakeInterfaceThree $obj) => $obj);
+        $this->expectException(UnresolvedParameterException::class);
+        $this->create([FakeInterfaceOne::class => fn() => new FakeClassImplementsInterfaces()])
+            ->call(fn(FakeInterfaceOne&FakeInterfaceThree $obj) => $obj);
     }
 }

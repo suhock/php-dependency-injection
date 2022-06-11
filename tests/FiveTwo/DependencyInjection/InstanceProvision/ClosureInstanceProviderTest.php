@@ -66,7 +66,7 @@ class ClosureInstanceProviderTest extends TestCase
             ->with($factoryMethod)
             ->willReturn(fn () => $factoryMethod());
 
-        self::expectException(InstanceTypeException::class);
+        $this->expectException(InstanceTypeException::class);
         $factory->get();
     }
 }

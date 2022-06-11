@@ -52,7 +52,7 @@ class ObjectInstanceProviderTest extends TestCase
 
     public function testGet_WrongClass(): void
     {
-        self::expectException(InstanceTypeException::class);
+        $this->expectException(InstanceTypeException::class);
         new ObjectInstanceProvider(
             FakeClassExtendsNoConstructor::class,
             new FakeClassNoConstructor()

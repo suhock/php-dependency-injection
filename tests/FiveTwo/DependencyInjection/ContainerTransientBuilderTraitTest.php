@@ -11,8 +11,10 @@ declare(strict_types=1);
 
 namespace FiveTwo\DependencyInjection;
 
+use DateTime;
 use FiveTwo\DependencyInjection\InstanceProvision\ImplementationException;
 use FiveTwo\DependencyInjection\InstanceProvision\InstanceTypeException;
+use LogicException;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -49,13 +51,11 @@ class ContainerTransientBuilderTraitTest extends TestCase
 
     public function testAddTransientClass_NoMutator(): void
     {
-        $container = $this->createContainer();
-
-        self::assertSame(
-            $container,
-            $container->addTransientClass(FakeClassNoConstructor::class)
+        $this->assertTransient(
+            $this->createContainer()
+                ->addTransientClass(FakeClassNoConstructor::class),
+            FakeClassNoConstructor::class
         );
-        $this->assertTransient($container, FakeClassNoConstructor::class);
     }
 
     public function testAddTransientClass_WithMutator(): void
@@ -76,52 +76,49 @@ class ContainerTransientBuilderTraitTest extends TestCase
 
     public function testAddTransientImplementation(): void
     {
-        $container = $this->createContainer()
-            ->addTransientClass(FakeClassExtendsNoConstructor::class);
-
-        self::assertSame(
-            $container,
-            $container->addTransientImplementation(FakeClassNoConstructor::class, FakeClassExtendsNoConstructor::class)
+        $this->assertTransient(
+            $this->createContainer()
+                ->addTransientClass(FakeClassExtendsNoConstructor::class)
+                ->addTransientImplementation(FakeClassNoConstructor::class, FakeClassExtendsNoConstructor::class),
+            FakeClassNoConstructor::class,
+            FakeClassExtendsNoConstructor::class
         );
-
-        $this->assertTransient($container, FakeClassNoConstructor::class, FakeClassExtendsNoConstructor::class);
     }
 
-    public function testAddTransientImplementation_SameClass(): void
+    public function testAddTransientImplementation_ImplementationIsSameAsClass(): void
     {
-        self::expectExceptionObject(
+        $container = $this->createContainer();
+
+        $this->expectExceptionObject(
             new ImplementationException(FakeClassNoConstructor::class, FakeClassNoConstructor::class)
         );
-
-        $this->createContainer()
-            ->addTransientImplementation(FakeClassNoConstructor::class, FakeClassNoConstructor::class);
+        $container->addTransientImplementation(FakeClassNoConstructor::class, FakeClassNoConstructor::class);
     }
 
-    public function testAddTransientImplementation_NotSubClass(): void
+    public function testAddTransientImplementation_ImplementationIsNotSubclass(): void
     {
-        self::expectExceptionObject(
+        $container = $this->createContainer();
+
+        $this->expectExceptionObject(
             new ImplementationException(FakeClassExtendsNoConstructor::class, FakeClassNoConstructor::class)
         );
-        $this->createContainer()
-            ->addTransientImplementation(FakeClassExtendsNoConstructor::class, FakeClassNoConstructor::class);
+        $container->addTransientImplementation(FakeClassExtendsNoConstructor::class, FakeClassNoConstructor::class);
     }
 
     public function testAddTransientFactory(): void
     {
-        $container = $this->createContainer();
-
-        self::assertSame(
-            $container,
-            $container->addTransientFactory(
-                FakeClassNoConstructor::class,
-                fn () => new FakeClassExtendsNoConstructor()
-            )
+        $this->assertTransient(
+            $this->createContainer()
+                ->addTransientFactory(
+                    FakeClassNoConstructor::class,
+                    fn () => new FakeClassExtendsNoConstructor()
+                ),
+            FakeClassNoConstructor::class,
+            FakeClassExtendsNoConstructor::class
         );
-
-        $this->assertTransient($container, FakeClassNoConstructor::class, FakeClassExtendsNoConstructor::class);
     }
 
-    public function testAddTransientFactory_null(): void
+    public function testAddTransientFactory_WorksWithNull(): void
     {
         self::assertNull(
             $this->createContainer()
@@ -130,51 +127,57 @@ class ContainerTransientBuilderTraitTest extends TestCase
         );
     }
 
-    public function testAddTransientFactory_WrongReturnType(): void
+    public function testAddTransientFactory_Exception_ReturnTypeMismatch(): void
     {
-        self::expectExceptionObject(
-            new InstanceTypeException(FakeClassExtendsNoConstructor::class, new FakeClassNoConstructor())
-        );
+        $container = $this->createContainer()
+            ->addTransientFactory(
+                FakeClassNoConstructor::class, fn() => new LogicException()
+            );
 
-        $this->createContainer()
-            ->addTransientFactory(FakeClassExtendsNoConstructor::class, fn () => new FakeClassNoConstructor())
-            ->get(FakeClassExtendsNoConstructor::class);
+        $this->expectExceptionObject(
+            new InstanceTypeException(FakeClassNoConstructor::class, new LogicException())
+        );
+        $container->get(FakeClassNoConstructor::class);
     }
 
     public function testAddTransientContainer(): void
     {
-        $container = $this->createContainer()
-            ->addTransientContainer(new class () implements ContainerInterface {
-                public function get(string $className): ?object
-                {
-                    /** @psalm-suppress MixedMethodCall */
-                    return new $className();
-                }
+        $this->assertTransient(
+            $this->createContainer()
+                ->addTransientContainer(
+                    new FakeContainer([FakeClassNoConstructor::class => fn() => new FakeClassNoConstructor()])
+                ),
+            FakeClassNoConstructor::class
+        );
+    }
 
-                /**
-                 * @param class-string $className
-                 *
-                 * @return bool
-                 */
-                public function has(string $className): bool
-                {
-                    return is_subclass_of($className, FakeClassNoConstructor::class);
-                }
-            });
+    public function testAddTransientContainer_NotInNestedContainer(): void
+    {
+        $container =$this->createContainer()
+            ->addTransientContainer(
+                new FakeContainer([FakeClassExtendsNoConstructor::class => fn() => new FakeClassExtendsNoConstructor()])
+            );
 
-        self::assertTransient($container, FakeClassExtendsNoConstructor::class);
-
-        self::expectExceptionObject(new UnresolvedClassException(FakeClassNoConstructor::class));
+        $this->expectExceptionObject(new UnresolvedClassException(FakeClassNoConstructor::class));
         $container->get(FakeClassNoConstructor::class);
     }
 
     public function testAddTransientNamespace(): void
     {
         $this->assertTransient(
-            $this->createContainer()
-                ->addTransientNamespace(__NAMESPACE__),
+            $this->createContainer()->addTransientNamespace(__NAMESPACE__),
+            FakeClassNoConstructor::class,
             FakeClassNoConstructor::class
         );
+    }
+
+    public function testAddTransientNamespace_Exception_NotInNamespace(): void
+    {
+        $container = $this->createContainer()
+            ->addTransientNamespace(__NAMESPACE__);
+
+        $this->expectExceptionObject(new UnresolvedClassException(DateTime::class));
+        $container->get(DateTime::class);
     }
 
     public function testAddTransientInterface(): void
@@ -182,7 +185,17 @@ class ContainerTransientBuilderTraitTest extends TestCase
         $this->assertTransient(
             $this->createContainer()
                 ->addTransientInterface(FakeClassNoConstructor::class),
+            FakeClassExtendsNoConstructor::class,
             FakeClassExtendsNoConstructor::class
         );
+    }
+
+    public function testAddTransientInterface_Exception_NotSubclass(): void
+    {
+        $container = $this->createContainer()
+            ->addTransientInterface(FakeClassNoConstructor::class);
+
+        $this->expectExceptionObject(new UnresolvedClassException(DateTime::class));
+        $container->get(DateTime::class);
     }
 }

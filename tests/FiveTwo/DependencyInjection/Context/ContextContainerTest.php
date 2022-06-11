@@ -94,7 +94,7 @@ class ContextContainerTest extends TestCase
             $defaultInstance = new FakeClassNoConstructor()
         );
 
-        self::expectException(UnresolvedDependencyException::class);
+        $this->expectException(UnresolvedDependencyException::class);
         $container->get(FakeClassNoConstructor::class);
     }
 
@@ -134,7 +134,7 @@ class ContextContainerTest extends TestCase
     {
         $container = $this->createContainer();
 
-        self::expectException(DependencyInjectionException::class);
+        $this->expectException(DependencyInjectionException::class);
         $container->pop();
     }
 

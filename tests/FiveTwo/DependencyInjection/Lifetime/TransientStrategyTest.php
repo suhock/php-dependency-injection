@@ -40,7 +40,7 @@ class TransientStrategyTest extends TestCase
         );
     }
 
-    public function testGet_NotSameInstance(): void
+    public function testGet_FactoryCalledTwice(): void
     {
         $strategy = $this->createStrategy();
 
@@ -50,12 +50,12 @@ class TransientStrategyTest extends TestCase
         );
     }
 
-    public function testGet_Null(): void
+    public function testGet_SupportsNull(): void
     {
         self::assertNull($this->createStrategy()->get(fn () => null));
     }
 
-    public function testGet_NullCalledTwice(): void
+    public function testGet_FactoryCalledAgainForNull(): void
     {
         $stub = self::createMock(ContainerInterface::class);
         $stub->method('has')
