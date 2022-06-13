@@ -5,7 +5,7 @@ dependency injection framework for projects running on PHP 8.1 or later. This
 library focuses on facilitating sound object-oriented practices, testing,
 refactoring, and static analysis by emphasizing factory methods and class
 constructors as the primary means of building complex dependencies. By design
-the framework can only resolve and inject `object`-typed dependencies and does
+the framework can only resolve and inject `object` type dependencies and does
 not rely on configuration files for the container specification.
 
 ```php
@@ -47,8 +47,8 @@ dependency resolution down a nested context hierarchy.
   - [Custom lifetime strategies](#custom-lifetime-strategies)
   - [Custom instance providers](#custom-instance-providers)
   - [Custom nested containers](#custom-nested-containers)
-- [Context container](#context-container)
-- [Dependency injector](#dependency-injector)
+- [Context Container](#context-container)
+- [Dependency Injector](#dependency-injector)
 - [Appendix](#appendix)
   - [API syntax](#api-syntax)
 
@@ -152,7 +152,7 @@ class MyRouter
 }
 ```
 
-### A note on the service locators pattern
+### A note on the service locator pattern
 
 The previous example resembles a service locator pattern. Please note that while
 the `Container` class is functionally equivalent to a service locator, it is
@@ -216,9 +216,9 @@ want to reuse the container's dependency building logic as much as possible, but
 there is still code where it is difficult to inject dependencies properly.
 
 In this case, the application container can be built off a singleton instance
-and made available to legacy code as an intermediate step. Once you are
-eventually able to refactor all uses of the singleton container to proper
-dependency injection, the singleton container can be removed.
+and made available to legacy code as an intermediate step. Once you finally
+refactor all uses of the singleton container to use proper dependency injection,
+the singleton container can be removed.
 
 ```php
 /* TODO: Refactor this! */
@@ -244,8 +244,15 @@ function getAppContainer(): Container
     static $container;
     return $container ??= new Container();
 }
-```
 
+/*
+ * Build your container from the singleton container for now.
+ * TODO: Replace with direct construction once refactoring is complete.
+ */
+$container = getAppContainer();
+$container->addSingletonClass(MyApplication::class);
+// ...
+```
 
 ### Instance lifetime
 
@@ -674,7 +681,7 @@ class Container
 }
 ```
 
-## Context container
+## Context Container
 
 The `ContextContainer` class provides a collection of named containers
 (contexts) that can be used for providing different construction for the same
@@ -813,7 +820,7 @@ $controller = $router->getControllerFromRequest($_SERVER);
 $page = $injector
     ->call(
         $controller->handleGet(...),
-        map_query_to_param_assoc_array($_GET)
+        map_query_to_assoc_param_array($_GET)
     )
 
 // Then, call the render() function on the return value.
