@@ -12,12 +12,11 @@ declare(strict_types=1);
 namespace FiveTwo\DependencyInjection;
 
 use DateTime;
-use PHPUnit\Framework\TestCase;
 
 /**
  * Test suite for {@see NamespaceContainer}.
  */
-class NamespaceContainerTest extends TestCase
+class NamespaceContainerTest extends DependencyInjectionTestCase
 {
     public function testGet(): void
     {
@@ -43,7 +42,7 @@ class NamespaceContainerTest extends TestCase
         );
     }
 
-    public function testGet_ClassNotInNamespace(): void
+    public function testGet_Exception_ClassNotInNamespace(): void
     {
         $container = new NamespaceContainer(
             __NAMESPACE__,
@@ -51,8 +50,10 @@ class NamespaceContainerTest extends TestCase
             fn () => null
         );
 
-        $this->expectException(UnresolvedClassException::class);
-        $container->get(DateTime::class);
+        self::assertUnresolvedClassException(
+            DateTime::class,
+            fn () => $container->get(DateTime::class)
+        );
     }
 
     public function testHas(): void

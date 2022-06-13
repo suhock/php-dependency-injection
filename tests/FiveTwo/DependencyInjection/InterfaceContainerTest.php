@@ -11,12 +11,10 @@ declare(strict_types=1);
 
 namespace FiveTwo\DependencyInjection;
 
-use PHPUnit\Framework\TestCase;
-
 /**
  * Test suite for {@see InterfaceContainer}.
  */
-class InterfaceContainerTest extends TestCase
+class InterfaceContainerTest extends DependencyInjectionTestCase
 {
     public function testGet(): void
     {
@@ -50,8 +48,10 @@ class InterfaceContainerTest extends TestCase
             fn () => null
         );
 
-        $this->expectException(UnresolvedClassException::class);
-        $container->get(FakeClassNoConstructor::class);
+        self::assertUnresolvedClassException(
+            FakeClassNoConstructor::class,
+            fn() => $container->get(FakeClassNoConstructor::class)
+        );
     }
 
     public function testGet_NotSubclass(): void
@@ -62,9 +62,11 @@ class InterfaceContainerTest extends TestCase
             fn () => null
         );
 
-        $this->expectException(UnresolvedClassException::class);
-        /** @psalm-suppress InvalidArgument Testing for invalid argument here */
-        $container->get(FakeClassUsingContexts::class);
+        self::assertUnresolvedClassException(
+            FakeClassUsingContexts::class,
+            /** @psalm-suppress InvalidArgument Testing for invalid argument here */
+            fn() => $container->get(FakeClassUsingContexts::class)
+        );
     }
 
     public function testHas(): void

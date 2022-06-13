@@ -12,15 +12,15 @@ declare(strict_types=1);
 namespace FiveTwo\DependencyInjection\InstanceProvision;
 
 use FiveTwo\DependencyInjection\ContainerInterface;
+use FiveTwo\DependencyInjection\DependencyInjectionTestCase;
 use FiveTwo\DependencyInjection\FakeClassNoConstructor;
 use FiveTwo\DependencyInjection\Injector;
 use FiveTwo\DependencyInjection\InjectorInterface;
-use PHPUnit\Framework\TestCase;
 
 /**
  * Test suite for {@see ClassInstanceProvider}.
  */
-class ClassInstanceProviderTest extends TestCase
+class ClassInstanceProviderTest extends DependencyInjectionTestCase
 {
     public function testGet_NoMutator(): void
     {

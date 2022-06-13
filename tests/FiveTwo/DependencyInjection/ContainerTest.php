@@ -11,12 +11,10 @@ declare(strict_types=1);
 
 namespace FiveTwo\DependencyInjection;
 
-use PHPUnit\Framework\TestCase;
-
 /**
  * Test suite for {@see Container}.
  */
-class ContainerTest extends TestCase
+class ContainerTest extends DependencyInjectionTestCase
 {
     protected function createContainer(): Container
     {
@@ -90,8 +88,10 @@ class ContainerTest extends TestCase
     {
         $container = $this->createContainer();
 
-        $this->expectExceptionObject(new UnresolvedClassException(FakeClassNoConstructor::class));
-        $container->get(FakeClassNoConstructor::class);
+        self::assertUnresolvedClassException(
+            FakeClassNoConstructor::class,
+            fn () => $container->get(FakeClassNoConstructor::class)
+        );
     }
 
     public function testGet_Exception_CircularDependency(): void
@@ -99,13 +99,10 @@ class ContainerTest extends TestCase
         $container = $this->createContainer()
             ->addSingletonFactory(FakeClassNoConstructor::class, fn (FakeClassNoConstructor $obj) => $obj);
 
-        $this->expectExceptionObject(new UnresolvedParameterException(
-            'Closure::__invoke',
-            'obj',
+        self::assertCircularDependencyException(
             FakeClassNoConstructor::class,
-            new CircularDependencyException(FakeClassNoConstructor::class)
-        ));
-        $container->get(FakeClassNoConstructor::class);
+            fn () => $container->get(FakeClassNoConstructor::class)
+        );
     }
 
     public function testHas_ReturnsFalseWhenMissing(): void

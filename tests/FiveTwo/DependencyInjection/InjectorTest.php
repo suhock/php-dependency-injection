@@ -13,14 +13,13 @@ namespace FiveTwo\DependencyInjection;
 
 use Exception;
 use LogicException;
-use PHPUnit\Framework\TestCase;
 use RuntimeException;
 use Throwable;
 
 /**
  * Test suite for {@see Injector}.
  */
-class InjectorTest extends TestCase
+class InjectorTest extends DependencyInjectionTestCase
 {
     public function testInstantiate(): void
     {
@@ -161,9 +160,15 @@ class InjectorTest extends TestCase
 
     public function testCall_Exception_NoMatchInUnionType(): void
     {
-        $this->expectException(UnresolvedParameterException::class);
-        $this->create([FakeClassImplementsInterfaces::class => fn() => new FakeClassImplementsInterfaces()])
-            ->call(fn(FakeInterfaceOne|FakeInterfaceTwo $obj) => $obj);
+        $injector =
+            $this->create([FakeClassImplementsInterfaces::class => fn() => new FakeClassImplementsInterfaces()]);
+
+        self::assertUnresolvedParameterException(
+            'Closure::__invoke',
+            'obj',
+            FakeInterfaceOne::class . '|' . FakeInterfaceTwo::class,
+            fn() => $injector->call(fn(FakeInterfaceOne|FakeInterfaceTwo $obj) => $obj)
+        );
     }
 
     public function testCall_IntersectionType_First(): void
@@ -188,8 +193,13 @@ class InjectorTest extends TestCase
 
     public function testCall_Exception_MissingOneInIntersectionType(): void
     {
-        $this->expectException(UnresolvedParameterException::class);
-        $this->create([FakeInterfaceOne::class => fn() => new FakeClassImplementsInterfaces()])
-            ->call(fn(FakeInterfaceOne&FakeInterfaceThree $obj) => $obj);
+        $injector = $this->create([FakeInterfaceOne::class => fn() => new FakeClassImplementsInterfaces()]);
+
+        self::assertUnresolvedParameterException(
+            'Closure::__invoke',
+            'obj',
+            FakeInterfaceOne::class . '&' . FakeInterfaceThree::class,
+            fn() => $injector->call(fn(FakeInterfaceOne&FakeInterfaceThree $obj) => $obj)
+        );
     }
 }

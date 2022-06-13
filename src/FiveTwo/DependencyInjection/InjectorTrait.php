@@ -14,8 +14,11 @@ namespace FiveTwo\DependencyInjection;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionFunction;
+use ReflectionIntersectionType;
 use ReflectionNamedType;
 use ReflectionParameter;
+use ReflectionType;
+use ReflectionUnionType;
 
 /**
  * Provides default boilerplate behavior for the {@see InjectorInterface} interface.
@@ -154,6 +157,13 @@ trait InjectorTrait
             if (self::tryResolveParameter($rParam, $paramValue)) {
                 return $paramValue;
             }
+        } catch (CircularDependencyException $exception) {
+            throw new CircularParameterException(
+                $functionName,
+                $rParam->getName(),
+                $exception->getClassName(),
+                $exception->getPrevious()
+            );
         } catch (DependencyInjectionException $exception) {
         }
 
@@ -164,8 +174,35 @@ trait InjectorTrait
         throw new UnresolvedParameterException(
             $functionName,
             $rParam->getName(),
-            $rParam->getType() instanceof ReflectionNamedType ? $rParam->getType()->getName() : null,
+            self::getReflectionTypeName($rParam->getType()),
             $exception
         );
+    }
+
+    private function getReflectionTypeName(?ReflectionType $rType): ?string
+    {
+        if ($rType === null) {
+            return null;
+        }
+
+        if ($rType instanceof ReflectionNamedType) {
+            return $rType->getName();
+        }
+
+        if ($rType instanceof ReflectionUnionType) {
+            $delimiter = '|';
+        } elseif ($rType instanceof ReflectionIntersectionType) {
+            $delimiter = '&';
+        } else {
+            return null;
+        }
+
+        $parts = [];
+
+        foreach ($rType->getTypes() as $rNestedType) {
+            $parts[] = self::getReflectionTypeName($rNestedType);
+        }
+
+        return implode($delimiter, $parts);
     }
 }

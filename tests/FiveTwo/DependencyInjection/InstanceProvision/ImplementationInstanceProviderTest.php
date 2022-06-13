@@ -12,14 +12,14 @@ declare(strict_types=1);
 namespace FiveTwo\DependencyInjection\InstanceProvision;
 
 use FiveTwo\DependencyInjection\ContainerInterface;
+use FiveTwo\DependencyInjection\DependencyInjectionTestCase;
 use FiveTwo\DependencyInjection\FakeClassExtendsNoConstructor;
 use FiveTwo\DependencyInjection\FakeClassNoConstructor;
-use PHPUnit\Framework\TestCase;
 
 /**
  * Test suite for {@see ImplementationInstanceProvider}.
  */
-class ImplementationInstanceProviderTest extends TestCase
+class ImplementationInstanceProviderTest extends DependencyInjectionTestCase
 {
     public function testGet(): void
     {
@@ -42,28 +42,27 @@ class ImplementationInstanceProviderTest extends TestCase
 
     public function testGet_Exception_ImplementationSameAsInterface(): void
     {
-        $this->expectExceptionObject(new ImplementationException(
-            FakeClassNoConstructor::class,
-            FakeClassNoConstructor::class
-        ));
-        new ImplementationInstanceProvider(
+        self::assertImplementationException(
             FakeClassNoConstructor::class,
             FakeClassNoConstructor::class,
-            $this->createStub(ContainerInterface::class)
+            fn () => new ImplementationInstanceProvider(
+                FakeClassNoConstructor::class,
+                FakeClassNoConstructor::class,
+                $this->createStub(ContainerInterface::class)
+            )
         );
     }
 
     public function testGet_Exception_ImplementationNotSubclass(): void
     {
-        $this->expectExceptionObject(new ImplementationException(
-            FakeClassExtendsNoConstructor::class,
-            FakeClassNoConstructor::class
-        ));
-
-        new ImplementationInstanceProvider(
+        self::assertImplementationException(
             FakeClassExtendsNoConstructor::class,
             FakeClassNoConstructor::class,
-            $this->createStub(ContainerInterface::class)
+            fn () => new ImplementationInstanceProvider(
+                FakeClassExtendsNoConstructor::class,
+                FakeClassNoConstructor::class,
+                $this->createStub(ContainerInterface::class)
+            )
         );
     }
 }

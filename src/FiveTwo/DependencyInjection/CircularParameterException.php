@@ -17,43 +17,46 @@ use Throwable;
  * Exception that indicates the dependency could not be resolved because it eventually depends on itself.
  *
  * @template TClass of object
+ * @template-extends CircularDependencyException<TClass>
  */
-class CircularDependencyException extends DependencyInjectionException
+class CircularParameterException extends CircularDependencyException
 {
     /**
      * @inheritDoc
      *
+     * @param string $functionName The name of the function with the dependency
+     * @param string $parameterName The name of the parameter that could not be resolved
      * @param class-string<TClass> $className The name of the class that could not be resolved
-     * @param string $context [optional] The context in which the dependency could not be resolved
      * @param null|Throwable $previous [optional] The previous throwable used for exception chaining. If the throwable
      * is an instance of {@see DependencyInjectionException} then its content will be consolidated into the new
      * instance.
      */
     public function __construct(
-        private readonly string $className,
-        private readonly string $context = '',
+        private readonly string $functionName,
+        private readonly string $parameterName,
+        string $className,
         ?Throwable $previous = null
     ) {
-        parent::__construct($context === '' ?
-            "Circular dependency detected for class $className" :
-            "Circular dependency detected for class $className in $context",
+        parent::__construct(
+            $className,
+            "\$$parameterName in $functionName()",
             $previous
         );
     }
 
     /**
-     * @return class-string<TClass>
+     * @return string
      */
-    public function getClassName(): string
+    public function getFunctionName(): string
     {
-        return $this->className;
+        return $this->functionName;
     }
 
     /**
      * @return string
      */
-    public function getContext(): string
+    public function getParameterName(): string
     {
-        return $this->context;
+        return $this->parameterName;
     }
 }

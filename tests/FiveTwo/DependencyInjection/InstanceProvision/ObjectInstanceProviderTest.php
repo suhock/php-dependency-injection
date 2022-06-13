@@ -11,26 +11,36 @@ declare(strict_types=1);
 
 namespace FiveTwo\DependencyInjection\InstanceProvision;
 
+use FiveTwo\DependencyInjection\DependencyInjectionTestCase;
 use FiveTwo\DependencyInjection\FakeClassExtendsNoConstructor;
 use FiveTwo\DependencyInjection\FakeClassNoConstructor;
-use PHPUnit\Framework\TestCase;
 
 /**
  * Test suite for {@see ObjectInstanceProvider}.
  */
-class ObjectInstanceProviderTest extends TestCase
+class ObjectInstanceProviderTest extends DependencyInjectionTestCase
 {
-    public function testGet(): void
+    public function testGet_InstanceIsSameAsClass(): void
     {
-        $factory = new ObjectInstanceProvider(
-            FakeClassNoConstructor::class,
-            $instance = new FakeClassNoConstructor()
-        );
+        $instance = new FakeClassNoConstructor();
 
-        self::assertSame($instance, $factory->get());
+        self::assertSame(
+            $instance,
+            (new ObjectInstanceProvider(FakeClassNoConstructor::class, $instance))->get()
+        );
     }
 
-    public function testGet_Null(): void
+    public function testGet_InstanceIsSubclass(): void
+    {
+        $instance = new FakeClassExtendsNoConstructor();
+
+        self::assertSame(
+            $instance,
+            (new ObjectInstanceProvider(FakeClassNoConstructor::class, $instance))->get()
+        );
+    }
+
+    public function testGet_InstanceIsNull(): void
     {
         $factory = new ObjectInstanceProvider(
             FakeClassNoConstructor::class,
@@ -40,22 +50,12 @@ class ObjectInstanceProviderTest extends TestCase
         self::assertNull($factory->get());
     }
 
-    public function testGet_SubClass(): void
+    public function testGet_Exception_InstanceIsWrongClass(): void
     {
-        $factory = new ObjectInstanceProvider(
-            FakeClassNoConstructor::class,
-            $instance = new FakeClassExtendsNoConstructor()
-        );
-
-        self::assertSame($instance, $factory->get());
-    }
-
-    public function testGet_WrongClass(): void
-    {
-        $this->expectException(InstanceTypeException::class);
-        new ObjectInstanceProvider(
+        self::assertInstanceTypeException(
             FakeClassExtendsNoConstructor::class,
-            new FakeClassNoConstructor()
+            FakeClassNoConstructor::class,
+            fn() => new ObjectInstanceProvider(FakeClassExtendsNoConstructor::class, new FakeClassNoConstructor())
         );
     }
 }

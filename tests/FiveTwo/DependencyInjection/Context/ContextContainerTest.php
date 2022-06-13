@@ -13,33 +13,41 @@ namespace FiveTwo\DependencyInjection\Context;
 
 use FiveTwo\DependencyInjection\Container;
 use FiveTwo\DependencyInjection\DependencyInjectionException;
+use FiveTwo\DependencyInjection\DependencyInjectionTestCase;
 use FiveTwo\DependencyInjection\FakeClassNoConstructor;
 use FiveTwo\DependencyInjection\InjectorInterface;
-use FiveTwo\DependencyInjection\UnresolvedDependencyException;
-use PHPUnit\Framework\TestCase;
 
 /**
  * Test suite for {@see ContextContainer}.
  */
-class ContextContainerTest extends TestCase
+class ContextContainerTest extends DependencyInjectionTestCase
 {
+    /**
+     * @return ContextContainer<Container>
+     */
+    private function createContainer(): ContextContainer
+    {
+        return new ContextContainer(fn (InjectorInterface $injector) => new Container($injector));
+    }
+
     public function testGet_DefaultOnly(): void
     {
         $container = $this->createContainer();
-        $container->context('default')->addSingletonInstance(
-            FakeClassNoConstructor::class,
-            $instance = new FakeClassNoConstructor()
-        );
+        $container->context('default')
+            ->addSingletonInstance(
+                FakeClassNoConstructor::class,
+                $instance = new FakeClassNoConstructor()
+            );
 
         self::assertSame($instance, $container->push('default')->get(FakeClassNoConstructor::class));
     }
 
-    public function testGet_ContextStackPrecedence(): void
+    public function testGet_TopOfStackTakesPrecedence(): void
     {
         $container = $this->createContainer();
         $container->context('default')->addSingletonInstance(
             FakeClassNoConstructor::class,
-            $defaultInstance = new FakeClassNoConstructor()
+            new FakeClassNoConstructor()
         );
         $container->context('new')->addSingletonInstance(
             FakeClassNoConstructor::class,
@@ -53,21 +61,16 @@ class ContextContainerTest extends TestCase
                 ->push('new')
                 ->get(FakeClassNoConstructor::class)
         );
-        self::assertSame(
-            $defaultInstance,
-            $container->resetStack()
-                ->push('default')
-                ->get(FakeClassNoConstructor::class)
-        );
     }
 
-    public function testGet_AtBottomOfStackOnly(): void
+    public function testGet_BottomOfStackUsedIfNotOnTop(): void
     {
         $container = $this->createContainer();
-        $container->context('default')->addSingletonInstance(
-            FakeClassNoConstructor::class,
-            $defaultInstance = new FakeClassNoConstructor()
-        );
+        $container->context('default')
+            ->addSingletonInstance(
+                FakeClassNoConstructor::class,
+                $defaultInstance = new FakeClassNoConstructor()
+            );
         $container->context('new');
 
         self::assertSame(
@@ -77,13 +80,6 @@ class ContextContainerTest extends TestCase
                 ->push('new')
                 ->get(FakeClassNoConstructor::class)
         );
-
-        $container->resetStack();
-
-        self::assertSame(
-            $defaultInstance,
-            $container->push('default')->get(FakeClassNoConstructor::class)
-        );
     }
 
     public function testGet_EmptyStack(): void
@@ -91,25 +87,27 @@ class ContextContainerTest extends TestCase
         $container = $this->createContainer();
         $container->context('default')->addSingletonInstance(
             FakeClassNoConstructor::class,
-            $defaultInstance = new FakeClassNoConstructor()
+            new FakeClassNoConstructor()
         );
 
-        $this->expectException(UnresolvedDependencyException::class);
-        $container->get(FakeClassNoConstructor::class);
+        self::assertUnresolvedClassException(
+            FakeClassNoConstructor::class,
+            fn() => $container->get(FakeClassNoConstructor::class)
+        );
     }
 
-    public function testContext_New(): void
-    {
-        $container = $this->createContainer();
-
-        self::assertInstanceOf(Container::class, $container->context('default'));
-    }
-
-    public function testContext_Existing(): void
+    public function testContext_RepeatCallReturnsSameInstance(): void
     {
         $container = $this->createContainer();
 
         self::assertSame($container->context('default'), $container->context('default'));
+    }
+
+    public function testContext_DifferentNamesReturnDistinctInstances(): void
+    {
+        $container = $this->createContainer();
+
+        self::assertNotSame($container->context('default'), $container->context('new'));
     }
 
     public function testPush(): void
@@ -130,7 +128,7 @@ class ContextContainerTest extends TestCase
         self::assertEmpty($container->getStack());
     }
 
-    public function testPop_AlreadyEmpty(): void
+    public function testPop_Exception_StackIsEmpty(): void
     {
         $container = $this->createContainer();
 
@@ -145,13 +143,5 @@ class ContextContainerTest extends TestCase
         $container->resetStack();
 
         self::assertEmpty($container->getStack());
-    }
-
-    /**
-     * @return ContextContainer<Container>
-     */
-    private function createContainer(): ContextContainer
-    {
-        return new ContextContainer(fn (InjectorInterface $injector) => new Container($injector));
     }
 }

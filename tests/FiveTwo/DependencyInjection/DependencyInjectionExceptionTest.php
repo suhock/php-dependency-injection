@@ -19,7 +19,7 @@ use PHPUnit\Framework\TestCase;
  */
 class DependencyInjectionExceptionTest extends TestCase
 {
-    public function test__construct_NoComposition(): void
+    public function test__construct(): void
     {
         $exception = new DependencyInjectionException('Message1');
         self::assertSame('Message1', $exception->getMessage());
@@ -32,7 +32,7 @@ class DependencyInjectionExceptionTest extends TestCase
         self::assertNull($exception->getPrevious());
     }
 
-    public function test__construct_NoCompositionForUnrelated(): void
+    public function test__construct_NoCompositionForUnrelatedException(): void
     {
         $exception = new DependencyInjectionException('Message2', $previous = new Exception('Message1'));
         self::assertSame('Message2', $exception->getMessage());
