@@ -89,7 +89,10 @@ class ContainerSingletonBuilderTraitTest extends DependencyInjectionTestCase
         self::assertImplementationException(
             FakeClassNoConstructor::class,
             FakeClassNoConstructor::class,
-            fn() => $container->addSingletonImplementation(FakeClassNoConstructor::class, FakeClassNoConstructor::class)
+            fn () => $container->addSingletonImplementation(
+                FakeClassNoConstructor::class,
+                FakeClassNoConstructor::class
+            )
         );
     }
 
@@ -100,7 +103,7 @@ class ContainerSingletonBuilderTraitTest extends DependencyInjectionTestCase
         self::assertImplementationException(
             FakeClassExtendsNoConstructor::class,
             FakeClassNoConstructor::class,
-            fn() => $container->addSingletonImplementation(
+            fn () => $container->addSingletonImplementation(
                 FakeClassExtendsNoConstructor::class,
                 FakeClassNoConstructor::class
             )
@@ -133,13 +136,14 @@ class ContainerSingletonBuilderTraitTest extends DependencyInjectionTestCase
     {
         $container = $this->createContainer()
             ->addSingletonFactory(
-                FakeClassNoConstructor::class, fn() => new LogicException()
+                FakeClassNoConstructor::class,
+                fn () => new LogicException()
             );
 
         self::assertInstanceTypeException(
             FakeClassNoConstructor::class,
             LogicException::class,
-            fn() => $container->get(FakeClassNoConstructor::class)
+            fn () => $container->get(FakeClassNoConstructor::class)
         );
     }
 
@@ -169,7 +173,10 @@ class ContainerSingletonBuilderTraitTest extends DependencyInjectionTestCase
         self::assertInstanceTypeException(
             FakeClassExtendsNoConstructor::class,
             FakeClassNoConstructor::class,
-            fn() => $container->addSingletonInstance(FakeClassExtendsNoConstructor::class, new FakeClassNoConstructor())
+            fn () => $container->addSingletonInstance(
+                FakeClassExtendsNoConstructor::class,
+                new FakeClassNoConstructor()
+            )
         );
     }
 
@@ -178,7 +185,7 @@ class ContainerSingletonBuilderTraitTest extends DependencyInjectionTestCase
         $this->assertSingleton(
             $this->createContainer()
                 ->addSingletonContainer(
-                    new FakeContainer([FakeClassNoConstructor::class => fn() => new FakeClassNoConstructor()])
+                    new FakeContainer([FakeClassNoConstructor::class => fn () => new FakeClassNoConstructor()])
                 ),
             FakeClassNoConstructor::class
         );
@@ -186,14 +193,16 @@ class ContainerSingletonBuilderTraitTest extends DependencyInjectionTestCase
 
     public function testAddSingletonContainer_Exception_NotInNestedContainer(): void
     {
-        $container =$this->createContainer()
+        $container = $this->createContainer()
             ->addSingletonContainer(
-                new FakeContainer([FakeClassExtendsNoConstructor::class => fn() => new FakeClassExtendsNoConstructor()])
+                new FakeContainer([
+                    FakeClassExtendsNoConstructor::class => fn () => new FakeClassExtendsNoConstructor()
+                ])
             );
 
         self::assertUnresolvedClassException(
             FakeClassNoConstructor::class,
-            fn() => $container->get(FakeClassNoConstructor::class)
+            fn () => $container->get(FakeClassNoConstructor::class)
         );
     }
 
@@ -213,7 +222,7 @@ class ContainerSingletonBuilderTraitTest extends DependencyInjectionTestCase
 
         self::assertUnresolvedClassException(
             DateTime::class,
-            fn() => $container->get(DateTime::class)
+            fn () => $container->get(DateTime::class)
         );
     }
 
@@ -232,6 +241,6 @@ class ContainerSingletonBuilderTraitTest extends DependencyInjectionTestCase
         $container = $this->createContainer()
             ->addSingletonInterface(FakeClassNoConstructor::class);
 
-        self::assertUnresolvedClassException(DateTime::class, fn() => $container->get(DateTime::class));
+        self::assertUnresolvedClassException(DateTime::class, fn () => $container->get(DateTime::class));
     }
 }

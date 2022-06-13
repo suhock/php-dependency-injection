@@ -164,7 +164,9 @@ class DependencyInjectionTestCase extends TestCase
         self::assertException(
             $codeUnderTest,
             function (UnresolvedParameterException $exception) use (
-                $exFunctionName, $exParameterName, $exParameterType
+                $exFunctionName,
+                $exParameterName,
+                $exParameterType
             ) {
                 self::assertSame(
                     $exFunctionName,

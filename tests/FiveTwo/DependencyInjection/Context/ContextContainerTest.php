@@ -92,7 +92,7 @@ class ContextContainerTest extends DependencyInjectionTestCase
 
         self::assertUnresolvedClassException(
             FakeClassNoConstructor::class,
-            fn() => $container->get(FakeClassNoConstructor::class)
+            fn () => $container->get(FakeClassNoConstructor::class)
         );
     }
 

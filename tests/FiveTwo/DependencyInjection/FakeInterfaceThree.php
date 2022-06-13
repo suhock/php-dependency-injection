@@ -16,5 +16,4 @@ namespace FiveTwo\DependencyInjection;
  */
 interface FakeInterfaceThree
 {
-
 }

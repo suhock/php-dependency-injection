@@ -27,14 +27,14 @@ class ClosureInstanceProviderTest extends DependencyInjectionTestCase
     {
         $factory = new ClosureInstanceProvider(
             FakeClassNoConstructor::class,
-            $factoryMethod = fn() => new FakeClassNoConstructor(),
+            $factoryMethod = fn () => new FakeClassNoConstructor(),
             $injector = $this->createMock(InjectorInterface::class)
         );
 
         $injector->expects(self::once())
             ->method('call')
             ->with($factoryMethod)
-            ->willReturnCallback(fn() => $factoryMethod());
+            ->willReturnCallback(fn () => $factoryMethod());
 
         self::assertInstanceOf(FakeClassNoConstructor::class, $factory->get());
     }
@@ -43,14 +43,14 @@ class ClosureInstanceProviderTest extends DependencyInjectionTestCase
     {
         $factory = new ClosureInstanceProvider(
             FakeClassNoConstructor::class,
-            $factoryMethod = fn() => null,
+            $factoryMethod = fn () => null,
             $injector = $this->createMock(InjectorInterface::class)
         );
 
         $injector->expects(self::once())
             ->method('call')
             ->with($factoryMethod)
-            ->willReturnCallback(fn() => $factoryMethod());
+            ->willReturnCallback(fn () => $factoryMethod());
 
         self::assertNull($factory->get());
     }
@@ -59,14 +59,14 @@ class ClosureInstanceProviderTest extends DependencyInjectionTestCase
     {
         $factory = new ClosureInstanceProvider(
             FakeClassExtendsNoConstructor::class,
-            fn() => new FakeClassNoConstructor(),
+            fn () => new FakeClassNoConstructor(),
             new Injector(self::createStub(ContainerInterface::class))
         );
 
         self::assertInstanceTypeException(
             FakeClassExtendsNoConstructor::class,
             FakeClassNoConstructor::class,
-            fn() => $factory->get()
+            fn () => $factory->get()
         );
     }
 }

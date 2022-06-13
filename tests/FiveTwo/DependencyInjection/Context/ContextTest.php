@@ -18,7 +18,6 @@ use PHPUnit\Framework\TestCase;
  */
 class ContextTest extends TestCase
 {
-
     public function test__construct_string(): void
     {
         $context = new Context('test');

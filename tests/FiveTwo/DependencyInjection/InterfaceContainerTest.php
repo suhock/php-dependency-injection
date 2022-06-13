@@ -50,7 +50,7 @@ class InterfaceContainerTest extends DependencyInjectionTestCase
 
         self::assertUnresolvedClassException(
             FakeClassNoConstructor::class,
-            fn() => $container->get(FakeClassNoConstructor::class)
+            fn () => $container->get(FakeClassNoConstructor::class)
         );
     }
 
@@ -65,7 +65,7 @@ class InterfaceContainerTest extends DependencyInjectionTestCase
         self::assertUnresolvedClassException(
             FakeClassUsingContexts::class,
             /** @psalm-suppress InvalidArgument Testing for invalid argument here */
-            fn() => $container->get(FakeClassUsingContexts::class)
+            fn () => $container->get(FakeClassUsingContexts::class)
         );
     }
 

@@ -34,9 +34,10 @@ class CircularDependencyException extends DependencyInjectionException
         private readonly string $context = '',
         ?Throwable $previous = null
     ) {
-        parent::__construct($context === '' ?
-            "Circular dependency detected for class $className" :
-            "Circular dependency detected for class $className in $context",
+        parent::__construct(
+            $context === '' ?
+                "Circular dependency detected for class $className" :
+                "Circular dependency detected for class $className in $context",
             $previous
         );
     }
