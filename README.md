@@ -25,8 +25,10 @@ types, as well as specifying factories for all classes in a particular
 implementation with your own custom lifetime strategies, instance providers, or
 nested containers to fit your needs.
 
-The library also provides [context containers](#context-container) for cascading
-dependency resolution down a nested context hierarchy.
+The library also provides a [`ContextContainer` class](#context-container) for
+cascading dependency resolution down a nested context hierarchy and an
+[`Injector` class](#dependency-injector) for injecting dependencies and explicit
+parameters into a specific function or constructor.
 
 ## Table of Contents
 
