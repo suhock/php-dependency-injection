@@ -51,6 +51,8 @@ dependency resolution down a nested context hierarchy.
 - [Dependency Injector](#dependency-injector)
 - [Appendix](#appendix)
   - [API syntax](#api-syntax)
+  - [A note on service locators](#a-note-on-the-service-locator-pattern)
+  - [Refactoring toward dependency injection](#refactoring-toward-the-dependency-injection-pattern)
 
 ## Installation
 
@@ -150,108 +152,6 @@ class MyRouter
         $controller->handleRequest($method);
     }
 }
-```
-
-### A note on the service locator pattern
-
-The previous example resembles a service locator pattern. Please note that while
-the `Container` class is functionally equivalent to a service locator, it is
-usually best to avoid the service locator pattern, since it makes testing,
-refactoring, and reasoning about your application more difficult.
-
-Only places in your application that invoke entry points should directly use the
-container. If you know the specific object type required before runtime, you
-should rely on the container's automatic dependency injection capabilities
-instead of directly invoking the container. In the prior example, the
-application cannot know which container to invoke until it receives an actual
-request, so injecting the container is necessary.
-
-The following is an example of what not to do.
-
-```php
-/* Do NOT do this! */
-
-class MyApiCaller
-{
-    public function __construct(
-        private readonly Container $container
-    ) {
-    }
-
-    public function callApi(): HttpResponse
-    {
-        $httpClient = $this->container->get(HttpClient::class);
-        return $httpClient->get('https://www.example.com/api');
-    }
-}
-```
-
-In the above example, the required type, `HttpClient` is known before runtime
-and can be requested directly by the constructor. This change will make
-`MyClass`'s actual dependencies much clearer thereby making testing and
-refactoring far easier.
-
-```php
-/* Do this instead! */
-
-class MyApiCaller
-{
-    public function __construct(
-        private readonly HttpClient $httpClient
-    ) {
-    }
-
-    public function callApi(): HttpResponse
-    {
-        return $this->httpClient->get('https://www.example.com/api');
-    }
-}
-```
-
-### Refactoring toward the dependency injection pattern
-
-An exception to the rule against the service locator pattern might be if you are
-refactoring a legacy application toward the dependency injection pattern: you
-want to reuse the container's dependency building logic as much as possible, but
-there is still code where it is difficult to inject dependencies properly.
-
-In this case, the application container can be built off a singleton instance
-and made available to legacy code as an intermediate step. Once you finally
-refactor all uses of the singleton container to use proper dependency injection,
-the singleton container can be removed.
-
-```php
-/* TODO: Refactor this! */
-public function myFragileBloatedFunction(...$args)
-{
-    // ...
-
-    // $httpClient = new CurlHttpClient();
-    // $logger = new FileLogger('myapp.log');
-    // $httpClient->setLogger($logger);
-
-    // Replaced the above duplicated construction logic with a call to the
-    // container
-    $httpClient = getAppContainer()->get(HttpClient::class);
-
-    $result = $httpClient->get('https://www.example.com/api/' . $args[42]);
-    // ...
-}
-
-/* TODO: Eliminate all references to the singleton container and remove this! */
-function getAppContainer(): Container
-{
-    static $container;
-    return $container ??= new Container();
-}
-
-/*
- * Build your container from the singleton container for now.
- * TODO: Replace with direct construction once refactoring is complete.
- */
-$container = getAppContainer();
-$container->addSingletonClass(MyApplication::class);
-// ...
 ```
 
 ### Instance lifetime
@@ -884,3 +784,105 @@ in this case defining a custom `callable` type, `ExampleCallbackType`. The
 template takes two classes: `TClass` and another class `TSubclass` which must
 be of type `TClass`. The custom type is then taken as a parameter in
 `anotherFunction`.
+
+### A note on the service locator pattern
+
+The previous example resembles a service locator pattern. Please note that while
+the `Container` class is functionally equivalent to a service locator, it is
+usually best to avoid the service locator pattern, since it makes testing,
+refactoring, and reasoning about your application more difficult.
+
+Only places in your application that invoke entry points should directly use the
+container. If you know the specific object type required before runtime, you
+should rely on the container's automatic dependency injection capabilities
+instead of directly invoking the container. In the prior example, the
+application cannot know which container to invoke until it receives an actual
+request, so injecting the container is necessary.
+
+The following is an example of what not to do.
+
+```php
+/* Do NOT do this! */
+
+class MyApiCaller
+{
+    public function __construct(
+        private readonly Container $container
+    ) {
+    }
+
+    public function callApi(): HttpResponse
+    {
+        $httpClient = $this->container->get(HttpClient::class);
+        return $httpClient->get('https://www.example.com/api');
+    }
+}
+```
+
+In the above example, the required type, `HttpClient` is known before runtime
+and can be requested directly by the constructor. This change will make
+`MyClass`'s actual dependencies much clearer thereby making testing and
+refactoring far easier.
+
+```php
+/* Do this instead! */
+
+class MyApiCaller
+{
+    public function __construct(
+        private readonly HttpClient $httpClient
+    ) {
+    }
+
+    public function callApi(): HttpResponse
+    {
+        return $this->httpClient->get('https://www.example.com/api');
+    }
+}
+```
+
+### Refactoring toward the dependency injection pattern
+
+An exception to the rule against the service locator pattern might be if you are
+refactoring a legacy application toward the dependency injection pattern: you
+want to reuse the container's dependency building logic as much as possible, but
+there is still code where it is difficult to inject dependencies properly.
+
+In this case, the application container can be built off a singleton instance
+and made available to legacy code as an intermediate step. Once you finally
+refactor all uses of the singleton container to use proper dependency injection,
+the singleton container can be removed.
+
+```php
+/* TODO: Refactor this! */
+public function myFragileBloatedFunction(...$args)
+{
+    // ...
+
+    // $httpClient = new CurlHttpClient();
+    // $logger = new FileLogger('myapp.log');
+    // $httpClient->setLogger($logger);
+
+    // Replaced the above duplicated construction logic with a call to the
+    // container
+    $httpClient = getAppContainer()->get(HttpClient::class);
+
+    $result = $httpClient->get('https://www.example.com/api/' . $args[42]);
+    // ...
+}
+
+/* TODO: Eliminate all references to the singleton container and remove this! */
+function getAppContainer(): Container
+{
+    static $container;
+    return $container ??= new Container();
+}
+
+/*
+ * Build your container from the singleton container for now.
+ * TODO: Replace with direct construction once refactoring is complete.
+ */
+$container = getAppContainer();
+$container->addSingletonClass(MyApplication::class);
+// ...
+```
