@@ -17,11 +17,7 @@ use FiveTwo\DependencyInjection\Lifetime\LifetimeStrategy;
 /**
  * A default implementation for the {@see ContainerInterface}.
  */
-class Container implements
-    ContainerInterface,
-    ContainerBuilderInterface,
-    ContainerSingletonBuilderInterface,
-    ContainerTransientBuilderInterface
+class Container implements ContainerInterface, ContainerBuilder
 {
     use ContainerSingletonBuilderTrait;
     use ContainerTransientBuilderTrait;
@@ -84,6 +80,16 @@ class Container implements
     public function addContainer(ContainerInterface $container, callable $lifetimeStrategyFactory): static
     {
         $this->containers[] = new ContainerDescriptor($container, $this->injector, $lifetimeStrategyFactory);
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function build(callable $builder): static
+    {
+        $builder($this);
 
         return $this;
     }
