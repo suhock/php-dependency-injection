@@ -16,6 +16,8 @@ use FiveTwo\DependencyInjection\Provision\InstanceProvider;
 
 /**
  * Default implementation for {@see ContainerBuilderInterface}.
+ *
+ * @psalm-require-implements ContainerBuilderInterface
  */
 trait ContainerBuilderTrait
 {
@@ -69,12 +71,20 @@ trait ContainerBuilderTrait
     }
 
     /**
+     * @psalm-template TBuilder of ContainerBuilderInterface
+     *
      * @param callable(static):mixed $builder
+     * @psalm-param callable(TBuilder):mixed $builder
      *
      * @return $this
      */
     public function build(callable $builder): static
     {
+        /**
+         * Psalm and PHPStan don't think Container implements ContainerBuilderInterface?
+         * @psalm-suppress InvalidArgument
+         * @phpstan-ignore-next-line
+         */
         $builder($this);
 
         return $this;

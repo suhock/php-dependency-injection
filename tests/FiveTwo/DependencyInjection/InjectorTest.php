@@ -228,6 +228,4 @@ class InjectorTest extends DependencyInjectionTestCase
             fn () => $injector->call(fn (FakeClassNoConstructor $obj) => $obj)
         );
     }
-
-
 }

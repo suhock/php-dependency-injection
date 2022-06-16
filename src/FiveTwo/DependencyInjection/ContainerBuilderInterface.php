@@ -52,7 +52,9 @@ interface ContainerBuilderInterface
     public function addContainer(ContainerInterface $container, callable $lifetimeStrategyFactory): static;
 
     /**
-     * @param callable(static):mixed $builder
+     * @template TBuilder of self
+     *
+     * @param callable(TBuilder):mixed $builder
      *
      * @return $this
      */

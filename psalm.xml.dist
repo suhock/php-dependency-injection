@@ -7,8 +7,9 @@
         <directory name="."/>
         <ignoreFiles>
             <directory name="vendor"/>
-            <!-- InjectorTest contains intersection types which causes Psalm to crash -->
+            <!-- InjectorTest and ContextInjectorTest contains intersection types which causes Psalm to crash -->
             <file name="tests/FiveTwo/DependencyInjection/InjectorTest.php"/>
+            <file name="tests/FiveTwo/DependencyInjection/Context/ContextInjectorTest.php"/>
         </ignoreFiles>
     </projectFiles>
 

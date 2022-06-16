@@ -13,8 +13,8 @@ namespace FiveTwo\DependencyInjection;
 
 use FiveTwo\DependencyInjection\Provision\ImplementationException;
 use FiveTwo\DependencyInjection\Provision\InstanceTypeException;
-use PHPUnit\Exception;
 use PHPUnit\Framework\Assert;
+use PHPUnit\Framework\AssertionFailedError;
 use PHPUnit\Framework\TestCase;
 use Throwable;
 
@@ -36,7 +36,7 @@ class DependencyInjectionTestCase extends TestCase
         try {
             $codeUnderTest();
             Assert::fail('Exception was not thrown');
-        } catch (Exception $e) {
+        } catch (AssertionFailedError $e) {
             throw $e;
         } catch (Throwable $exception) {
             /**
