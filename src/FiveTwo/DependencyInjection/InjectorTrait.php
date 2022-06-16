@@ -60,7 +60,7 @@ trait InjectorTrait
         try {
             $rFunction = new ReflectionFunction($function(...));
         } catch (ReflectionException $e) {
-            // The callable type constraint should make this unreachable
+            // The callable parameter type constraint should make this unreachable
             throw new DependencyInjectionException("Function $functionName() does not exist", $e);
         }
 
@@ -194,6 +194,7 @@ trait InjectorTrait
         } elseif ($rType instanceof ReflectionIntersectionType) {
             $delimiter = '&';
         } else {
+            // Future-proofing. All types covered as of PHP 8.1.
             return null;
         }
 

@@ -27,9 +27,11 @@ class DependencyInjectionExceptionTest extends TestCase
 
     public function test__construct_Composition(): void
     {
-        $exception = new DependencyInjectionException('Message2', new DependencyInjectionException('Message1'));
+        $originalException = new DependencyInjectionException('Message1');
+        $exception = new DependencyInjectionException('Message2', $originalException);
         self::assertMatchesRegularExpression('/Message2.*Message1/s', $exception->getMessage());
         self::assertNull($exception->getPrevious());
+        self::assertSame($originalException, $exception->getConsolidatedException());
     }
 
     public function test__construct_NoCompositionForUnrelatedException(): void
@@ -37,5 +39,6 @@ class DependencyInjectionExceptionTest extends TestCase
         $exception = new DependencyInjectionException('Message2', $previous = new Exception('Message1'));
         self::assertSame('Message2', $exception->getMessage());
         self::assertSame($previous, $exception->getPrevious());
+        self::assertNull($exception->getConsolidatedException());
     }
 }

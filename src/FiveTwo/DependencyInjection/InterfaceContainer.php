@@ -20,31 +20,27 @@ use Closure;
  */
 class InterfaceContainer implements ContainerInterface
 {
-    /**
-     * @var Closure<TInterface, TInterface|null> $factory
-     * @psalm-var Closure(class-string<TInterface>, mixed ...):(TInterface|null) $factory
-     * @phpstan-var Closure(class-string<TInterface>, mixed ...):(TInterface|null) $factory
-     */
+    // Add signature whenever static analysis tools add support for return type with unspecified parameter list
     private readonly Closure $factory;
+
+    private readonly InjectorInterface $injector;
 
     /**
      * @param class-string<TInterface> $interfaceName The name of the interface or base class
-     * @param InjectorInterface $injector The injector to use for calling the instance factory
+     * @param InjectorInterface|null $injector [optional] The injector to use for calling the factory
      * @param callable|null $factory [optional] A factory to use for acquiring instances of classes. The first argument
      * will be the name of the class. Additional arguments can be provided from this container's {@see Injector}. If no
      * factory is provided, a default factory that directly instantiates the class will be used.
      * <code>
-     * function(class-string&lt;T implements TInterface&gt; $className, ...): null|TInterface
+     * function(class-string&lt;T implements TInterface&gt; $className, object...): null|TInterface
      * </code>
-     * @psalm-param null|callable(class-string<TInterface>, mixed ...):(TInterface|null) $factory
-     * @phpstan-param null|callable(class-string<TInterface>, mixed ...):(TInterface|null) $factory
      */
     public function __construct(
         private readonly string $interfaceName,
-        private readonly InjectorInterface $injector,
+        ?InjectorInterface $injector = null,
         ?callable $factory = null
     ) {
-        /** @phpstan-ignore-next-line PHPStan does not support generics docs on anonymous functions */
+        $this->injector = $injector ?? new Injector($this);
         $this->factory = $factory !== null ?
             $factory(...) :
             /**
@@ -86,7 +82,7 @@ class InterfaceContainer implements ContainerInterface
      * @psalm-suppress DocblockTypeContradiction: Cannot resolve types for $className - docblock-defined type
      * class-string<TInterface:FiveTwo\DependencyInjection\ImplementationContainer as object> does not contain
      * class-string<TInterface>
-     * Not clear why Psalm has trouble resolving $className
+     * Psalm has trouble resolving $className
      */
     public function has(string $className): bool
     {

@@ -12,8 +12,8 @@ declare(strict_types=1);
 namespace FiveTwo\DependencyInjection;
 
 use Closure;
-use FiveTwo\DependencyInjection\InstanceProvision\ClosureInstanceProvider;
 use FiveTwo\DependencyInjection\Lifetime\LifetimeStrategy;
+use FiveTwo\DependencyInjection\Provision\ClosureInstanceProvider;
 
 /**
  * Holds information about nested containers.

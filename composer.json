@@ -1,7 +1,7 @@
 {
     "name": "fivetwo/dependency-injection",
-    "type": "library",
     "description": "The Five Two Dependency Injection Library",
+    "type": "library",
     "keywords": [
         "dependency injection",
         "dependency",
@@ -11,6 +11,7 @@
         "ioc"
     ],
     "homepage": "https://www.fivetwo.org",
+    "readme": "README.md",
     "license": "MIT",
     "authors": [
         {
@@ -18,17 +19,6 @@
             "email": "matt@fivetwo.org"
         }
     ],
-    "autoload": {
-        "psr-4": {
-            "FiveTwo\\DependencyInjection\\": "src/FiveTwo/DependencyInjection/"
-        }
-    },
-    "autoload-dev": {
-        "psr-4": {
-            "FiveTwo\\DependencyInjection\\": "tests/FiveTwo/DependencyInjection/"
-        }
-    },
-    "minimum-stability": "stable",
     "require": {
         "php": "^8.1"
     },
@@ -40,10 +30,23 @@
         "psalm/plugin-phpunit": ">=0.16",
         "vimeo/psalm": "^4.23"
     },
+    "autoload": {
+        "psr-4": {
+            "FiveTwo\\DependencyInjection\\": "src/FiveTwo/DependencyInjection/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "FiveTwo\\DependencyInjection\\": "tests/FiveTwo/DependencyInjection/"
+        }
+    },
+    "minimum-stability": "stable",
     "config": {
         "allow-plugins": {
             "psalm/plugin-phpunit": true
-        }
+        },
+        "optimize-autoloader": true,
+        "sort-packages": true
     },
     "scripts": {
         "php-cs-fixer": "php-cs-fixer fix .",

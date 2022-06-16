@@ -11,19 +11,18 @@ declare(strict_types=1);
 
 namespace FiveTwo\DependencyInjection;
 
-use FiveTwo\DependencyInjection\InstanceProvision\ClassInstanceProvider;
-use FiveTwo\DependencyInjection\InstanceProvision\ClosureInstanceProvider;
-use FiveTwo\DependencyInjection\InstanceProvision\ImplementationException;
-use FiveTwo\DependencyInjection\InstanceProvision\ImplementationInstanceProvider;
-use FiveTwo\DependencyInjection\InstanceProvision\InstanceProvider;
 use FiveTwo\DependencyInjection\Lifetime\TransientStrategy;
+use FiveTwo\DependencyInjection\Provision\ClassInstanceProvider;
+use FiveTwo\DependencyInjection\Provision\ClosureInstanceProvider;
+use FiveTwo\DependencyInjection\Provision\ImplementationException;
+use FiveTwo\DependencyInjection\Provision\ImplementationInstanceProvider;
+use FiveTwo\DependencyInjection\Provision\InstanceProvider;
 
 /**
  * Default implementation for {@see ContainerTransientBuilderInterface}. Classes using this trait must implement
  * {@see ContainerBuilderInterface}.
  *
  * @psalm-require-implements ContainerBuilderInterface
- * @psalm-require-implements ContainerTransientBuilderInterface
  */
 trait ContainerTransientBuilderTrait
 {
@@ -143,7 +142,6 @@ trait ContainerTransientBuilderTrait
      */
     public function addTransientInterface(string $interfaceName, ?callable $factory = null): static
     {
-        /** @psalm-suppress ArgumentTypeCoercion argument types are the same... */
         $this->addTransientContainer(new InterfaceContainer($interfaceName, $this->getInjector(), $factory));
 
         return $this;

@@ -53,14 +53,6 @@ class ContextContainer implements ContainerInterface
     }
 
     /**
-     * @return InjectorInterface An injector backed by this container
-     */
-    public function getInjector(): InjectorInterface
-    {
-        return $this->injector;
-    }
-
-    /**
      * Returns a container by name. If the container does not already exist a new container instance with the specified
      * name will be added.
      *

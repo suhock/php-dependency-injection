@@ -116,15 +116,24 @@ class InjectorTest extends DependencyInjectionTestCase
     {
         $logicException = new LogicException('Message 1');
         $runtimeException = new RuntimeException('Message 2');
+        $injector = $this->create([
+            Throwable::class => fn () => $logicException,
+            LogicException::class => fn () => $logicException,
+            RuntimeException::class => fn () => $runtimeException
+        ]);
 
         self::assertSame(
-            [$logicException, $runtimeException],
-            $this->create([
-                Throwable::class => fn () => $logicException,
-                LogicException::class => fn () => $logicException,
-                RuntimeException::class => fn () => $runtimeException
+            [$logicException, $runtimeException, 'a', 2],
             /** @phpstan-ignore-next-line PHPStan does not understand splat in parameter lists */
-            ])->call(fn (Throwable $e1, RuntimeException $e2) => [$e1, $e2])
+            $injector->call(fn (
+                Throwable $e1,
+                RuntimeException $e2,
+                string $a,
+                $b
+            ) => [$e1, $e2, $a, $b], [
+                'a' => 'a',
+                'b' => 2
+            ])
         );
     }
 
@@ -201,4 +210,24 @@ class InjectorTest extends DependencyInjectionTestCase
             fn () => $injector->call(fn (FakeInterfaceOne&FakeInterfaceThree $obj) => $obj)
         );
     }
+
+    public function testCall_Exception_CircularDependency(): void
+    {
+        $container = new Container();
+        $container->addSingletonFactory(
+            FakeClassNoConstructor::class,
+            fn (FakeClassNoConstructor $obj) => $obj
+        );
+
+        $injector = new Injector($container);
+
+        self::assertCircularParameterException(
+            'Closure::__invoke',
+            'obj',
+            FakeClassNoConstructor::class,
+            fn () => $injector->call(fn (FakeClassNoConstructor $obj) => $obj)
+        );
+    }
+
+
 }

@@ -15,10 +15,21 @@ use FiveTwo\DependencyInjection\Lifetime\LifetimeStrategy;
 use FiveTwo\DependencyInjection\Provision\InstanceProvider;
 
 /**
- * Interface for building a dependency container.
+ * Default implementation for {@see ContainerBuilderInterface}.
  */
-interface ContainerBuilderInterface
+trait ContainerBuilderTrait
 {
+    abstract protected function getInjector(): InjectorInterface;
+
+    /**
+     * @template TClass of object
+     *
+     * @param Descriptor<TClass> $descriptor
+     */
+    abstract protected function addDescriptor(Descriptor $descriptor);
+
+    abstract protected function addContainerDescriptor(ContainerDescriptor $descriptor);
+
     /**
      * Adds an instance provider with a lifetime strategy to the container for a given class.
      *
@@ -34,27 +45,38 @@ interface ContainerBuilderInterface
         string $className,
         LifetimeStrategy $lifetimeStrategy,
         InstanceProvider $instanceProvider
-    ): static;
+    ): static {
+        $this->addDescriptor(new Descriptor($className, $lifetimeStrategy, $instanceProvider));
+
+        return $this;
+    }
 
     /**
-     * Adds a nested container with a factory for generating lifetime strategies to manage instances within the outer
-     * container. Nested containers are searched sequentially in the order they are added.
-     *
      * @param ContainerInterface $container The nested container to add
      * @param callable(class-string):LifetimeStrategy $lifetimeStrategyFactory A factory method for generating lifetime
      * strategies to manage instances within the container being built
      *
-     * @return $this
-     *
      * @phpstan-ignore-next-line PHPStan does not support callable-level generics but complains that LifetimeStrategy
      * does not have its generic type specified
      */
-    public function addContainer(ContainerInterface $container, callable $lifetimeStrategyFactory): static;
+    public function addContainer(ContainerInterface $container, callable $lifetimeStrategyFactory): static
+    {
+        $this->addContainerDescriptor(
+            new ContainerDescriptor($container, $this->getInjector(), $lifetimeStrategyFactory)
+        );
+
+        return $this;
+    }
 
     /**
      * @param callable(static):mixed $builder
      *
      * @return $this
      */
-    public function build(callable $builder): static;
+    public function build(callable $builder): static
+    {
+        $builder($this);
+
+        return $this;
+    }
 }

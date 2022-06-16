@@ -13,9 +13,11 @@ namespace FiveTwo\DependencyInjection\Context;
 
 use Exception;
 use FiveTwo\DependencyInjection\Container;
+use FiveTwo\DependencyInjection\FakeClassImplementsInterfaces;
 use FiveTwo\DependencyInjection\FakeClassNoConstructor;
 use FiveTwo\DependencyInjection\FakeClassUsingContexts;
-use FiveTwo\DependencyInjection\InjectorInterface;
+use FiveTwo\DependencyInjection\FakeInterfaceOne;
+use FiveTwo\DependencyInjection\FakeInterfaceTwo;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 use Throwable;
@@ -25,13 +27,22 @@ use Throwable;
  */
 class ContextInjectorTest extends TestCase
 {
+    /**
+     * @return ContextContainer<Container>
+     */
+    private function createContainer(): ContextContainer
+    {
+        return ContextContainerFactory::createForDefaultContainer();
+    }
+
     public function testCall_NoContext(): void
     {
         $container = $this->createContainer();
-        $injector = $container->getInjector();
         $container->context('default')
             ->addSingletonInstance(FakeClassNoConstructor::class, $instance = new FakeClassNoConstructor());
         $container->push('default');
+
+        $injector = new ContextInjector($container);
 
         self::assertSame($instance, $injector->call(fn (FakeClassNoConstructor $obj) => $obj));
     }
@@ -39,8 +50,6 @@ class ContextInjectorTest extends TestCase
     public function testCall_ContextOverride(): void
     {
         $container = $this->createContainer();
-        $injector = $container->getInjector();
-
         $container->context('default')
             ->addSingletonInstance(FakeClassNoConstructor::class, $instance0 = new FakeClassNoConstructor());
         $container->context('context1')
@@ -50,6 +59,9 @@ class ContextInjectorTest extends TestCase
         $container->context('context3');
 
         $container->push('default');
+
+        $injector = new ContextInjector($container);
+
         self::assertSame(
             $instance0,
             $injector->call(fn (FakeClassNoConstructor $obj) => $obj)
@@ -80,10 +92,11 @@ class ContextInjectorTest extends TestCase
     public function testInstantiation_NoContext(): void
     {
         $container = $this->createContainer();
-        $injector = $container->getInjector();
         $container->context('default')
             ->addSingletonClass(FakeClassNoConstructor::class);
         $container->push('default');
+
+        $injector = new ContextInjector($container);
 
         self::assertInstanceOf(
             FakeClassNoConstructor::class,
@@ -94,7 +107,6 @@ class ContextInjectorTest extends TestCase
     public function testInstantiation_ContextOverride(): void
     {
         $container = $this->createContainer();
-        $injector = $container->getInjector();
         $container->context('default')
             ->addSingletonInstance(Throwable::class, new Exception());
         $container->context('context1')
@@ -106,15 +118,41 @@ class ContextInjectorTest extends TestCase
             ->addSingletonInstance(Throwable::class, $throwable3 = new Exception());
         $container->context('context4');
 
+        $injector = new ContextInjector($container);
+
         self::assertSame($throwable3, $injector->instantiate(FakeClassUsingContexts::class)->throwable);
         self::assertSame($runtime1, $injector->instantiate(FakeClassUsingContexts::class)->runtimeException);
     }
 
-    /**
-     * @return ContextContainer<Container>
-     */
-    private function createContainer(): ContextContainer
+    public function testCall_UnionType_First(): void
     {
-        return new ContextContainer(fn (InjectorInterface $injector) => new Container($injector));
+        $instance = new FakeClassImplementsInterfaces();
+        $container = $this->createContainer();
+        $container->context('context1')
+            ->addSingletonInstance(FakeInterfaceOne::class, $instance);
+        $container->push('context1');
+
+        $injector = new ContextInjector($container);
+
+        self::assertSame(
+            $instance,
+            $injector->call(fn (FakeInterfaceOne|string|FakeInterfaceTwo $obj) => $obj)
+        );
+    }
+
+    public function testCall_IntersectionType_First(): void
+    {
+        $instance = new FakeClassImplementsInterfaces();
+        $container = $this->createContainer();
+        $container->context('context1')
+            ->addSingletonInstance(FakeInterfaceOne::class, $instance);
+        $container->push('context1');
+
+        $injector = new ContextInjector($container);
+
+        self::assertSame(
+            $instance,
+            $injector->call(fn (FakeInterfaceOne&FakeInterfaceTwo $obj) => $obj)
+        );
     }
 }

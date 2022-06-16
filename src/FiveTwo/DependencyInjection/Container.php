@@ -11,24 +11,26 @@ declare(strict_types=1);
 
 namespace FiveTwo\DependencyInjection;
 
-use FiveTwo\DependencyInjection\InstanceProvision\InstanceProvider;
-use FiveTwo\DependencyInjection\Lifetime\LifetimeStrategy;
-
 /**
  * A default implementation for the {@see ContainerInterface}.
  */
-class Container implements ContainerInterface, ContainerBuilder
+class Container implements
+    ContainerInterface,
+    ContainerBuilderInterface,
+    ContainerSingletonBuilderInterface,
+    ContainerTransientBuilderInterface
 {
+    use ContainerBuilderTrait;
     use ContainerSingletonBuilderTrait;
     use ContainerTransientBuilderTrait;
 
-    private InjectorInterface $injector;
-
     /** @var array<class-string, Descriptor<object>> */
-    private array $factories = [];
+    protected array $descriptors = [];
 
     /** @var array<ContainerDescriptor> */
-    private array $containers = [];
+    protected array $containerDescriptors = [];
+
+    private InjectorInterface $injector;
 
     /**
      * @param InjectorInterface|null $injector [Optional] An existing injector to use for injecting dependencies into
@@ -39,22 +41,30 @@ class Container implements ContainerInterface, ContainerBuilder
         $this->injector = $injector ?? new Injector($this);
     }
 
+    /**
+     * @template TClass of object
+     *
+     * @param Descriptor<TClass> $descriptor
+     *
+     * @return $this
+     */
+    protected function addDescriptor(Descriptor $descriptor): static
+    {
+        $this->descriptors[$descriptor->getClassName()] = $descriptor;
+
+        return $this;
+    }
+
+    protected function addContainerDescriptor(ContainerDescriptor $descriptor): static
+    {
+        $this->containerDescriptors[] = $descriptor;
+
+        return $this;
+    }
+
     protected function getInjector(): InjectorInterface
     {
         return $this->injector;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function add(
-        string $className,
-        LifetimeStrategy $lifetimeStrategy,
-        InstanceProvider $instanceProvider
-    ): static {
-        $this->factories[$className] = new Descriptor($className, $lifetimeStrategy, $instanceProvider);
-
-        return $this;
     }
 
     /**
@@ -66,30 +76,7 @@ class Container implements ContainerInterface, ContainerBuilder
      */
     public function remove(string $className): static
     {
-        unset($this->factories[$className]);
-
-        return $this;
-    }
-
-    /**
-     * @inheritDoc
-     *
-     * @phpstan-ignore-next-line PHPStan does not support callable-level generics but complains that LifetimeStrategy
-     * does not have its generic type specified
-     */
-    public function addContainer(ContainerInterface $container, callable $lifetimeStrategyFactory): static
-    {
-        $this->containers[] = new ContainerDescriptor($container, $this->injector, $lifetimeStrategyFactory);
-
-        return $this;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function build(callable $builder): static
-    {
-        $builder($this);
+        unset($this->descriptors[$className]);
 
         return $this;
     }
@@ -114,7 +101,7 @@ class Container implements ContainerInterface, ContainerBuilder
      */
     public function has(string $className): bool
     {
-        return $this->hasFactory($className) || $this->hasContainer($className);
+        return $this->hasDescriptor($className) || $this->hasContainer($className);
     }
 
     /**
@@ -128,11 +115,11 @@ class Container implements ContainerInterface, ContainerBuilder
      */
     private function tryGetFromFactory(string $className, ?object &$instance): bool
     {
-        if (!$this->hasFactory($className)) {
+        if (!$this->hasDescriptor($className)) {
             return false;
         }
 
-        $instance = $this->getFactory($className)->getInstance();
+        $instance = $this->getDescriptor($className)->getInstance();
 
         return true;
     }
@@ -145,13 +132,13 @@ class Container implements ContainerInterface, ContainerBuilder
      * @return Descriptor<TClass>
      * @psalm-suppress InvalidReturnType Psalm does not support class-mapped arrays
      */
-    private function getFactory(string $className): Descriptor
+    protected function getDescriptor(string $className): Descriptor
     {
         /**
          * @psalm-suppress InvalidReturnStatement Psalm does not support class-mapped arrays
          * @phpstan-ignore-next-line PHPStan does not support class-mapped arrays
          */
-        return $this->factories[$className];
+        return $this->descriptors[$className];
     }
 
     /**
@@ -161,9 +148,9 @@ class Container implements ContainerInterface, ContainerBuilder
      *
      * @return bool
      */
-    private function hasFactory(string $className): bool
+    private function hasDescriptor(string $className): bool
     {
-        return array_key_exists($className, $this->factories);
+        return array_key_exists($className, $this->descriptors);
     }
 
     /**
@@ -190,7 +177,7 @@ class Container implements ContainerInterface, ContainerBuilder
      */
     private function hasContainer(string $className): bool
     {
-        foreach ($this->containers as $containerDescriptor) {
+        foreach ($this->containerDescriptors as $containerDescriptor) {
             if ($containerDescriptor->tryAdd($className, $this)) {
                 return true;
             }

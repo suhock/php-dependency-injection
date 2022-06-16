@@ -11,8 +11,8 @@ declare(strict_types=1);
 
 namespace FiveTwo\DependencyInjection;
 
-use FiveTwo\DependencyInjection\InstanceProvision\ImplementationException;
-use FiveTwo\DependencyInjection\InstanceProvision\InstanceProvider;
+use FiveTwo\DependencyInjection\Provision\ImplementationException;
+use FiveTwo\DependencyInjection\Provision\InstanceProvider;
 
 /**
  * Interface for adding transient factories to a container.

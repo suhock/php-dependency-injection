@@ -11,21 +11,20 @@ declare(strict_types=1);
 
 namespace FiveTwo\DependencyInjection;
 
-use FiveTwo\DependencyInjection\InstanceProvision\ClassInstanceProvider;
-use FiveTwo\DependencyInjection\InstanceProvision\ClosureInstanceProvider;
-use FiveTwo\DependencyInjection\InstanceProvision\ImplementationException;
-use FiveTwo\DependencyInjection\InstanceProvision\ImplementationInstanceProvider;
-use FiveTwo\DependencyInjection\InstanceProvision\InstanceProvider;
-use FiveTwo\DependencyInjection\InstanceProvision\InstanceTypeException;
-use FiveTwo\DependencyInjection\InstanceProvision\ObjectInstanceProvider;
 use FiveTwo\DependencyInjection\Lifetime\SingletonStrategy;
+use FiveTwo\DependencyInjection\Provision\ClassInstanceProvider;
+use FiveTwo\DependencyInjection\Provision\ClosureInstanceProvider;
+use FiveTwo\DependencyInjection\Provision\ImplementationException;
+use FiveTwo\DependencyInjection\Provision\ImplementationInstanceProvider;
+use FiveTwo\DependencyInjection\Provision\InstanceProvider;
+use FiveTwo\DependencyInjection\Provision\InstanceTypeException;
+use FiveTwo\DependencyInjection\Provision\ObjectInstanceProvider;
 
 /**
  * Default implementation for {@see ContainerSingletonBuilderInterface}. Classes using this trait must implement
  * implement {@see ContainerBuilderInterface}.
  *
  * @psalm-require-implements ContainerBuilderInterface
- * @psalm-require-implements ContainerSingletonBuilderInterface
  */
 trait ContainerSingletonBuilderTrait
 {
@@ -164,7 +163,6 @@ trait ContainerSingletonBuilderTrait
      */
     public function addSingletonInterface(string $interfaceName, ?callable $factory = null): static
     {
-        /** @psalm-suppress ArgumentTypeCoercion argument types are the same... */
         $this->addSingletonContainer(new InterfaceContainer($interfaceName, $this->getInjector(), $factory));
 
         return $this;

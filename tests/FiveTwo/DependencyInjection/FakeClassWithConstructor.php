@@ -9,17 +9,14 @@
 
 declare(strict_types=1);
 
-namespace FiveTwo\DependencyInjection\InstanceProvision;
+namespace FiveTwo\DependencyInjection;
 
 /**
- * Interface for classes that manage the provision of objects.
- *
- * @template TClass of object
+ * Fakes a class with a constructor.
  */
-interface InstanceProvider
+class FakeClassWithConstructor implements FakeInterfaceOne
 {
-    /**
-     * @return TClass|null An instance of the class or <code>null</code>
-     */
-    public function get(): ?object;
+    public function __construct(public readonly FakeClassNoConstructor $obj)
+    {
+    }
 }

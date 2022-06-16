@@ -30,6 +30,16 @@ class ContainerTest extends DependencyInjectionTestCase
         return $container;
     }
 
+    public function testBuild(): void
+    {
+        $container = $this->createContainer();
+        $builder = self::createMock(FakeBuilder::class);
+        $builder->expects(self::once())
+            ->method('build')
+            ->with($container);
+        $container->build($builder->build(...));
+    }
+
     public function testRemove(): void
     {
         self::assertFalse(
@@ -101,6 +111,7 @@ class ContainerTest extends DependencyInjectionTestCase
 
         self::assertCircularDependencyException(
             FakeClassNoConstructor::class,
+            '',
             fn () => $container->get(FakeClassNoConstructor::class)
         );
     }

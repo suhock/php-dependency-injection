@@ -9,7 +9,7 @@
 
 declare(strict_types=1);
 
-namespace FiveTwo\DependencyInjection\InstanceProvision;
+namespace FiveTwo\DependencyInjection\Provision;
 
 use FiveTwo\DependencyInjection\DependencyInjectionException;
 use Throwable;

@@ -11,8 +11,8 @@ declare(strict_types=1);
 
 namespace FiveTwo\DependencyInjection;
 
-use FiveTwo\DependencyInjection\InstanceProvision\InstanceProvider;
 use FiveTwo\DependencyInjection\Lifetime\LifetimeStrategy;
+use FiveTwo\DependencyInjection\Provision\InstanceProvider;
 
 /**
  * Contains information about how to resolve a dependency.

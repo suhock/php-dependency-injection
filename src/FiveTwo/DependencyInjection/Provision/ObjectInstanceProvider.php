@@ -9,7 +9,7 @@
 
 declare(strict_types=1);
 
-namespace FiveTwo\DependencyInjection\InstanceProvision;
+namespace FiveTwo\DependencyInjection\Provision;
 
 /**
  * Factory that provides a previously constructed instance of the class.

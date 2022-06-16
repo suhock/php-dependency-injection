@@ -11,9 +11,9 @@ declare(strict_types=1);
 
 namespace FiveTwo\DependencyInjection;
 
-use FiveTwo\DependencyInjection\InstanceProvision\ImplementationException;
-use FiveTwo\DependencyInjection\InstanceProvision\InstanceProvider;
-use FiveTwo\DependencyInjection\InstanceProvision\InstanceTypeException;
+use FiveTwo\DependencyInjection\Provision\ImplementationException;
+use FiveTwo\DependencyInjection\Provision\InstanceProvider;
+use FiveTwo\DependencyInjection\Provision\InstanceTypeException;
 
 /**
  * Interface for adding singleton factories to a container.

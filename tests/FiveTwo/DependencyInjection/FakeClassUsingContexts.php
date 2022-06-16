@@ -21,15 +21,15 @@ use Throwable;
 #[Context('context1')]
 class FakeClassUsingContexts
 {
-    public readonly RuntimeException $runtimeException;
+    public readonly Throwable $throwable;
 
     #[Context('context2')]
     public function __construct(
         #[Context('context3')]
-        public readonly Throwable $throwable,
+        Throwable $throwable,
         #[Context('context4')]
-        RuntimeException $runtimeException
+        public readonly RuntimeException $runtimeException
     ) {
-        $this->runtimeException = $runtimeException;
+        $this->throwable = $throwable;
     }
 }

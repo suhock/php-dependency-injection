@@ -11,8 +11,9 @@ declare(strict_types=1);
 
 namespace FiveTwo\DependencyInjection;
 
-use FiveTwo\DependencyInjection\InstanceProvision\ImplementationException;
-use FiveTwo\DependencyInjection\InstanceProvision\InstanceTypeException;
+use FiveTwo\DependencyInjection\Provision\ImplementationException;
+use FiveTwo\DependencyInjection\Provision\InstanceTypeException;
+use PHPUnit\Exception;
 use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\TestCase;
 use Throwable;
@@ -35,6 +36,8 @@ class DependencyInjectionTestCase extends TestCase
         try {
             $codeUnderTest();
             Assert::fail('Exception was not thrown');
+        } catch (Exception $e) {
+            throw $e;
         } catch (Throwable $exception) {
             /**
              * A TypeError here indicates the wrong type of exception was thrown
@@ -47,17 +50,64 @@ class DependencyInjectionTestCase extends TestCase
 
     /**
      * @param class-string $exClassName
+     * @param string $exContext
      * @param callable $codeUnderTest
      *
      * @return void
      */
     public static function assertCircularDependencyException(
         string $exClassName,
+        string $exContext,
         callable $codeUnderTest
     ): void {
         self::assertException(
             $codeUnderTest,
-            function (CircularDependencyException $exception) use ($exClassName): void {
+            function (CircularDependencyException $exception) use ($exClassName, $exContext): void {
+                self::assertSame(
+                    $exClassName,
+                    $exception->getClassName(),
+                    'Failed asserting that class name is identical'
+                );
+                self::assertSame(
+                    $exContext,
+                    $exception->getContext(),
+                    'Failed asserting that context is identical'
+                );
+            }
+        );
+    }
+
+    /**
+     * @param string $exFunctionName
+     * @param string $exParameterName
+     * @param class-string $exClassName
+     * @param callable $codeUnderTest
+     *
+     * @return void
+     */
+    public static function assertCircularParameterException(
+        string $exFunctionName,
+        string $exParameterName,
+        string $exClassName,
+        callable $codeUnderTest
+    ): void {
+        self::assertException(
+            $codeUnderTest,
+            function (CircularParameterException $exception) use (
+                $exClassName,
+                $exFunctionName,
+                $exParameterName
+            ): void {
+                self::assertSame(
+                    $exFunctionName,
+                    $exception->getFunctionName(),
+                    'Failed asserting that function name is identical'
+                );
+                self::assertSame(
+                    $exParameterName,
+                    $exception->getParameterName(),
+                    'Failed asserting that parameter name is identical'
+                );
                 self::assertSame(
                     $exClassName,
                     $exception->getClassName(),

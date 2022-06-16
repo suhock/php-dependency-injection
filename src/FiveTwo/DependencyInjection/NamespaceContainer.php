@@ -20,31 +20,29 @@ class NamespaceContainer implements ContainerInterface
 {
     private readonly string $namespace;
 
-    /**
-     * @var Closure
-     * @psalm-var Closure(class-string, mixed ...):(object|null)
-     */
+    private readonly InjectorInterface $injector;
+
+    // Add signature whenever static analysis tools add support for return type with unspecified parameter list
     private readonly Closure $factory;
 
     /**
-     * @param string $namespace The namespace from which to provide class instances
-     * @param InjectorInterface $injector The injector to use for calling the instance factory
-     * @param null|callable $factory [optional] A factory to use for acquiring instances of classes. The first argument
+     * @param string $namespace The namespace from which to provide class instances. An empty string indicates this
+     * container should resolve classes from any namespace.
+     * @param InjectorInterface|null $injector [optional] The injector to use for calling the factory
+     * @param callable|null $factory [optional] A factory to use for acquiring instances of classes. The first argument
      * will be the name of the class. Additional arguments can be provided from this container's {@see Injector}. If no
      * factory is provided, a default factory that directly instantiates the class will be used.
      * <code>
      * function(class-string&lt;T&gt; $className, ...): null|T
      * </code>
-     * @psalm-param null|callable(class-string, mixed ...):(object|null) $factory
      */
     public function __construct(
         string $namespace,
-        private readonly InjectorInterface $injector,
+        ?InjectorInterface $injector = null,
         ?callable $factory = null
     ) {
         $this->namespace = trim($namespace, '\\');
-
-        /** @psalm-suppress PropertyTypeCoercion Psalm seems confused */
+        $this->injector = $injector ?? new Injector($this);
         $this->factory = $factory !== null ?
             $factory(...) :
             $this->injector->instantiate(...);

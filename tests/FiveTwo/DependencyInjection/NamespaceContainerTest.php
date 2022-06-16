@@ -12,34 +12,47 @@ declare(strict_types=1);
 namespace FiveTwo\DependencyInjection;
 
 use DateTime;
+use Exception;
+use RuntimeException;
+use Throwable;
 
 /**
  * Test suite for {@see NamespaceContainer}.
  */
 class NamespaceContainerTest extends DependencyInjectionTestCase
 {
-    public function testGet(): void
+    public function testGet_DefaultInjectorDefaultFactory(): void
     {
-        $container = self::createMock(ContainerInterface::class);
-        $container->method('get')
-            ->with(FakeClassNoConstructor::class)
-            ->willReturn(new FakeClassNoConstructor());
-        $container->method('has')
-            ->with(FakeClassNoConstructor::class)
-            ->willReturn(true);
-        $injector = new Injector($container);
-
-        $namespaceContainer = new NamespaceContainer(
-            __NAMESPACE__,
-            $injector,
-            /** @param class-string $className */
-            fn (string $className) => $injector->instantiate($className)
-        );
+        $container = new NamespaceContainer(__NAMESPACE__);
 
         self::assertInstanceOf(
             FakeClassNoConstructor::class,
-            $namespaceContainer->get(FakeClassNoConstructor::class)
+            $container->get(FakeClassNoConstructor::class)
         );
+    }
+
+    public function testGet_ExplicitInjectorExplicitFactory(): void
+    {
+        $container = self::createMock(ContainerInterface::class);
+        $container->expects(self::exactly(2))
+            ->method('get')
+            ->withConsecutive([Throwable::class], [RuntimeException::class])
+            ->willReturnOnConsecutiveCalls(new Exception('test'), new RuntimeException('test'));
+        $container->method('has')
+            ->willReturn(true);
+
+        $namespaceContainer = new NamespaceContainer(
+            __NAMESPACE__,
+            new Injector($container),
+            fn (string $className, Throwable $throwable, RuntimeException $runtimeException) =>
+                new FakeClassUsingContexts($throwable, $runtimeException)
+        );
+
+        $result = $namespaceContainer->get(FakeClassUsingContexts::class);
+
+        self::assertInstanceOf(FakeClassUsingContexts::class, $result);
+        /** @phpstan-ignore-next-line PHPStan claims cannot access public property */
+        self::assertSame('test', $result->throwable->getMessage());
     }
 
     public function testGet_Exception_ClassNotInNamespace(): void
@@ -56,25 +69,23 @@ class NamespaceContainerTest extends DependencyInjectionTestCase
         );
     }
 
-    public function testHas(): void
+    public function testHas_TrueIfInNamespace(): void
     {
-        $container = new NamespaceContainer(
-            __NAMESPACE__,
-            self::createMock(InjectorInterface::class),
-            fn () => null
-        );
+        $container = new NamespaceContainer(__NAMESPACE__);
 
         self::assertTrue($container->has(FakeClassNoConstructor::class));
+    }
+
+    public function testHas_FalseIfNotInNamespace(): void
+    {
+        $container = new NamespaceContainer(__NAMESPACE__);
+
         self::assertFalse($container->has(DateTime::class));
     }
 
-    public function testHas_Root(): void
+    public function testHas_AlwaysTrueForRootNamespace(): void
     {
-        $container = new NamespaceContainer(
-            '',
-            self::createMock(InjectorInterface::class),
-            fn () => null
-        );
+        $container = new NamespaceContainer('');
 
         self::assertTrue($container->has(FakeClassNoConstructor::class));
         self::assertTrue($container->has(DateTime::class));
