@@ -6,7 +6,8 @@ library focuses on facilitating sound object-oriented practices, testing,
 refactoring, and static analysis by emphasizing factory methods and class
 constructors as the primary means of building complex dependencies. By design
 the framework can only resolve and inject `object` type dependencies and does
-not rely on configuration files for the container specification.
+not rely on configuration files or arbitrary identifiers for the container
+specification.
 
 ```php
 $container = new FiveTwo\DependencyInjection\Container();
@@ -51,6 +52,10 @@ parameters into a specific function or constructor.
   - [Custom nested containers](#custom-nested-containers)
 - [Context Container](#context-container)
 - [Dependency Injector](#dependency-injector)
+- [Specifying dependencies](#specifying-dependencies)
+  - [Named object types](#named-object-types)
+  - [Union types](#union-types)
+  - [Intersection types](#intersection-types)
 - [Appendix](#appendix)
   - [API syntax](#api-syntax)
   - [A note on service locators](#a-note-on-the-service-locator-pattern)
@@ -58,21 +63,21 @@ parameters into a specific function or constructor.
 
 ## Installation
 
-Add `fivetwo/dependency-injection` to the `require` section of your
-application's `composer.json` file.
+Add `fivetwo/dependency-injection` to the `require` section of your project's
+`composer.json` file.
 
 ```json
 {
     "require": {
-        "fivetwo/dependency-injection": "*"
+        "fivetwo/dependency-injection": "^0.1"
     }
 }
 ```
 
-Alternatively, use the CLI from your projects root directory.
+Alternatively, use the command line from your project's root directory.
 
 ```shell
-php composer.phar require "fivetwo/dependency-injection:*"
+composer require "fivetwo/dependency-injection"
 ```
 
 ## Basic Usage
@@ -749,6 +754,75 @@ interface PageInterface {
     public function render(): void;
 }
 ```
+
+## Specifying dependencies
+
+A function specifies its dependencies by listing them in its parameter list. A
+class specifies its dependencies by listing them in the parameter list of its
+constructor. Dependencies must be specified as either named object types, union
+types, or intersection types.
+
+### Named object types
+
+If a dependency is specified as a named object type, the container will only
+provide a value if it can resolve a factory for that type.
+
+```php
+class MyApplication
+{
+    public function __construct(
+        private readonly HttpClient $httpClient
+    ) {
+    }
+}
+```
+
+In the example above, the container will attempt to resolve an instance of
+`HttpClient`. If it cannot resolve `HttpClient` it will throw an
+`UnresolvedParameterException`.
+
+### Union types
+
+If a dependency is specified as a union type, the container will search
+sequentially through all named object types in the union list. It will provide a
+value using the first type it is able to resolve. Builtin types are ignored.
+
+```php
+class MyApplication
+{
+    public function __construct(
+        private readonly HttpClient|GopherClient|string $client
+    ) {
+    }
+}
+```
+
+In the example above, the container will attempt to resolve an instance of 
+`HttpClient` first. If it cannot resolve `HttpClient`, it will attempt to
+resolve an instance of `GopherClient`. If it cannot resolve `GopherClient`, it
+will ignore `string` and then throw an `UnresolvedParameterException`.
+
+### Intersection types
+
+If a dependency is specified as an intersection type, the container will attempt
+to fetch an instance of each type in the list until it finds one that satisfies
+all the types in the list. Since an instance must be retrieved in order to test
+whether it is a match, the use of intersection types may be slow and could
+have unintended consequences if the construction of any non-matching instances
+have side effects.
+
+```php
+class MyApplication
+{
+    public function __construct(
+        private readonly HttpClient&Serializable $httpClient
+    ) {
+    }
+}
+```
+
+In the example above, the container will first attempt to resolve an instance of
+`HttpClient`. If it succeeds, it will check see 
 
 ## Appendix
 
