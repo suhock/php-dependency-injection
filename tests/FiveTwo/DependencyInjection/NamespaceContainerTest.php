@@ -51,7 +51,6 @@ class NamespaceContainerTest extends DependencyInjectionTestCase
         $result = $namespaceContainer->get(FakeClassUsingContexts::class);
 
         self::assertInstanceOf(FakeClassUsingContexts::class, $result);
-        /** @phpstan-ignore-next-line PHPStan claims cannot access public property */
         self::assertSame('test', $result->throwable->getMessage());
     }
 

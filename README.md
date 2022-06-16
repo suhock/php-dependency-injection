@@ -330,7 +330,7 @@ The container will provide class instances by requesting them from a factory
 method. Any parameters in the factory method will be autowired.
 
 ```php
-callable Factory<TClass>(object|null ...$dependencies): TClass|null;
+callable Factory<TClass>(object|null ...$dependencies): TClass;
 
 class Container
 {
@@ -389,7 +389,7 @@ class Container
 {
     function addSingletonInstance<TClass>(
         string<TClass> $className,
-        TClass|null $instance
+        TClass $instance
     ): static;
 }
 ```
@@ -430,7 +430,7 @@ parameters will be autowired from the outer container.
 callable ClassFactory<TClass>(
     string<TClass> $className,
     object|null ...$dependencies
-): TClass|null;
+): TClass;
 
 class Container
 {
@@ -481,7 +481,7 @@ parameters will be injected.
 callable ClassFactory<TClass>(
     string<TClass> $className,
     object|null ...$dependencies
-): TClass|null;
+): TClass;
 
 class Container
 {
@@ -780,6 +780,49 @@ class MyApplication
 In the example above, the container will attempt to resolve an instance of
 `HttpClient`. If it cannot resolve `HttpClient` it will throw an
 `UnresolvedParameterException`.
+
+### Nullable types
+
+If the container cannot resolve a dependency, but the dependency is nullable,
+then the container will provide a null value.
+
+```php
+class MyApplication
+{
+    public function __construct(
+        private readonly ?HttpClient $httpClient
+    ) {
+    }
+}
+```
+
+In the example above, the container will attempt to resolve an instance of
+`HttpClient`. If it cannot resolve `HttpClient` it will inject a `null` value
+instead.
+
+### Builtin types with default values
+
+The container is not able to resolve builtin types. However, if the function or
+class takes a builtin type and that parameter specifies a default value, the
+default value will be used.
+
+```php
+class MyApplication
+{
+    public function __construct(
+        private readonly HttpClient $httpClient,
+        private readonly string $homeUrl = '',
+        private readonly int $timeout = 0,
+        private readonly array $otherOptions = []
+    ) {
+    }
+}
+```
+
+In the example above, although the container cannot resolve `string`, `int`, or
+`array` types, it will autowire the constructor with the specified default
+values. If you need to inject non-default values for builtin types, use a
+[factory method](#call-a-factory-method).
 
 ### Union types
 

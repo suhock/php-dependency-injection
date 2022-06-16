@@ -57,12 +57,12 @@ class InterfaceContainer implements ContainerInterface
      *
      * @param class-string<TClass> $className The name of the class to retrieve
      *
-     * @return TClass|null An instance of {@see $className} or <code>null</code>
+     * @return TClass An instance of {@see $className}
      * @throws UnresolvedClassException If the specified class does not implement or extend {@see $interfaceName}
      *
      * @psalm-suppress MixedInferredReturnType Psalm cannot infer a return type from a generic return type on a callable
      */
-    public function get(string $className): ?object
+    public function get(string $className): object
     {
         /**
          * @psalm-suppress MixedReturnStatement Psalm cannot infer a return type from a generic return type on a

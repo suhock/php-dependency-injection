@@ -21,24 +21,24 @@ class ObjectInstanceProvider implements InstanceProvider
 {
     /**
      * @param class-string<TClass> $className The name of the class or interface provided
-     * @param TClass|null $instance An instance of the indicated class, or <code>null</code>
+     * @param TClass $instance An instance of the indicated class
      *
      * @throws InstanceTypeException
      */
     public function __construct(
         string $className,
-        private readonly ?object $instance
+        private readonly object $instance
     ) {
-        if ($instance !== null && !$instance instanceof $className) {
+        if (!$instance instanceof $className) {
             throw new InstanceTypeException($className, $instance);
         }
     }
 
     /**
      * @inheritDoc
-     * @return TClass|null An instance of the class or <code>null</code>
+     * @return TClass An instance of the class
      */
-    public function get(): ?object
+    public function get(): object
     {
         return $this->instance;
     }

@@ -43,12 +43,12 @@ class ImplementationInstanceProvider implements InstanceProvider
 
     /**
      * @inheritDoc
-     * @return TClass|null An instance of the class or <code>null</code>
-     * @psalm-return TClass|null
-     * @phpstan-return TImplementation|null
+     * @return TClass An instance of the class
+     * @psalm-return TClass An instance of the class
+     * @phpstan-return TImplementation
      * @throws UnresolvedClassException If the container could not resolve a value for the specified class
      */
-    public function get(): ?object
+    public function get(): object
     {
         return $this->container->get($this->implementationClassName);
     }

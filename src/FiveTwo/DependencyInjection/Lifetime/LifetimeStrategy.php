@@ -30,10 +30,10 @@ abstract class LifetimeStrategy
      * Returns an instance of this strategy's class by invoking the given factory, based on the strategy's rules.
      *
      * @param callable $factory A factory function that should be called when an instance of the class is needed
-     * @psalm-param callable(mixed ...):(TClass|null) $factory
-     * @phpstan-param callable(mixed ...):(TClass|null) $factory
+     * @psalm-param callable():TClass $factory
+     * @phpstan-param callable():TClass $factory
      *
-     * @return TClass|null An instance of the class, or <code>null</code>
+     * @return TClass An instance of the class
      */
-    abstract public function get(callable $factory): ?object;
+    abstract public function get(callable $factory): object;
 }

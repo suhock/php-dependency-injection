@@ -70,12 +70,12 @@ interface ContainerSingletonBuilderInterface
      * @template TClass of object
      *
      * @param class-string<TClass> $className
-     * @param TClass|null $instance
+     * @param TClass $instance
      *
      * @return $this
      * @throws InstanceTypeException
      */
-    public function addSingletonInstance(string $className, ?object $instance): static;
+    public function addSingletonInstance(string $className, object $instance): static;
 
     /**
      * @param ContainerInterface $container

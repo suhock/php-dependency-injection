@@ -40,16 +40,6 @@ class ObjectInstanceProviderTest extends DependencyInjectionTestCase
         );
     }
 
-    public function testGet_InstanceIsNull(): void
-    {
-        $factory = new ObjectInstanceProvider(
-            FakeClassNoConstructor::class,
-            null
-        );
-
-        self::assertNull($factory->get());
-    }
-
     public function testGet_Exception_InstanceIsWrongClass(): void
     {
         self::assertInstanceTypeException(

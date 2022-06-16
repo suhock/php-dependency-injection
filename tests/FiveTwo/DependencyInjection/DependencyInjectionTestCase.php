@@ -148,14 +148,14 @@ class DependencyInjectionTestCase extends TestCase
 
     /**
      * @param class-string $exExpectedClassName
-     * @param class-string $exActualClassName
+     * @param class-string|null $exActualClassName
      * @param callable $codeUnderTest
      *
      * @return void
      */
     public static function assertInstanceTypeException(
         string $exExpectedClassName,
-        string $exActualClassName,
+        ?string $exActualClassName,
         callable $codeUnderTest
     ): void {
         self::assertException(
@@ -166,11 +166,19 @@ class DependencyInjectionTestCase extends TestCase
                     $exception->getExpectedClassName(),
                     'Failed asserting that expected class name is identical'
                 );
-                self::assertInstanceOf(
-                    $exActualClassName,
-                    $exception->getActualValue(),
-                    'Failed asserting that type of value is identical'
-                );
+
+                if ($exActualClassName !== null) {
+                    self::assertInstanceOf(
+                        $exActualClassName,
+                        $exception->getActualValue(),
+                        'Failed asserting that type of value is identical'
+                    );
+                } else {
+                    self::assertNull(
+                        $exception->getConsolidatedException(),
+                        'Failed asserting that type of value is identical'
+                    );
+                }
             }
         );
     }

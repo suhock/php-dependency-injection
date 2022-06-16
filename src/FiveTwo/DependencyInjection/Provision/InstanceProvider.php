@@ -19,7 +19,7 @@ namespace FiveTwo\DependencyInjection\Provision;
 interface InstanceProvider
 {
     /**
-     * @return TClass|null An instance of the class or <code>null</code>
+     * @return TClass An instance of the class
      */
-    public function get(): ?object;
+    public function get(): object;
 }

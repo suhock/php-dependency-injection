@@ -86,7 +86,7 @@ class Container implements
      * @throws CircularDependencyException
      * @throws UnresolvedClassException
      */
-    public function get(string $className): ?object
+    public function get(string $className): object
     {
         if ($this->tryGetFromFactory($className, $instance) ||
             $this->tryGetFromContainer($className, $instance)) {

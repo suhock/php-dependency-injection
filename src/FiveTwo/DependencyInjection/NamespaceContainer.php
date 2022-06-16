@@ -55,7 +55,7 @@ class NamespaceContainer implements ContainerInterface
      *
      * @psalm-suppress MixedInferredReturnType Psalm cannot infer a return type from a generic return type on a callable
      */
-    public function get(string $className): ?object
+    public function get(string $className): object
     {
         /**
          * @psalm-suppress MixedReturnStatement Psalm cannot infer a return type from a generic return type on a

@@ -67,7 +67,7 @@ class ContainerTransientBuilderTraitTest extends DependencyInjectionTestCase
                     }
                 )
                 ->get(FakeClassNoConstructor::class)
-                ?->string
+                ->string
         );
     }
 
@@ -123,12 +123,15 @@ class ContainerTransientBuilderTraitTest extends DependencyInjectionTestCase
         );
     }
 
-    public function testAddTransientFactory_WorksWithNull(): void
+    public function testAddTransientFactory_Exception_FactoryReturnsNull(): void
     {
-        self::assertNull(
-            $this->createContainer()
-                ->addTransientFactory(FakeClassNoConstructor::class, fn () => null)
-                ->get(FakeClassNoConstructor::class)
+        $container = $this->createContainer()
+            ->addTransientFactory(FakeClassNoConstructor::class, fn () => null);
+
+        self::assertInstanceTypeException(
+            FakeClassNoConstructor::class,
+            null,
+            fn () => $container->get(FakeClassNoConstructor::class)
         );
     }
 

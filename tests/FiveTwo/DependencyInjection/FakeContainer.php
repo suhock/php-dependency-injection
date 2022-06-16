@@ -27,7 +27,7 @@ class FakeContainer implements ContainerInterface
     }
 
     /** @psalm-suppress InvalidReturnType */
-    public function get(string $className): ?object
+    public function get(string $className): object
     {
         /**
          * @psalm-suppress InvalidReturnStatement Psalm does not support array class mappings

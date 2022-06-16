@@ -67,7 +67,7 @@ class ContainerSingletonBuilderTraitTest extends DependencyInjectionTestCase
                     }
                 )
                 ->get(FakeClassNoConstructor::class)
-                ?->string
+                ->string
         );
     }
 
@@ -123,12 +123,15 @@ class ContainerSingletonBuilderTraitTest extends DependencyInjectionTestCase
         );
     }
 
-    public function testAddSingletonFactory_WorksWithNull(): void
+    public function testAddSingletonFactory_Exception_FactoryReturnsNull(): void
     {
-        self::assertNull(
-            $this->createContainer()
-                ->addSingletonFactory(FakeClassNoConstructor::class, fn () => null)
-                ->get(FakeClassNoConstructor::class)
+        $container = $this->createContainer()
+            ->addSingletonFactory(FakeClassNoConstructor::class, fn () => null);
+
+        self::assertInstanceTypeException(
+            FakeClassNoConstructor::class,
+            null,
+            fn () => $container->get(FakeClassNoConstructor::class)
         );
     }
 
@@ -154,15 +157,6 @@ class ContainerSingletonBuilderTraitTest extends DependencyInjectionTestCase
                 ->addSingletonInstance(FakeClassNoConstructor::class, new FakeClassNoConstructor()),
             FakeClassNoConstructor::class,
             FakeClassNoConstructor::class
-        );
-    }
-
-    public function testAddSingletonInstance_WorksWithNull(): void
-    {
-        self::assertNull(
-            $this->createContainer()
-                ->addSingletonInstance(FakeClassNoConstructor::class, null)
-                ->get(FakeClassNoConstructor::class)
         );
     }
 

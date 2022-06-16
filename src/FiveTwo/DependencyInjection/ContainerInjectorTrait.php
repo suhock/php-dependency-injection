@@ -118,7 +118,7 @@ trait ContainerInjectorTrait
             // only way to tell if it's a match is to get an instance and check
             $instance = $this->getContainer()->get($className);
 
-            if ($instance !== null && $this->isIntersectionMatch($rType, $instance)) {
+            if ($this->isIntersectionMatch($rType, $instance)) {
                 $result = $instance;
 
                 return true;

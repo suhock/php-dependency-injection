@@ -24,7 +24,7 @@ class ContainerTest extends DependencyInjectionTestCase
     private function getNestedContainer(): ContainerInterface
     {
         $container = self::createStub(ContainerInterface::class);
-        $container->method('get')->willReturn(null);
+        $container->method('get')->willReturn($container);
         $container->method('has')->willReturn(true);
 
         return $container;
@@ -46,7 +46,7 @@ class ContainerTest extends DependencyInjectionTestCase
     {
         self::assertFalse(
             $this->createContainer()
-                ->addSingletonInstance(FakeClassNoConstructor::class, null)
+                ->addSingletonClass(FakeClassNoConstructor::class)
                 ->remove(FakeClassNoConstructor::class)
                 ->has(FakeClassNoConstructor::class)
         );

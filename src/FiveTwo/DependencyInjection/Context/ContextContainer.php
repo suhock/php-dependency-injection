@@ -114,17 +114,16 @@ class ContextContainer implements ContainerInterface
     }
 
     /**
-     * Retrieves an object or <code>null</code> from the container identified by its class name, prioritizing
-     * contexts by last pushed.
+     * Retrieves an object from the container identified by its class name, prioritizing contexts by last pushed.
      *
      * @template TClass of object
      *
      * @param class-string<TClass> $className The name of the class to retrieve
      *
-     * @return TClass|null An instance of {@see $className} or <code>null</code>
+     * @return TClass An instance of {@see $className}
      * @throws UnresolvedClassException If a value could not be resolved for the class
      */
-    public function get(string $className): ?object
+    public function get(string $className): object
     {
         return $this->getFromContext(
             $className,
@@ -164,9 +163,9 @@ class ContextContainer implements ContainerInterface
      * @param class-string<TClass> $className
      * @param string $contextName
      *
-     * @return TClass|null
+     * @return TClass
      */
-    private function getFromContext(string $className, string $contextName): ?object
+    private function getFromContext(string $className, string $contextName): object
     {
         return $this->containers[$contextName]->get($className);
     }

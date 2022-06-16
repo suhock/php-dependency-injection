@@ -37,15 +37,15 @@ class ClosureInstanceProvider implements InstanceProvider
 
     /**
      * @inheritDoc
-     * @return TClass|null An instance of the class or <code>null</code>
+     * @return TClass An instance of the class
      * @throws InstanceTypeException
      * @throws DependencyInjectionException
      */
-    public function get(): ?object
+    public function get(): object
     {
         $result = $this->injector->call($this->factory);
 
-        if ($result !== null && !$result instanceof $this->className) {
+        if (!$result instanceof $this->className) {
             throw new InstanceTypeException($this->className, $result);
         }
 

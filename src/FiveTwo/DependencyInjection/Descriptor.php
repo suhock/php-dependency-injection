@@ -45,10 +45,10 @@ class Descriptor
     }
 
     /**
-     * @return TClass|null
+     * @return TClass
      * @throws CircularDependencyException
      */
-    public function getInstance(): ?object
+    public function getInstance(): object
     {
         if ($this->isResolving) {
             throw new CircularDependencyException($this->className);

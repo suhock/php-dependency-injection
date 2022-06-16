@@ -21,6 +21,18 @@ use Throwable;
  */
 class InjectorTest extends DependencyInjectionTestCase
 {
+    /**
+     * @param array<callable> $classMapping
+     *
+     * @psalm-param array<class-string, callable():object> $classMapping
+     * @phpstan-param array<class-string, callable():object> $classMapping
+     * @return Injector
+     */
+    protected function create(array $classMapping = []): Injector
+    {
+        return new Injector(new FakeContainer($classMapping));
+    }
+
     public function testInstantiate(): void
     {
         $logicException = new LogicException();
@@ -35,18 +47,6 @@ class InjectorTest extends DependencyInjectionTestCase
         self::assertSame('test', $instance->runtimeException->getMessage());
     }
 
-    /**
-     * @param array<callable> $classMapping
-     *
-     * @psalm-param array<class-string, callable():object> $classMapping
-     * @phpstan-param array<class-string, callable():object> $classMapping
-     * @return Injector
-     */
-    protected function create(array $classMapping = []): Injector
-    {
-        return new Injector(new FakeContainer($classMapping));
-    }
-
     public function testInstantiate_ConstructorWithDefaultValues(): void
     {
         $injector = $this->create();
@@ -56,37 +56,43 @@ class InjectorTest extends DependencyInjectionTestCase
 
     public function testInstantiate_Exception_ClassMissing(): void
     {
+        $injector = $this->create();
+
         $this->expectException(DependencyInjectionException::class);
         /**
          * @psalm-suppress ArgumentTypeCoercion,UndefinedClass warns about issue currently under test
          * @phpstan-ignore-next-line warns about issue currently under test
          */
-        $this->create()->instantiate('NoSuchClass');
+        $injector->instantiate('NonExistentClass');
     }
 
     public function testInstantiate_Exception_NotInstantiable(): void
     {
+        $injector = $this->create();
+
         $this->expectException(DependencyInjectionException::class);
-        $this->create()->instantiate(FakeAbstractClass::class);
+        $injector->instantiate(FakeAbstractClass::class);
     }
 
     public function testInstantiate_Exception_MissingArgs(): void
     {
+        $injector = $this->create();
+
         // missing argument of type RuntimeException
         $this->expectException(DependencyInjectionException::class);
-
-        $this->create([Throwable::class => fn () => new LogicException()])
-            ->instantiate(FakeClassUsingContexts::class);
+        $injector->instantiate(FakeClassUsingContexts::class);
     }
 
     public function testInstantiate_NamedParamsOverrideContainer(): void
     {
+        $injector = $this->create([
+            Throwable::class => fn () => new LogicException(),
+            RuntimeException::class => fn () => new RuntimeException()
+        ]);
+
         self::assertSame(
             $override = new RuntimeException(),
-            $this->create([
-                Throwable::class => fn () => new LogicException(),
-                RuntimeException::class => fn () => new RuntimeException()
-            ])->instantiate(FakeClassUsingContexts::class, [
+            $injector->instantiate(FakeClassUsingContexts::class, [
                 'runtimeException' => $override
             ])->runtimeException
         );
@@ -94,12 +100,14 @@ class InjectorTest extends DependencyInjectionTestCase
 
     public function testInstantiate_PositionalParamsOverrideContainer(): void
     {
+        $injector = $this->create([
+            Throwable::class => fn () => new LogicException(),
+            RuntimeException::class => fn () => new RuntimeException()
+        ]);
+
         self::assertSame(
             $override = new RuntimeException(),
-            $this->create([
-                Throwable::class => fn () => new LogicException(),
-                RuntimeException::class => fn () => new RuntimeException()
-            ])->instantiate(FakeClassUsingContexts::class, [
+            $injector->instantiate(FakeClassUsingContexts::class, [
                 1 => $override
             ])->runtimeException
         );
@@ -107,8 +115,10 @@ class InjectorTest extends DependencyInjectionTestCase
 
     public function testInstantiate_WithNoConstructor(): void
     {
-        $instance = $this->create()
+        $injector = $this->create();
+        $instance = $injector
             ->instantiate(FakeClassNoConstructor::class);
+
         self::assertInstanceOf(FakeClassNoConstructor::class, $instance);
     }
 
@@ -124,7 +134,6 @@ class InjectorTest extends DependencyInjectionTestCase
 
         self::assertSame(
             [$logicException, $runtimeException, 'a', 2],
-            /** @phpstan-ignore-next-line PHPStan does not understand splat in parameter lists */
             $injector->call(fn (
                 Throwable $e1,
                 RuntimeException $e2,
@@ -137,11 +146,19 @@ class InjectorTest extends DependencyInjectionTestCase
         );
     }
 
-    public function testCall_Exception_MissingArgs(): void
+    public function testCall_MissingNullableArgInjectsNull(): void
     {
+        $injector = $this->create();
+
+        self::assertNull($injector->call(fn (?FakeClassNoConstructor $obj) => $obj));
+    }
+
+    public function testCall_Exception_MissingArg(): void
+    {
+        $injector = $this->create();
+
         $this->expectException(DependencyInjectionException::class);
-        /** @phpstan-ignore-next-line PHPStan does not understand splat in parameter lists */
-        $this->create()->call(fn (Throwable $e1, RuntimeException $e2) => [$e1, $e2]);
+        $injector->call(fn (FakeClassNoConstructor $obj) => $obj);
     }
 
     public function testCall_UnionType_First(): void

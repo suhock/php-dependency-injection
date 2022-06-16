@@ -22,7 +22,7 @@ class TransientStrategy extends LifetimeStrategy
     /**
      * @inheritDoc
      */
-    public function get(callable $factory): ?object
+    public function get(callable $factory): object
     {
         return $factory();
     }

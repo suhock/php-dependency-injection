@@ -19,21 +19,14 @@ namespace FiveTwo\DependencyInjection\Lifetime;
  */
 class SingletonStrategy extends LifetimeStrategy
 {
-    /** @var TClass|null */
+    /** @var TClass */
     private ?object $instance = null;
-
-    private bool $isSet = false;
 
     /**
      * @inheritDoc
      */
-    public function get(callable $factory): ?object
+    public function get(callable $factory): object
     {
-        if (!$this->isSet) {
-            $this->instance = $factory();
-            $this->isSet = true;
-        }
-
-        return $this->instance;
+        return $this->instance ??= $factory();
     }
 }

@@ -11,7 +11,6 @@ declare(strict_types=1);
 
 namespace FiveTwo\DependencyInjection\Lifetime;
 
-use FiveTwo\DependencyInjection\ContainerInterface;
 use FiveTwo\DependencyInjection\FakeClassNoConstructor;
 use PHPUnit\Framework\TestCase;
 
@@ -48,24 +47,5 @@ class TransientStrategyTest extends TestCase
             $strategy->get(fn () => new FakeClassNoConstructor()),
             $strategy->get(fn () => new FakeClassNoConstructor())
         );
-    }
-
-    public function testGet_SupportsNull(): void
-    {
-        self::assertNull($this->createStrategy()->get(fn () => null));
-    }
-
-    public function testGet_FactoryCalledAgainForNull(): void
-    {
-        $stub = self::createMock(ContainerInterface::class);
-        $stub->method('has')
-            ->willReturn(true);
-        $stub->expects(self::exactly(2))
-            ->method('get')
-            ->willReturn(null);
-        $strategy = $this->createStrategy();
-
-        self::assertNull($strategy->get(fn () => $stub->get(FakeClassNoConstructor::class)));
-        self::assertNull($strategy->get(fn () => $stub->get(FakeClassNoConstructor::class)));
     }
 }
