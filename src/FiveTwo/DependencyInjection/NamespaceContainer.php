@@ -11,19 +11,12 @@ declare(strict_types=1);
 
 namespace FiveTwo\DependencyInjection;
 
-use Closure;
-
 /**
  * Provides instances of classes within the given namespace.
  */
-class NamespaceContainer implements ContainerInterface
+class NamespaceContainer extends AbstractFactoryContainer
 {
     private readonly string $namespace;
-
-    private readonly InjectorInterface $injector;
-
-    // Add signature whenever static analysis tools add support for return type with unspecified parameter list
-    private readonly Closure $factory;
 
     /**
      * @param string $namespace The namespace from which to provide class instances. An empty string indicates this
@@ -41,29 +34,8 @@ class NamespaceContainer implements ContainerInterface
         ?InjectorInterface $injector = null,
         ?callable $factory = null
     ) {
+        parent::__construct($injector, $factory);
         $this->namespace = trim($namespace, '\\');
-        $this->injector = $injector ?? new Injector($this);
-        $this->factory = $factory !== null ?
-            $factory(...) :
-            $this->injector->instantiate(...);
-    }
-
-    /**
-     * @inheritDoc
-     *
-     * @throws UnresolvedClassException If the specified class is not in the namespace
-     *
-     * @psalm-suppress MixedInferredReturnType Psalm cannot infer a return type from a generic return type on a callable
-     */
-    public function get(string $className): object
-    {
-        /**
-         * @psalm-suppress MixedReturnStatement Psalm cannot infer a return type from a generic return type on a
-         * callable
-         */
-        return $this->has($className) ?
-            $this->injector->call($this->factory, [$className]) :
-            throw new UnresolvedClassException($className);
     }
 
     /**

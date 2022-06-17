@@ -11,20 +11,13 @@ declare(strict_types=1);
 
 namespace FiveTwo\DependencyInjection;
 
-use Closure;
-
 /**
  * Provides instances of classes that inherit from the given interface or base class.
  *
  * @template TInterface of object
  */
-class InterfaceContainer implements ContainerInterface
+class InterfaceContainer extends AbstractFactoryContainer
 {
-    // Add signature whenever static analysis tools add support for return type with unspecified parameter list
-    private readonly Closure $factory;
-
-    private readonly InjectorInterface $injector;
-
     /**
      * @param class-string<TInterface> $interfaceName The name of the interface or base class
      * @param InjectorInterface|null $injector [optional] The injector to use for calling the factory
@@ -40,37 +33,7 @@ class InterfaceContainer implements ContainerInterface
         ?InjectorInterface $injector = null,
         ?callable $factory = null
     ) {
-        $this->injector = $injector ?? new Injector($this);
-        $this->factory = $factory !== null ?
-            $factory(...) :
-            /**
-             * @param class-string<TInterface> $className
-             * @return TInterface
-             * @phpstan-ignore-next-line PHPStan does not support generics docs on anonymous functions
-             */
-            fn (string $className) => $this->injector->instantiate($className);
-    }
-
-    /**
-     * @inheritDoc
-     * @template TClass of TInterface
-     *
-     * @param class-string<TClass> $className The name of the class to retrieve
-     *
-     * @return TClass An instance of {@see $className}
-     * @throws UnresolvedClassException If the specified class does not implement or extend {@see $interfaceName}
-     *
-     * @psalm-suppress MixedInferredReturnType Psalm cannot infer a return type from a generic return type on a callable
-     */
-    public function get(string $className): object
-    {
-        /**
-         * @psalm-suppress MixedReturnStatement Psalm cannot infer a return type from a generic return type on a
-         * callable
-         */
-        return $this->has($className) ?
-            $this->injector->call($this->factory, [$className]) :
-            throw new UnresolvedClassException($className);
+        parent::__construct($injector, $factory);
     }
 
     /**
