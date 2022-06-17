@@ -10,7 +10,7 @@
         "inversion of control",
         "ioc"
     ],
-    "homepage": "https://www.fivetwo.org",
+    "homepage": "https://github.com/fivetwo/dependency-injection",
     "readme": "README.md",
     "license": "MIT",
     "authors": [

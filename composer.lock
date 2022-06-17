@@ -822,17 +822,20 @@
         },
         {
             "name": "fivetwo/remove-symfony-polyfill",
-            "version": "8.1.0",
+            "version": "8.1.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/fivetwo/remove-symfony-polyfill.git",
-                "reference": "9c195563c433edef1e650a29452647d366008860"
+                "reference": "51ef61cd28c669e00058b1c7f8427a65798541f0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/fivetwo/remove-symfony-polyfill/zipball/9c195563c433edef1e650a29452647d366008860",
-                "reference": "9c195563c433edef1e650a29452647d366008860",
+                "url": "https://api.github.com/repos/fivetwo/remove-symfony-polyfill/zipball/51ef61cd28c669e00058b1c7f8427a65798541f0",
+                "reference": "51ef61cd28c669e00058b1c7f8427a65798541f0",
                 "shasum": ""
+            },
+            "require": {
+                "php": ">=8.1"
             },
             "replace": {
                 "symfony/polyfill-apcu": "*",
@@ -865,16 +868,18 @@
                 }
             ],
             "description": "Remove Symfony polyfills",
+            "homepage": "https://github.com/fivetwo/remove-symfony-polyfill",
             "keywords": [
                 "polyfill",
                 "remove",
+                "replace",
                 "symfony"
             ],
             "support": {
                 "issues": "https://github.com/fivetwo/remove-symfony-polyfill/issues",
-                "source": "https://github.com/fivetwo/remove-symfony-polyfill/tree/8.1.0"
+                "source": "https://github.com/fivetwo/remove-symfony-polyfill/tree/8.1.1"
             },
-            "time": "2022-05-27T05:46:59+00:00"
+            "time": "2022-06-16T15:18:54+00:00"
         },
         {
             "name": "friendsofphp/php-cs-fixer",
