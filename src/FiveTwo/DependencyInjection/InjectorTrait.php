@@ -103,7 +103,7 @@ trait InjectorTrait
             $rClass->newInstanceArgs(...),
             $rClass->getConstructor()?->getParameters() ?? [],
             $params,
-            "$className::__construct()"
+            "$className::__construct"
         );
     }
 
