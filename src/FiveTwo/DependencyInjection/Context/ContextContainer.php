@@ -82,7 +82,7 @@ class ContextContainer implements ContainerInterface
     /**
      * Pops the most recently pushed context off the stack and returns it.
      *
-     * @return string
+     * @return string The name of the context popped off the stack
      */
     public function pop(): string
     {
@@ -91,14 +91,6 @@ class ContextContainer implements ContainerInterface
         }
 
         return array_pop($this->stack);
-    }
-
-    /**
-     * @return list<string> The current context stack
-     */
-    public function getStack(): array
-    {
-        return $this->stack;
     }
 
     /**
@@ -111,6 +103,14 @@ class ContextContainer implements ContainerInterface
         $this->stack = [];
 
         return $this;
+    }
+
+    /**
+     * @return int The number of items currently in the context stack
+     */
+    public function getStackHeight(): int
+    {
+        return count($this->stack);
     }
 
     /**

@@ -24,7 +24,7 @@ class UnresolvedParameterException extends UnresolvedDependencyException
      * @param string $functionName The name of the function requiring the parameter
      * @param string $parameterName The name of the unresolved parameter
      * @param string|null $parameterType [optional] The type of the unresolved parameter
-     * @param null|Throwable $previous [optional] The previous throwable used for exception chaining. If the throwable
+     * @param Throwable|null $previous [optional] The previous throwable used for exception chaining. If the throwable
      * is an instance of {@see DependencyInjectionException} then its content will be consolidated into the new
      * instance.
      */

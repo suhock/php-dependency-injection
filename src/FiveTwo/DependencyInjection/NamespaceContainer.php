@@ -21,12 +21,12 @@ class NamespaceContainer extends AbstractFactoryContainer
     /**
      * @param string $namespace The namespace from which to provide class instances. An empty string indicates this
      * container should resolve classes from any namespace.
-     * @param InjectorInterface|null $injector [optional] The injector to use for calling the factory
+     * @param InjectorInterface|null $injector [optional] The injector to use for calling the factory method
      * @param callable|null $factory [optional] A factory to use for acquiring instances of classes. The first argument
      * will be the name of the class. Additional arguments can be provided from this container's {@see Injector}. If no
      * factory is provided, a default factory that directly instantiates the class will be used.
      * <code>
-     * function(class-string&lt;T&gt; $className, ...): null|T
+     * function(class-string&lt;T&gt; $className, ...): T
      * </code>
      */
     public function __construct(

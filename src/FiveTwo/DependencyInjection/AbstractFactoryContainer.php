@@ -22,15 +22,15 @@ abstract class AbstractFactoryContainer implements ContainerInterface
     // Add signature whenever static analysis tools add support for return type with unspecified parameter list
     private readonly Closure $factory;
 
-    private readonly InjectorInterface $injector;
+    protected readonly InjectorInterface $injector;
 
     /**
-     * @param InjectorInterface|null $injector [optional] The injector to use for calling the factory
+     * @param InjectorInterface|null $injector [optional] The injector to use for calling the factory method
      * @param callable|null $factory [optional] A factory to use for acquiring instances of classes. The first argument
      * will be the name of the class. Additional arguments can be provided from this container's {@see Injector}. If no
      * factory is provided, a default factory that directly instantiates the class will be used.
      * <code>
-     * function(class-string&lt;T&gt; $className, object...): T|null
+     * function&lt;TClass&gt;(class-string&lt;TClass&gt; $className, [object ...]): TClass
      * </code>
      */
     public function __construct(
@@ -67,9 +67,6 @@ abstract class AbstractFactoryContainer implements ContainerInterface
 
     /**
      * @inheritDoc
-     * @template TClass of object
-     *
-     * @psalm-param class-string<TClass> $className
      */
     abstract public function has(string $className): bool;
 }

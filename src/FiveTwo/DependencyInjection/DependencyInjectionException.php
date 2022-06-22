@@ -25,7 +25,7 @@ class DependencyInjectionException extends LogicException
      * @inheritDoc
      *
      * @param string $message [optional] The Exception message to throw.
-     * @param null|Throwable $previous [optional] The previous throwable used for exception chaining. If the throwable
+     * @param Throwable|null $previous [optional] The previous throwable used for exception chaining. If the throwable
      * is an instance of {@see DependencyInjectionException} then its content will be consolidated into the new
      * instance.
      */

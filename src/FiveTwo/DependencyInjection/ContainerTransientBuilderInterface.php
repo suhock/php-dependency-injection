@@ -30,12 +30,8 @@ interface ContainerTransientBuilderInterface
     public function addTransient(string $className, InstanceProvider $instanceProvider): static;
 
     /**
-     * @template TClass of object
-     *
-     * @param class-string<TClass> $className
-     * @param null|callable $mutator
-     * @psalm-param null|callable(TClass, mixed ...):void $mutator
-     * @phpstan-param null|callable(TClass, mixed ...):void $mutator
+     * @param class-string $className
+     * @param callable|null $mutator
      *
      * @return $this
      * @throws ImplementationException
@@ -55,13 +51,10 @@ interface ContainerTransientBuilderInterface
     public function addTransientImplementation(string $className, string $implementationClassName): static;
 
     /**
-     * @template TClass of object
-     *
-     * @param class-string<TClass> $className
-     * @param callable():TClass $factory
+     * @param class-string $className
+     * @param callable $factory
      *
      * @return $this
-     * @psalm-param callable(...):(TClass|null) $factory
      */
     public function addTransientFactory(string $className, callable $factory): static;
 
@@ -74,15 +67,15 @@ interface ContainerTransientBuilderInterface
 
     /**
      * @param string $namespace
+     * @param callable|null $factory
      *
      * @return $this
      */
-    public function addTransientNamespace(string $namespace): static;
+    public function addTransientNamespace(string $namespace, ?callable $factory = null): static;
 
     /**
-     * @template TInterface of object
-     *
-     * @param class-string<TInterface> $interfaceName
+     * @param class-string $interfaceName
+     * @param callable|null $factory
      *
      * @return $this
      */

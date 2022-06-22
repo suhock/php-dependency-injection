@@ -31,12 +31,8 @@ interface ContainerSingletonBuilderInterface
     public function addSingleton(string $className, InstanceProvider $instanceProvider): static;
 
     /**
-     * @template TClass of object
-     *
-     * @param class-string<TClass> $className
-     * @param null|callable $mutator
-     * @psalm-param null|callable(TClass, mixed ...):void $mutator
-     * @phpstan-param null|callable(TClass, mixed ...):void $mutator
+     * @param class-string $className
+     * @param callable|null $mutator
      *
      * @return $this
      * @throws ImplementationException
@@ -56,21 +52,19 @@ interface ContainerSingletonBuilderInterface
     public function addSingletonImplementation(string $className, string $implementationClassName): static;
 
     /**
-     * @template TClass of object
-     *
-     * @param class-string<TClass> $className
-     * @param callable():TClass $factory
+     * @param class-string $className
+     * @param callable $factory
      *
      * @return $this
-     * @psalm-param callable(...):(TClass|null) $factory
      */
     public function addSingletonFactory(string $className, callable $factory): static;
 
     /**
      * @template TClass of object
+     * @template TInstance of TClass
      *
      * @param class-string<TClass> $className
-     * @param TClass $instance
+     * @param TInstance $instance
      *
      * @return $this
      * @throws InstanceTypeException
@@ -86,16 +80,15 @@ interface ContainerSingletonBuilderInterface
 
     /**
      * @param string $namespace
-     * @param null|callable(class-string):(object|null) $factory
+     * @param callable|null $factory
      *
      * @return $this
      */
     public function addSingletonNamespace(string $namespace, ?callable $factory = null): static;
 
     /**
-     * @template TInterface of object
-     *
-     * @param class-string<TInterface> $interfaceName
+     * @param class-string $interfaceName
+     * @param callable|null $factory
      *
      * @return $this
      */

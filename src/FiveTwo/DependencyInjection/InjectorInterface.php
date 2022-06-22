@@ -19,11 +19,7 @@ interface InjectorInterface
     /**
      * Calls the specified function, injecting any function parameter values.
      *
-     * @template TReturn
-     *
-     * @param callable():TReturn $function The function to call
-     * @psalm-param callable(mixed ...):TReturn $function
-     * @phpstan-param callable(mixed ...):TReturn $function
+     * @param callable $function The function to call
      * @param array<mixed> $params [optional] A list of parameter values to provide to the function. String keys will be
      * matched by name; integer keys will be matched by position.
      *

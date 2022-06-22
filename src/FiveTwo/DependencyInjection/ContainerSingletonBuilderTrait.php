@@ -46,12 +46,8 @@ trait ContainerSingletonBuilderTrait
     }
 
     /**
-     * @template TClass of object
-     *
-     * @param class-string<TClass> $className
-     * @param null|callable $mutator
-     * @psalm-param null|callable(TClass, mixed ...):void $mutator
-     * @phpstan-param null|callable(TClass, mixed ...):void $mutator
+     * @param class-string $className
+     * @param callable|null $mutator
      *
      * @return $this
      * @throws ImplementationException
@@ -60,7 +56,7 @@ trait ContainerSingletonBuilderTrait
     {
         $this->addSingleton(
             $className,
-            new ClassInstanceProvider($className, $this->getInjector(), $mutator !== null ? $mutator(...) : null)
+            new ClassInstanceProvider($className, $this->getInjector(), $mutator)
         );
 
         return $this;
@@ -86,12 +82,8 @@ trait ContainerSingletonBuilderTrait
     }
 
     /**
-     * @template TClass of object
-     *
-     * @param class-string<TClass> $className
+     * @param class-string $className
      * @param callable $factory
-     * @psalm-param callable(mixed ...$params):(TClass|null) $factory
-     * @phpstan-param callable(mixed ...$params):(TClass|null) $factory
      *
      * @return $this
      */
@@ -107,9 +99,10 @@ trait ContainerSingletonBuilderTrait
 
     /**
      * @template TClass of object
+     * @template TInstance of TClass
      *
      * @param class-string<TClass> $className
-     * @param TClass $instance
+     * @param TInstance $instance
      *
      * @return $this
      * @throws InstanceTypeException
@@ -125,9 +118,7 @@ trait ContainerSingletonBuilderTrait
     }
 
     /**
-     * @param ContainerInterface $container
-     *
-     * @return static
+     * @inheritDoc
      */
     public function addSingletonContainer(ContainerInterface $container): static
     {
@@ -141,10 +132,7 @@ trait ContainerSingletonBuilderTrait
     }
 
     /**
-     * @param string $namespace
-     * @param null|callable(class-string):(object|null) $factory
-     *
-     * @return $this
+     * @inheritDoc
      */
     public function addSingletonNamespace(string $namespace, ?callable $factory = null): static
     {
@@ -154,10 +142,8 @@ trait ContainerSingletonBuilderTrait
     }
 
     /**
-     * @template TInterface of object
-     *
-     * @param class-string<TInterface> $interfaceName
-     * @param null|callable(class-string<TInterface>):(TInterface|null) $factory
+     * @param class-string $interfaceName
+     * @param callable|null $factory
      *
      * @return $this
      */

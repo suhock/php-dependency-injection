@@ -23,20 +23,20 @@ use FiveTwo\DependencyInjection\InjectorInterface;
  */
 class ClassInstanceProvider implements InstanceProvider
 {
+    private readonly ?Closure $mutator;
+
     /**
      * @param class-string<TClass> $className The name of the class this factory will instantiate
      * @param InjectorInterface $injector The injector that will be used for instantiation
-     * @param null|Closure(TClass):void $mutator [Optional] Mutator function that allows additional changes to the
-     * instantiated instance. The first parameter will be the new object instance. Any other parameters will be
-     * injected.
-     * @psalm-param null|Closure(TClass, mixed ...):void $mutator
-     * @phpstan-param null|Closure(TClass, mixed ...):void $mutator
+     * @param callable|null $mutator [Optional] Mutator function that allows additional changes to the instantiated
+     * instance. The first parameter will be the new object instance. Any other parameters will be injected.
      */
     public function __construct(
         private readonly string $className,
         private readonly InjectorInterface $injector,
-        private readonly ?Closure $mutator = null
+        ?callable $mutator = null
     ) {
+        $this->mutator = $mutator !== null ? $mutator(...) : null;
     }
 
     /**
