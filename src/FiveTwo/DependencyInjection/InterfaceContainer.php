@@ -37,10 +37,15 @@ class InterfaceContainer extends AbstractFactoryContainer
     }
 
     /**
-     * @inheritDoc
+     * @template TClass of object
+     *
+     * @param class-string<TClass> $className The name of the class to test
+     *
+     * @return bool <code>true</code> if the container can provide a value, <code>false</code> otherwise
      */
     public function has(string $className): bool
     {
+        /** @psalm-suppress DocblockTypeContradiction */
         return is_subclass_of($className, $this->interfaceName);
     }
 }
