@@ -32,7 +32,7 @@ class UnresolvedClassException extends UnresolvedDependencyException
         private readonly string $className,
         ?Throwable $previous = null
     ) {
-        parent::__construct("Could not resolve a value for class $className", $previous);
+        parent::__construct("The container does not contain the class $className", $previous);
     }
 
     /**
