@@ -46,6 +46,7 @@ parameters into a specific function or constructor.
 - [Nested containers](#nested-containers)
     - [Namespace container](#namespace-container)
     - [Interface container](#interface-container)
+    - [Attribute container](#attribute-container)
 - [Customizing the container](#customizing-the-container)
   - [Custom lifetime strategies](#custom-lifetime-strategies)
   - [Custom instance providers](#custom-instance-providers)
@@ -54,6 +55,8 @@ parameters into a specific function or constructor.
 - [Dependency Injector](#dependency-injector)
 - [Specifying dependencies](#specifying-dependencies)
   - [Named object types](#named-object-types)
+  - [Nullable types](#nullable-types)
+  - [Builtin types with default values](#builtin-types-with-default-values)
   - [Union types](#union-types)
   - [Intersection types](#intersection-types)
 - [Appendix](#appendix)
@@ -423,8 +426,8 @@ constructor for all classes in the namespace.
 
 The namespace container accepts an optional `$factory` parameter that specifies
 a method which provides instances of classes in the namespace. The factory must
-take the name of the class being instantiated as the first parameter. Additional
-parameters will be autowired from the outer container.
+take the name of the class being instantiated as the first parameter. The outer
+container will provide any additional dependencies.
 
 ```php
 callable ClassFactory<TClass>(
@@ -474,8 +477,8 @@ $httpClient = $container->get(Http\HttpClient::class);
 Interface containers provide an instance of the requested class if it is a
 subclass of the specified interface or base class. Instances are acquired from
 the given factory, or by autowiring the constructor if no factory is provided.
-The factory must take the class name as the first parameter. Additional
-parameters will be injected.
+The factory must take the class name as the first parameter. The outer container
+will provide any additional dependencies.
 
 ```php
 callable ClassFactory<TClass>(
@@ -524,6 +527,73 @@ class UserRepository extends EntityRepository implements EntityNameProvider
     public static function getEntityName(): string
     {
         return User::class;
+    }
+}
+```
+
+### Attribute container
+
+Attribute containers will provide an instance of any class that has the
+specified attribute. Instances are acquired from the given factory, or by
+autowiring the constructor if no factory is provided. The factory must take the
+class name as the first parameter and an attribute instance as the second.
+The outer container will provide any additional dependencies.
+
+```php
+callable AttributeClassFactory<TClass, TAttr>(
+    string<TClass> $className,
+    TAttr $attribute,
+    object|null ...$dependencies
+): TClass;
+
+class Container
+{
+    function addSingletonAttribute<TAttr>(
+        string<TAttr> $attributeName,
+        AttributeClassFactory<object, TAttr>|null $factory = null
+    ): static;
+
+    function addTransientAttribute<TAttr>(
+        string<TAttr> $attributeName,
+        AttributeClassFactory<object, TAttr>|null $factory = null
+    ): static;
+}
+```
+
+##### Examples
+
+The following example provides an alternative to the example under
+[interface container section](#interface-container), using an attribute to
+designate metadata rather than an interface.
+
+```php
+$container->addSingletonAttribute(
+    EntityName::class,
+    fn (string $className, EntityName $attribute, EntityManager $em) =>
+        $em->getRepository($attribute->getName())
+);
+
+/*
+ * The container will query the EntityManager for a UserRepository.
+ */
+$userRepository = $container->get(UserRepository::class);
+
+#[EntityName(User::class)]
+class UserRepository extends EntityRepository
+{
+}
+
+#[Attribute(Attribute::TARGET_CLASS)]
+class EntityName
+{
+    public function __construct(
+        private readonly string $name
+    ) {
+    }
+
+    public function getName(): string
+    {
+        return $this->name;
     }
 }
 ```
