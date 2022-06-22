@@ -216,4 +216,18 @@ class ContainerTransientBuilderTraitTest extends DependencyInjectionTestCase
             fn () => $container->get(DateTime::class)
         );
     }
+
+    public function testAddTransientAttribute_WhenClassHasAttribute_GetReturnsInstance(): void
+    {
+        $container = $this->createContainer()->addTransientAttribute(FakeAttribute::class);
+
+        $this->assertTransient($container, FakeClassWithAttribute::class);
+    }
+
+    public function testAddTransientAttribute_WhenClassDoesNotHaveAttribute_GetThrowsUnresolvedClassException(): void
+    {
+        $container = $this->createContainer()->addTransientAttribute(FakeAttribute::class);
+
+        self::assertUnresolvedClassException(DateTime::class, fn () => $container->get(DateTime::class));
+    }
 }

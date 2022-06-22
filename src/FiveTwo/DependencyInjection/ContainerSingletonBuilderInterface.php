@@ -92,5 +92,15 @@ interface ContainerSingletonBuilderInterface
      *
      * @return $this
      */
-    public function addSingletonInterface(string $interfaceName): static;
+    public function addSingletonInterface(string $interfaceName, ?callable $factory = null): static;
+
+    /**
+     * @template TAttr of object
+     *
+     * @param class-string<TAttr> $attributeName
+     * @param callable|null $factory
+     *
+     * @return $this
+     */
+    public function addSingletonAttribute(string $attributeName, ?callable $factory = null): static;
 }

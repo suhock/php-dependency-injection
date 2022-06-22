@@ -232,8 +232,21 @@ class ContainerSingletonBuilderTraitTest extends DependencyInjectionTestCase
 
     public function testAddSingletonInterface_Exception_NotSubclass(): void
     {
-        $container = $this->createContainer()
-            ->addSingletonInterface(FakeClassNoConstructor::class);
+        $container = $this->createContainer()->addSingletonInterface(FakeClassNoConstructor::class);
+
+        self::assertUnresolvedClassException(DateTime::class, fn () => $container->get(DateTime::class));
+    }
+
+    public function testAddSingletonAttribute_WhenClassHasAttribute_GetReturnsInstance(): void
+    {
+        $container = $this->createContainer()->addSingletonAttribute(FakeAttribute::class);
+
+        $this->assertSingleton($container, FakeClassWithAttribute::class);
+    }
+
+    public function testAddSingletonAttribute_WhenClassDoesNotHaveAttribute_GetThrowsUnresolvedClassException(): void
+    {
+        $container = $this->createContainer()->addSingletonAttribute(FakeAttribute::class);
 
         self::assertUnresolvedClassException(DateTime::class, fn () => $container->get(DateTime::class));
     }

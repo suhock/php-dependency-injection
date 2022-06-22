@@ -134,4 +134,17 @@ trait ContainerTransientBuilderTrait
 
         return $this;
     }
+
+    /**
+     * @param class-string $attributeName
+     * @param callable|null $factory
+     *
+     * @return $this
+     */
+    public function addTransientAttribute(string $attributeName, ?callable $factory = null): static
+    {
+        $this->addTransientContainer(new AttributeContainer($attributeName, $this->getInjector(), $factory));
+
+        return $this;
+    }
 }

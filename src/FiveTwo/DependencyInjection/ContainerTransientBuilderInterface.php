@@ -79,5 +79,13 @@ interface ContainerTransientBuilderInterface
      *
      * @return $this
      */
-    public function addTransientInterface(string $interfaceName): static;
+    public function addTransientInterface(string $interfaceName, ?callable $factory = null): static;
+
+    /**
+     * @param class-string $attributeName
+     * @param callable|null $factory
+     *
+     * @return $this
+     */
+    public function addTransientAttribute(string $attributeName, ?callable $factory = null): static;
 }

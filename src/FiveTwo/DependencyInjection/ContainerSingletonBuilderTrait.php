@@ -153,4 +153,17 @@ trait ContainerSingletonBuilderTrait
 
         return $this;
     }
+
+    /**
+     * @param class-string $attributeName
+     * @param callable|null $factory
+     *
+     * @return $this
+     */
+    public function addSingletonAttribute(string $attributeName, ?callable $factory = null): static
+    {
+        $this->addSingletonContainer(new AttributeContainer($attributeName, $this->getInjector(), $factory));
+
+        return $this;
+    }
 }
