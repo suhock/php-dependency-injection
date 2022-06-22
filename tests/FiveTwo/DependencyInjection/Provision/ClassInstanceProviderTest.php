@@ -22,7 +22,7 @@ use FiveTwo\DependencyInjection\InjectorInterface;
  */
 class ClassInstanceProviderTest extends DependencyInjectionTestCase
 {
-    public function testGet_NoMutator(): void
+    public function testGet_WithClassName_ReturnsValueInstantiatedByInjector(): void
     {
         $factory = new ClassInstanceProvider(
             FakeClassNoConstructor::class,
@@ -36,14 +36,16 @@ class ClassInstanceProviderTest extends DependencyInjectionTestCase
         self::assertInstanceOf(FakeClassNoConstructor::class, $factory->get());
     }
 
-    public function testGet_WithMutator(): void
+    public function testGet_WithMutatorFunction_ReturnsValueMutatedByFunction(): void
     {
-        self::assertSame('test', (new ClassInstanceProvider(
+        $factory = new ClassInstanceProvider(
             FakeClassNoConstructor::class,
             new Injector(self::createMock(ContainerInterface::class)),
             function (FakeClassNoConstructor $obj) {
                 $obj->string = 'test';
             }
-        ))->get()->string);
+        );
+
+        self::assertSame('test', $factory->get()->string);
     }
 }

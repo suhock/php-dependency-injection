@@ -21,7 +21,7 @@ use Throwable;
  */
 class NamespaceContainerTest extends DependencyInjectionTestCase
 {
-    public function testGet_DefaultInjectorDefaultFactory(): void
+    public function testGet_WithDefaultInjectorAndDefaultFactory_ReturnsInstance(): void
     {
         $container = new NamespaceContainer(__NAMESPACE__);
 
@@ -31,7 +31,7 @@ class NamespaceContainerTest extends DependencyInjectionTestCase
         );
     }
 
-    public function testGet_ExplicitInjectorExplicitFactory(): void
+    public function testGet_WithExplicitInjectorAndExplicitFactory_UsesInjectorAndFactory(): void
     {
         $container = self::createMock(ContainerInterface::class);
         $container->expects(self::exactly(2))
@@ -54,7 +54,7 @@ class NamespaceContainerTest extends DependencyInjectionTestCase
         self::assertSame('test', $result->throwable->getMessage());
     }
 
-    public function testGet_Exception_ClassNotInNamespace(): void
+    public function testGet_WithClassNotInNamespace_ThrowsUnresolvedClassException(): void
     {
         $container = new NamespaceContainer(
             __NAMESPACE__,
@@ -68,25 +68,31 @@ class NamespaceContainerTest extends DependencyInjectionTestCase
         );
     }
 
-    public function testHas_TrueIfInNamespace(): void
+    public function testHas_WithClassInNamespace_ReturnsTrue(): void
     {
         $container = new NamespaceContainer(__NAMESPACE__);
 
         self::assertTrue($container->has(FakeClassNoConstructor::class));
     }
 
-    public function testHas_FalseIfNotInNamespace(): void
+    public function testHas_WithClassNotInNamespace_ReturnsFalse(): void
     {
         $container = new NamespaceContainer(__NAMESPACE__);
 
         self::assertFalse($container->has(DateTime::class));
     }
 
-    public function testHas_AlwaysTrueForRootNamespace(): void
+    public function testHas_WithRootNamespaceAndClassInRootNamespace_ReturnsTrue(): void
+    {
+        $container = new NamespaceContainer('');
+
+        self::assertTrue($container->has(DateTime::class));
+    }
+
+    public function testHas_WithRootNamespaceAndClassInOtherNamespace_ReturnsTrue(): void
     {
         $container = new NamespaceContainer('');
 
         self::assertTrue($container->has(FakeClassNoConstructor::class));
-        self::assertTrue($container->has(DateTime::class));
     }
 }

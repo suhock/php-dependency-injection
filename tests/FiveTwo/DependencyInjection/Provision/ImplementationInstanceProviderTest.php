@@ -21,7 +21,7 @@ use FiveTwo\DependencyInjection\FakeClassNoConstructor;
  */
 class ImplementationInstanceProviderTest extends DependencyInjectionTestCase
 {
-    public function testGet(): void
+    public function testGet_WithValidSubclass_ReturnsInstanceOfSubclass(): void
     {
         $container = $this->createMock(ContainerInterface::class);
         $container->method('has')->willReturn(true);
@@ -30,17 +30,16 @@ class ImplementationInstanceProviderTest extends DependencyInjectionTestCase
             ->with(FakeClassExtendsNoConstructor::class)
             ->willReturn(new FakeClassExtendsNoConstructor());
 
-        self::assertInstanceOf(
+        $factory = new ImplementationInstanceProvider(
+            FakeClassNoConstructor::class,
             FakeClassExtendsNoConstructor::class,
-            (new ImplementationInstanceProvider(
-                FakeClassNoConstructor::class,
-                FakeClassExtendsNoConstructor::class,
-                $container
-            ))->get()
+            $container
         );
+
+        self::assertInstanceOf(FakeClassExtendsNoConstructor::class, $factory->get());
     }
 
-    public function testGet_Exception_ImplementationSameAsInterface(): void
+    public function testGet_WhenImplementationSameAsInterface_ThrowsImplementationException(): void
     {
         self::assertImplementationException(
             FakeClassNoConstructor::class,
@@ -53,7 +52,7 @@ class ImplementationInstanceProviderTest extends DependencyInjectionTestCase
         );
     }
 
-    public function testGet_Exception_ImplementationNotSubclass(): void
+    public function testGet_WhenImplementationNotSubclassOfInterface_ThrowsImplementationException(): void
     {
         self::assertImplementationException(
             FakeClassExtendsNoConstructor::class,

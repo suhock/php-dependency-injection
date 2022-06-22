@@ -31,15 +31,14 @@ class SingletonStrategyTest extends TestCase
         return new SingletonStrategy(FakeClassNoConstructor::class);
     }
 
-    public function testGet(): void
+    public function testGet_WithFactoryFunction_ReturnsValueFromFactoryFunction(): void
     {
-        self::assertInstanceOf(
-            FakeClassNoConstructor::class,
-            $this->createStrategy()->get(fn () => new FakeClassNoConstructor())
-        );
+        $strategy = $this->createStrategy();
+
+        self::assertInstanceOf(FakeClassNoConstructor::class, $strategy->get(fn () => new FakeClassNoConstructor()));
     }
 
-    public function testGet_FactoryCalledOnlyOnce(): void
+    public function testGet_WhenCalledMultipleTimes_ReturnsSameInstance(): void
     {
         $strategy = $this->createStrategy();
 

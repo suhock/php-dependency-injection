@@ -208,7 +208,7 @@ class DependencyInjectionTestCase extends TestCase
     /**
      * @param string $exFunctionName
      * @param string $exParameterName
-     * @param string $exParameterType
+     * @param string|null $exParameterType
      * @param callable $codeUnderTest
      *
      * @return void
@@ -216,7 +216,7 @@ class DependencyInjectionTestCase extends TestCase
     public static function assertUnresolvedParameterException(
         string $exFunctionName,
         string $exParameterName,
-        string $exParameterType,
+        ?string $exParameterType,
         callable $codeUnderTest
     ): void {
         self::assertException(

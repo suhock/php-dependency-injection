@@ -31,15 +31,14 @@ class TransientStrategyTest extends TestCase
         return new TransientStrategy(FakeClassNoConstructor::class);
     }
 
-    public function testGet(): void
+    public function testGet_WithFactoryFunction_ReturnsValueFromFactoryFunction(): void
     {
-        self::assertInstanceOf(
-            FakeClassNoConstructor::class,
-            $this->createStrategy()->get(fn () => new FakeClassNoConstructor())
-        );
+        $strategy = $this->createStrategy();
+
+        self::assertInstanceOf(FakeClassNoConstructor::class, $strategy->get(fn () => new FakeClassNoConstructor()));
     }
 
-    public function testGet_FactoryCalledTwice(): void
+    public function testGet_WhenCalledMultipleTimes_ReturnsDistinctInstances(): void
     {
         $strategy = $this->createStrategy();
 

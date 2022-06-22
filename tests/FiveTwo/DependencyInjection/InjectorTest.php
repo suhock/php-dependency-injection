@@ -28,15 +28,15 @@ class InjectorTest extends DependencyInjectionTestCase
      * @phpstan-param array<class-string, callable():object> $classMapping
      * @return Injector
      */
-    protected function create(array $classMapping = []): Injector
+    protected function createInjector(array $classMapping = []): Injector
     {
         return new Injector(new FakeContainer($classMapping));
     }
 
-    public function testInstantiate(): void
+    public function testInstantiate_WithDependenciesInContainer_ReturnsInstanceWithValuesFromContainer(): void
     {
         $logicException = new LogicException();
-        $instance = $this->create([
+        $instance = $this->createInjector([
             Throwable::class => fn () => $logicException,
             LogicException::class => fn () => $logicException,
             RuntimeException::class => fn () => new RuntimeException('test')
@@ -47,16 +47,16 @@ class InjectorTest extends DependencyInjectionTestCase
         self::assertSame('test', $instance->runtimeException->getMessage());
     }
 
-    public function testInstantiate_ConstructorWithDefaultValues(): void
+    public function testInstantiate_WithDependenciesWithDefaultValues_ReturnsInstanceUsingDefaultValues(): void
     {
-        $injector = $this->create();
+        $injector = $this->createInjector();
 
         self::assertInstanceOf(Exception::class, $injector->instantiate(Exception::class));
     }
 
-    public function testInstantiate_Exception_ClassMissing(): void
+    public function testInstantiate_WithInvalidClass_ThrowsDependencyInjectionException(): void
     {
-        $injector = $this->create();
+        $injector = $this->createInjector();
 
         $this->expectException(DependencyInjectionException::class);
         /**
@@ -66,26 +66,26 @@ class InjectorTest extends DependencyInjectionTestCase
         $injector->instantiate('NonExistentClass');
     }
 
-    public function testInstantiate_Exception_NotInstantiable(): void
+    public function testInstantiate_WithNonInstantiableClass_ThrowsDependencyInjectionException(): void
     {
-        $injector = $this->create();
+        $injector = $this->createInjector();
 
         $this->expectException(DependencyInjectionException::class);
         $injector->instantiate(FakeAbstractClass::class);
     }
 
-    public function testInstantiate_Exception_MissingArgs(): void
+    public function testInstantiate_WithMissingDependency_ThrowsDependencyInjectionException(): void
     {
-        $injector = $this->create();
+        $injector = $this->createInjector();
 
         // missing argument of type RuntimeException
         $this->expectException(DependencyInjectionException::class);
         $injector->instantiate(FakeClassUsingContexts::class);
     }
 
-    public function testInstantiate_NamedParamsOverrideContainer(): void
+    public function testInstantiate_WithNamedParametersAlsoResolvableFromContainer_UsesNamedParameters(): void
     {
-        $injector = $this->create([
+        $injector = $this->createInjector([
             Throwable::class => fn () => new LogicException(),
             RuntimeException::class => fn () => new RuntimeException()
         ]);
@@ -98,9 +98,9 @@ class InjectorTest extends DependencyInjectionTestCase
         );
     }
 
-    public function testInstantiate_PositionalParamsOverrideContainer(): void
+    public function testInstantiate_WithPositionalParametersAlsoResolvableFromContainer_UsesPositionalParameters(): void
     {
-        $injector = $this->create([
+        $injector = $this->createInjector([
             Throwable::class => fn () => new LogicException(),
             RuntimeException::class => fn () => new RuntimeException()
         ]);
@@ -113,20 +113,19 @@ class InjectorTest extends DependencyInjectionTestCase
         );
     }
 
-    public function testInstantiate_WithNoConstructor(): void
+    public function testInstantiate_WithNoConstructor_ReturnsInstance(): void
     {
-        $injector = $this->create();
-        $instance = $injector
-            ->instantiate(FakeClassNoConstructor::class);
+        $injector = $this->createInjector();
+        $instance = $injector->instantiate(FakeClassNoConstructor::class);
 
         self::assertInstanceOf(FakeClassNoConstructor::class, $instance);
     }
 
-    public function testCall(): void
+    public function testCall_WithFunction_InjectsDependenciesAndReturnsResult(): void
     {
         $logicException = new LogicException('Message 1');
         $runtimeException = new RuntimeException('Message 2');
-        $injector = $this->create([
+        $injector = $this->createInjector([
             Throwable::class => fn () => $logicException,
             LogicException::class => fn () => $logicException,
             RuntimeException::class => fn () => $runtimeException
@@ -146,47 +145,84 @@ class InjectorTest extends DependencyInjectionTestCase
         );
     }
 
-    public function testCall_MissingNullableArgInjectsNull(): void
+    public function testCall_WithUnresolvableNullableDependency_InjectsNull(): void
     {
-        $injector = $this->create();
+        $injector = $this->createInjector();
 
         self::assertNull($injector->call(fn (?FakeClassNoConstructor $obj) => $obj));
     }
 
-    public function testCall_Exception_MissingArg(): void
+    public function testCall_WithUnresolvableDependency_ThrowsDependencyInjectionException(): void
     {
-        $injector = $this->create();
+        $injector = $this->createInjector();
 
         $this->expectException(DependencyInjectionException::class);
         $injector->call(fn (FakeClassNoConstructor $obj) => $obj);
     }
 
-    public function testCall_UnionType_First(): void
+    public function testCall_WithUntypedDependency_ThrowsUnresolvedParameterException(): void
     {
-        $instance = new FakeClassImplementsInterfaces();
-        self::assertSame(
-            $instance,
-            $this->create([
-                FakeInterfaceOne::class => fn () => $instance
-            ])->call(fn (FakeInterfaceOne|string|FakeInterfaceTwo $obj) => $obj)
+        $injector = $this->createInjector();
+
+        self::assertUnresolvedParameterException(
+            'Closure::__invoke',
+            'a',
+            null,
+            fn () => $injector->call(fn ($a) => $a)
         );
     }
 
-    public function testCall_UnionType_Third(): void
+    public function testCall_WithBuiltinType_ThrowsUnresolvedParameterException(): void
     {
-        $instance = new FakeClassImplementsInterfaces();
-        self::assertSame(
-            $instance,
-            $this->create([
-                FakeInterfaceTwo::class => fn () => $instance
-            ])->call(fn (FakeInterfaceOne|string|FakeInterfaceTwo $obj) => $obj)
+        $injector = $this->createInjector();
+
+        self::assertUnresolvedParameterException(
+            'Closure::__invoke',
+            'a',
+            'string',
+            fn () => $injector->call(fn (string $a) => $a)
         );
     }
 
-    public function testCall_Exception_NoMatchInUnionType(): void
+    public function testCall_WithUnionType_ResolvesFromLeftToRight(): void
     {
-        $injector =
-            $this->create([FakeClassImplementsInterfaces::class => fn () => new FakeClassImplementsInterfaces()]);
+        $instance1 = new FakeClassImplementsInterfaces();
+        $instance2 = new FakeClassImplementsInterfaces();
+
+        $injector = $this->createInjector([
+            FakeInterfaceOne::class => fn () => $instance1,
+            FakeInterfaceTwo::class => fn () => $instance2
+        ]);
+
+        self::assertSame(
+            $instance1,
+            $injector->call(fn (FakeInterfaceOne|FakeInterfaceTwo $obj) => $obj)
+        );
+
+        self::assertSame(
+            $instance2,
+            $injector->call(fn (FakeInterfaceTwo|FakeInterfaceOne $obj) => $obj)
+        );
+    }
+
+    public function testCall_WithUnionTypeIncludingBuiltinType_ResolvesNamedTypeListedAfterBuiltinType(): void
+    {
+        $instance = new FakeClassImplementsInterfaces();
+        $injector = $this->createInjector([
+            FakeInterfaceOne::class => fn () => $instance
+        ]);
+
+        self::assertSame(
+            $instance,
+            $injector->call(fn (string|FakeInterfaceOne $obj) => $obj)
+        );
+    }
+
+    public function testCall_WithNoResolvableTypeInUnionType_ThrowsUnresolvedParameterException(): void
+    {
+        $injector = $this->createInjector([
+            FakeClassImplementsInterfaces::class => fn () => new FakeClassImplementsInterfaces()
+        ]);
 
         self::assertUnresolvedParameterException(
             'Closure::__invoke',
@@ -196,29 +232,50 @@ class InjectorTest extends DependencyInjectionTestCase
         );
     }
 
-    public function testCall_IntersectionType_First(): void
+    public function testCall_WithIntersectionTypeOnlyFirstInContainer_ReturnsInstance(): void
     {
-        $instance = new FakeClassImplementsInterfaces();
+        $expectedInstance = new FakeClassImplementsInterfaces();
+        $injector = $this->createInjector([FakeInterfaceOne::class => fn () => $expectedInstance]);
+
         self::assertSame(
-            $instance,
-            $this->create([FakeInterfaceOne::class => fn () => $instance])
-                ->call(fn (FakeInterfaceOne&FakeInterfaceTwo $obj) => $obj)
+            $expectedInstance,
+            $injector->call(fn (FakeInterfaceOne&FakeInterfaceTwo $obj) => $obj)
         );
     }
 
-    public function testCall_IntersectionType_Second(): void
+    public function testCall_WithIntersectionTypeOnlySecondInContainer_ReturnsInstance(): void
     {
-        $instance = new FakeClassImplementsInterfaces();
+        $expectedInstance = new FakeClassImplementsInterfaces();
+        $injector = $this->createInjector([FakeInterfaceTwo::class => fn () => $expectedInstance]);
+
         self::assertSame(
-            $instance,
-            $this->create([FakeInterfaceTwo::class => fn () => $instance])
-                ->call(fn (FakeInterfaceOne&FakeInterfaceTwo $obj) => $obj)
+            $expectedInstance,
+            $injector->call(fn (FakeInterfaceOne&FakeInterfaceTwo $obj) => $obj)
         );
     }
 
-    public function testCall_Exception_MissingOneInIntersectionType(): void
+    public function testCall_WithIntersectionBothInContainer_ResolvesFromLeftToRight(): void
     {
-        $injector = $this->create([FakeInterfaceOne::class => fn () => new FakeClassImplementsInterfaces()]);
+        $instance1 = new FakeClassImplementsInterfaces();
+        $instance2 = new FakeClassImplementsInterfaces();
+        $injector = $this->createInjector([
+            FakeInterfaceOne::class => fn () => $instance1,
+            FakeInterfaceTwo::class => fn () => $instance2
+        ]);
+
+        self::assertSame(
+            $instance1,
+            $injector->call(fn (FakeInterfaceOne&FakeInterfaceTwo $obj) => $obj)
+        );
+        self::assertSame(
+            $instance2,
+            $injector->call(fn (FakeInterfaceTwo&FakeInterfaceOne $obj) => $obj)
+        );
+    }
+
+    public function testCall_WithIntersectionTypeNotImplementingOneType_ThrowsUnresolvedParameterException(): void
+    {
+        $injector = $this->createInjector([FakeInterfaceOne::class => fn () => new FakeClassImplementsInterfaces()]);
 
         self::assertUnresolvedParameterException(
             'Closure::__invoke',
@@ -228,7 +285,7 @@ class InjectorTest extends DependencyInjectionTestCase
         );
     }
 
-    public function testCall_Exception_CircularDependency(): void
+    public function testCall_WithParameterHavingCircularDependency_ThrowsCircularParameterException(): void
     {
         $container = new Container();
         $container->addSingletonFactory(

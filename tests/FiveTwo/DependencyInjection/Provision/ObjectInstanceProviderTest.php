@@ -20,32 +20,28 @@ use FiveTwo\DependencyInjection\FakeClassNoConstructor;
  */
 class ObjectInstanceProviderTest extends DependencyInjectionTestCase
 {
-    public function testGet_InstanceIsSameAsClass(): void
-    {
-        $instance = new FakeClassNoConstructor();
-
-        self::assertSame(
-            $instance,
-            (new ObjectInstanceProvider(FakeClassNoConstructor::class, $instance))->get()
-        );
-    }
-
-    public function testGet_InstanceIsSubclass(): void
-    {
-        $instance = new FakeClassExtendsNoConstructor();
-
-        self::assertSame(
-            $instance,
-            (new ObjectInstanceProvider(FakeClassNoConstructor::class, $instance))->get()
-        );
-    }
-
-    public function testGet_Exception_InstanceIsWrongClass(): void
+    public function testConstruct_WhenInstanceIsNotAnInstanceOfClass_ThrowsInstanceTypeException(): void
     {
         self::assertInstanceTypeException(
             FakeClassExtendsNoConstructor::class,
             FakeClassNoConstructor::class,
             fn () => new ObjectInstanceProvider(FakeClassExtendsNoConstructor::class, new FakeClassNoConstructor())
         );
+    }
+
+    public function testGet_WithInstanceOfSameClass_ReturnsSameInstance(): void
+    {
+        $expectedInstance = new FakeClassNoConstructor();
+        $factory = new ObjectInstanceProvider(FakeClassNoConstructor::class, $expectedInstance);
+
+        self::assertSame($expectedInstance, $factory->get());
+    }
+
+    public function testGet_WithInstanceOfSubclass_ReturnsSameInstance(): void
+    {
+        $expectedInstance = new FakeClassExtendsNoConstructor();
+        $factory = new ObjectInstanceProvider(FakeClassNoConstructor::class, $expectedInstance);
+
+        self::assertSame($expectedInstance, $factory->get());
     }
 }

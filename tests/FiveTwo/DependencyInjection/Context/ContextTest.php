@@ -18,25 +18,25 @@ use PHPUnit\Framework\TestCase;
  */
 class ContextTest extends TestCase
 {
-    public function test__construct_string(): void
+    public function testGetName_WithString_ReturnsStringValue(): void
     {
         $context = new Context('test');
         self::assertSame('test', $context->getName());
     }
 
-    public function test__construct_UnitEnum(): void
+    public function testGetName_WithUnitEnum_ReturnsNameOfEnumValue(): void
     {
         $context = new Context(FakeUnitEnum::Test);
         self::assertSame('Test', $context->getName());
     }
 
-    public function test__construct_StringBackedEnum(): void
+    public function testGetName_WithStringBackedEnum_ReturnsStringBackingEnumValue(): void
     {
         $context = new Context(FakeStringBackedEnum::Test);
         self::assertSame('test', $context->getName());
     }
 
-    public function test__construct_IntBackedEnum(): void
+    public function testGetName_WithIntBackedEnum_ReturnsNameOfEnumValue(): void
     {
         $context = new Context(FakeIntBackedEnum::Test);
         self::assertSame('Test', $context->getName());

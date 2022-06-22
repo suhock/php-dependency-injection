@@ -16,7 +16,7 @@ namespace FiveTwo\DependencyInjection;
  */
 class InterfaceContainerTest extends DependencyInjectionTestCase
 {
-    public function testGet_DefaultInjectorDefaultFactory(): void
+    public function testGet_WithDefaultInjectorAndDefaultFactory_ReturnsInstance(): void
     {
         $container = new InterfaceContainer(FakeClassNoConstructor::class);
 
@@ -26,7 +26,7 @@ class InterfaceContainerTest extends DependencyInjectionTestCase
         );
     }
 
-    public function testGet_ExplicitInjectorExplicitFactory(): void
+    public function testGet_WithExplicitInjectorAndExplicitFactory_UsesInjectorAndFactory(): void
     {
         $container = self::createMock(ContainerInterface::class);
         $container->expects(self::once())
@@ -48,7 +48,7 @@ class InterfaceContainerTest extends DependencyInjectionTestCase
         );
     }
 
-    public function testGet_Exception_SameClass(): void
+    public function testGet_WithImplementationClassSameAsInterface_ThrowsUnresolvedClassException(): void
     {
         $container = new InterfaceContainer(FakeClassNoConstructor::class);
 
@@ -58,7 +58,7 @@ class InterfaceContainerTest extends DependencyInjectionTestCase
         );
     }
 
-    public function testGet_Exception_NotSubclass(): void
+    public function testGet_WithImplementationClassNotInstanceOfInterface_ThrowsUnresolvedClassException(): void
     {
         $container = new InterfaceContainer(FakeClassNoConstructor::class);
 
@@ -68,25 +68,24 @@ class InterfaceContainerTest extends DependencyInjectionTestCase
         );
     }
 
-    public function testHas_TrueForSubclass(): void
+    public function testHas_WithSubclassOfInterface_ReturnsTrue(): void
     {
         $container = new InterfaceContainer(FakeClassNoConstructor::class);
 
         self::assertTrue($container->has(FakeClassExtendsNoConstructor::class));
     }
 
-    public function testHas_FalseForSameClass(): void
+    public function testHas_WithSameClassAsInterface_ReturnsFalse(): void
     {
         $container = new InterfaceContainer(FakeClassNoConstructor::class);
 
         self::assertFalse($container->has(FakeClassNoConstructor::class));
     }
 
-    public function testHas_FalseForNotSubclass(): void
+    public function testHas_WithImplementationNotSubclassOfInterface_ReturnsFalse(): void
     {
         $container = new InterfaceContainer(FakeClassNoConstructor::class);
 
-        /** @psalm-suppress InvalidArgument */
         self::assertFalse($container->has(FakeClassUsingContexts::class));
     }
 }

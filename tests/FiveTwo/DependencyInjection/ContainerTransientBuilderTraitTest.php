@@ -46,43 +46,40 @@ class ContainerTransientBuilderTraitTest extends DependencyInjectionTestCase
         self::assertNotSame($instance, $newInstance);
     }
 
-    public function testAddTransientClass_NoMutator(): void
+    public function testAddTransientClass_WithValidClassName_GetReturnsInstanceOfClass(): void
     {
-        $this->assertTransient(
-            $this->createContainer()
-                ->addTransientClass(FakeClassNoConstructor::class),
-            FakeClassNoConstructor::class
-        );
+        $container = $this->createContainer()->addTransientClass(FakeClassNoConstructor::class);
+
+        $this->assertTransient($container, FakeClassNoConstructor::class);
     }
 
-    public function testAddTransientClass_WithMutator(): void
+    public function testAddTransientClass_WithMutator_GetReturnsMutatedInstance(): void
     {
-        self::assertSame(
-            'test',
-            $this->createContainer()
-                ->addTransientClass(
-                    FakeClassNoConstructor::class,
-                    function (FakeClassNoConstructor $obj) {
-                        $obj->string = 'test';
-                    }
-                )
-                ->get(FakeClassNoConstructor::class)
-                ->string
-        );
+        $container = $this->createContainer()
+            ->addTransientClass(
+                FakeClassNoConstructor::class,
+                function (FakeClassNoConstructor $obj) {
+                    $obj->string = 'test';
+                }
+            );
+
+        self::assertSame('test', $container->get(FakeClassNoConstructor::class)->string);
     }
 
-    public function testAddTransientImplementation(): void
+    public function testAddTransientImplementation_WithSubclass_GetReturnsInstanceOfSubclass(): void
     {
+        $container = $this->createContainer()
+            ->addTransientClass(FakeClassExtendsNoConstructor::class)
+            ->addTransientImplementation(FakeClassNoConstructor::class, FakeClassExtendsNoConstructor::class);
+
         $this->assertTransient(
-            $this->createContainer()
-                ->addTransientClass(FakeClassExtendsNoConstructor::class)
-                ->addTransientImplementation(FakeClassNoConstructor::class, FakeClassExtendsNoConstructor::class),
+            $container,
             FakeClassNoConstructor::class,
             FakeClassExtendsNoConstructor::class
         );
     }
 
-    public function testAddTransientImplementation_ImplementationIsSameAsClass(): void
+    public function testAddTransientImplementation_WithImplementationSameAsClass_ThrowsImplementationException(): void
     {
         $container = $this->createContainer();
 
@@ -96,7 +93,7 @@ class ContainerTransientBuilderTraitTest extends DependencyInjectionTestCase
         );
     }
 
-    public function testAddTransientImplementation_ImplementationIsNotSubclass(): void
+    public function testAddTransientImplementation_WithImplementationNotSubclass_ThrowsImplementationException(): void
     {
         $container = $this->createContainer();
 
@@ -110,20 +107,22 @@ class ContainerTransientBuilderTraitTest extends DependencyInjectionTestCase
         );
     }
 
-    public function testAddTransientFactory(): void
+    public function testAddTransientFactory_WithFactory_GetReturnsValueFromFactory(): void
     {
+        $container = $this->createContainer()
+            ->addTransientFactory(
+                FakeClassNoConstructor::class,
+                fn () => new FakeClassExtendsNoConstructor()
+            );
+
         $this->assertTransient(
-            $this->createContainer()
-                ->addTransientFactory(
-                    FakeClassNoConstructor::class,
-                    fn () => new FakeClassExtendsNoConstructor()
-                ),
+            $container,
             FakeClassNoConstructor::class,
             FakeClassExtendsNoConstructor::class
         );
     }
 
-    public function testAddTransientFactory_Exception_FactoryReturnsNull(): void
+    public function testAddTransientFactory_WhenFactoryReturnsNull_GetThrowsInstanceTypeException(): void
     {
         $container = $this->createContainer()
             ->addTransientFactory(FakeClassNoConstructor::class, fn () => null);
@@ -135,7 +134,7 @@ class ContainerTransientBuilderTraitTest extends DependencyInjectionTestCase
         );
     }
 
-    public function testAddTransientFactory_Exception_ReturnTypeMismatch(): void
+    public function testAddTransientFactory_WhenReturnTypeIsWrong_GetThrowsInstanceTypeException(): void
     {
         $container = $this->createContainer()
             ->addTransientFactory(
@@ -150,20 +149,19 @@ class ContainerTransientBuilderTraitTest extends DependencyInjectionTestCase
         );
     }
 
-    public function testAddTransientContainer(): void
+    public function testAddTransientContainer_WithContainer_GetReturnsValueFromContainer(): void
     {
-        $this->assertTransient(
-            $this->createContainer()
-                ->addTransientContainer(
-                    new FakeContainer([FakeClassNoConstructor::class => fn () => new FakeClassNoConstructor()])
-                ),
-            FakeClassNoConstructor::class
-        );
+        $container = $this->createContainer()
+            ->addTransientContainer(
+                new FakeContainer([FakeClassNoConstructor::class => fn () => new FakeClassNoConstructor()])
+            );
+
+        $this->assertTransient($container, FakeClassNoConstructor::class);
     }
 
-    public function testAddTransientContainer_NotInNestedContainer(): void
+    public function testAdTransientContainer_WhenClassNotInContainer_GetThrowsUnresolvedClassException(): void
     {
-        $container =$this->createContainer()
+        $container = $this->createContainer()
             ->addTransientContainer(
                 new FakeContainer([
                     FakeClassExtendsNoConstructor::class => fn () => new FakeClassExtendsNoConstructor()
@@ -176,19 +174,20 @@ class ContainerTransientBuilderTraitTest extends DependencyInjectionTestCase
         );
     }
 
-    public function testAddTransientNamespace(): void
+    public function testAddTransientNamespace_WithValidNamespace_GetReturnsInstance(): void
     {
+        $container = $this->createContainer()->addTransientNamespace(__NAMESPACE__);
+
         $this->assertTransient(
-            $this->createContainer()->addTransientNamespace(__NAMESPACE__),
+            $container,
             FakeClassNoConstructor::class,
             FakeClassNoConstructor::class
         );
     }
 
-    public function testAddTransientNamespace_Exception_NotInNamespace(): void
+    public function testAddTransientNamespace_WithClassNotInNamespace_GetThrowsUnresolvedClassException(): void
     {
-        $container = $this->createContainer()
-            ->addTransientNamespace(__NAMESPACE__);
+        $container = $this->createContainer()->addTransientNamespace(__NAMESPACE__);
 
         self::assertUnresolvedClassException(
             DateTime::class,
@@ -196,20 +195,20 @@ class ContainerTransientBuilderTraitTest extends DependencyInjectionTestCase
         );
     }
 
-    public function testAddTransientInterface(): void
+    public function testAddTransientInterface_WithValidImplementation_GetReturnsInstance(): void
     {
+        $container = $this->createContainer()->addTransientInterface(FakeClassNoConstructor::class);
+
         $this->assertTransient(
-            $this->createContainer()
-                ->addTransientInterface(FakeClassNoConstructor::class),
+            $container,
             FakeClassExtendsNoConstructor::class,
             FakeClassExtendsNoConstructor::class
         );
     }
 
-    public function testAddTransientInterface_Exception_NotSubclass(): void
+    public function testAddTransientInterface_WhenImplementationNotSubclass_GetThrowsUnresolvedClassException(): void
     {
-        $container = $this->createContainer()
-            ->addTransientInterface(FakeClassNoConstructor::class);
+        $container = $this->createContainer()->addTransientInterface(FakeClassNoConstructor::class);
 
         self::assertUnresolvedClassException(
             DateTime::class,

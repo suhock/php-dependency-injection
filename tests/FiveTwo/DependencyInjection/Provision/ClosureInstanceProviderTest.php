@@ -23,7 +23,7 @@ use FiveTwo\DependencyInjection\InjectorInterface;
  */
 class ClosureInstanceProviderTest extends DependencyInjectionTestCase
 {
-    public function testGet_CallsFactory(): void
+    public function testGet_WithFactoryFunction_ReturnsValueFromFactoryFunction(): void
     {
         $factory = new ClosureInstanceProvider(
             FakeClassNoConstructor::class,
@@ -39,7 +39,7 @@ class ClosureInstanceProviderTest extends DependencyInjectionTestCase
         self::assertInstanceOf(FakeClassNoConstructor::class, $factory->get());
     }
 
-    public function testGet_Exception_FactoryReturnsNull(): void
+    public function testGet_WhenFactoryReturnsNull_ThrowsInstanceTypeException(): void
     {
         $factory = new ClosureInstanceProvider(
             FakeClassNoConstructor::class,
@@ -59,7 +59,7 @@ class ClosureInstanceProviderTest extends DependencyInjectionTestCase
         );
     }
 
-    public function testGet_Exception_FactoryReturnsWrongType(): void
+    public function testGet_WhenFactoryReturnsWrongType_ThrowsInstanceTypeException(): void
     {
         $factory = new ClosureInstanceProvider(
             FakeClassExtendsNoConstructor::class,

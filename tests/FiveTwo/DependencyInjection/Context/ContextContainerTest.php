@@ -30,7 +30,7 @@ class ContextContainerTest extends DependencyInjectionTestCase
         return new ContextContainer(fn (InjectorInterface $injector) => new Container($injector));
     }
 
-    public function testGet_DefaultOnly(): void
+    public function testGet_ValueInOnePushedContext_ReturnsValueFromContext(): void
     {
         $container = $this->createContainer();
         $container->context('default')
@@ -38,11 +38,12 @@ class ContextContainerTest extends DependencyInjectionTestCase
                 FakeClassNoConstructor::class,
                 $instance = new FakeClassNoConstructor()
             );
+        $container->push('default');
 
-        self::assertSame($instance, $container->push('default')->get(FakeClassNoConstructor::class));
+        self::assertSame($instance, $container->get(FakeClassNoConstructor::class));
     }
 
-    public function testGet_TopOfStackTakesPrecedence(): void
+    public function testGet_ValueInTwoPushedContexts_ReturnsValueFromTopOfStack(): void
     {
         $container = $this->createContainer();
         $container->context('default')->addSingletonInstance(
@@ -63,7 +64,7 @@ class ContextContainerTest extends DependencyInjectionTestCase
         );
     }
 
-    public function testGet_BottomOfStackUsedIfNotOnTop(): void
+    public function testGet_ValueAtBottomOfStackOnly_ReturnsValueFromBottomOfStack(): void
     {
         $container = $this->createContainer();
         $container->context('default')
@@ -82,7 +83,7 @@ class ContextContainerTest extends DependencyInjectionTestCase
         );
     }
 
-    public function testGet_EmptyStack(): void
+    public function testGet_EmptyStack_ThrowsUnresolvedClassException(): void
     {
         $container = $this->createContainer();
         $container->context('default')->addSingletonInstance(
@@ -96,39 +97,67 @@ class ContextContainerTest extends DependencyInjectionTestCase
         );
     }
 
-    public function testContext_RepeatCallReturnsSameInstance(): void
+    public function testContext_RepeatedCallsForSameName_ReturnsSameInstance(): void
     {
         $container = $this->createContainer();
 
         self::assertSame($container->context('default'), $container->context('default'));
     }
 
-    public function testContext_DifferentNamesReturnDistinctInstances(): void
+    public function testContext_CallsForDifferentNames_ReturnDistinctInstances(): void
     {
         $container = $this->createContainer();
 
         self::assertNotSame($container->context('default'), $container->context('new'));
     }
 
-    public function testPush(): void
+    public function testPush_OnEmptyStack_PushesCorrectValue(): void
+    {
+        $container = $this->createContainer();
+        $container->push('test1');
+
+        self::assertEquals('test1', $container->pop());
+    }
+
+    public function testPush_OnNonEmptyStack_PushesCorrectValue(): void
     {
         $container = $this->createContainer();
         $container->push('test1');
         $container->push('test2');
 
-        self::assertEquals(['test1', 'test2'], $container->getStack());
+        self::assertEquals('test2', $container->pop());
     }
 
-    public function testPop(): void
+    public function testPop_WithOneItem_ResultsInEmptyStack(): void
     {
         $container = $this->createContainer();
         $container->push('test1');
         $container->pop();
 
-        self::assertEmpty($container->getStack());
+        self::assertSame(0, $container->getStackHeight());
     }
 
-    public function testPop_Exception_StackIsEmpty(): void
+    public function testPop_WithTwoItems_ResultsInStackWithOneItem(): void
+    {
+        $container = $this->createContainer();
+        $container->push('test1');
+        $container->push('test2');
+        $container->pop();
+
+        self::assertSame(1, $container->getStackHeight());
+    }
+
+    public function testPop_WithTwoItems_BottomItemLeftInStack(): void
+    {
+        $container = $this->createContainer();
+        $container->push('test1');
+        $container->push('test2');
+        $container->pop();
+
+        self::assertSame('test1', $container->pop());
+    }
+
+    public function testPop_WithEmptyStack_ThrowsDependencyInjectionException(): void
     {
         $container = $this->createContainer();
 
@@ -136,12 +165,12 @@ class ContextContainerTest extends DependencyInjectionTestCase
         $container->pop();
     }
 
-    public function testResetStack(): void
+    public function testResetStack_WithStack_ResultsInEmptyStack(): void
     {
         $container = $this->createContainer();
-        $container->push('test');
+        $container->push('test1');
         $container->resetStack();
 
-        self::assertEmpty($container->getStack());
+        self::assertSame(0, $container->getStackHeight());
     }
 }

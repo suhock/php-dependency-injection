@@ -30,7 +30,7 @@ class ContainerTest extends DependencyInjectionTestCase
         return $container;
     }
 
-    public function testBuild(): void
+    public function testBuild_WithCallback_InvokesCallbackWithSelf(): void
     {
         $container = $this->createContainer();
         $builder = self::createMock(FakeBuilder::class);
@@ -42,7 +42,7 @@ class ContainerTest extends DependencyInjectionTestCase
         $container->build($builder->build(...));
     }
 
-    public function testRemove(): void
+    public function testRemove_WithExistingClassName_RemovesClassFromContainer(): void
     {
         self::assertFalse(
             $this->createContainer()
@@ -52,7 +52,7 @@ class ContainerTest extends DependencyInjectionTestCase
         );
     }
 
-    public function testTryGet_FactoryPrioritizedOverContainer(): void
+    public function testTryGet_WithValueInFactoryAndContainer_ReturnsValueFromFactory(): void
     {
         self::assertStringStartsWith(
             __NAMESPACE__ . '\\',
@@ -60,21 +60,19 @@ class ContainerTest extends DependencyInjectionTestCase
             'Namespace mismatch. Test would be invalid.'
         );
 
-        $goodInstance = new FakeClassExtendsNoConstructor();
+        $expectedInstance = new FakeClassExtendsNoConstructor();
 
-        self::assertSame(
-            $goodInstance,
-            $this->createContainer()
-                ->addSingletonContainer($this->getNestedContainer())
-                ->addSingletonFactory(
-                    FakeClassExtendsNoConstructor::class,
-                    fn () => $goodInstance
-                )
-                ->get(FakeClassExtendsNoConstructor::class)
-        );
+        $container = $this->createContainer()
+            ->addSingletonContainer($this->getNestedContainer())
+            ->addSingletonFactory(
+                FakeClassExtendsNoConstructor::class,
+                fn () => $expectedInstance
+            );
+
+        self::assertSame($expectedInstance, $container->get(FakeClassExtendsNoConstructor::class));
     }
 
-    public function testTryGet_FirstContainerPrioritized(): void
+    public function testTryGet_WithValueInMultipleContainers_ReturnsValueFromFirstContainerAdded(): void
     {
         self::assertStringStartsWith(
             __NAMESPACE__ . '\\',
@@ -82,21 +80,16 @@ class ContainerTest extends DependencyInjectionTestCase
             'Namespace mismatch. Test would be invalid.'
         );
 
-        $goodInstance = new FakeClassExtendsNoConstructor();
+        $expectedInstance = new FakeClassExtendsNoConstructor();
 
-        self::assertSame(
-            $goodInstance,
-            $this->createContainer()
-                ->addSingletonNamespace(
-                    __NAMESPACE__,
-                    fn (string $className) => $goodInstance
-                )
-                ->addSingletonContainer($this->getNestedContainer())
-                ->get(FakeClassExtendsNoConstructor::class)
-        );
+        $container = $this->createContainer()
+            ->addSingletonNamespace(__NAMESPACE__, fn (string $className) => $expectedInstance)
+            ->addSingletonContainer($this->getNestedContainer());
+
+        self::assertSame($expectedInstance, $container->get(FakeClassExtendsNoConstructor::class));
     }
 
-    public function testGet_Exception_UnresolvedClass(): void
+    public function testGet_WhenClassNotInContainer_ThrowsUnresolvedClassException(): void
     {
         $container = $this->createContainer();
 
@@ -106,7 +99,7 @@ class ContainerTest extends DependencyInjectionTestCase
         );
     }
 
-    public function testGet_Exception_CircularDependency(): void
+    public function testGet_WhenClassHasCircularDependency_ThrowsCircularDependencyException(): void
     {
         $container = $this->createContainer()
             ->addSingletonFactory(FakeClassNoConstructor::class, fn (FakeClassNoConstructor $obj) => $obj);
@@ -118,48 +111,42 @@ class ContainerTest extends DependencyInjectionTestCase
         );
     }
 
-    public function testHas_ReturnsFalseWhenMissing(): void
+    public function testHas_WhenClassNotInContainer_ReturnsFalse(): void
     {
         self::assertFalse($this->createContainer()->has(FakeClassNoConstructor::class));
     }
 
-    public function testHas_FromInstance(): void
+    public function testHas_WhenValueProvidedByInstance_ReturnsTrue(): void
     {
-        self::assertTrue(
-            $this->createContainer()
-                ->addSingletonInstance(FakeClassNoConstructor::class, new FakeClassNoConstructor())
-                ->has(FakeClassNoConstructor::class)
-        );
+        $container = $this->createContainer()
+            ->addSingletonInstance(FakeClassNoConstructor::class, new FakeClassNoConstructor());
+
+        self::assertTrue($container->has(FakeClassNoConstructor::class));
     }
 
-    public function testHas_FromFactory(): void
+    public function testHas_WhenValueProvidedByFactory_ReturnsTrue(): void
     {
-        self::assertTrue(
-            $this->createContainer()
-                ->addSingletonFactory(FakeClassNoConstructor::class, fn () => new FakeClassNoConstructor())
-                ->has(FakeClassNoConstructor::class)
-        );
+        $container = $this->createContainer()
+            ->addSingletonFactory(FakeClassNoConstructor::class, fn () => new FakeClassNoConstructor());
+
+        self::assertTrue($container->has(FakeClassNoConstructor::class));
     }
 
-    public function testHas_FromSingletonContainer(): void
+    public function testHas_WhenValueIsInNestedSingletonContainer_ReturnsTrue(): void
     {
-        self::assertTrue(
-            $this->createContainer()
-                ->addSingletonContainer($this->getNestedContainer())
-                ->has(FakeClassExtendsNoConstructor::class)
-        );
+        $container = $this->createContainer()->addSingletonContainer($this->getNestedContainer());
+
+        self::assertTrue($container->has(FakeClassExtendsNoConstructor::class));
     }
 
-    public function testHas_FromTransientContainer(): void
+    public function testHas_WhenValueIsInNestedTransientContainer_ReturnsTrue(): void
     {
-        self::assertTrue(
-            $this->createContainer()
-                ->addTransientContainer($this->getNestedContainer())
-                ->has(FakeClassExtendsNoConstructor::class)
-        );
+        $container = $this->createContainer()->addTransientContainer($this->getNestedContainer());
+
+        self::assertTrue($container->has(FakeClassExtendsNoConstructor::class));
     }
 
-    public function testHas_FromNamespace(): void
+    public function testHas_WhenValueIsInNamespaceContainer_ReturnsTrue(): void
     {
         self::assertTrue(
             $this->createContainer()
@@ -168,7 +155,7 @@ class ContainerTest extends DependencyInjectionTestCase
         );
     }
 
-    public function testHas_FromRootNamespace(): void
+    public function testHas_WhenValueIsInRootNamespaceContainer_ReturnsTrue(): void
     {
         self::assertTrue(
             $this->createContainer()
