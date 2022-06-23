@@ -50,6 +50,10 @@ class Container implements
      */
     protected function addDescriptor(Descriptor $descriptor): static
     {
+        if ($this->hasDescriptor($descriptor->getClassName())) {
+            throw new ContainerException('Class already in container: ' . $descriptor->getClassName());
+        }
+
         $this->descriptors[$descriptor->getClassName()] = $descriptor;
 
         return $this;
