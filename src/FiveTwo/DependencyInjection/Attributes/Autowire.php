@@ -15,6 +15,8 @@ use Attribute;
 
 /**
  * Indicates that a class should have its constructor autowired.
+ *
+ * @psalm-immutable
  */
 #[Attribute(Attribute::TARGET_CLASS)]
 class Autowire

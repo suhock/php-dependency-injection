@@ -36,6 +36,7 @@ class ContextContainer implements ContainerInterface
     /**
      * @param Closure(InjectorInterface):TContainer $containerFactory A factory method for creating new container
      * instances
+     * @psalm-mutation-free
      */
     public function __construct(
         private readonly Closure $containerFactory
@@ -71,6 +72,7 @@ class ContextContainer implements ContainerInterface
      * @param string $name The name of the context to push on the stack
      *
      * @return $this
+     * @psalm-external-mutation-free
      */
     public function push(string $name): static
     {
@@ -83,6 +85,7 @@ class ContextContainer implements ContainerInterface
      * Pops the most recently pushed context off the stack and returns it.
      *
      * @return string The name of the context popped off the stack
+     * @psalm-external-mutation-free
      */
     public function pop(): string
     {
@@ -97,6 +100,7 @@ class ContextContainer implements ContainerInterface
      * Resets the context stack to a state containing only the default context.
      *
      * @return $this
+     * @psalm-external-mutation-free
      */
     public function resetStack(): static
     {
@@ -107,6 +111,7 @@ class ContextContainer implements ContainerInterface
 
     /**
      * @return int The number of items currently in the context stack
+     * @psalm-external-mutation-free
      */
     public function getStackHeight(): int
     {
@@ -132,7 +137,21 @@ class ContextContainer implements ContainerInterface
     }
 
     /**
+     * @template TClass of object
+     *
+     * @param class-string<TClass> $className
+     * @param string $contextName
+     *
+     * @return TClass
+     */
+    private function getFromContext(string $className, string $contextName): object
+    {
+        return $this->containers[$contextName]->get($className);
+    }
+
+    /**
      * @inheritDoc
+     * @psalm-mutation-free
      */
     public function has(string $className): bool
     {
@@ -145,6 +164,7 @@ class ContextContainer implements ContainerInterface
      * @param class-string<TClass> $className
      *
      * @return string|null
+     * @psalm-mutation-free
      */
     private function findContext(string $className): ?string
     {
@@ -163,20 +183,8 @@ class ContextContainer implements ContainerInterface
      * @param class-string<TClass> $className
      * @param string $contextName
      *
-     * @return TClass
-     */
-    private function getFromContext(string $className, string $contextName): object
-    {
-        return $this->containers[$contextName]->get($className);
-    }
-
-    /**
-     * @template TClass of object
-     *
-     * @param class-string<TClass> $className
-     * @param string $contextName
-     *
      * @return bool
+     * @psalm-mutation-free
      */
     private function hasInContext(string $className, string $contextName): bool
     {

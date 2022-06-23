@@ -18,6 +18,8 @@ use UnitEnum;
 /**
  * Pushes the specified context onto the context stack of the {@see ContextContainer} that is being used to inject
  * dependencies. The context will be scoped to the class, function, or function parameter to which it is applied.
+ *
+ * @psalm-immutable
  */
 #[Attribute(
     Attribute::TARGET_CLASS |
@@ -29,7 +31,7 @@ use UnitEnum;
 )]
 class Context
 {
-    private string $name;
+    private readonly string $name;
 
     /**
      * @param string|UnitEnum $name The name of the context as a string or an enum
@@ -47,12 +49,17 @@ class Context
         return $this->name;
     }
 
+    /**
+     * @param string|UnitEnum $name
+     *
+     * @return string
+     */
     public static function getNameFromStringOrEnum(string|UnitEnum $name): string
     {
         return match (true) {
-            is_string($name) => $name,
             $name instanceof BackedEnum && is_string($name->value) => $name->value,
-            default => $name->name
+            $name instanceof UnitEnum => $name->name,
+            default => $name
         };
     }
 }

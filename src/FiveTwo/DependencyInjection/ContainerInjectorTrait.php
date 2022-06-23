@@ -94,7 +94,7 @@ trait ContainerInjectorTrait
     /**
      * @param ReflectionIntersectionType $rType
      * @param mixed $result
-     * @param-out ?object $result
+     * @param-out object|null $result
      *
      * @return bool
      */

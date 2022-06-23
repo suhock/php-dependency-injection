@@ -32,6 +32,8 @@ abstract class AbstractFactoryContainer implements ContainerInterface
      * <code>
      * function&lt;TClass&gt;(class-string&lt;TClass&gt; $className, [object ...]): TClass
      * </code>
+     *
+     * @psalm-mutation-free
      */
     public function __construct(
         ?InjectorInterface $injector = null,
@@ -71,6 +73,7 @@ abstract class AbstractFactoryContainer implements ContainerInterface
      * @param class-string<TClass> $className The name of the class to test
      *
      * @return bool <code>true</code> if the container can provide a value, <code>false</code> otherwise
+     * @psalm-mutation-free
      */
     abstract public function has(string $className): bool;
 }

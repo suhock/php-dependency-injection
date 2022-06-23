@@ -38,6 +38,11 @@ class FakeContainer implements ContainerInterface
             throw new UnresolvedClassException($className);
     }
 
+    /**
+     * @template TClass of object
+     * @param class-string<TClass> $className The name of the class to test
+     * @psalm-mutation-free
+     */
     public function has(string $className): bool
     {
         return array_key_exists($className, $this->classMapping);

@@ -32,12 +32,16 @@ class ContextInjector implements InjectorInterface
 
     /**
      * @param ContextContainer<TContainer> $container The container from which dependencies will be resolved
+     * @psalm-mutation-free
      */
     public function __construct(
         private readonly ContextContainer $container
     ) {
     }
 
+    /**
+     * @psalm-mutation-free
+     */
     protected function getContainer(): ContainerInterface
     {
         return $this->container;
@@ -64,6 +68,7 @@ class ContextInjector implements InjectorInterface
         $rFunction = $rParam->getDeclaringFunction();
 
         if ($rFunction instanceof ReflectionMethod) {
+            /** @psalm-suppress ArgumentTypeCoercion Psalm not applying template to getAttributes() call */
             $this->pushContextFromAttributes(
                 $contextCount,
                 $rFunction->getDeclaringClass()->getAttributes(Context::class)

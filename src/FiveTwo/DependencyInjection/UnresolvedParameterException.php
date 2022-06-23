@@ -27,6 +27,7 @@ class UnresolvedParameterException extends InjectorException
      * @param Throwable|null $previous [optional] The previous throwable used for exception chaining. If the throwable
      * is an instance of {@see DependencyInjectionException} then its content will be consolidated into the new
      * instance.
+     * @psalm-mutation-free
      */
     public function __construct(
         private readonly string $functionName,
@@ -45,6 +46,7 @@ class UnresolvedParameterException extends InjectorException
 
     /**
      * @return string The name of the function requiring the parameter
+     * @psalm-mutation-free
      */
     public function getFunctionName(): string
     {
@@ -53,6 +55,7 @@ class UnresolvedParameterException extends InjectorException
 
     /**
      * @return string The name of the unresolved parameter
+     * @psalm-mutation-free
      */
     public function getParameterName(): string
     {
@@ -61,6 +64,7 @@ class UnresolvedParameterException extends InjectorException
 
     /**
      * @return string|null The type of the unresolved parameter, or <code>null</code> if none is specified
+     * @psalm-mutation-free
      */
     public function getParameterType(): ?string
     {

@@ -40,6 +40,7 @@ class ImplementationException extends ContainerException
 
     /**
      * @return class-string<TExpected> The name of the expected base class
+     * @psalm-mutation-free
      */
     public function getExpectedClassName(): string
     {
@@ -48,6 +49,7 @@ class ImplementationException extends ContainerException
 
     /**
      * @return class-string<TActual> The name of the incorrect implementation class
+     * @psalm-mutation-free
      */
     public function getActualClassName(): string
     {

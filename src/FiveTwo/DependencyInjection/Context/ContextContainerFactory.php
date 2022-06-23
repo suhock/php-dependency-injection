@@ -16,9 +16,15 @@ use FiveTwo\DependencyInjection\InjectorInterface;
 
 /**
  * Provides factory methods for creating {@see ContextContainer} instances.
+ *
+ * @psalm-immutable
  */
 class ContextContainerFactory
 {
+    private function __construct()
+    {
+    }
+
     /**
      * @return ContextContainer<Container> A {@see ContextContainer} using {@see Container}
      */

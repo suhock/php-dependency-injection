@@ -31,6 +31,7 @@ class CircularParameterException extends InjectorException implements CircularEx
      * @param Throwable|null $previous [optional] The previous throwable used for exception chaining. If the throwable
      * is an instance of {@see DependencyInjectionException} then its content will be consolidated into the new
      * instance.
+     * @psalm-mutation-free
      */
     public function __construct(
         private readonly string $className,
@@ -46,6 +47,7 @@ class CircularParameterException extends InjectorException implements CircularEx
 
     /**
      * @return string
+     * @psalm-mutation-free
      */
     public function getFunctionName(): string
     {
@@ -54,6 +56,7 @@ class CircularParameterException extends InjectorException implements CircularEx
 
     /**
      * @return string
+     * @psalm-mutation-free
      */
     public function getParameterName(): string
     {
@@ -62,6 +65,7 @@ class CircularParameterException extends InjectorException implements CircularEx
 
     /**
      * @return class-string<TClass>
+     * @psalm-mutation-free
      */
     public function getClassName(): string
     {

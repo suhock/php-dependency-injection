@@ -25,6 +25,7 @@ use FiveTwo\DependencyInjection\Provision\ObjectInstanceProvider;
  * implement {@see ContainerBuilderInterface}.
  *
  * @psalm-require-implements ContainerBuilderInterface
+ * @psalm-external-mutation-free
  */
 trait ContainerSingletonBuilderTrait
 {

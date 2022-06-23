@@ -13,6 +13,14 @@
         </ignoreFiles>
     </projectFiles>
 
+    <stubs>
+        <file name="vendor/jetbrains/phpstorm-stubs/Reflection/ReflectionClass.php"/>
+        <file name="vendor/jetbrains/phpstorm-stubs/Reflection/ReflectionIntersectionType.php"/>
+        <file name="vendor/jetbrains/phpstorm-stubs/Reflection/ReflectionNamedType.php"/>
+        <file name="vendor/jetbrains/phpstorm-stubs/Reflection/ReflectionType.php"/>
+        <file name="vendor/jetbrains/phpstorm-stubs/Reflection/ReflectionUnionType.php"/>
+    </stubs>
+
     <plugins>
         <pluginClass class="Psalm\PhpUnitPlugin\Plugin"/>
     </plugins>

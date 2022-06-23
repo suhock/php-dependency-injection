@@ -23,6 +23,7 @@ use FiveTwo\DependencyInjection\Provision\InstanceProvider;
  * {@see ContainerBuilderInterface}.
  *
  * @psalm-require-implements ContainerBuilderInterface
+ * @psalm-external-mutation-free
  */
 trait ContainerTransientBuilderTrait
 {
@@ -35,6 +36,7 @@ trait ContainerTransientBuilderTrait
      * @param InstanceProvider<TClass> $instanceProvider
      *
      * @return $this
+     * @psalm-external-mutation-free
      */
     public function addTransient(string $className, InstanceProvider $instanceProvider): static
     {
@@ -49,6 +51,7 @@ trait ContainerTransientBuilderTrait
      *
      * @return $this
      * @throws ImplementationException
+     * @psalm-external-mutation-free
      */
     public function addTransientClass(string $className, ?callable $mutator = null): static
     {
@@ -68,6 +71,7 @@ trait ContainerTransientBuilderTrait
      *
      * @return $this
      * @throws ImplementationException
+     * @psalm-external-mutation-free
      */
     public function addTransientImplementation(string $className, string $implementationClassName): static
     {
@@ -84,6 +88,7 @@ trait ContainerTransientBuilderTrait
      * @param callable $factory
      *
      * @return $this
+     * @psalm-external-mutation-free
      */
     public function addTransientFactory(string $className, callable $factory): static
     {
@@ -97,6 +102,7 @@ trait ContainerTransientBuilderTrait
 
     /**
      * @inheritDoc
+     * @psalm-external-mutation-free
      */
     public function addTransientContainer(ContainerInterface $container): static
     {
@@ -114,6 +120,7 @@ trait ContainerTransientBuilderTrait
      * @param callable|null $factory
      *
      * @return $this
+     * @psalm-external-mutation-free
      */
     public function addTransientNamespace(string $namespace, ?callable $factory = null): static
     {
@@ -127,6 +134,7 @@ trait ContainerTransientBuilderTrait
      * @param callable|null $factory
      *
      * @return $this
+     * @psalm-external-mutation-free
      */
     public function addTransientInterface(string $interfaceName, ?callable $factory = null): static
     {
@@ -140,6 +148,7 @@ trait ContainerTransientBuilderTrait
      * @param callable|null $factory
      *
      * @return $this
+     * @psalm-external-mutation-free
      */
     public function addTransientAttribute(string $attributeName, ?callable $factory = null): static
     {

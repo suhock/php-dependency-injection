@@ -11,6 +11,8 @@ declare(strict_types=1);
 
 namespace FiveTwo\DependencyInjection;
 
+use FiveTwo\DependencyInjection\Provision\ClosureInstanceProvider;
+
 /**
  * A default implementation for the {@see ContainerInterface}.
  */
@@ -35,6 +37,7 @@ class Container implements
     /**
      * @param InjectorInterface|null $injector [Optional] An existing injector to use for injecting dependencies into
      * factories
+     * @psalm-mutation-free
      */
     public function __construct(?InjectorInterface $injector = null)
     {
@@ -47,6 +50,7 @@ class Container implements
      * @param Descriptor<TClass> $descriptor
      *
      * @return $this
+     * @psalm-external-mutation-free
      */
     protected function addDescriptor(Descriptor $descriptor): static
     {
@@ -59,6 +63,9 @@ class Container implements
         return $this;
     }
 
+    /**
+     * @psalm-external-mutation-free
+     */
     protected function addContainerDescriptor(ContainerDescriptor $descriptor): static
     {
         $this->containerDescriptors[] = $descriptor;
@@ -66,6 +73,9 @@ class Container implements
         return $this;
     }
 
+    /**
+     * @psalm-mutation-free
+     */
     protected function getInjector(): InjectorInterface
     {
         return $this->injector;
@@ -77,6 +87,7 @@ class Container implements
      * @param class-string $className
      *
      * @return $this
+     * @psalm-external-mutation-free
      */
     public function remove(string $className): static
     {
@@ -102,10 +113,11 @@ class Container implements
 
     /**
      * @inheritDoc
+     * @psalm-mutation-free
      */
     public function has(string $className): bool
     {
-        return $this->hasDescriptor($className) || $this->hasContainer($className);
+        return $this->hasDescriptor($className) || $this->hasContainerDescriptor($className);
     }
 
     /**
@@ -135,6 +147,7 @@ class Container implements
      *
      * @return Descriptor<TClass>
      * @psalm-suppress InvalidReturnType Psalm does not support class-mapped arrays
+     * @psalm-mutation-free
      */
     protected function getDescriptor(string $className): Descriptor
     {
@@ -151,10 +164,27 @@ class Container implements
      * @param class-string<TClass> $className
      *
      * @return bool
+     * @psalm-mutation-free
      */
     private function hasDescriptor(string $className): bool
     {
         return array_key_exists($className, $this->descriptors);
+    }
+
+    /**
+     * @template TClass of object
+     * @param class-string<TClass> $className
+     * @psalm-mutation-free
+     */
+    private function hasContainerDescriptor(string $className): bool
+    {
+        foreach ($this->containerDescriptors as $descriptor) {
+            if ($descriptor->container->has($className)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -168,7 +198,7 @@ class Container implements
      */
     private function tryGetFromContainer(string $className, ?object &$instance): bool
     {
-        return $this->hasContainer($className) &&
+        return $this->tryAddFromFirstMatchingContainer($className) &&
             $this->tryGetFromFactory($className, $instance);
     }
 
@@ -179,14 +209,39 @@ class Container implements
      *
      * @return bool
      */
-    private function hasContainer(string $className): bool
+    private function tryAddFromFirstMatchingContainer(string $className): bool
     {
-        foreach ($this->containerDescriptors as $containerDescriptor) {
-            if ($containerDescriptor->tryAdd($className, $this)) {
+        foreach ($this->containerDescriptors as $descriptor) {
+            if ($this->tryAdd($className, $descriptor)) {
                 return true;
             }
         }
 
         return false;
+    }
+
+    /**
+     * @template TClass
+     * @param class-string<TClass> $className
+     */
+    private function tryAdd(string $className, ContainerDescriptor $descriptor): bool
+    {
+        if (!$descriptor->container->has($className)) {
+            return false;
+        }
+
+        $this->add(
+            $className,
+            /** @phpstan-ignore-next-line PHPStan gets confused resolving generic for add() */
+            $descriptor->createLifetimeStrategy($className),
+            new ClosureInstanceProvider(
+                $className,
+                /** @phpstan-ignore-next-line PHPStan gets confused resolving generic for add() */
+                fn () => $descriptor->container->get($className),
+                $this->injector
+            )
+        );
+
+        return true;
     }
 }

@@ -26,6 +26,7 @@ interface ContainerTransientBuilderInterface
      * @param InstanceProvider<TClass> $instanceProvider
      *
      * @return $this
+     * @psalm-external-mutation-free
      */
     public function addTransient(string $className, InstanceProvider $instanceProvider): static;
 
@@ -35,6 +36,7 @@ interface ContainerTransientBuilderInterface
      *
      * @return $this
      * @throws ImplementationException
+     * @psalm-external-mutation-free
      */
     public function addTransientClass(string $className, ?callable $mutator = null): static;
 
@@ -47,6 +49,7 @@ interface ContainerTransientBuilderInterface
      *
      * @return $this
      * @throws ImplementationException
+     * @psalm-external-mutation-free
      */
     public function addTransientImplementation(string $className, string $implementationClassName): static;
 
@@ -55,6 +58,7 @@ interface ContainerTransientBuilderInterface
      * @param callable $factory
      *
      * @return $this
+     * @psalm-external-mutation-free
      */
     public function addTransientFactory(string $className, callable $factory): static;
 
@@ -62,6 +66,7 @@ interface ContainerTransientBuilderInterface
      * @param ContainerInterface $container
      *
      * @return static
+     * @psalm-external-mutation-free
      */
     public function addTransientContainer(ContainerInterface $container): static;
 
@@ -70,6 +75,7 @@ interface ContainerTransientBuilderInterface
      * @param callable|null $factory
      *
      * @return $this
+     * @psalm-external-mutation-free
      */
     public function addTransientNamespace(string $namespace, ?callable $factory = null): static;
 
@@ -78,6 +84,7 @@ interface ContainerTransientBuilderInterface
      * @param callable|null $factory
      *
      * @return $this
+     * @psalm-external-mutation-free
      */
     public function addTransientInterface(string $interfaceName, ?callable $factory = null): static;
 
@@ -86,6 +93,7 @@ interface ContainerTransientBuilderInterface
      * @param callable|null $factory
      *
      * @return $this
+     * @psalm-external-mutation-free
      */
     public function addTransientAttribute(string $attributeName, ?callable $factory = null): static;
 }

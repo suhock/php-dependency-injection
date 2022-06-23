@@ -27,6 +27,7 @@ interface ContainerSingletonBuilderInterface
      * @param InstanceProvider<TClass> $instanceProvider
      *
      * @return $this
+     * @psalm-external-mutation-free
      */
     public function addSingleton(string $className, InstanceProvider $instanceProvider): static;
 
@@ -36,6 +37,7 @@ interface ContainerSingletonBuilderInterface
      *
      * @return $this
      * @throws ImplementationException
+     * @psalm-external-mutation-free
      */
     public function addSingletonClass(string $className, ?callable $mutator = null): static;
 
@@ -48,6 +50,7 @@ interface ContainerSingletonBuilderInterface
      *
      * @return $this
      * @throws ImplementationException
+     * @psalm-external-mutation-free
      */
     public function addSingletonImplementation(string $className, string $implementationClassName): static;
 
@@ -56,6 +59,7 @@ interface ContainerSingletonBuilderInterface
      * @param callable $factory
      *
      * @return $this
+     * @psalm-external-mutation-free
      */
     public function addSingletonFactory(string $className, callable $factory): static;
 
@@ -68,6 +72,7 @@ interface ContainerSingletonBuilderInterface
      *
      * @return $this
      * @throws InstanceTypeException
+     * @psalm-external-mutation-free
      */
     public function addSingletonInstance(string $className, object $instance): static;
 
@@ -75,6 +80,7 @@ interface ContainerSingletonBuilderInterface
      * @param ContainerInterface $container
      *
      * @return static
+     * @psalm-external-mutation-free
      */
     public function addSingletonContainer(ContainerInterface $container): static;
 
@@ -83,6 +89,7 @@ interface ContainerSingletonBuilderInterface
      * @param callable|null $factory
      *
      * @return $this
+     * @psalm-external-mutation-free
      */
     public function addSingletonNamespace(string $namespace, ?callable $factory = null): static;
 
@@ -91,6 +98,7 @@ interface ContainerSingletonBuilderInterface
      * @param callable|null $factory
      *
      * @return $this
+     * @psalm-external-mutation-free
      */
     public function addSingletonInterface(string $interfaceName, ?callable $factory = null): static;
 
@@ -101,6 +109,7 @@ interface ContainerSingletonBuilderInterface
      * @param callable|null $factory
      *
      * @return $this
+     * @psalm-external-mutation-free
      */
     public function addSingletonAttribute(string $attributeName, ?callable $factory = null): static;
 }

@@ -16,6 +16,7 @@ namespace FiveTwo\DependencyInjection\Provision;
  *
  * @template TClass of object
  * @template-implements InstanceProvider<TClass>
+ * @psalm-immutable
  */
 class ObjectInstanceProvider implements InstanceProvider
 {

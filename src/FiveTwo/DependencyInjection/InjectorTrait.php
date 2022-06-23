@@ -150,7 +150,7 @@ trait InjectorTrait
         $exception = null;
 
         try {
-            if (self::tryResolveParameter($rParam, $paramValue)) {
+            if ($this->tryResolveParameter($rParam, $paramValue)) {
                 return $paramValue;
             }
         } catch (CircularDependencyException|CircularParameterException $exception) {
@@ -179,7 +179,10 @@ trait InjectorTrait
         );
     }
 
-    private function getReflectionTypeName(?ReflectionType $rType): ?string
+    /**
+     * @psalm-pure
+     */
+    private static function getReflectionTypeName(?ReflectionType $rType): ?string
     {
         if ($rType === null) {
             return null;

@@ -28,6 +28,7 @@ class Descriptor
      * @param class-string<TClass> $className
      * @param LifetimeStrategy<TClass> $lifetimeStrategy
      * @param InstanceProvider<TClass> $instanceProvider
+     * @psalm-mutation-free
      */
     public function __construct(
         private readonly string $className,
@@ -38,6 +39,7 @@ class Descriptor
 
     /**
      * @return class-string<TClass>
+     * @psalm-mutation-free
      */
     public function getClassName(): string
     {

@@ -13,7 +13,6 @@ namespace FiveTwo\DependencyInjection;
 
 use Closure;
 use FiveTwo\DependencyInjection\Lifetime\LifetimeStrategy;
-use FiveTwo\DependencyInjection\Provision\ClosureInstanceProvider;
 
 /**
  * Holds information about nested containers.
@@ -34,44 +33,16 @@ class ContainerDescriptor
      * @param InjectorInterface $injector
      * @param callable(class-string):LifetimeStrategy $lifetimeStrategyFactory
      *
+     * @psalm-mutation-free
      * @phpstan-ignore-next-line PHPStan does not support callable-level generics but complains that LifetimeStrategy
      * does not have its generic type specified
      */
     public function __construct(
-        private readonly ContainerInterface $container,
-        private readonly InjectorInterface $injector,
+        public readonly ContainerInterface $container,
+        public readonly InjectorInterface $injector,
         callable $lifetimeStrategyFactory
     ) {
         $this->lifetimeStrategyFactory = $lifetimeStrategyFactory(...);
-    }
-
-    /**
-     * @template TClass
-     *
-     * @param class-string<TClass> $className
-     * @param ContainerBuilderInterface $container
-     *
-     * @return bool
-     */
-    public function tryAdd(string $className, ContainerBuilderInterface $container): bool
-    {
-        if (!$this->container->has($className)) {
-            return false;
-        }
-
-        $container->add(
-            $className,
-            /** @phpstan-ignore-next-line PHPStan gets confused resolving generic for add() */
-            $this->createLifetimeStrategy($className),
-            new ClosureInstanceProvider(
-                $className,
-                /** @phpstan-ignore-next-line PHPStan gets confused resolving generic for add() */
-                fn () => $this->container->get($className),
-                $this->injector
-            )
-        );
-
-        return true;
     }
 
     /**
@@ -82,7 +53,7 @@ class ContainerDescriptor
      * @return LifetimeStrategy<TClass>
      * @psalm-suppress MixedReturnTypeCoercion
      */
-    private function createLifetimeStrategy(string $className): LifetimeStrategy
+    public function createLifetimeStrategy(string $className): LifetimeStrategy
     {
         return ($this->lifetimeStrategyFactory)($className);
     }

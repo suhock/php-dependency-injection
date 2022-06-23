@@ -23,6 +23,7 @@ interface CircularExceptionInterface extends Throwable
     /**
      * @return class-string<TClass> The class name of the dependency that could not be resolved due to circular
      * dependency
+     * @psalm-mutation-free
      */
     public function getClassName(): string;
 }

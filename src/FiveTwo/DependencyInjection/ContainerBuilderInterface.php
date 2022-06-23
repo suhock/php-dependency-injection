@@ -29,6 +29,7 @@ interface ContainerBuilderInterface
      * @param InstanceProvider<TClass> $instanceProvider The instance provider to use to create new instances
      *
      * @return $this
+     * @psalm-external-mutation-free
      */
     public function add(
         string $className,
@@ -46,6 +47,7 @@ interface ContainerBuilderInterface
      *
      * @return $this
      *
+     * @psalm-external-mutation-free
      * @phpstan-ignore-next-line PHPStan does not support callable-level generics but complains that LifetimeStrategy
      * does not have its generic type specified
      */

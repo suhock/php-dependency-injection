@@ -24,12 +24,16 @@ class Injector implements InjectorInterface
 
     /**
      * @param ContainerInterface $container The container from which to resolve parameter values
+     * @psalm-mutation-free
      */
     public function __construct(
         private readonly ContainerInterface $container
     ) {
     }
 
+    /**
+     * @psalm-mutation-free
+     */
     protected function getContainer(): ContainerInterface
     {
         return $this->container;

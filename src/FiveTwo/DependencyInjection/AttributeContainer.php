@@ -38,6 +38,8 @@ class AttributeContainer implements ContainerInterface
      * <code>
      * function&lt;TClass, TAttr&gt;(class-string&lt;TClass&gt; $className, TAttr $attr, ...): TClass
      * </code>
+     *
+     * @psalm-mutation-free
      */
     public function __construct(
         private readonly string $attributeName,
@@ -89,6 +91,7 @@ class AttributeContainer implements ContainerInterface
 
     /**
      * @inheritDoc
+     * @psalm-mutation-free
      */
     public function has(string $className): bool
     {

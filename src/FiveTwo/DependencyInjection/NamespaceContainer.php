@@ -28,6 +28,8 @@ class NamespaceContainer extends AbstractFactoryContainer
      * <code>
      * function(class-string&lt;T&gt; $className, ...): T
      * </code>
+     *
+     * @psalm-mutation-free
      */
     public function __construct(
         string $namespace,
@@ -40,6 +42,7 @@ class NamespaceContainer extends AbstractFactoryContainer
 
     /**
      * @inheritDoc
+     * @psalm-mutation-free
      */
     public function has(string $className): bool
     {
