@@ -43,8 +43,8 @@ class AttributeContainerTest extends DependencyInjectionTestCase
         $container = new AttributeContainer(FakeAttribute::class);
 
         self::assertUnresolvedClassException(
-            FakeClassUsingContexts::class,
-            fn () => $container->get(FakeClassUsingContexts::class)
+            FakeClassWithContexts::class,
+            fn () => $container->get(FakeClassWithContexts::class)
         );
     }
 
@@ -74,7 +74,7 @@ class AttributeContainerTest extends DependencyInjectionTestCase
     {
         $container = new AttributeContainer(FakeAttribute::class);
 
-        self::assertFalse($container->has(FakeClassUsingContexts::class));
+        self::assertFalse($container->has(FakeClassWithContexts::class));
     }
 
     public function testHas_WhenClassDoesNotExist_ReturnsFalse(): void

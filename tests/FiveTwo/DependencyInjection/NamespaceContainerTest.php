@@ -45,12 +45,12 @@ class NamespaceContainerTest extends DependencyInjectionTestCase
             __NAMESPACE__,
             new Injector($container),
             fn (string $className, Throwable $throwable, RuntimeException $runtimeException) =>
-                new FakeClassUsingContexts($throwable, $runtimeException)
+                new FakeClassWithContexts($throwable, $runtimeException)
         );
 
-        $result = $namespaceContainer->get(FakeClassUsingContexts::class);
+        $result = $namespaceContainer->get(FakeClassWithContexts::class);
 
-        self::assertInstanceOf(FakeClassUsingContexts::class, $result);
+        self::assertInstanceOf(FakeClassWithContexts::class, $result);
         self::assertSame('test', $result->throwable->getMessage());
     }
 

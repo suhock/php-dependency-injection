@@ -17,18 +17,18 @@ use PHPUnit\Framework\TestCase;
 /**
  * Test suite for {@see DependencyInjectionException}.
  */
-class DependencyInjectionExceptionTest extends TestCase
+class AbstractDependencyInjectionExceptionTest extends TestCase
 {
     public function testConstruct_WithMessage_ConstructsWithMessage(): void
     {
-        $exception = new DependencyInjectionException('Message1');
+        $exception = new ContainerException('Message1');
         self::assertSame('Message1', $exception->getMessage());
     }
 
     public function testConstruct_WithPreviousDependencyInjectionException_BuildsCompositeMessage(): void
     {
-        $originalException = new DependencyInjectionException('Message1');
-        $exception = new DependencyInjectionException('Message2', $originalException);
+        $originalException = new ContainerException('Message1');
+        $exception = new ContainerException('Message2', $originalException);
         self::assertMatchesRegularExpression('/Message2.*Message1/s', $exception->getMessage());
         self::assertNull($exception->getPrevious());
         self::assertSame($originalException, $exception->getConsolidatedException());
@@ -36,34 +36,34 @@ class DependencyInjectionExceptionTest extends TestCase
 
     public function testConstruct_WithPreviousDependencyInjectionException_DoesNotPopulatePreviousException(): void
     {
-        $originalException = new DependencyInjectionException('Message1');
-        $exception = new DependencyInjectionException('Message2', $originalException);
+        $originalException = new ContainerException('Message1');
+        $exception = new ContainerException('Message2', $originalException);
         self::assertNull($exception->getPrevious());
     }
 
     public function testConstruct_WithPreviousDependencyInjectionException_PopulatesConsolidatedException(): void
     {
-        $originalException = new DependencyInjectionException('Message1');
-        $exception = new DependencyInjectionException('Message2', $originalException);
+        $originalException = new ContainerException('Message1');
+        $exception = new ContainerException('Message2', $originalException);
         self::assertSame($originalException, $exception->getConsolidatedException());
     }
 
     public function testConstruct_WithPreviousUnrelatedException_ConstructsWithMessage(): void
     {
-        $exception = new DependencyInjectionException('Message2', new Exception('Message1'));
+        $exception = new ContainerException('Message2', new Exception('Message1'));
         self::assertSame('Message2', $exception->getMessage());
     }
 
     public function testConstruct_WithPreviousUnrelatedException_PopulatesPreviousException(): void
     {
         $originalException = new Exception('Message1');
-        $exception = new DependencyInjectionException('Message2', $originalException);
+        $exception = new ContainerException('Message2', $originalException);
         self::assertSame($originalException, $exception->getPrevious());
     }
 
     public function testConstruct_WithPreviousUnrelatedException_DoesNotPopulateConsolidatedException(): void
     {
-        $exception = new DependencyInjectionException('Message2', new Exception('Message1'));
+        $exception = new ContainerException('Message2', new Exception('Message1'));
         self::assertNull($exception->getConsolidatedException());
     }
 }

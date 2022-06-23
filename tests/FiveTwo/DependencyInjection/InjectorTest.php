@@ -40,9 +40,9 @@ class InjectorTest extends DependencyInjectionTestCase
             Throwable::class => fn () => $logicException,
             LogicException::class => fn () => $logicException,
             RuntimeException::class => fn () => new RuntimeException('test')
-        ])->instantiate(FakeClassUsingContexts::class);
+        ])->instantiate(FakeClassWithContexts::class);
 
-        self::assertInstanceOf(FakeClassUsingContexts::class, $instance);
+        self::assertInstanceOf(FakeClassWithContexts::class, $instance);
         self::assertSame($logicException, $instance->throwable);
         self::assertSame('test', $instance->runtimeException->getMessage());
     }
@@ -54,11 +54,11 @@ class InjectorTest extends DependencyInjectionTestCase
         self::assertInstanceOf(Exception::class, $injector->instantiate(Exception::class));
     }
 
-    public function testInstantiate_WithInvalidClass_ThrowsDependencyInjectionException(): void
+    public function testInstantiate_WithInvalidClass_ThrowsInjectorException(): void
     {
         $injector = $this->createInjector();
 
-        $this->expectException(DependencyInjectionException::class);
+        $this->expectException(InjectorException::class);
         /**
          * @psalm-suppress ArgumentTypeCoercion,UndefinedClass warns about issue currently under test
          * @phpstan-ignore-next-line warns about issue currently under test
@@ -66,21 +66,21 @@ class InjectorTest extends DependencyInjectionTestCase
         $injector->instantiate('NonExistentClass');
     }
 
-    public function testInstantiate_WithNonInstantiableClass_ThrowsDependencyInjectionException(): void
+    public function testInstantiate_WithNonInstantiableClass_ThrowsInjectorException(): void
     {
         $injector = $this->createInjector();
 
-        $this->expectException(DependencyInjectionException::class);
+        $this->expectException(InjectorException::class);
         $injector->instantiate(FakeAbstractClass::class);
     }
 
-    public function testInstantiate_WithMissingDependency_ThrowsDependencyInjectionException(): void
+    public function testInstantiate_WithMissingDependency_ThrowsInjectorException(): void
     {
         $injector = $this->createInjector();
 
         // missing argument of type RuntimeException
-        $this->expectException(DependencyInjectionException::class);
-        $injector->instantiate(FakeClassUsingContexts::class);
+        $this->expectException(InjectorException::class);
+        $injector->instantiate(FakeClassWithContexts::class);
     }
 
     public function testInstantiate_WithNamedParametersAlsoResolvableFromContainer_UsesNamedParameters(): void
@@ -92,7 +92,7 @@ class InjectorTest extends DependencyInjectionTestCase
 
         self::assertSame(
             $override = new RuntimeException(),
-            $injector->instantiate(FakeClassUsingContexts::class, [
+            $injector->instantiate(FakeClassWithContexts::class, [
                 'runtimeException' => $override
             ])->runtimeException
         );
@@ -107,7 +107,7 @@ class InjectorTest extends DependencyInjectionTestCase
 
         self::assertSame(
             $override = new RuntimeException(),
-            $injector->instantiate(FakeClassUsingContexts::class, [
+            $injector->instantiate(FakeClassWithContexts::class, [
                 1 => $override
             ])->runtimeException
         );
@@ -152,12 +152,22 @@ class InjectorTest extends DependencyInjectionTestCase
         self::assertNull($injector->call(fn (?FakeClassNoConstructor $obj) => $obj));
     }
 
-    public function testCall_WithUnresolvableDependency_ThrowsDependencyInjectionException(): void
+    public function testCall_WithUnresolvableDependency_ThrowsInjectorException(): void
     {
         $injector = $this->createInjector();
 
-        $this->expectException(DependencyInjectionException::class);
+        $this->expectException(InjectorException::class);
         $injector->call(fn (FakeClassNoConstructor $obj) => $obj);
+    }
+
+    public function testCall_WithDependencyWithUnresolvableDependency_ThrowsInjectorException(): void
+    {
+        $container = new Container();
+        $container->addSingletonClass(FakeClassWithConstructor::class);
+        $injector = new Injector($container);
+
+        $this->expectException(InjectorException::class);
+        $injector->call(fn (FakeClassWithConstructor $obj) => $obj);
     }
 
     public function testCall_WithUntypedDependency_ThrowsUnresolvedParameterException(): void

@@ -63,8 +63,8 @@ class InterfaceContainerTest extends DependencyInjectionTestCase
         $container = new InterfaceContainer(FakeClassNoConstructor::class);
 
         self::assertUnresolvedClassException(
-            FakeClassUsingContexts::class,
-            fn () => $container->get(FakeClassUsingContexts::class)
+            FakeClassWithContexts::class,
+            fn () => $container->get(FakeClassWithContexts::class)
         );
     }
 
@@ -86,6 +86,6 @@ class InterfaceContainerTest extends DependencyInjectionTestCase
     {
         $container = new InterfaceContainer(FakeClassNoConstructor::class);
 
-        self::assertFalse($container->has(FakeClassUsingContexts::class));
+        self::assertFalse($container->has(FakeClassWithContexts::class));
     }
 }

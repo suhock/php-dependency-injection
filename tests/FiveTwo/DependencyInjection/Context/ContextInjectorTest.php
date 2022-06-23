@@ -15,8 +15,8 @@ use Exception;
 use FiveTwo\DependencyInjection\Container;
 use FiveTwo\DependencyInjection\FakeClassImplementsInterfaces;
 use FiveTwo\DependencyInjection\FakeClassNoConstructor;
-use FiveTwo\DependencyInjection\FakeClassUsingContexts;
 use FiveTwo\DependencyInjection\FakeClassWithConstructor;
+use FiveTwo\DependencyInjection\FakeClassWithContexts;
 use FiveTwo\DependencyInjection\FakeInterfaceOne;
 use FiveTwo\DependencyInjection\FakeInterfaceTwo;
 use PHPUnit\Framework\TestCase;
@@ -194,7 +194,7 @@ class ContextInjectorTest extends TestCase
 
         $injector = new ContextInjector($container);
 
-        self::assertSame($throwable3, $injector->instantiate(FakeClassUsingContexts::class)->throwable);
-        self::assertSame($runtime1, $injector->instantiate(FakeClassUsingContexts::class)->runtimeException);
+        self::assertSame($throwable3, $injector->instantiate(FakeClassWithContexts::class)->throwable);
+        self::assertSame($runtime1, $injector->instantiate(FakeClassWithContexts::class)->runtimeException);
     }
 }

@@ -12,7 +12,7 @@ declare(strict_types=1);
 namespace FiveTwo\DependencyInjection\Context;
 
 use FiveTwo\DependencyInjection\Container;
-use FiveTwo\DependencyInjection\DependencyInjectionException;
+use FiveTwo\DependencyInjection\ContainerException;
 use FiveTwo\DependencyInjection\DependencyInjectionTestCase;
 use FiveTwo\DependencyInjection\FakeClassNoConstructor;
 use FiveTwo\DependencyInjection\InjectorInterface;
@@ -157,11 +157,11 @@ class ContextContainerTest extends DependencyInjectionTestCase
         self::assertSame('test1', $container->pop());
     }
 
-    public function testPop_WithEmptyStack_ThrowsDependencyInjectionException(): void
+    public function testPop_WithEmptyStack_ThrowsContainerException(): void
     {
         $container = $this->createContainer();
 
-        $this->expectException(DependencyInjectionException::class);
+        $this->expectException(ContainerException::class);
         $container->pop();
     }
 

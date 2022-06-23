@@ -19,7 +19,7 @@ use Throwable;
  * Fakes a simple class which specifies contexts at various scopes.
  */
 #[Context('context1')]
-class FakeClassUsingContexts
+class FakeClassWithContexts
 {
     public readonly Throwable $throwable;
 

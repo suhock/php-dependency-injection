@@ -50,28 +50,21 @@ class DependencyInjectionTestCase extends TestCase
 
     /**
      * @param class-string $exClassName
-     * @param string $exContext
      * @param callable $codeUnderTest
      *
      * @return void
      */
     public static function assertCircularDependencyException(
         string $exClassName,
-        string $exContext,
         callable $codeUnderTest
     ): void {
         self::assertException(
             $codeUnderTest,
-            function (CircularDependencyException $exception) use ($exClassName, $exContext): void {
+            function (CircularDependencyException $exception) use ($exClassName): void {
                 self::assertSame(
                     $exClassName,
                     $exception->getClassName(),
                     'Failed asserting that class name is identical'
-                );
-                self::assertSame(
-                    $exContext,
-                    $exception->getContext(),
-                    'Failed asserting that context is identical'
                 );
             }
         );

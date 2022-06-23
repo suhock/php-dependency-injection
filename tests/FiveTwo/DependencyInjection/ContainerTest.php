@@ -11,6 +11,9 @@ declare(strict_types=1);
 
 namespace FiveTwo\DependencyInjection;
 
+use FiveTwo\DependencyInjection\Lifetime\SingletonStrategy;
+use FiveTwo\DependencyInjection\Provision\ObjectInstanceProvider;
+
 /**
  * Test suite for {@see Container}.
  */
@@ -28,6 +31,30 @@ class ContainerTest extends DependencyInjectionTestCase
         $container->method('has')->willReturn(true);
 
         return $container;
+    }
+
+    public function testAdd_WithValidClass_AddsDescriptor(): void
+    {
+        $container = $this->createContainer();
+        $lifetimeStrategy = new SingletonStrategy(FakeClassNoConstructor::class);
+        $instanceProvider = new ObjectInstanceProvider(FakeClassNoConstructor::class, new FakeClassNoConstructor());
+
+        /** @phpstan-ignore-next-line PHPStan fails to resolve correct types */
+        $container->add(FakeClassNoConstructor::class, $lifetimeStrategy, $instanceProvider);
+        self::assertTrue($container->has(FakeClassNoConstructor::class));
+    }
+
+    public function testAdd_WithDuplicateClass_ThrowsContainerException(): void
+    {
+        $container = $this->createContainer();
+        $lifetimeStrategy = new SingletonStrategy(FakeClassNoConstructor::class);
+        $instanceProvider = new ObjectInstanceProvider(FakeClassNoConstructor::class, new FakeClassNoConstructor());
+        /** @phpstan-ignore-next-line PHPStan fails to resolve correct types */
+        $container->add(FakeClassNoConstructor::class, $lifetimeStrategy, $instanceProvider);
+
+        $this->expectException(ContainerException::class);
+        /** @phpstan-ignore-next-line PHPStan fails to resolve correct types */
+        $container->add(FakeClassNoConstructor::class, $lifetimeStrategy, $instanceProvider);
     }
 
     public function testBuild_WithCallback_InvokesCallbackWithSelf(): void
@@ -106,7 +133,6 @@ class ContainerTest extends DependencyInjectionTestCase
 
         self::assertCircularDependencyException(
             FakeClassNoConstructor::class,
-            '',
             fn () => $container->get(FakeClassNoConstructor::class)
         );
     }

@@ -12,8 +12,11 @@ declare(strict_types=1);
 namespace FiveTwo\DependencyInjection;
 
 /**
- * Exception that indicates a dependency could not be resolved.
+ * Fakes a class with a string dependency.
  */
-class UnresolvedDependencyException extends DependencyInjectionException
+class FakeClassWithStringDependency
 {
+    public function __construct(public readonly string $string)
+    {
+    }
 }
