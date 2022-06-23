@@ -14,32 +14,21 @@ namespace FiveTwo\DependencyInjection;
 use Throwable;
 
 /**
- * Exception that indicates the container could not resolve a value for the specified class.
- *
- * @template TClass of object
+ * Exception that indicates an error specific to a container occurred (i.e. while building or retrieving instances from
+ * the container).
  */
-class UnresolvedClassException extends ContainerException
+class ContainerException extends DependencyInjectionException
 {
     /**
      * @inheritDoc
      *
-     * @param class-string<TClass> $className The name of the class that could not be resolved
+     * @param string $message [optional] The Exception message to throw.
      * @param Throwable|null $previous [optional] The previous throwable used for exception chaining. If the throwable
      * is an instance of {@see DependencyInjectionException} then its content will be consolidated into the new
      * instance.
      */
-    public function __construct(
-        private readonly string $className,
-        ?Throwable $previous = null
-    ) {
-        parent::__construct("The container does not contain the class $className", $previous);
-    }
-
-    /**
-     * @return class-string<TClass> The name of the class that could not be resolved
-     */
-    public function getClassName(): string
+    public function __construct(string $message = '', ?Throwable $previous = null)
     {
-        return $this->className;
+        parent::__construct($message, previous: $previous);
     }
 }

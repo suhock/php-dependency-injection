@@ -15,9 +15,9 @@ use LogicException;
 use Throwable;
 
 /**
- * Exception that indicates an error occurred as part of the dependency injection process.
+ * Exception that indicates an error occurred in the dependency injection library.
  */
-class DependencyInjectionException extends LogicException
+abstract class DependencyInjectionException extends LogicException
 {
     protected ?DependencyInjectionException $consolidatedException = null;
 
@@ -26,8 +26,8 @@ class DependencyInjectionException extends LogicException
      *
      * @param string $message [optional] The Exception message to throw.
      * @param Throwable|null $previous [optional] The previous throwable used for exception chaining. If the throwable
-     * is an instance of {@see DependencyInjectionException} then its content will be consolidated into the new
-     * instance.
+     * is of type {@see DependencyInjectionException} then its message and previous exception will be consolidated into
+     * the new instance.
      */
     public function __construct(string $message = '', ?Throwable $previous = null)
     {
@@ -43,8 +43,8 @@ class DependencyInjectionException extends LogicException
     }
 
     /**
-     * @return DependencyInjectionException|null The {@see DependencyInjectionException} that was consolidated into this
-     * instance, or <code>null</code>
+     * @return DependencyInjectionException|null The {@see DependencyInjectionException} that was passed in as previous,
+     * but was consolidated into this instance, or <code>null</code>
      */
     public function getConsolidatedException(): ?DependencyInjectionException
     {

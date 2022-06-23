@@ -59,7 +59,7 @@ class Descriptor
         try {
             /** @psalm-suppress InvalidArgument Psalm is incorrectly inferring TClass as Descriptor for some reason */
             $instance = $this->lifetimeStrategy->get($this->instanceProvider->get(...));
-        } catch (CircularDependencyException $e) {
+        } catch (CircularDependencyException|CircularParameterException $e) {
             throw new CircularDependencyException($this->className, previous: $e);
         } finally {
             $this->isResolving = false;

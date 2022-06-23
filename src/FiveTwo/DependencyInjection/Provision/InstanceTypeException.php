@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace FiveTwo\DependencyInjection\Provision;
 
 use FiveTwo\DependencyInjection\DependencyInjectionException;
+use FiveTwo\DependencyInjection\InjectorException;
 use Throwable;
 
 /**
@@ -19,7 +20,7 @@ use Throwable;
  *
  * @template TExpected of object
  */
-class InstanceTypeException extends DependencyInjectionException
+class InstanceTypeException extends InjectorException
 {
     /**
      * @inheritDoc

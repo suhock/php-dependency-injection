@@ -17,29 +17,29 @@ use Throwable;
  * Exception that indicates the dependency could not be resolved because it eventually depends on itself.
  *
  * @template TClass of object
- * @template-extends CircularDependencyException<TClass>
+ * @implements CircularExceptionInterface<TClass>
  */
-class CircularParameterException extends CircularDependencyException
+class CircularParameterException extends InjectorException implements CircularExceptionInterface
 {
     /**
      * @inheritDoc
      *
-     * @param string $functionName The name of the function with the dependency
-     * @param string $parameterName The name of the parameter that could not be resolved
-     * @param class-string<TClass> $className The name of the class that could not be resolved
+     * @param class-string<TClass> $className The class name of the dependency that could not be resolved due to a
+     * circular dependency
+     * @param string $functionName The name fully qualified name of the function or method with the circular dependency
+     * @param string $parameterName The name of the parameter with the circular dependency
      * @param Throwable|null $previous [optional] The previous throwable used for exception chaining. If the throwable
      * is an instance of {@see DependencyInjectionException} then its content will be consolidated into the new
      * instance.
      */
     public function __construct(
+        private readonly string $className,
         private readonly string $functionName,
         private readonly string $parameterName,
-        string $className,
         ?Throwable $previous = null
     ) {
         parent::__construct(
-            $className,
-            "\$$parameterName in $functionName()",
+            "Circular dependency detected for $className \$$parameterName in $functionName()",
             $previous
         );
     }
@@ -58,5 +58,13 @@ class CircularParameterException extends CircularDependencyException
     public function getParameterName(): string
     {
         return $this->parameterName;
+    }
+
+    /**
+     * @return class-string<TClass>
+     */
+    public function getClassName(): string
+    {
+        return $this->className;
     }
 }

@@ -11,7 +11,7 @@ declare(strict_types=1);
 
 namespace FiveTwo\DependencyInjection\Provision;
 
-use FiveTwo\DependencyInjection\DependencyInjectionException;
+use FiveTwo\DependencyInjection\ContainerException;
 use Throwable;
 
 /**
@@ -20,7 +20,7 @@ use Throwable;
  * @template TExpected of object
  * @template TActual of object
  */
-class ImplementationException extends DependencyInjectionException
+class ImplementationException extends ContainerException
 {
     /**
      * @param class-string<TExpected> $expectedClassName The name of the expected base class

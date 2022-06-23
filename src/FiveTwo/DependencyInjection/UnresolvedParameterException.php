@@ -16,7 +16,7 @@ use Throwable;
 /**
  * Exception that indicates the injector could not resolve a value for a function parameter.
  */
-class UnresolvedParameterException extends UnresolvedDependencyException
+class UnresolvedParameterException extends InjectorException
 {
     /**
      * @inheritDoc
@@ -34,12 +34,13 @@ class UnresolvedParameterException extends UnresolvedDependencyException
         private readonly ?string $parameterType = null,
         ?Throwable $previous = null
     ) {
-        parent::__construct(sprintf(
-            'Could not provide a value for required parameter %s$%s in function %s()',
-            $parameterType !== null ? $parameterType . ' ' : '',
-            $parameterName,
-            $functionName
-        ), $previous);
+        parent::__construct(
+            $parameterType !== null ?
+                "Could not provide a value for required parameter $parameterType $parameterName in function " .
+                    "$this->functionName()" :
+                "Could not provide a value for required parameter $parameterName in function $this->functionName()",
+            $previous
+        );
     }
 
     /**

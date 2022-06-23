@@ -14,32 +14,27 @@ namespace FiveTwo\DependencyInjection;
 use Throwable;
 
 /**
- * Exception that indicates the dependency could not be resolved because it eventually depends on itself.
+ * Exception that indicates an instance could not be resolved in a container because it has a circular dependency.
  *
  * @template TClass of object
+ * @implements CircularExceptionInterface<TClass>
  */
-class CircularDependencyException extends DependencyInjectionException
+class CircularDependencyException extends ContainerException implements CircularExceptionInterface
 {
     /**
      * @inheritDoc
      *
-     * @param class-string<TClass> $className The name of the class that could not be resolved
-     * @param string $context [optional] The context in which the dependency could not be resolved
+     * @param class-string<TClass> $className The class name of the dependency that could not be resolved due to a
+     * circular dependency
      * @param Throwable|null $previous [optional] The previous throwable used for exception chaining. If the throwable
      * is an instance of {@see DependencyInjectionException} then its content will be consolidated into the new
      * instance.
      */
     public function __construct(
         private readonly string $className,
-        private readonly string $context = '',
         ?Throwable $previous = null
     ) {
-        parent::__construct(
-            $context === '' ?
-                "Circular dependency detected for class $className" :
-                "Circular dependency detected for class $className in $context",
-            $previous
-        );
+        parent::__construct("Circular dependency detected for class $className", $previous);
     }
 
     /**
@@ -48,13 +43,5 @@ class CircularDependencyException extends DependencyInjectionException
     public function getClassName(): string
     {
         return $this->className;
-    }
-
-    /**
-     * @return string
-     */
-    public function getContext(): string
-    {
-        return $this->context;
     }
 }

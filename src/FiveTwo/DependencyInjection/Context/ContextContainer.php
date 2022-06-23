@@ -12,8 +12,8 @@ declare(strict_types=1);
 namespace FiveTwo\DependencyInjection\Context;
 
 use Closure;
+use FiveTwo\DependencyInjection\ContainerException;
 use FiveTwo\DependencyInjection\ContainerInterface;
-use FiveTwo\DependencyInjection\DependencyInjectionException;
 use FiveTwo\DependencyInjection\InjectorInterface;
 use FiveTwo\DependencyInjection\UnresolvedClassException;
 
@@ -87,7 +87,7 @@ class ContextContainer implements ContainerInterface
     public function pop(): string
     {
         if (count($this->stack) === 0) {
-            throw new DependencyInjectionException('Context stack is empty');
+            throw new ContainerException('Context stack is empty');
         }
 
         return array_pop($this->stack);

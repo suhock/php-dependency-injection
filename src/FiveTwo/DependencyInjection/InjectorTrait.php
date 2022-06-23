@@ -92,11 +92,11 @@ trait InjectorTrait
              * infers that $className will always be a valid. Don't want to assume this.
              */
         } catch (ReflectionException $e) {
-            throw new DependencyInjectionException("Class $className does not exist", $e);
+            throw new InjectorException("Class $className does not exist", $e);
         }
 
         if (!$rClass->isInstantiable()) {
-            throw new DependencyInjectionException("Class $className is not instantiable");
+            throw new InjectorException("Class $className is not instantiable");
         }
 
         return self::invoke(
@@ -153,11 +153,11 @@ trait InjectorTrait
             if (self::tryResolveParameter($rParam, $paramValue)) {
                 return $paramValue;
             }
-        } catch (CircularDependencyException $exception) {
+        } catch (CircularDependencyException|CircularParameterException $exception) {
             throw new CircularParameterException(
+                $exception->getClassName(),
                 $functionName,
                 $rParam->getName(),
-                $exception->getClassName(),
                 $exception->getPrevious()
             );
         } catch (DependencyInjectionException $exception) {
