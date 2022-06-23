@@ -57,7 +57,7 @@ trait InjectorTrait
             $rFunction = new ReflectionFunction($function(...));
         } catch (ReflectionException $e) {
             // The callable parameter type constraint should make this unreachable
-            throw new DependencyInjectionException("Function $functionName() does not exist", $e);
+            throw new InjectorException("Function $functionName() does not exist", $e);
         }
 
         return self::invoke(
