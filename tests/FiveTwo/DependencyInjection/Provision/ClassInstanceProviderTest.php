@@ -40,7 +40,7 @@ class ClassInstanceProviderTest extends DependencyInjectionTestCase
     {
         $factory = new ClassInstanceProvider(
             FakeClassNoConstructor::class,
-            new Injector(self::createMock(ContainerInterface::class)),
+            new Injector($this->createMock(ContainerInterface::class)),
             function (FakeClassNoConstructor $obj) {
                 $obj->string = 'test';
             }

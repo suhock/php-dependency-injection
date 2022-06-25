@@ -28,7 +28,7 @@ class InterfaceContainerTest extends DependencyInjectionTestCase
 
     public function testGet_WithExplicitInjectorAndExplicitFactory_UsesInjectorAndFactory(): void
     {
-        $container = self::createMock(ContainerInterface::class);
+        $container = $this->createMock(ContainerInterface::class);
         $container->expects(self::once())
             ->method('get')
             ->with(FakeClassNoConstructor::class)
@@ -54,7 +54,7 @@ class InterfaceContainerTest extends DependencyInjectionTestCase
 
         self::assertUnresolvedClassException(
             FakeClassNoConstructor::class,
-            fn () => $container->get(FakeClassNoConstructor::class)
+            static fn () => $container->get(FakeClassNoConstructor::class)
         );
     }
 
@@ -64,7 +64,7 @@ class InterfaceContainerTest extends DependencyInjectionTestCase
 
         self::assertUnresolvedClassException(
             FakeClassWithContexts::class,
-            fn () => $container->get(FakeClassWithContexts::class)
+            static fn () => $container->get(FakeClassWithContexts::class)
         );
     }
 

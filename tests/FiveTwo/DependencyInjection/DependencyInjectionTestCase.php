@@ -60,7 +60,7 @@ class DependencyInjectionTestCase extends TestCase
     ): void {
         self::assertException(
             $codeUnderTest,
-            function (CircularDependencyException $exception) use ($exClassName): void {
+            static function (CircularDependencyException $exception) use ($exClassName): void {
                 self::assertSame(
                     $exClassName,
                     $exception->getClassName(),
@@ -86,7 +86,7 @@ class DependencyInjectionTestCase extends TestCase
     ): void {
         self::assertException(
             $codeUnderTest,
-            function (CircularParameterException $exception) use (
+            static function (CircularParameterException $exception) use (
                 $exClassName,
                 $exFunctionName,
                 $exParameterName
@@ -124,7 +124,7 @@ class DependencyInjectionTestCase extends TestCase
     ): void {
         self::assertException(
             $codeUnderTest,
-            function (ImplementationException $exception) use ($exExpectedClassName, $exActualClassName) {
+            static function (ImplementationException $exception) use ($exExpectedClassName, $exActualClassName) {
                 self::assertSame(
                     $exExpectedClassName,
                     $exception->getExpectedClassName(),
@@ -153,7 +153,7 @@ class DependencyInjectionTestCase extends TestCase
     ): void {
         self::assertException(
             $codeUnderTest,
-            function (InstanceTypeException $exception) use ($exExpectedClassName, $exActualClassName) {
+            static function (InstanceTypeException $exception) use ($exExpectedClassName, $exActualClassName) {
                 self::assertSame(
                     $exExpectedClassName,
                     $exception->getExpectedClassName(),
@@ -164,12 +164,12 @@ class DependencyInjectionTestCase extends TestCase
                     self::assertInstanceOf(
                         $exActualClassName,
                         $exception->getActualValue(),
-                        'Failed asserting that type of value is identical'
+                        'Failed asserting that actual value is of the correct type'
                     );
                 } else {
                     self::assertNull(
-                        $exception->getConsolidatedException(),
-                        'Failed asserting that type of value is identical'
+                        $exception->getActualValue(),
+                        'Failed asserting that actual value is null'
                     );
                 }
             }
@@ -188,7 +188,7 @@ class DependencyInjectionTestCase extends TestCase
     ): void {
         self::assertException(
             $codeUnderTest,
-            function (UnresolvedClassException $exception) use ($expectedClassName) {
+            static function (UnresolvedClassException $exception) use ($expectedClassName) {
                 self::assertSame(
                     $expectedClassName,
                     $exception->getClassName(),
@@ -214,7 +214,7 @@ class DependencyInjectionTestCase extends TestCase
     ): void {
         self::assertException(
             $codeUnderTest,
-            function (UnresolvedParameterException $exception) use (
+            static function (UnresolvedParameterException $exception) use (
                 $exFunctionName,
                 $exParameterName,
                 $exParameterType

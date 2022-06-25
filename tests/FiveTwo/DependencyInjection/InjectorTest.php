@@ -189,7 +189,7 @@ class InjectorTest extends DependencyInjectionTestCase
             'Closure::__invoke',
             'a',
             null,
-            fn () => $injector->call(fn ($a) => $a)
+            static fn () => $injector->call(fn ($a) => $a)
         );
     }
 
@@ -201,7 +201,7 @@ class InjectorTest extends DependencyInjectionTestCase
             'Closure::__invoke',
             'a',
             'string',
-            fn () => $injector->call(fn (string $a) => $a)
+            static fn () => $injector->call(fn (string $a) => $a)
         );
     }
 
@@ -249,7 +249,7 @@ class InjectorTest extends DependencyInjectionTestCase
             'Closure::__invoke',
             'obj',
             FakeInterfaceOne::class . '|' . FakeInterfaceTwo::class,
-            fn () => $injector->call(fn (FakeInterfaceOne|FakeInterfaceTwo $obj) => $obj)
+            static fn () => $injector->call(fn (FakeInterfaceOne|FakeInterfaceTwo $obj) => $obj)
         );
     }
 
@@ -302,7 +302,7 @@ class InjectorTest extends DependencyInjectionTestCase
             'Closure::__invoke',
             'obj',
             FakeInterfaceOne::class . '&' . FakeInterfaceThree::class,
-            fn () => $injector->call(fn (FakeInterfaceOne&FakeInterfaceThree $obj) => $obj)
+            static fn () => $injector->call(fn (FakeInterfaceOne&FakeInterfaceThree $obj) => $obj)
         );
     }
 
@@ -320,7 +320,7 @@ class InjectorTest extends DependencyInjectionTestCase
             'Closure::__invoke',
             'obj',
             FakeClassNoConstructor::class,
-            fn () => $injector->call(fn (FakeClassNoConstructor $obj) => $obj)
+            static fn () => $injector->call(fn (FakeClassNoConstructor $obj) => $obj)
         );
     }
 }

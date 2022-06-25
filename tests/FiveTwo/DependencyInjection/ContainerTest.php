@@ -26,7 +26,7 @@ class ContainerTest extends DependencyInjectionTestCase
 
     private function getNestedContainer(): ContainerInterface
     {
-        $container = self::createStub(ContainerInterface::class);
+        $container = $this->createStub(ContainerInterface::class);
         $container->method('get')->willReturn($container);
         $container->method('has')->willReturn(true);
 
@@ -60,7 +60,7 @@ class ContainerTest extends DependencyInjectionTestCase
     public function testBuild_WithCallback_InvokesCallbackWithSelf(): void
     {
         $container = $this->createContainer();
-        $builder = self::createMock(FakeBuilder::class);
+        $builder = $this->createMock(FakeBuilder::class);
         $builder->expects(self::once())
             ->method('build')
             ->with($container);
@@ -122,7 +122,7 @@ class ContainerTest extends DependencyInjectionTestCase
 
         self::assertUnresolvedClassException(
             FakeClassNoConstructor::class,
-            fn () => $container->get(FakeClassNoConstructor::class)
+            static fn () => $container->get(FakeClassNoConstructor::class)
         );
     }
 
@@ -133,7 +133,7 @@ class ContainerTest extends DependencyInjectionTestCase
 
         self::assertCircularDependencyException(
             FakeClassNoConstructor::class,
-            fn () => $container->get(FakeClassNoConstructor::class)
+            static fn () => $container->get(FakeClassNoConstructor::class)
         );
     }
 

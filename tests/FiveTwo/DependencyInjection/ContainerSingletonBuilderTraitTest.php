@@ -86,7 +86,7 @@ class ContainerSingletonBuilderTraitTest extends DependencyInjectionTestCase
         self::assertImplementationException(
             FakeClassNoConstructor::class,
             FakeClassNoConstructor::class,
-            fn () => $container->addSingletonImplementation(
+            static fn () => $container->addSingletonImplementation(
                 FakeClassNoConstructor::class,
                 FakeClassNoConstructor::class
             )
@@ -100,7 +100,7 @@ class ContainerSingletonBuilderTraitTest extends DependencyInjectionTestCase
         self::assertImplementationException(
             FakeClassExtendsNoConstructor::class,
             FakeClassNoConstructor::class,
-            fn () => $container->addSingletonImplementation(
+            static fn () => $container->addSingletonImplementation(
                 FakeClassExtendsNoConstructor::class,
                 FakeClassNoConstructor::class
             )
@@ -130,7 +130,7 @@ class ContainerSingletonBuilderTraitTest extends DependencyInjectionTestCase
         self::assertInstanceTypeException(
             FakeClassNoConstructor::class,
             null,
-            fn () => $container->get(FakeClassNoConstructor::class)
+            static fn () => $container->get(FakeClassNoConstructor::class)
         );
     }
 
@@ -145,7 +145,7 @@ class ContainerSingletonBuilderTraitTest extends DependencyInjectionTestCase
         self::assertInstanceTypeException(
             FakeClassNoConstructor::class,
             LogicException::class,
-            fn () => $container->get(FakeClassNoConstructor::class)
+            static fn () => $container->get(FakeClassNoConstructor::class)
         );
     }
 
@@ -168,7 +168,7 @@ class ContainerSingletonBuilderTraitTest extends DependencyInjectionTestCase
         self::assertInstanceTypeException(
             FakeClassExtendsNoConstructor::class,
             FakeClassNoConstructor::class,
-            fn () => $container->addSingletonInstance(
+            static fn () => $container->addSingletonInstance(
                 FakeClassExtendsNoConstructor::class,
                 new FakeClassNoConstructor()
             )
@@ -196,7 +196,7 @@ class ContainerSingletonBuilderTraitTest extends DependencyInjectionTestCase
 
         self::assertUnresolvedClassException(
             FakeClassNoConstructor::class,
-            fn () => $container->get(FakeClassNoConstructor::class)
+            static fn () => $container->get(FakeClassNoConstructor::class)
         );
     }
 
@@ -217,7 +217,7 @@ class ContainerSingletonBuilderTraitTest extends DependencyInjectionTestCase
 
         self::assertUnresolvedClassException(
             DateTime::class,
-            fn () => $container->get(DateTime::class)
+            static fn () => $container->get(DateTime::class)
         );
     }
 
@@ -236,7 +236,7 @@ class ContainerSingletonBuilderTraitTest extends DependencyInjectionTestCase
     {
         $container = $this->createContainer()->addSingletonInterface(FakeClassNoConstructor::class);
 
-        self::assertUnresolvedClassException(DateTime::class, fn () => $container->get(DateTime::class));
+        self::assertUnresolvedClassException(DateTime::class, static fn () => $container->get(DateTime::class));
     }
 
     public function testAddSingletonAttribute_WhenClassHasAttribute_GetReturnsInstance(): void
@@ -250,6 +250,6 @@ class ContainerSingletonBuilderTraitTest extends DependencyInjectionTestCase
     {
         $container = $this->createContainer()->addSingletonAttribute(FakeAttribute::class);
 
-        self::assertUnresolvedClassException(DateTime::class, fn () => $container->get(DateTime::class));
+        self::assertUnresolvedClassException(DateTime::class, static fn () => $container->get(DateTime::class));
     }
 }

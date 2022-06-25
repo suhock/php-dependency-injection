@@ -25,7 +25,10 @@ class ObjectInstanceProviderTest extends DependencyInjectionTestCase
         self::assertInstanceTypeException(
             FakeClassExtendsNoConstructor::class,
             FakeClassNoConstructor::class,
-            fn () => new ObjectInstanceProvider(FakeClassExtendsNoConstructor::class, new FakeClassNoConstructor())
+            static fn () => new ObjectInstanceProvider(
+                FakeClassExtendsNoConstructor::class,
+                new FakeClassNoConstructor()
+            )
         );
     }
 

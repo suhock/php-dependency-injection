@@ -33,7 +33,7 @@ class NamespaceContainerTest extends DependencyInjectionTestCase
 
     public function testGet_WithExplicitInjectorAndExplicitFactory_UsesInjectorAndFactory(): void
     {
-        $container = self::createMock(ContainerInterface::class);
+        $container = $this->createMock(ContainerInterface::class);
         $container->expects(self::exactly(2))
             ->method('get')
             ->withConsecutive([Throwable::class], [RuntimeException::class])
@@ -58,13 +58,13 @@ class NamespaceContainerTest extends DependencyInjectionTestCase
     {
         $container = new NamespaceContainer(
             __NAMESPACE__,
-            self::createMock(InjectorInterface::class),
+            $this->createMock(InjectorInterface::class),
             fn () => null
         );
 
         self::assertUnresolvedClassException(
             DateTime::class,
-            fn () => $container->get(DateTime::class)
+            static fn () => $container->get(DateTime::class)
         );
     }
 

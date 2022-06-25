@@ -86,7 +86,7 @@ class ContainerTransientBuilderTraitTest extends DependencyInjectionTestCase
         self::assertImplementationException(
             FakeClassNoConstructor::class,
             FakeClassNoConstructor::class,
-            fn () => $container->addTransientImplementation(
+            static fn () => $container->addTransientImplementation(
                 FakeClassNoConstructor::class,
                 FakeClassNoConstructor::class
             )
@@ -100,7 +100,7 @@ class ContainerTransientBuilderTraitTest extends DependencyInjectionTestCase
         self::assertImplementationException(
             FakeClassExtendsNoConstructor::class,
             FakeClassNoConstructor::class,
-            fn () => $container->addTransientImplementation(
+            static fn () => $container->addTransientImplementation(
                 FakeClassExtendsNoConstructor::class,
                 FakeClassNoConstructor::class
             )
@@ -130,7 +130,7 @@ class ContainerTransientBuilderTraitTest extends DependencyInjectionTestCase
         self::assertInstanceTypeException(
             FakeClassNoConstructor::class,
             null,
-            fn () => $container->get(FakeClassNoConstructor::class)
+            static fn () => $container->get(FakeClassNoConstructor::class)
         );
     }
 
@@ -145,7 +145,7 @@ class ContainerTransientBuilderTraitTest extends DependencyInjectionTestCase
         self::assertInstanceTypeException(
             FakeClassNoConstructor::class,
             LogicException::class,
-            fn () => $container->get(FakeClassNoConstructor::class)
+            static fn () => $container->get(FakeClassNoConstructor::class)
         );
     }
 
@@ -170,7 +170,7 @@ class ContainerTransientBuilderTraitTest extends DependencyInjectionTestCase
 
         self::assertUnresolvedClassException(
             FakeClassNoConstructor::class,
-            fn () => $container->get(FakeClassNoConstructor::class)
+            static fn () => $container->get(FakeClassNoConstructor::class)
         );
     }
 
@@ -191,7 +191,7 @@ class ContainerTransientBuilderTraitTest extends DependencyInjectionTestCase
 
         self::assertUnresolvedClassException(
             DateTime::class,
-            fn () => $container->get(DateTime::class)
+            static fn () => $container->get(DateTime::class)
         );
     }
 
@@ -212,7 +212,7 @@ class ContainerTransientBuilderTraitTest extends DependencyInjectionTestCase
 
         self::assertUnresolvedClassException(
             DateTime::class,
-            fn () => $container->get(DateTime::class)
+            static fn () => $container->get(DateTime::class)
         );
     }
 
@@ -227,6 +227,6 @@ class ContainerTransientBuilderTraitTest extends DependencyInjectionTestCase
     {
         $container = $this->createContainer()->addTransientAttribute(FakeAttribute::class);
 
-        self::assertUnresolvedClassException(DateTime::class, fn () => $container->get(DateTime::class));
+        self::assertUnresolvedClassException(DateTime::class, static fn () => $container->get(DateTime::class));
     }
 }

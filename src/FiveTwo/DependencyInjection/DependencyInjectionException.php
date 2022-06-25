@@ -31,7 +31,7 @@ abstract class DependencyInjectionException extends LogicException
      */
     public function __construct(string $message = '', ?Throwable $previous = null)
     {
-        if ($previous instanceof DependencyInjectionException) {
+        if ($previous instanceof self) {
             parent::__construct(
                 ($message !== '' ? "$message\n=> " : '') . $previous->getMessage(),
                 previous: $previous->getPrevious()

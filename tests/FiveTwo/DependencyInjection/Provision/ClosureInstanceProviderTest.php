@@ -27,7 +27,7 @@ class ClosureInstanceProviderTest extends DependencyInjectionTestCase
     {
         $factory = new ClosureInstanceProvider(
             FakeClassNoConstructor::class,
-            $factoryMethod = fn () => new FakeClassNoConstructor(),
+            $factoryMethod = static fn () => new FakeClassNoConstructor(),
             $injector = $this->createMock(InjectorInterface::class)
         );
 
@@ -43,7 +43,7 @@ class ClosureInstanceProviderTest extends DependencyInjectionTestCase
     {
         $factory = new ClosureInstanceProvider(
             FakeClassNoConstructor::class,
-            $factoryMethod = fn () => null,
+            $factoryMethod = static fn () => null,
             $injector = $this->createMock(InjectorInterface::class)
         );
 
@@ -55,7 +55,7 @@ class ClosureInstanceProviderTest extends DependencyInjectionTestCase
         self::assertInstanceTypeException(
             FakeClassNoConstructor::class,
             null,
-            fn () => self::assertNull($factory->get())
+            static fn () => self::assertNull($factory->get())
         );
     }
 
@@ -64,13 +64,13 @@ class ClosureInstanceProviderTest extends DependencyInjectionTestCase
         $factory = new ClosureInstanceProvider(
             FakeClassExtendsNoConstructor::class,
             fn () => new FakeClassNoConstructor(),
-            new Injector(self::createStub(ContainerInterface::class))
+            new Injector($this->createStub(ContainerInterface::class))
         );
 
         self::assertInstanceTypeException(
             FakeClassExtendsNoConstructor::class,
             FakeClassNoConstructor::class,
-            fn () => $factory->get()
+            static fn () => $factory->get()
         );
     }
 }

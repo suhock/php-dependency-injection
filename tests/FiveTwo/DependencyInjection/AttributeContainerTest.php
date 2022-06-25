@@ -44,7 +44,7 @@ class AttributeContainerTest extends DependencyInjectionTestCase
 
         self::assertUnresolvedClassException(
             FakeClassWithContexts::class,
-            fn () => $container->get(FakeClassWithContexts::class)
+            static fn () => $container->get(FakeClassWithContexts::class)
         );
     }
 
@@ -59,7 +59,7 @@ class AttributeContainerTest extends DependencyInjectionTestCase
         /** @phpstan-ignore-next-line */
             'NonExistentClass',
             /** @phpstan-ignore-next-line */
-            fn () => $container->get('NonExistentClass')
+            static fn () => $container->get('NonExistentClass')
         );
     }
 
