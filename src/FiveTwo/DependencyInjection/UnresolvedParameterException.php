@@ -37,9 +37,9 @@ class UnresolvedParameterException extends InjectorException
     ) {
         parent::__construct(
             $parameterType !== null ?
-                "Could not provide a value for required parameter $parameterType $parameterName in function " .
+                "Could not provide a value for required parameter $parameterType \$$parameterName in function " .
                     "$this->functionName()" :
-                "Could not provide a value for required parameter $parameterName in function $this->functionName()",
+                "Could not provide a value for required parameter \$$parameterName in function $this->functionName()",
             $previous
         );
     }
