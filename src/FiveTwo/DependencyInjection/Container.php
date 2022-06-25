@@ -14,6 +14,8 @@ namespace FiveTwo\DependencyInjection;
 use FiveTwo\DependencyInjection\Lifetime\LifetimeStrategy;
 use FiveTwo\DependencyInjection\Provision\ClosureInstanceProvider;
 
+use function array_key_exists;
+
 /**
  * A default implementation for the {@see ContainerInterface}.
  */

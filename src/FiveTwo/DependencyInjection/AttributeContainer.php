@@ -15,6 +15,8 @@ use Closure;
 use ReflectionClass;
 use ReflectionException;
 
+use function count;
+
 /**
  * Provides instances of classes with the given attribute.
  *

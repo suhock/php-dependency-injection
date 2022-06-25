@@ -15,6 +15,8 @@ use Attribute;
 use BackedEnum;
 use UnitEnum;
 
+use function is_string;
+
 /**
  * Pushes the specified context onto the context stack of the {@see ContextContainer} that is being used to inject
  * dependencies. The context will be scoped to the class, function, or function parameter to which it is applied.

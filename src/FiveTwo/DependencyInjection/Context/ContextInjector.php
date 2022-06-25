@@ -20,6 +20,8 @@ use ReflectionMethod;
 use ReflectionParameter;
 use UnitEnum;
 
+use function count;
+
 /**
  * Context-aware injector for injecting dependencies into function and constructor calls.
  *

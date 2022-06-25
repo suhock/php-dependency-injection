@@ -15,6 +15,10 @@ use FiveTwo\DependencyInjection\DependencyInjectionException;
 use FiveTwo\DependencyInjection\InjectorException;
 use Throwable;
 
+use function get_class;
+use function gettype;
+use function is_object;
+
 /**
  * Exception that indicates the type returned by an {@see InstanceProvider} is different from the expected type.
  *

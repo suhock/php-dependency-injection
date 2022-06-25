@@ -21,6 +21,10 @@ use ReflectionParameter;
 use ReflectionType;
 use ReflectionUnionType;
 
+use function array_key_exists;
+use function count;
+use function is_callable;
+
 /**
  * Provides default boilerplate behavior for the {@see InjectorInterface} interface.
  *
@@ -66,7 +70,7 @@ trait InjectorTrait
             throw new InjectorException("Function $functionName() does not exist", $e);
         }
 
-        return self::invoke(
+        return $this->invoke(
             $rFunction->invokeArgs(...),
             $rFunction->getParameters(),
             $params,
@@ -110,7 +114,7 @@ trait InjectorTrait
         /** @psalm-var Closure():TClass $factory Psalm needs help resolving the return type for newInstanceArgs() */
         $factory = $rClass->newInstanceArgs(...);
 
-        $instance = self::invoke(
+        $instance = $this->invoke(
             $factory,
             $rClass->getConstructor()?->getParameters() ?? [],
             $params,
@@ -151,7 +155,7 @@ trait InjectorTrait
 
         foreach ($rParameters as $rParam) {
             /** @psalm-suppress MixedAssignment Type of assignment not needed for analysis */
-            $paramValues[] = self::resolveParameter($rParam, $params, $functionName);
+            $paramValues[] = $this->resolveParameter($rParam, $params, $functionName);
         }
 
         return $function($paramValues);

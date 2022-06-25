@@ -17,6 +17,8 @@ use FiveTwo\DependencyInjection\ContainerInterface;
 use FiveTwo\DependencyInjection\InjectorInterface;
 use FiveTwo\DependencyInjection\UnresolvedClassException;
 
+use function count;
+
 /**
  * Manages a collection of named {@see ContainerInterface} instances and resolves objects from them based on a context
  * stack

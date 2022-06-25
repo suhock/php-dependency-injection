@@ -11,6 +11,8 @@ declare(strict_types=1);
 
 namespace FiveTwo\DependencyInjection;
 
+use function array_key_exists;
+
 /**
  * Fakes a simple container.
  */
