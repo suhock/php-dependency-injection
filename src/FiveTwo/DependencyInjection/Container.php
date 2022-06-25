@@ -54,11 +54,11 @@ class Container implements
      */
     protected function addDescriptor(Descriptor $descriptor): static
     {
-        if ($this->hasDescriptor($descriptor->getClassName())) {
-            throw new ContainerException('Class already in container: ' . $descriptor->getClassName());
+        if ($this->hasDescriptor($descriptor->className)) {
+            throw new ContainerException('Class already in container: ' . $descriptor->className);
         }
 
-        $this->descriptors[$descriptor->getClassName()] = $descriptor;
+        $this->descriptors[$descriptor->className] = $descriptor;
 
         return $this;
     }
@@ -135,7 +135,24 @@ class Container implements
             return false;
         }
 
-        $instance = $this->getDescriptor($className)->getInstance();
+        $descriptor = $this->getDescriptor($className);
+
+        if ($descriptor->isResolving) {
+            throw new CircularDependencyException($descriptor->className);
+        }
+
+        $descriptor->isResolving = true;
+
+        try {
+            /** @psalm-var Closure():TClass $instanceFactory Psalm doesn't resolve the template type on InstanceProvider
+             * correctly */
+            $instanceFactory = $descriptor->instanceProvider->get(...);
+            $instance = $descriptor->lifetimeStrategy->get($instanceFactory);
+        } catch (CircularDependencyException|CircularParameterException $e) {
+            throw new CircularDependencyException($descriptor->className, previous: $e);
+        } finally {
+            $descriptor->isResolving = false;
+        }
 
         return true;
     }
@@ -230,10 +247,12 @@ class Container implements
             return false;
         }
 
+        /** @var LifetimeStrategy<TClass> $lifetimeStrategy variable to aid with static analysis */
+        $lifetimeStrategy = ($descriptor->lifetimeStrategyFactory)($className);
+
         $this->add(
             $className,
-            /** @phpstan-ignore-next-line PHPStan gets confused resolving generic for add() */
-            $descriptor->createLifetimeStrategy($className),
+            $lifetimeStrategy,
             new ClosureInstanceProvider(
                 $className,
                 /** @phpstan-ignore-next-line PHPStan gets confused resolving generic for add() */

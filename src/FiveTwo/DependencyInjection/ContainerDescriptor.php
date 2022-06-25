@@ -22,16 +22,9 @@ use FiveTwo\DependencyInjection\Lifetime\LifetimeStrategy;
 class ContainerDescriptor
 {
     /**
-     * @var Closure(class-string):LifetimeStrategy
-     * @phpstan-ignore-next-line PHPStan does not support callable-level generics but complains that LifetimeStrategy
-     * does not have its generic type specified
-     */
-    private readonly Closure $lifetimeStrategyFactory;
-
-    /**
      * @param ContainerInterface $container
      * @param InjectorInterface $injector
-     * @param callable(class-string):LifetimeStrategy $lifetimeStrategyFactory
+     * @param Closure(class-string):LifetimeStrategy $lifetimeStrategyFactory
      *
      * @psalm-mutation-free
      * @phpstan-ignore-next-line PHPStan does not support callable-level generics but complains that LifetimeStrategy
@@ -40,7 +33,9 @@ class ContainerDescriptor
     public function __construct(
         public readonly ContainerInterface $container,
         public readonly InjectorInterface $injector,
-        callable $lifetimeStrategyFactory
+        /** @phpstan-ignore-next-line PHPStan does not support callable-level generics but complains that
+         * LifetimeStrategy does not have its generic type specified */
+        public readonly Closure $lifetimeStrategyFactory
     ) {
         $this->lifetimeStrategyFactory = $lifetimeStrategyFactory(...);
     }

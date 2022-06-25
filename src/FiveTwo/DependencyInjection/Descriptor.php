@@ -22,7 +22,7 @@ use FiveTwo\DependencyInjection\Provision\InstanceProvider;
  */
 class Descriptor
 {
-    private bool $isResolving = false;
+    public bool $isResolving = false;
 
     /**
      * @param class-string<TClass> $className
@@ -31,42 +31,9 @@ class Descriptor
      * @psalm-mutation-free
      */
     public function __construct(
-        private readonly string $className,
-        private readonly LifetimeStrategy $lifetimeStrategy,
-        private readonly InstanceProvider $instanceProvider
+        public readonly string $className,
+        public readonly LifetimeStrategy $lifetimeStrategy,
+        public readonly InstanceProvider $instanceProvider
     ) {
-    }
-
-    /**
-     * @return class-string<TClass>
-     * @psalm-mutation-free
-     */
-    public function getClassName(): string
-    {
-        return $this->className;
-    }
-
-    /**
-     * @return TClass
-     * @throws CircularDependencyException
-     */
-    public function getInstance(): object
-    {
-        if ($this->isResolving) {
-            throw new CircularDependencyException($this->className);
-        }
-
-        $this->isResolving = true;
-
-        try {
-            /** @psalm-suppress InvalidArgument Psalm is incorrectly inferring TClass as Descriptor for some reason */
-            $instance = $this->lifetimeStrategy->get($this->instanceProvider->get(...));
-        } catch (CircularDependencyException|CircularParameterException $e) {
-            throw new CircularDependencyException($this->className, previous: $e);
-        } finally {
-            $this->isResolving = false;
-        }
-
-        return $instance;
     }
 }
