@@ -15,7 +15,9 @@
 
     <stubs>
         <file name="vendor/jetbrains/phpstorm-stubs/Reflection/ReflectionClass.php"/>
+        <file name="vendor/jetbrains/phpstorm-stubs/Reflection/ReflectionFunctionAbstract.php"/>
         <file name="vendor/jetbrains/phpstorm-stubs/Reflection/ReflectionIntersectionType.php"/>
+        <file name="vendor/jetbrains/phpstorm-stubs/Reflection/ReflectionMethod.php"/>
         <file name="vendor/jetbrains/phpstorm-stubs/Reflection/ReflectionNamedType.php"/>
         <file name="vendor/jetbrains/phpstorm-stubs/Reflection/ReflectionType.php"/>
         <file name="vendor/jetbrains/phpstorm-stubs/Reflection/ReflectionUnionType.php"/>

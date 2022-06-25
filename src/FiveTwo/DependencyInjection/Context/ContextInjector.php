@@ -68,14 +68,12 @@ class ContextInjector implements InjectorInterface
         $rFunction = $rParam->getDeclaringFunction();
 
         if ($rFunction instanceof ReflectionMethod) {
-            /** @psalm-suppress ArgumentTypeCoercion Psalm not applying template to getAttributes() call */
-            $this->pushContextFromAttributes(
-                $contextCount,
-                $rFunction->getDeclaringClass()->getAttributes(Context::class)
-            );
+            /** @psalm-var ReflectionAttribute<Context>[] $rAttributes
+             * Psalm resolves as ReflectionAttribute<object>[] */
+            $rAttributes = $rFunction->getDeclaringClass()->getAttributes(Context::class);
+            $this->pushContextFromAttributes($contextCount, $rAttributes);
         }
 
-        /** @psalm-suppress ArgumentTypeCoercion Psalm missing stub for ReflectionFunctionAbstract */
         $this->pushContextFromAttributes($contextCount, $rFunction->getAttributes(Context::class));
         $this->pushContextFromAttributes($contextCount, $rParam->getAttributes(Context::class));
     }

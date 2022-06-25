@@ -28,10 +28,11 @@ use ReflectionUnionType;
 trait InjectorTrait
 {
     /**
-     * Attempts to resolve a value for the specified parameter. If the function fails to resolve a value and a default
-     * value is available, that value will be used, so implementers do not need to perform this check.
+     * Implementors should attempt to resolve a value for the specified parameter. If the function fails to resolve a
+     * value, the injector will use the parameter's default value if available, or inject null if it is a nullable type.
+     * Implementors should not attempt any special handling for these cases.
      *
-     * @param ReflectionParameter $rParam The reflection parameter
+     * @param ReflectionParameter $rParam The reflection parameter to resolve
      * @param mixed $paramValue Reference parameter to receive the resolved parameter
      *
      * @return bool <code>true</code> if a value was resolved, <code>false</code> otherwise
@@ -39,15 +40,19 @@ trait InjectorTrait
     abstract protected function tryResolveParameter(ReflectionParameter $rParam, mixed &$paramValue): bool;
 
     /**
-     * Calls the specified function, injecting any function parameter values.
+     * Calls the specified function, injecting any parameter values. Each parameter value is determined as follows:
+     *  1. From the {@see $params} array
+     *  2. From the injector's dependency resolution logic (e.g. from a container)
+     *  3. The parameter's default value, if available
+     *  4. <code>null</code> if the parameter is nullable
      *
      * @param callable $function The function to call
      * @param array<mixed> $params A list of parameter values to provide to the function. String keys will be matched by
-     * name; integer keys will be matched by position.
+     * name. Integer keys will be matched by position.
      *
      * @return mixed The value returned by the function
-     * @throws DependencyInjectionException If there was an error resolving values for the function parameters or
-     * invoking the function
+     * @throws InjectorException If there was an error while resolving a value for any of the function parameters or
+     * while invoking the function
      */
     public function call(callable $function, array $params = []): mixed
     {
@@ -69,20 +74,22 @@ trait InjectorTrait
     }
 
     /**
-     * Creates a new instance of the specified class, injecting any constructor parameter values.
+     * Creates a new instance of the specified class, injecting any parameter values. Each parameter value is determined
+     * as follows:
+     *  1. From the {@see $params} array
+     *  2. From the injector's dependency resolution logic (e.g. from a container)
+     *  3. The parameter's default value, if available
+     *  4. <code>null</code> if the parameter is nullable
      *
-     * @template T of object
+     * @template TClass of object
      *
-     * @param class-string<T> $className The name of the class to instantiate
+     * @param class-string<TClass> $className The name of the class to instantiate
      * @param array<mixed> $params A list of parameter values to provide to the constructor. String keys will be matched
      * by name; integer keys will be matched by position.
      *
-     * @return T A new instance of the specified class
-     * @throws DependencyInjectionException If there was an error resolving values for the constructor parameters or
-     * invoking the constructor
-     *
-     * @psalm-suppress InvalidReturnType Psalm unable to infer correct return type from
-     * ReflectionClass::newInstanceArgs()
+     * @return TClass A new instance of the specified class
+     * @throws InjectorException If there was an error while resolving a value for any of the constructor parameters or
+     * while creating the object instance
      */
     public function instantiate(string $className, array $params = []): object
     {
@@ -99,8 +106,11 @@ trait InjectorTrait
             throw new InjectorException("Class $className is not instantiable");
         }
 
+        /** @psalm-var Closure():TClass $factory Psalm needs help resolving the return type for newInstanceArgs() */
+        $factory = $rClass->newInstanceArgs(...);
+
         return self::invoke(
-            $rClass->newInstanceArgs(...),
+            $factory,
             $rClass->getConstructor()?->getParameters() ?? [],
             $params,
             "$className::__construct"
@@ -123,7 +133,7 @@ trait InjectorTrait
         $paramValues = [];
 
         foreach ($rParameters as $rParam) {
-            /** @psalm-suppress MixedAssignment Type of assignment not need for analysis */
+            /** @psalm-suppress MixedAssignment Type of assignment not needed for analysis */
             $paramValues[] = self::resolveParameter($rParam, $params, $functionName);
         }
 
@@ -147,20 +157,21 @@ trait InjectorTrait
             return $params[$rParam->getName()];
         }
 
-        $exception = null;
+        $deferredException = null;
 
         try {
             if ($this->tryResolveParameter($rParam, $paramValue)) {
                 return $paramValue;
             }
-        } catch (CircularDependencyException|CircularParameterException $exception) {
+        } catch (CircularDependencyException $e) {
             throw new CircularParameterException(
-                $exception->getClassName(),
+                $e->getClassName(),
                 $functionName,
                 $rParam->getName(),
-                $exception->getPrevious()
+                $e->getPrevious()
             );
-        } catch (DependencyInjectionException $exception) {
+        } catch (UnresolvedParameterException $e) {
+            $deferredException = $e;
         }
 
         if ($rParam->isDefaultValueAvailable()) {
@@ -175,7 +186,7 @@ trait InjectorTrait
             $functionName,
             $rParam->getName(),
             self::getReflectionTypeName($rParam->getType()),
-            $exception
+            $deferredException
         );
     }
 
