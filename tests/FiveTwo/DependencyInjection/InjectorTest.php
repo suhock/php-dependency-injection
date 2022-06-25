@@ -121,6 +121,17 @@ class InjectorTest extends DependencyInjectionTestCase
         self::assertInstanceOf(FakeClassNoConstructor::class, $instance);
     }
 
+    public function testInstantiate_WithAutowireFunction_CallsAutowireFunction(): void
+    {
+        $obj = new FakeClassNoConstructor();
+        $injector = $this->createInjector([
+            FakeClassNoConstructor::class => fn () => $obj
+        ]);
+        $instance = $injector->instantiate(FakeClassWithAutowireFunction::class);
+
+        self::assertSame($obj, $instance->obj);
+    }
+
     public function testCall_WithFunction_InjectsDependenciesAndReturnsResult(): void
     {
         $logicException = new LogicException('Message 1');

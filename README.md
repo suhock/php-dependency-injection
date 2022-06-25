@@ -39,7 +39,7 @@ parameters into a specific function or constructor.
     - [Singleton](#singleton)
     - [Transient](#transient)
 - [Adding dependencies to the container](#adding-dependencies-to-the-container)
-    - [Autowire the class's constructor](#autowire-the-classs-constructor)
+    - [Autowire a class](#autowire-a-class)
     - [Map an interface to an implementation](#map-an-interface-to-an-implementation)
     - [Call a factory method](#call-a-factory-method)
     - [Provide a specific instance](#provide-a-specific-instance)
@@ -194,7 +194,7 @@ transient factories, all starting with the prefix `addTransient`.
 There are a number of built-in ways to specify how new instances should be
 created.
 
- - [Autowire the class's constructor](#autowire-the-classs-constructor)
+ - [Autowire a class](#autowire-a-class)
  - [Map an interface to an implementation](#map-an-interface-to-an-implementation)
  - [Call a factory method](#call-a-factory-method)
  - [Provide a specific instance](#provide-a-specific-instance)
@@ -205,13 +205,17 @@ If needed, can also specify your own custom
 This document uses a modified PHP syntax for conveying API information. Please
 refer to the [API syntax](#api-syntax) section for details.
 
-#### Autowire the class's constructor
+#### Autowire a class
 
 The container will construct classes by calling the class's constructor,
 automatically resolving any dependencies in the constructor's parameter list.
 
+If the class has any methods with an `Autowire` attribute, the container will
+call those methods, resolving and injecting any dependencies listed in the
+parameter list.
+
 The optional `$mutator` callback allows additional configuration of the object
-after the container has instantiated it. The callback must take an instance of
+after the container has initialized it. The callback must take an instance of
 the class as its first parameter. Additional parameters will be autowired.
 
 ```php
@@ -258,6 +262,26 @@ $container->addTransientClass(
         $obj->setLogger($logger);
     }
 );
+```
+
+###### Using attributes to set optional properties
+
+When the container provides an instance of `CurlHttpClient`, it will see that
+`setLogger()` has an `Autowire` attribute and call it passing in a `Logger`
+instance resolved from the container.
+
+```php
+use FiveTwo\DependencyInjection\Autowire;
+
+class CurlHttpClient
+{
+    #[Autowire]
+    public function setLogger(Logger $logger): void {
+        $this->logger = $logger;
+    }
+    
+    // ...
+}
 ```
 
 #### Map an interface to an implementation

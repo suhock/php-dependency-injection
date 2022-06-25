@@ -15,6 +15,7 @@ use ReflectionClass;
 use ReflectionException;
 use ReflectionFunction;
 use ReflectionIntersectionType;
+use ReflectionMethod;
 use ReflectionNamedType;
 use ReflectionParameter;
 use ReflectionType;
@@ -109,12 +110,36 @@ trait InjectorTrait
         /** @psalm-var Closure():TClass $factory Psalm needs help resolving the return type for newInstanceArgs() */
         $factory = $rClass->newInstanceArgs(...);
 
-        return self::invoke(
+        $instance = self::invoke(
             $factory,
             $rClass->getConstructor()?->getParameters() ?? [],
             $params,
             "$className::__construct"
         );
+
+        $this->injectAutowireFunctions($instance);
+
+        return $instance;
+    }
+
+    private function injectAutowireFunctions(object $instance): void
+    {
+        $rClass = new ReflectionClass($instance);
+
+        foreach ($rClass->getMethods(ReflectionMethod::IS_PUBLIC) as $rMethod) {
+            if (count($rMethod->getAttributes(Autowire::class)) > 0) {
+                $this->call(
+                    $rMethod->getClosure($instance)
+                        ?? throw new InjectorException(
+                            'Error invoking ' .
+                            $rMethod->getDeclaringClass()->getName() .
+                            '::' .
+                            $rMethod->getName() .
+                            '()'
+                        )
+                );
+            }
+        }
     }
 
     /**

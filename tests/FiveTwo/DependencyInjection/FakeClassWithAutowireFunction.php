@@ -9,16 +9,18 @@
 
 declare(strict_types=1);
 
-namespace FiveTwo\DependencyInjection\Attributes;
-
-use Attribute;
+namespace FiveTwo\DependencyInjection;
 
 /**
- * Indicates that a class should have its constructor autowired.
- *
- * @psalm-immutable
+ * Fake class with an autowired method.
  */
-#[Attribute(Attribute::TARGET_CLASS)]
-class Autowire
+class FakeClassWithAutowireFunction
 {
+    public ?FakeClassNoConstructor $obj = null;
+
+    #[Autowire]
+    public function setObj(FakeClassNoConstructor $obj): void
+    {
+        $this->obj = $obj;
+    }
 }
