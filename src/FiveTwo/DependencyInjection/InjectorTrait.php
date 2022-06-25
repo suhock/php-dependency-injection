@@ -128,16 +128,8 @@ trait InjectorTrait
 
         foreach ($rClass->getMethods(ReflectionMethod::IS_PUBLIC) as $rMethod) {
             if (count($rMethod->getAttributes(Autowire::class)) > 0) {
-                $this->call(
-                    $rMethod->getClosure($instance)
-                        ?? throw new InjectorException(
-                            'Error invoking ' .
-                            $rMethod->getDeclaringClass()->getName() .
-                            '::' .
-                            $rMethod->getName() .
-                            '()'
-                        )
-                );
+                /** @phpstan-ignore-next-line PHPStan complains about possible null return */
+                $this->call($rMethod->getClosure($instance));
             }
         }
     }

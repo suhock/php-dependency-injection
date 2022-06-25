@@ -60,7 +60,6 @@ parameters into a specific function or constructor.
   - [Union types](#union-types)
   - [Intersection types](#intersection-types)
 - [Appendix](#appendix)
-  - [API syntax](#api-syntax)
   - [A note on service locators](#a-note-on-the-service-locator-pattern)
   - [Refactoring toward dependency injection](#refactoring-toward-the-dependency-injection-pattern)
 
@@ -202,8 +201,7 @@ created.
 If needed, can also specify your own custom
 [instance providers](#custom-instance-providers).
 
-This document uses a modified PHP syntax for conveying API information. Please
-refer to the [API syntax](#api-syntax) section for details.
+This document uses a modified PHP syntax for conveying API information.
 
 #### Autowire a class
 
@@ -219,10 +217,7 @@ after the container has initialized it. The callback must take an instance of
 the class as its first parameter. Additional parameters will be autowired.
 
 ```php
-callable Mutator<TClass>(
-    TClass $instance,
-    object|null ...$dependencies
-): void;
+callable<TClass> Mutator(TClass $instance, [object|null ...]): void;
 
 class Container
 {
@@ -357,18 +352,18 @@ The container will provide class instances by requesting them from a factory
 method. Any parameters in the factory method will be autowired.
 
 ```php
-callable Factory<TClass>(object|null ...$dependencies): TClass;
+callable<TClass> FactoryMethod([object|null ...]): TClass;
 
 class Container
 {
     function addSingletonFactory<TClass>(
         string<TClass> $className,
-        Factory<TClass> $factory
+        FactoryMethod<TClass> $factory
     ): static;
 
     function addTransientFactory<TClass>(
         string<TClass> $className,
-        Factory<TClass> $factory
+        FactoryMethod<TClass> $factory
     ): static;
 }
 ```
@@ -463,12 +458,12 @@ class Container
 {
     function addSingletonNamespace(
         string $namespace,
-        ClassFactory<TClass>|null $factory = null
+        ClassFactory|null $factory = null
     ): static;
 
     function addTransientNamespace(
         string $namespace,
-        ClassFactory<TClass>|null $factory = null
+        ClassFactory|null $factory = null
     ): static;
 }
 ```
@@ -505,21 +500,21 @@ The factory must take the class name as the first parameter. The outer container
 will provide any additional dependencies.
 
 ```php
-callable ClassFactory<TClass>(
-    string<TClass> $className,
-    object|null ...$dependencies
-): TClass;
+callable<TClass> ImplementationFactory<TImpl of TClass>(
+    string<TImpl> $className,
+    [object|null ...]
+): TImpl;
 
 class Container
 {
-    function addSingletonInterface<TClass>(
-        string<TClass> $className,
-        ClassFactory<TImpl of TClass>|null $factory = null
+    function addSingletonInterface<TInterface>(
+        string<TInterface> $className,
+        ImplementationFactory<TClass>|null $factory = null
     ): static;
 
-    function addTransientInterface<TClass>(
-        string<TClass> $className,
-        ClassFactory<TImpl of TClass>|null $factory = null
+    function addTransientInterface<TInterface>(
+        string<TInterface> $className,
+        ImplementationFactory<TClass>|null $factory = null
     ): static;
 }
 ```
@@ -564,22 +559,22 @@ class name as the first parameter and an attribute instance as the second.
 The outer container will provide any additional dependencies.
 
 ```php
-callable AttributeClassFactory<TClass, TAttr>(
+callable<TAttr> AttributeClassFactory<TClass>(
     string<TClass> $className,
-    TAttr $attribute,
-    object|null ...$dependencies
+    TAttr $attributeInstance,
+    [object|null ...]
 ): TClass;
 
 class Container
 {
     function addSingletonAttribute<TAttr>(
         string<TAttr> $attributeName,
-        AttributeClassFactory<object, TAttr>|null $factory = null
+        AttributeClassFactory<TAttr>|null $factory = null
     ): static;
 
     function addTransientAttribute<TAttr>(
         string<TAttr> $attributeName,
-        AttributeClassFactory<object, TAttr>|null $factory = null
+        AttributeClassFactory<TAttr>|null $factory = null
     ): static;
 }
 ```
@@ -663,13 +658,15 @@ methods below. If your custom container needs to be able to autowire objects,
 you can pass in the outer container to its constructor.
 
 ```php
-callable LifetimeStrategyFactory<T>(string<T> $className): LifetimeStrategy<T>;
+callable LifetimeStrategyFactory<TClass>(
+    string<TClass> $className
+): LifetimeStrategy<TClass>;
 
 class Container
 {
     public function addContainer(
         ContainerInterface $container,
-        callable<T>(string<T> $className): LifetimeStrategy<T>
+        LifetimeStrategyFactory $lifetimeStrategyFactory
     ): static;
 
     public function addSingletonContainer(
@@ -795,6 +792,25 @@ The library also provides a dependency injector, `Injector` that can be used for
 directly calling constructors and functions, injecting any dependencies from a
 container. The injector also lets you directly inject specific values for named
 or indexed parameters.
+
+```php
+callable<TResult of mixed> InjectableFunction([... mixed]): TResult;
+
+class Injector
+{
+    public function call<TResult>(
+        InjectableFunction<TResult> $function,
+        array<int|string, mixed> $params = []
+    ): TResult;
+    
+    public function instantiate<TClass>(
+        string<TClass> $className,
+        array<int|string, mixed> $params = []
+    ): TClass;
+}
+```
+
+### Example
 
 The following is an example where dependencies need to be injected into a
 function in a controller instead of the constructor.
@@ -963,41 +979,6 @@ In the example above, the container will first attempt to resolve an instance of
 
 ## Appendix
 
-### API syntax
-
-This library places a high emphasis on strict type safety, something for which
-PHP is still in its infancy. Correspondingly, the existing syntax of PHP,
-PHPDoc, and popular static analysis tools are lacking, especially when it comes
-to expressing callable-scoped generics. This document utilizes a modified PHP
-syntax inspired by TypeScript and C#.
-
-```php
-function exampleFunction<TClass>(string<TClass> $className): TClass;
-```
-
-The above `exampleFunction` takes a generic type `TClass` (in this document, all
-generics are implicitly `object` types). The function takes a `string`,
-`$className`, which contains the fully qualified name of the class (i.e.,
-`TClass::class`). The function will return a value of type `TClass`.
-
-```php
-callable ExampleCallbackType<TClass, TSubclass of TClass>(
-    string<TClass> $className,
-    string<TSubclass> $subclassName
-): void;
-
-function anotherFunction<TClass, TSubclass of TClass>(
-    string<TClass> $className,
-    ExampleCallbackType<TClass, TSubclass> $callback
-): void;
-```
-
-The above `callable` declaration is analogous to the `delegate` keyword in C#,
-in this case defining a custom `callable` type, `ExampleCallbackType`. The
-template takes two classes: `TClass` and another class `TSubclass` which must
-be of type `TClass`. The custom type is then taken as a parameter in
-`anotherFunction`.
-
 ### A note on the service locator pattern
 
 The previous example resembles a service locator pattern. Please note that while
@@ -1067,7 +1048,7 @@ refactor all uses of the singleton container to use proper dependency injection,
 the singleton container can be removed.
 
 ```php
-/* TODO: Refactor this! */
+/* Refactor this! */
 public function myFragileBloatedFunction(...$args)
 {
     // ...
@@ -1084,7 +1065,7 @@ public function myFragileBloatedFunction(...$args)
     // ...
 }
 
-/* TODO: Eliminate all references to the singleton container and remove this! */
+/* Eliminate all references to the singleton container and remove this! */
 function getAppContainer(): Container
 {
     static $container;
@@ -1093,7 +1074,7 @@ function getAppContainer(): Container
 
 /*
  * Build your container from the singleton container for now.
- * TODO: Replace with direct construction once refactoring is complete.
+ * Replace with direct construction once refactoring is complete.
  */
 $container = getAppContainer();
 $container->addSingletonClass(MyApplication::class);
