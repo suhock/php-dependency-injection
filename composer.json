@@ -52,7 +52,7 @@
     "scripts": {
         "php-cs-fixer": "php-cs-fixer fix .",
         "phpstan": "phpstan analyse -c phpstan.neon.dist",
-        "psalm": "psalm --show-info=true -c psalm.xml.dist",
+        "psalm": "psalm --show-info=true --find-unused-psalm-suppress=true -c psalm.xml.dist",
         "test": "phpunit -c ."
     }
 }

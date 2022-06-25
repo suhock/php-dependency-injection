@@ -15,7 +15,7 @@ use Closure;
 use FiveTwo\DependencyInjection\Lifetime\LifetimeStrategy;
 
 /**
- * Holds information about nested containers.
+ * Holds information about containers nested inside {@see Container}.
  *
  * @internal
  */
@@ -37,19 +37,5 @@ class ContainerDescriptor
          * LifetimeStrategy does not have its generic type specified */
         public readonly Closure $lifetimeStrategyFactory
     ) {
-        $this->lifetimeStrategyFactory = $lifetimeStrategyFactory(...);
-    }
-
-    /**
-     * @template TClass of object
-     *
-     * @param class-string<TClass> $className
-     *
-     * @return LifetimeStrategy<TClass>
-     * @psalm-suppress MixedReturnTypeCoercion
-     */
-    public function createLifetimeStrategy(string $className): LifetimeStrategy
-    {
-        return ($this->lifetimeStrategyFactory)($className);
     }
 }

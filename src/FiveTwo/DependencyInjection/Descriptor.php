@@ -17,8 +17,8 @@ use FiveTwo\DependencyInjection\Provision\InstanceProvider;
 /**
  * Contains information about how to resolve a dependency.
  *
- * @internal
  * @template TClass as object
+ * @internal
  */
 class Descriptor
 {

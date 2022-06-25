@@ -22,7 +22,6 @@ use ReflectionException;
  */
 class AttributeContainer implements ContainerInterface
 {
-    // Add signature whenever static analysis tools add support for return type with unspecified parameter list
     private readonly Closure $factory;
 
     private readonly InjectorInterface $injector;
@@ -47,15 +46,21 @@ class AttributeContainer implements ContainerInterface
         ?callable $factory = null
     ) {
         $this->injector = $injector ?? new Injector($this);
-        $this->factory = $factory !== null ?
-            $factory(...) :
-            /**
-             * @param class-string $className
-             * @param TAttr $attr
-             * @psalm-suppress MissingClosureReturnType
-             * @phpstan-ignore-next-line
-             */
-            fn (string $className, object $attr) => $this->injector->instantiate($className);
+        $this->factory = $factory !== null ? $factory(...) : $this->instantiate(...);
+    }
+
+    /**
+     * @template TClass of object
+     *
+     * @param class-string<TClass> $className
+     * @param TAttr $attr
+     *
+     * @return TClass
+     * @noinspection PhpUnusedParameterInspection
+     */
+    private function instantiate(string $className, object $attr): object
+    {
+        return $this->injector->instantiate($className);
     }
 
     /**
@@ -66,8 +71,6 @@ class AttributeContainer implements ContainerInterface
      *
      * @return TClass An instance of {@see $className}
      * @throws UnresolvedClassException If the specified class does not implement or extend {@see $interfaceName}
-     *
-     * @psalm-suppress MixedInferredReturnType Psalm cannot infer a return type from a generic return type on a callable
      */
     public function get(string $className): object
     {
@@ -80,13 +83,14 @@ class AttributeContainer implements ContainerInterface
 
         $attr = $rClass->getAttributes($this->attributeName);
 
-        /**
-         * @psalm-suppress MixedReturnStatement Psalm cannot infer a return type from a generic return type on a
-         * callable
-         */
-        return count($attr) > 0 ?
-            $this->injector->call($this->factory, [$className, $attr[0]->newInstance()]) :
+        if (count($attr) < 1) {
             throw new UnresolvedClassException($className);
+        }
+
+        /** @psalm-var TClass $instance Psalm needs help inferring type */
+        $instance = $this->injector->call($this->factory, [$className, $attr[0]->newInstance()]);
+
+        return $instance;
     }
 
     /**

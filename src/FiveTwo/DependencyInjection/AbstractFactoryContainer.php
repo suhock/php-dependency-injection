@@ -14,12 +14,11 @@ namespace FiveTwo\DependencyInjection;
 use Closure;
 
 /**
- * Abstract base class for containers that call a common factory method for any class in the container. Child classes
- * simply need to implement the {@see has} method.
+ * Abstract base class for containers that calls a common factory method for any class in the container, as indicated by
+ * the {@see has} method. Child classes simply need to implement the {@see has} method.
  */
 abstract class AbstractFactoryContainer implements ContainerInterface
 {
-    // Add signature whenever static analysis tools add support for return type with unspecified parameter list
     private readonly Closure $factory;
 
     protected readonly InjectorInterface $injector;

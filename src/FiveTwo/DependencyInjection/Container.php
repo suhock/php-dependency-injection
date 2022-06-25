@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace FiveTwo\DependencyInjection;
 
+use FiveTwo\DependencyInjection\Lifetime\LifetimeStrategy;
 use FiveTwo\DependencyInjection\Provision\ClosureInstanceProvider;
 
 /**
@@ -163,13 +164,12 @@ class Container implements
      * @param class-string<TClass> $className
      *
      * @return Descriptor<TClass>
-     * @psalm-suppress InvalidReturnType Psalm does not support class-mapped arrays
      * @psalm-mutation-free
      */
     protected function getDescriptor(string $className): Descriptor
     {
         /**
-         * @psalm-suppress InvalidReturnStatement Psalm does not support class-mapped arrays
+         * @psalm-var Descriptor<TClass>[] $this->descriptors Psalm does not support class-mapped arrays
          * @phpstan-ignore-next-line PHPStan does not support class-mapped arrays
          */
         return $this->descriptors[$className];
@@ -238,7 +238,7 @@ class Container implements
     }
 
     /**
-     * @template TClass
+     * @template TClass of object
      * @param class-string<TClass> $className
      */
     private function tryAdd(string $className, ContainerDescriptor $descriptor): bool
@@ -255,7 +255,6 @@ class Container implements
             $lifetimeStrategy,
             new ClosureInstanceProvider(
                 $className,
-                /** @phpstan-ignore-next-line PHPStan gets confused resolving generic for add() */
                 fn () => $descriptor->container->get($className),
                 $this->injector
             )
