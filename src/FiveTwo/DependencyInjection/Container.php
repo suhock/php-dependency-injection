@@ -179,10 +179,7 @@ class Container implements
 
     /**
      * @template TClass of object
-     *
      * @param class-string<TClass> $className
-     *
-     * @return bool
      * @psalm-mutation-free
      */
     private function hasDescriptor(string $className): bool
@@ -208,11 +205,8 @@ class Container implements
 
     /**
      * @template TClass as object
-     *
      * @param class-string<TClass> $className
      * @param TClass|null $instance
-     *
-     * @return bool
      * @throws CircularDependencyException
      */
     private function tryGetFromContainer(string $className, ?object &$instance): bool
@@ -223,10 +217,7 @@ class Container implements
 
     /**
      * @template TClass of object
-     *
      * @param class-string<TClass> $className
-     *
-     * @return bool
      */
     private function tryAddFromFirstMatchingContainer(string $className): bool
     {
