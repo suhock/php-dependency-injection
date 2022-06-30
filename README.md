@@ -889,7 +889,7 @@ class MyApplication
 
 In the example above, the container will attempt to resolve an instance of
 `HttpClient`. If it cannot resolve `HttpClient` it will throw an
-`UnresolvedParameterException`.
+`ParameterResolutionException`.
 
 ### Nullable types
 
@@ -953,7 +953,7 @@ class MyApplication
 In the example above, the container will attempt to resolve an instance of 
 `HttpClient` first. If it cannot resolve `HttpClient`, it will attempt to
 resolve an instance of `GopherClient`. If it cannot resolve `GopherClient`, it
-will ignore `string` and then throw an `UnresolvedParameterException`.
+will ignore `string` and then throw an `ParameterResolutionException`.
 
 ### Intersection types
 

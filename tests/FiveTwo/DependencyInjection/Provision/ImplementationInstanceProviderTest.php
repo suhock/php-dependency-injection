@@ -41,7 +41,7 @@ class ImplementationInstanceProviderTest extends DependencyInjectionTestCase
 
     public function testGet_WhenImplementationSameAsInterface_ThrowsImplementationException(): void
     {
-        self::assertImplementationException(
+        self::assertThrowsImplementationException(
             FakeClassNoConstructor::class,
             FakeClassNoConstructor::class,
             fn () => new ImplementationInstanceProvider(
@@ -54,7 +54,7 @@ class ImplementationInstanceProviderTest extends DependencyInjectionTestCase
 
     public function testGet_WhenImplementationNotSubclassOfInterface_ThrowsImplementationException(): void
     {
-        self::assertImplementationException(
+        self::assertThrowsImplementationException(
             FakeClassExtendsNoConstructor::class,
             FakeClassNoConstructor::class,
             fn () => new ImplementationInstanceProvider(

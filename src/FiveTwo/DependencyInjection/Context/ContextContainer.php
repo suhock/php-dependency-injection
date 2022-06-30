@@ -12,10 +12,10 @@ declare(strict_types=1);
 namespace FiveTwo\DependencyInjection\Context;
 
 use Closure;
+use FiveTwo\DependencyInjection\ClassNotFoundException;
 use FiveTwo\DependencyInjection\ContainerException;
 use FiveTwo\DependencyInjection\ContainerInterface;
 use FiveTwo\DependencyInjection\InjectorInterface;
-use FiveTwo\DependencyInjection\UnresolvedClassException;
 
 use function count;
 
@@ -43,7 +43,6 @@ class ContextContainer implements ContainerInterface
     public function __construct(
         private readonly Closure $containerFactory
     ) {
-        /** @psalm-suppress MixedArgumentTypeCoercion Psalm cannot infer $this generic type in constructor */
         $this->injector = new ContextInjector($this);
     }
 
@@ -128,13 +127,13 @@ class ContextContainer implements ContainerInterface
      * @param class-string<TClass> $className The name of the class to retrieve
      *
      * @return TClass An instance of {@see $className}
-     * @throws UnresolvedClassException If a value could not be resolved for the class
+     * @throws ClassNotFoundException If a value could not be resolved for the class
      */
     public function get(string $className): object
     {
         return $this->getFromContext(
             $className,
-            $this->findContext($className) ?? throw new UnresolvedClassException($className)
+            $this->findContext($className) ?? throw new ClassNotFoundException($className)
         );
     }
 

@@ -51,8 +51,7 @@ abstract class AbstractFactoryContainer implements ContainerInterface
      * @param class-string<TClass> $className The name of the class to retrieve
      *
      * @return TClass An instance of {@see $className}
-     * @throws UnresolvedClassException If the specified class does not implement or extend {@see $interfaceName}
-     *
+     * @throws ClassNotFoundException If the specified class does not implement or extend {@see $interfaceName}
      * @psalm-suppress MixedInferredReturnType Psalm cannot infer a return type from a generic return type on a callable
      */
     public function get(string $className): object
@@ -63,7 +62,7 @@ abstract class AbstractFactoryContainer implements ContainerInterface
          */
         return $this->has($className) ?
             $this->injector->call($this->factory, [$className]) :
-            throw new UnresolvedClassException($className);
+            throw new ClassNotFoundException($className);
     }
 
     /**

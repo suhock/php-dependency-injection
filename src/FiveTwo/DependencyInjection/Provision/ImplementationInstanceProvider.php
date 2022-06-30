@@ -11,8 +11,8 @@ declare(strict_types=1);
 
 namespace FiveTwo\DependencyInjection\Provision;
 
+use FiveTwo\DependencyInjection\ClassNotFoundException;
 use FiveTwo\DependencyInjection\ContainerInterface;
-use FiveTwo\DependencyInjection\UnresolvedClassException;
 
 /**
  * Factory that provides instances of a class by requesting an instance of a concrete implementation of that class from
@@ -46,7 +46,7 @@ class ImplementationInstanceProvider implements InstanceProvider
      * @return TClass An instance of the class
      * @psalm-return TClass An instance of the class
      * @phpstan-return TImplementation
-     * @throws UnresolvedClassException If the container could not resolve a value for the specified class
+     * @throws ClassNotFoundException If the container could not resolve a value for the specified class
      */
     public function get(): object
     {

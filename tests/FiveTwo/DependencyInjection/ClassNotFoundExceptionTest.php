@@ -14,20 +14,20 @@ namespace FiveTwo\DependencyInjection;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Test suite for {@see UnresolvedClassException}.
+ * Test suite for {@see ClassNotFoundException}.
  */
-class UnresolvedClassExceptionTest extends TestCase
+class ClassNotFoundExceptionTest extends TestCase
 {
     public function testGetMessage_HasClassName_ContainsClassName(): void
     {
-        $exception = new UnresolvedClassException(FakeClassNoConstructor::class);
+        $exception = new ClassNotFoundException(FakeClassNoConstructor::class);
 
         self::assertStringContainsString(FakeClassNoConstructor::class, $exception->getMessage());
     }
 
     public function testGetClassName_HasClassName_ReturnsClassName(): void
     {
-        $exception =  new UnresolvedClassException(FakeClassNoConstructor::class);
+        $exception =  new ClassNotFoundException(FakeClassNoConstructor::class);
 
         self::assertSame(FakeClassNoConstructor::class, $exception->getClassName());
     }

@@ -167,7 +167,7 @@ trait InjectorTrait
      * @param string $functionName
      *
      * @return mixed|null
-     * @throws UnresolvedParameterException|CircularParameterException
+     * @throws ParameterResolutionException
      */
     private function resolveParameter(ReflectionParameter $rParam, array $params, string $functionName): mixed
     {
@@ -185,10 +185,7 @@ trait InjectorTrait
             if ($this->tryResolveParameter($rParam, $paramValue)) {
                 return $paramValue;
             }
-        } catch (CircularDependencyException $e) {
-            /** @psalm-var CircularDependencyException<object> $e */
-            throw CircularParameterException::fromCircularDependencyException($e, $functionName, $rParam->getName());
-        } catch (DependencyInjectionException $e) {
+        } catch (ClassResolutionException $e) {
             $deferredException = $e;
         }
 
@@ -200,7 +197,7 @@ trait InjectorTrait
             return null;
         }
 
-        throw new UnresolvedParameterException(
+        throw new ParameterResolutionException(
             $functionName,
             $rParam->getName(),
             self::getParameterTypeName($rParam->getType()),

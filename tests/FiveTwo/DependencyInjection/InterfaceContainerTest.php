@@ -48,21 +48,21 @@ class InterfaceContainerTest extends DependencyInjectionTestCase
         );
     }
 
-    public function testGet_WithImplementationClassSameAsInterface_ThrowsUnresolvedClassException(): void
+    public function testGet_WithImplementationClassSameAsInterface_ThrowsClassNotFoundException(): void
     {
         $container = new InterfaceContainer(FakeClassNoConstructor::class);
 
-        self::assertUnresolvedClassException(
+        self::assertThrowsClassNotFoundException(
             FakeClassNoConstructor::class,
             static fn () => $container->get(FakeClassNoConstructor::class)
         );
     }
 
-    public function testGet_WithImplementationClassNotInstanceOfInterface_ThrowsUnresolvedClassException(): void
+    public function testGet_WithImplementationClassNotInstanceOfInterface_ThrowsClassNotFoundException(): void
     {
         $container = new InterfaceContainer(FakeClassNoConstructor::class);
 
-        self::assertUnresolvedClassException(
+        self::assertThrowsClassNotFoundException(
             FakeClassWithContexts::class,
             static fn () => $container->get(FakeClassWithContexts::class)
         );

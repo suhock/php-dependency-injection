@@ -38,24 +38,24 @@ class AttributeContainerTest extends DependencyInjectionTestCase
         self::assertSame('test', $result->value);
     }
 
-    public function testGet_WhenClassDoesNotHaveAttribute_ThrowsUnresolvedClassException(): void
+    public function testGet_WhenClassDoesNotHaveAttribute_ThrowsClassNotFoundException(): void
     {
         $container = new AttributeContainer(FakeAttribute::class);
 
-        self::assertUnresolvedClassException(
+        self::assertThrowsClassNotFoundException(
             FakeClassWithContexts::class,
             static fn () => $container->get(FakeClassWithContexts::class)
         );
     }
 
-    public function testGet_WhenClassDoesNotExist_ThrowsUnresolvedClassException(): void
+    public function testGet_WhenClassDoesNotExist_ThrowsClassNotFoundException(): void
     {
         $container = new AttributeContainer(FakeAttribute::class);
 
         /**
          * @psalm-suppress ArgumentTypeCoercion,UndefinedClass
          */
-        self::assertUnresolvedClassException(
+        self::assertThrowsClassNotFoundException(
         /** @phpstan-ignore-next-line */
             'NonExistentClass',
             /** @phpstan-ignore-next-line */

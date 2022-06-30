@@ -83,7 +83,7 @@ class ContextContainerTest extends DependencyInjectionTestCase
         );
     }
 
-    public function testGet_EmptyStack_ThrowsUnresolvedClassException(): void
+    public function testGet_EmptyStack_ThrowsClassNotFoundException(): void
     {
         $container = $this->createContainer();
         $container->context('default')->addSingletonInstance(
@@ -91,7 +91,7 @@ class ContextContainerTest extends DependencyInjectionTestCase
             new FakeClassNoConstructor()
         );
 
-        self::assertUnresolvedClassException(
+        self::assertThrowsClassNotFoundException(
             FakeClassNoConstructor::class,
             static fn () => $container->get(FakeClassNoConstructor::class)
         );

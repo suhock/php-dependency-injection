@@ -52,7 +52,7 @@ class ClosureInstanceProviderTest extends DependencyInjectionTestCase
             ->with($factoryMethod)
             ->willReturnCallback(fn () => $factoryMethod());
 
-        self::assertInstanceTypeException(
+        self::assertThrowsInstanceTypeException(
             FakeClassNoConstructor::class,
             null,
             static fn () => self::assertNull($factory->get())
@@ -67,7 +67,7 @@ class ClosureInstanceProviderTest extends DependencyInjectionTestCase
             new Injector($this->createStub(ContainerInterface::class))
         );
 
-        self::assertInstanceTypeException(
+        self::assertThrowsInstanceTypeException(
             FakeClassExtendsNoConstructor::class,
             FakeClassNoConstructor::class,
             static fn () => $factory->get()

@@ -54,7 +54,7 @@ class NamespaceContainerTest extends DependencyInjectionTestCase
         self::assertSame('test', $result->throwable->getMessage());
     }
 
-    public function testGet_WithClassNotInNamespace_ThrowsUnresolvedClassException(): void
+    public function testGet_WithClassNotInNamespace_ThrowsClassNotFoundException(): void
     {
         $container = new NamespaceContainer(
             __NAMESPACE__,
@@ -62,7 +62,7 @@ class NamespaceContainerTest extends DependencyInjectionTestCase
             fn () => null
         );
 
-        self::assertUnresolvedClassException(
+        self::assertThrowsClassNotFoundException(
             DateTime::class,
             static fn () => $container->get(DateTime::class)
         );

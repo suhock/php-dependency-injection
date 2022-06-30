@@ -188,14 +188,15 @@ class InjectorTest extends DependencyInjectionTestCase
         $injector->call(fn (FakeClassWithConstructor $obj) => $obj);
     }
 
-    public function testCall_WithBuiltinType_ThrowsUnresolvedParameterException(): void
+    public function testCall_WithBuiltinType_ThrowsParameterResolutionException(): void
     {
         $injector = $this->createInjector();
 
-        self::assertUnresolvedParameterException(
+        self::assertThrowsParameterResolutionException(
             'Closure::__invoke',
             'a',
             'string',
+            null,
             static fn () => $injector->call(fn (string $a) => $a)
         );
     }
@@ -234,16 +235,17 @@ class InjectorTest extends DependencyInjectionTestCase
         );
     }
 
-    public function testCall_WithNoResolvableTypeInUnionType_ThrowsUnresolvedParameterException(): void
+    public function testCall_WithNoResolvableTypeInUnionType_ThrowsParameterResolutionException(): void
     {
         $injector = $this->createInjector([
             FakeClassImplementsInterfaces::class => fn () => new FakeClassImplementsInterfaces()
         ]);
 
-        self::assertUnresolvedParameterException(
+        self::assertThrowsParameterResolutionException(
             'Closure::__invoke',
             'obj',
             FakeInterfaceOne::class . '|' . FakeInterfaceTwo::class,
+            null,
             static fn () => $injector->call(fn (FakeInterfaceOne|FakeInterfaceTwo $obj) => $obj)
         );
     }
@@ -289,19 +291,20 @@ class InjectorTest extends DependencyInjectionTestCase
         );
     }
 
-    public function testCall_WithIntersectionTypeNotImplementingOneType_ThrowsUnresolvedParameterException(): void
+    public function testCall_WithIntersectionTypeNotImplementingOneType_ThrowsParameterResolutionException(): void
     {
         $injector = $this->createInjector([FakeInterfaceOne::class => fn () => new FakeClassImplementsInterfaces()]);
 
-        self::assertUnresolvedParameterException(
+        self::assertThrowsParameterResolutionException(
             'Closure::__invoke',
             'obj',
             FakeInterfaceOne::class . '&' . FakeInterfaceThree::class,
+            null,
             static fn () => $injector->call(fn (FakeInterfaceOne&FakeInterfaceThree $obj) => $obj)
         );
     }
 
-    public function testCall_WithParameterHavingCircularDependency_ThrowsCircularParameterException(): void
+    public function testCall_WithParameterHavingCircularDependency_ThrowsParameterResolutionException(): void
     {
         $container = new Container();
         $container->addSingletonFactory(
@@ -311,10 +314,20 @@ class InjectorTest extends DependencyInjectionTestCase
 
         $injector = new Injector($container);
 
-        self::assertCircularParameterException(
+        self::assertThrowsParameterResolutionException(
             'Closure::__invoke',
             'obj',
             FakeClassNoConstructor::class,
+            /** @param ClassResolutionException<FakeClassNoConstructor> $exception */
+            static fn (ClassResolutionException $exception) => self::assertClassResolutionException(
+                FakeClassNoConstructor::class,
+                /** @param CircularDependencyException<FakeClassNoConstructor> $exception */
+                static fn (CircularDependencyException $exception) => self::assertCircularDependencyException(
+                    FakeClassNoConstructor::class,
+                    $exception
+                ),
+                $exception
+            ),
             static fn () => $injector->call(fn (FakeClassNoConstructor $obj) => $obj)
         );
     }

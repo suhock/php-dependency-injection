@@ -37,7 +37,7 @@ class FakeContainer implements ContainerInterface
          */
         return $this->has($className) ?
             ($this->classMapping[$className])() :
-            throw new UnresolvedClassException($className);
+            throw new ClassNotFoundException($className);
     }
 
     /**

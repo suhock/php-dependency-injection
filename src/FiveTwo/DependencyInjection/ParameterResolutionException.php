@@ -16,7 +16,7 @@ use Throwable;
 /**
  * Exception that indicates the injector could not resolve a value for a function parameter.
  */
-class UnresolvedParameterException extends InjectorException
+class ParameterResolutionException extends InjectorException
 {
     /**
      * @inheritDoc

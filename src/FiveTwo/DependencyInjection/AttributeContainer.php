@@ -12,10 +12,9 @@ declare(strict_types=1);
 namespace FiveTwo\DependencyInjection;
 
 use Closure;
+use ReflectionAttribute;
 use ReflectionClass;
 use ReflectionException;
-
-use function count;
 
 /**
  * Provides instances of classes with the given attribute.
@@ -72,27 +71,23 @@ class AttributeContainer implements ContainerInterface
      * @param class-string<TClass> $className The name of the class to retrieve
      *
      * @return TClass An instance of {@see $className}
-     * @throws UnresolvedClassException If the specified class does not implement or extend {@see $interfaceName}
+     * @throws ClassNotFoundException If the specified class does not implement or extend {@see $interfaceName}
+     * @psalm-suppress MixedInferredReturnType
      */
     public function get(string $className): object
     {
         try {
-            $rClass = new ReflectionClass($className);
-            /** @phpstan-ignore-next-line PHPStan detects this as a dead catch */
+            $rAttr = $this->getAttribute($className);
         } catch (ReflectionException $e) {
-            throw new UnresolvedClassException($className, $e);
+            throw new ClassNotFoundException($className, $e);
         }
 
-        $attr = $rClass->getAttributes($this->attributeName);
-
-        if (count($attr) < 1) {
-            throw new UnresolvedClassException($className);
+        if ($rAttr === null) {
+            throw new ClassNotFoundException($className);
         }
 
-        /** @psalm-var TClass $instance Psalm needs help inferring type */
-        $instance = $this->injector->call($this->factory, [$className, $attr[0]->newInstance()]);
-
-        return $instance;
+        /** @psalm-suppress MixedReturnStatement Psalm cannot infer a type from generic Closure */
+        return $this->injector->call($this->factory, [$className, $rAttr->newInstance()]);
     }
 
     /**
@@ -102,12 +97,23 @@ class AttributeContainer implements ContainerInterface
     public function has(string $className): bool
     {
         try {
-            $rClass = new ReflectionClass($className);
-            /** @phpstan-ignore-next-line PHPStan detects this as a dead catch */
+            return $this->getAttribute($className) !== null;
         } catch (ReflectionException) {
             return false;
         }
+    }
 
-        return count($rClass->getAttributes($this->attributeName)) > 0;
+    /**
+     * @param class-string $className
+     * @return ReflectionAttribute<object>|null
+     * @throws ReflectionException
+     * @psalm-mutation-free
+     */
+    private function getAttribute(string $className): ?ReflectionAttribute
+    {
+        $rClass = new ReflectionClass($className);
+        $rAttributes = $rClass->getAttributes($this->attributeName);
+
+        return $rAttributes[0] ?? null;
     }
 }

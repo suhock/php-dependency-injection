@@ -22,7 +22,7 @@ class ObjectInstanceProviderTest extends DependencyInjectionTestCase
 {
     public function testConstruct_WhenInstanceIsNotAnInstanceOfClass_ThrowsInstanceTypeException(): void
     {
-        self::assertInstanceTypeException(
+        self::assertThrowsInstanceTypeException(
             FakeClassExtendsNoConstructor::class,
             FakeClassNoConstructor::class,
             static fn () => new ObjectInstanceProvider(

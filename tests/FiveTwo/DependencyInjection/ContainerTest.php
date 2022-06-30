@@ -116,23 +116,28 @@ class ContainerTest extends DependencyInjectionTestCase
         self::assertSame($expectedInstance, $container->get(FakeClassExtendsNoConstructor::class));
     }
 
-    public function testGet_WhenClassNotInContainer_ThrowsUnresolvedClassException(): void
+    public function testGet_WhenClassNotInContainer_ThrowsClassNotFoundException(): void
     {
         $container = $this->createContainer();
 
-        self::assertUnresolvedClassException(
+        self::assertThrowsClassNotFoundException(
             FakeClassNoConstructor::class,
             static fn () => $container->get(FakeClassNoConstructor::class)
         );
     }
 
-    public function testGet_WhenClassHasCircularDependency_ThrowsCircularDependencyException(): void
+    public function testGet_WhenClassHasCircularDependency_ThrowsWrappedCircularDependencyException(): void
     {
         $container = $this->createContainer()
             ->addSingletonFactory(FakeClassNoConstructor::class, fn (FakeClassNoConstructor $obj) => $obj);
 
-        self::assertCircularDependencyException(
+        self::assertThrowsClassResolutionException(
             FakeClassNoConstructor::class,
+            /** @param CircularDependencyException<FakeClassNoConstructor> $exception */
+            static fn (CircularDependencyException $exception) => self::assertCircularDependencyException(
+                FakeClassNoConstructor::class,
+                $exception
+            ),
             static fn () => $container->get(FakeClassNoConstructor::class)
         );
     }

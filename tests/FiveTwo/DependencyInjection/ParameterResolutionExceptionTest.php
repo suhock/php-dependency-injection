@@ -14,55 +14,55 @@ namespace FiveTwo\DependencyInjection;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Test suite for {@see UnresolvedParameterException}.
+ * Test suite for {@see ParameterResolutionException}.
  */
-class UnresolvedParameterExceptionTest extends TestCase
+class ParameterResolutionExceptionTest extends TestCase
 {
     public function testGetMessage_HasFunctionName_ContainsFunctionName(): void
     {
-        $exception = new UnresolvedParameterException('testFunction', 'testParameter');
+        $exception = new ParameterResolutionException('testFunction', 'testParameter');
 
         self::assertStringContainsString('testFunction', $exception->getMessage());
     }
 
     public function testGetMessage_HasParameterName_ContainsParameterName(): void
     {
-        $exception = new UnresolvedParameterException('testFunction', 'testParameter');
+        $exception = new ParameterResolutionException('testFunction', 'testParameter');
 
         self::assertStringContainsString('testParameter', $exception->getMessage());
     }
 
     public function testGetMessage_HasParameterType_ContainsParameterType(): void
     {
-        $exception = new UnresolvedParameterException('testFunction', 'testParameter', 'string');
+        $exception = new ParameterResolutionException('testFunction', 'testParameter', 'string');
 
         self::assertStringContainsString('string', $exception->getMessage());
     }
 
     public function testGetFunctionName_HasFunctionName_ReturnsFunctionName(): void
     {
-        $exception = new UnresolvedParameterException('testFunction', 'testParameter');
+        $exception = new ParameterResolutionException('testFunction', 'testParameter');
 
         self::assertSame('testFunction', $exception->getFunctionName());
     }
 
     public function testGetParameterName_HasParameterName_ReturnsParameterName(): void
     {
-        $exception = new UnresolvedParameterException('testFunction', 'testParameter');
+        $exception = new ParameterResolutionException('testFunction', 'testParameter');
 
         self::assertSame('testParameter', $exception->getParameterName());
     }
 
     public function testGetParameterType_HasParameterType_ReturnsParameterType(): void
     {
-        $exception = new UnresolvedParameterException('testFunction', 'testParameter', 'string');
+        $exception = new ParameterResolutionException('testFunction', 'testParameter', 'string');
 
         self::assertSame('string', $exception->getParameterType());
     }
 
     public function testGetParameterType_ParameterTypeIsNull_ReturnsNull(): void
     {
-        $exception = new UnresolvedParameterException('testFunction', 'testParameter');
+        $exception = new ParameterResolutionException('testFunction', 'testParameter');
 
         self::assertNull($exception->getParameterType());
     }

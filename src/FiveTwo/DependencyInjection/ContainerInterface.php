@@ -24,7 +24,7 @@ interface ContainerInterface
      * @param class-string<TClass> $className The name of the class to retrieve
      *
      * @return TClass An instance of {@see $className}
-     * @throws UnresolvedClassException If the container could not resolve a value for the specified class
+     * @throws ClassNotFoundException If the container could not resolve a value for the specified class
      */
     public function get(string $className): object;
 

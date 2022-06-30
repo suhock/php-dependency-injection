@@ -102,16 +102,16 @@ class Container implements
     /**
      * @inheritDoc
      * @throws CircularDependencyException
-     * @throws UnresolvedClassException
+     * @throws ClassNotFoundException
      */
     public function get(string $className): object
     {
-        if ($this->tryGetFromFactory($className, $instance) ||
+        if ($this->tryGetFromDescriptor($className, $instance) ||
             $this->tryGetFromContainer($className, $instance)) {
             return $instance;
         }
 
-        throw new UnresolvedClassException($className);
+        throw new ClassNotFoundException($className);
     }
 
     /**
@@ -132,7 +132,7 @@ class Container implements
      * @return bool
      * @throws CircularDependencyException
      */
-    private function tryGetFromFactory(string $className, ?object &$instance): bool
+    private function tryGetFromDescriptor(string $className, ?object &$instance): bool
     {
         if (!$this->hasDescriptor($className)) {
             return false;
@@ -151,8 +151,8 @@ class Container implements
              * correctly */
             $instanceFactory = $descriptor->instanceProvider->get(...);
             $instance = $descriptor->lifetimeStrategy->get($instanceFactory);
-        } catch (CircularDependencyException|CircularParameterException $e) {
-            throw new CircularDependencyException($descriptor->className, previous: $e);
+        } catch (DependencyInjectionException $e) {
+            throw new ClassResolutionException($descriptor->className, previous: $e);
         } finally {
             $descriptor->isResolving = false;
         }
@@ -212,7 +212,7 @@ class Container implements
     private function tryGetFromContainer(string $className, ?object &$instance): bool
     {
         return $this->tryAddFromFirstMatchingContainer($className) &&
-            $this->tryGetFromFactory($className, $instance);
+            $this->tryGetFromDescriptor($className, $instance);
     }
 
     /**

@@ -26,25 +26,26 @@ class DependencyInjectionTestCase extends TestCase
     /**
      * @template T of Throwable
      *
+     * @param class-string<T> $expectedException
+     * @param callable(T):void $exceptionTest
      * @param callable $codeUnderTest
-     * @param callable(T):void $test
      *
      * @return void
      */
-    public static function assertException(callable $codeUnderTest, callable $test): void
-    {
+    private static function assertThrowsThrowable(
+        string $expectedException,
+        callable $exceptionTest,
+        callable $codeUnderTest
+    ): void {
         try {
             $codeUnderTest();
             Assert::fail('Exception was not thrown');
         } catch (AssertionFailedError $e) {
             throw $e;
         } catch (Throwable $exception) {
-            /**
-             * A TypeError here indicates the wrong type of exception was thrown
-             * @phpstan-ignore-next-line
-             * @psalm-suppress InvalidArgument
-             */
-            $test($exception);
+            self::assertInstanceOf($expectedException, $exception, $exception->getMessage());
+            /** @var T $exception */
+            $exceptionTest($exception);
         }
     }
 
@@ -54,59 +55,36 @@ class DependencyInjectionTestCase extends TestCase
      *
      * @return void
      */
-    public static function assertCircularDependencyException(
+    public static function assertThrowsCircularDependencyException(
         string $exClassName,
         callable $codeUnderTest
     ): void {
-        self::assertException(
-            $codeUnderTest,
-            static function (CircularDependencyException $exception) use ($exClassName): void {
-                self::assertSame(
-                    $exClassName,
-                    $exception->getClassName(),
-                    'Failed asserting that class name is identical'
-                );
-            }
+        self::assertThrowsThrowable(
+            CircularDependencyException::class,
+            static fn (CircularDependencyException $exception) => self::assertCircularDependencyException(
+                $exClassName,
+                $exception
+            ),
+            $codeUnderTest
         );
     }
 
     /**
-     * @param string $exFunctionName
-     * @param string $exParameterName
-     * @param class-string $exClassName
-     * @param callable $codeUnderTest
+     * @template TClass of object
+     *
+     * @param class-string<TClass> $exClassName
+     * @param CircularDependencyException<TClass> $actualException
      *
      * @return void
      */
-    public static function assertCircularParameterException(
-        string $exFunctionName,
-        string $exParameterName,
+    public static function assertCircularDependencyException(
         string $exClassName,
-        callable $codeUnderTest
+        CircularDependencyException $actualException
     ): void {
-        self::assertException(
-            $codeUnderTest,
-            static function (CircularParameterException $exception) use (
-                $exClassName,
-                $exFunctionName,
-                $exParameterName
-            ): void {
-                self::assertSame(
-                    $exFunctionName,
-                    $exception->getFunctionName(),
-                    'Failed asserting that function name is identical'
-                );
-                self::assertSame(
-                    $exParameterName,
-                    $exception->getParameterName(),
-                    'Failed asserting that parameter name is identical'
-                );
-                self::assertSame(
-                    $exClassName,
-                    $exception->getClassName(),
-                    'Failed asserting that class name is identical'
-                );
-            }
+        self::assertSame(
+            $exClassName,
+            $actualException->getClassName(),
+            'Failed asserting that class name is identical'
         );
     }
 
@@ -117,25 +95,46 @@ class DependencyInjectionTestCase extends TestCase
      *
      * @return void
      */
-    public static function assertImplementationException(
+    public static function assertThrowsImplementationException(
         string $exExpectedClassName,
         string $exActualClassName,
         callable $codeUnderTest
     ): void {
-        self::assertException(
-            $codeUnderTest,
-            static function (ImplementationException $exception) use ($exExpectedClassName, $exActualClassName) {
-                self::assertSame(
-                    $exExpectedClassName,
-                    $exception->getExpectedClassName(),
-                    'Failed asserting that expected class name is identical'
-                );
-                self::assertSame(
-                    $exActualClassName,
-                    $exception->getActualClassName(),
-                    'Failed asserting that actual class name is identical'
-                );
-            }
+        self::assertThrowsThrowable(
+            ImplementationException::class,
+            static fn (ImplementationException $exception) => self::assertImplementationException(
+                $exExpectedClassName,
+                $exActualClassName,
+                $exception
+            ),
+            $codeUnderTest
+        );
+    }
+
+    /**
+     * @template TExpected of object
+     * @template TActual of object
+     *
+     * @param class-string<TExpected> $exExpectedClassName
+     * @param class-string<TActual> $exActualClassName
+     * @param ImplementationException<TExpected, TActual> $actualException
+     *
+     * @return void
+     */
+    public static function assertImplementationException(
+        string $exExpectedClassName,
+        string $exActualClassName,
+        ImplementationException $actualException
+    ): void {
+        self::assertSame(
+            $exExpectedClassName,
+            $actualException->getExpectedClassName(),
+            'Failed asserting that expected class name is identical'
+        );
+        self::assertSame(
+            $exActualClassName,
+            $actualException->getActualClassName(),
+            'Failed asserting that actual class name is identical'
         );
     }
 
@@ -146,34 +145,54 @@ class DependencyInjectionTestCase extends TestCase
      *
      * @return void
      */
-    public static function assertInstanceTypeException(
+    public static function assertThrowsInstanceTypeException(
         string $exExpectedClassName,
         ?string $exActualClassName,
         callable $codeUnderTest
     ): void {
-        self::assertException(
-            $codeUnderTest,
-            static function (InstanceTypeException $exception) use ($exExpectedClassName, $exActualClassName) {
-                self::assertSame(
-                    $exExpectedClassName,
-                    $exception->getExpectedClassName(),
-                    'Failed asserting that expected class name is identical'
-                );
-
-                if ($exActualClassName !== null) {
-                    self::assertInstanceOf(
-                        $exActualClassName,
-                        $exception->getActualValue(),
-                        'Failed asserting that actual value is of the correct type'
-                    );
-                } else {
-                    self::assertNull(
-                        $exception->getActualValue(),
-                        'Failed asserting that actual value is null'
-                    );
-                }
-            }
+        self::assertThrowsThrowable(
+            InstanceTypeException::class,
+            static fn (InstanceTypeException $exception) => self::assertInstanceTypeException(
+                $exExpectedClassName,
+                $exActualClassName,
+                $exception
+            ),
+            $codeUnderTest
         );
+    }
+
+    /**
+     * @template TExpected of object
+     *
+     * @param class-string<TExpected> $exExpectedClassName
+     * @param class-string|null $exActualClassName
+     * @param InstanceTypeException<TExpected> $actualException
+     *
+     * @return void
+     */
+    public static function assertInstanceTypeException(
+        string $exExpectedClassName,
+        ?string $exActualClassName,
+        InstanceTypeException $actualException
+    ): void {
+        self::assertSame(
+            $exExpectedClassName,
+            $actualException->getExpectedClassName(),
+            'Failed asserting that expected class name is identical'
+        );
+
+        if ($exActualClassName !== null) {
+            self::assertInstanceOf(
+                $exActualClassName,
+                $actualException->getActualValue(),
+                'Failed asserting that actual value is of the correct type'
+            );
+        } else {
+            self::assertNull(
+                $actualException->getActualValue(),
+                'Failed asserting that actual value is null'
+            );
+        }
     }
 
     /**
@@ -182,19 +201,113 @@ class DependencyInjectionTestCase extends TestCase
      *
      * @return void
      */
-    public static function assertUnresolvedClassException(
+    public static function assertThrowsClassNotFoundException(
         string $expectedClassName,
         callable $codeUnderTest
     ): void {
-        self::assertException(
-            $codeUnderTest,
-            static function (UnresolvedClassException $exception) use ($expectedClassName) {
-                self::assertSame(
-                    $expectedClassName,
-                    $exception->getClassName(),
-                    'Failed asserting that class name is identical'
-                );
-            }
+        self::assertThrowsThrowable(
+            ClassNotFoundException::class,
+            static fn (ClassNotFoundException $exception) => self::assertClassNotFoundException(
+                $expectedClassName,
+                $exception
+            ),
+            $codeUnderTest
+        );
+    }
+
+    /**
+     * @template TExpected of object
+     *
+     * @param class-string<TExpected> $expectedClassName
+     * @param ClassNotFoundException<TExpected> $actualException
+     *
+     * @return void
+     */
+    public static function assertClassNotFoundException(
+        string $expectedClassName,
+        ClassNotFoundException $actualException
+    ): void {
+        self::assertSame(
+            $expectedClassName,
+            $actualException->getClassName(),
+            'Failed asserting that class name is identical'
+        );
+    }
+
+    /**
+     * @param class-string $expectedClassName
+     * @param callable|null $previousExceptionTest
+     * @param callable $codeUnderTest
+     *
+     * @return void
+     */
+    public static function assertThrowsClassResolutionException(
+        string $expectedClassName,
+        ?callable $previousExceptionTest,
+        callable $codeUnderTest
+    ): void {
+        self::assertThrowsThrowable(
+            ClassResolutionException::class,
+            static fn (ClassResolutionException $exception) => self::assertClassResolutionException(
+                $expectedClassName,
+                $previousExceptionTest,
+                $exception
+            ),
+            $codeUnderTest
+        );
+    }
+
+    /**
+     * @template TClass of object
+     *
+     * @param class-string<TClass> $expectedClassName
+     * @param callable|null $previousExceptionTest
+     * @param ClassResolutionException<TClass> $actualException
+     *
+     * @return void
+     */
+    public static function assertClassResolutionException(
+        string $expectedClassName,
+        ?callable $previousExceptionTest,
+        ClassResolutionException $actualException
+    ): void {
+        self::assertSame(
+            $expectedClassName,
+            $actualException->getClassName(),
+            'Failed asserting that class name is identical'
+        );
+
+        if ($previousExceptionTest) {
+            $previousExceptionTest($actualException->getConsolidatedException());
+        }
+    }
+
+    /**
+     * @param string $exFunctionName
+     * @param string $exParameterName
+     * @param string|null $exParameterType
+     * @param callable|null $previousTest
+     * @param callable $codeUnderTest
+     *
+     * @return void
+     */
+    public static function assertThrowsParameterResolutionException(
+        string $exFunctionName,
+        string $exParameterName,
+        ?string $exParameterType,
+        ?callable $previousTest,
+        callable $codeUnderTest
+    ): void {
+        self::assertThrowsThrowable(
+            ParameterResolutionException::class,
+            static fn (ParameterResolutionException $exception) => self::assertParameterResolutionException(
+                $exFunctionName,
+                $exParameterName,
+                $exParameterType,
+                $previousTest,
+                $exception
+            ),
+            $codeUnderTest
         );
     }
 
@@ -202,39 +315,36 @@ class DependencyInjectionTestCase extends TestCase
      * @param string $exFunctionName
      * @param string $exParameterName
      * @param string|null $exParameterType
-     * @param callable $codeUnderTest
+     * @param callable|null $previousTest
+     * @param ParameterResolutionException $actualException
      *
      * @return void
      */
-    public static function assertUnresolvedParameterException(
+    public static function assertParameterResolutionException(
         string $exFunctionName,
         string $exParameterName,
         ?string $exParameterType,
-        callable $codeUnderTest
+        ?callable $previousTest,
+        ParameterResolutionException $actualException
     ): void {
-        self::assertException(
-            $codeUnderTest,
-            static function (UnresolvedParameterException $exception) use (
-                $exFunctionName,
-                $exParameterName,
-                $exParameterType
-            ) {
-                self::assertSame(
-                    $exFunctionName,
-                    $exception->getFunctionName(),
-                    'Failed asserting that function name is identical'
-                );
-                self::assertSame(
-                    $exParameterName,
-                    $exception->getParameterName(),
-                    'Failed asserting that parameter name is identical'
-                );
-                self::assertSame(
-                    $exParameterType,
-                    $exception->getParameterType(),
-                    'Failed asserting that parameter type is identical'
-                );
-            }
+        self::assertSame(
+            $exFunctionName,
+            $actualException->getFunctionName(),
+            'Failed asserting that function name is identical'
         );
+        self::assertSame(
+            $exParameterName,
+            $actualException->getParameterName(),
+            'Failed asserting that parameter name is identical'
+        );
+        self::assertSame(
+            $exParameterType,
+            $actualException->getParameterType(),
+            'Failed asserting that parameter type is identical'
+        );
+
+        if ($previousTest !== null) {
+            $previousTest($actualException->getConsolidatedException());
+        }
     }
 }
