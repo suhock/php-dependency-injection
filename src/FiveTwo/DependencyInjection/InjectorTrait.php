@@ -196,7 +196,7 @@ trait InjectorTrait
             return $rParam->getDefaultValue();
         }
 
-        if ($rParam->getType()?->allowsNull()) {
+        if ($rParam->allowsNull()) {
             return null;
         }
 

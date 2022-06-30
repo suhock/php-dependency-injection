@@ -163,6 +163,13 @@ class InjectorTest extends DependencyInjectionTestCase
         self::assertNull($injector->call(fn (?FakeClassNoConstructor $obj) => $obj));
     }
 
+    public function testCall_WithUntypedDependency_InjectsNull(): void
+    {
+        $injector = $this->createInjector();
+
+        self::assertNull($injector->call(fn ($var) => $var));
+    }
+
     public function testCall_WithUnresolvableDependency_ThrowsInjectorException(): void
     {
         $injector = $this->createInjector();
@@ -179,18 +186,6 @@ class InjectorTest extends DependencyInjectionTestCase
 
         $this->expectException(InjectorException::class);
         $injector->call(fn (FakeClassWithConstructor $obj) => $obj);
-    }
-
-    public function testCall_WithUntypedDependency_ThrowsUnresolvedParameterException(): void
-    {
-        $injector = $this->createInjector();
-
-        self::assertUnresolvedParameterException(
-            'Closure::__invoke',
-            'a',
-            null,
-            static fn () => $injector->call(fn ($a) => $a)
-        );
     }
 
     public function testCall_WithBuiltinType_ThrowsUnresolvedParameterException(): void
