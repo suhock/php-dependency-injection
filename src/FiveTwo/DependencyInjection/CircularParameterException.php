@@ -46,6 +46,28 @@ class CircularParameterException extends InjectorException implements CircularEx
     }
 
     /**
+     * @template TOriginal of object
+     *
+     * @param CircularDependencyException<TOriginal> $original
+     * @param string $functionName
+     * @param string $parameterName
+     *
+     * @return self<TOriginal>
+     */
+    public static function fromCircularDependencyException(
+        CircularDependencyException $original,
+        string $functionName,
+        string $parameterName
+    ): self {
+        return new self(
+            $original->getClassName(),
+            $functionName,
+            $parameterName,
+            $original->getPrevious()
+        );
+    }
+
+    /**
      * @return string
      * @psalm-mutation-free
      */
