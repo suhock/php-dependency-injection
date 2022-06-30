@@ -70,11 +70,12 @@ trait InjectorTrait
             throw new InjectorException("Function $functionName() does not exist", $e);
         }
 
-        return $this->invoke(
-            $rFunction->invokeArgs(...),
-            $rFunction->getParameters(),
-            $params,
-            $functionName
+        return $rFunction->invokeArgs(
+            $this->resolveParameterList(
+                $rFunction->getParameters(),
+                $params,
+                $functionName
+            )
         );
     }
 
@@ -100,9 +101,8 @@ trait InjectorTrait
     {
         try {
             $rClass = new ReflectionClass($className);
-            /** @phpstan-ignore-next-line PHPStan assumes an exception can never be thrown because the static analysis
-             * infers that $className will always be a valid. Don't want to assume this.
-             */
+            /** @phpstan-ignore-next-line PHPStan assumes an exception can never be thrown because it infers that
+             * $className will always be a valid from the PHPDoc. */
         } catch (ReflectionException $e) {
             throw new InjectorException("Class $className does not exist", $e);
         }
@@ -111,15 +111,19 @@ trait InjectorTrait
             throw new InjectorException("Class $className is not instantiable");
         }
 
-        /** @psalm-var Closure():TClass $factory Psalm needs help resolving the return type for newInstanceArgs() */
-        $factory = $rClass->newInstanceArgs(...);
-
-        $instance = $this->invoke(
-            $factory,
-            $rClass->getConstructor()?->getParameters() ?? [],
-            $params,
-            "$className::__construct"
-        );
+        try {
+            /** @var TClass $instance */
+            $instance = $rClass->newInstanceArgs(
+                $this->resolveParameterList(
+                    $rClass->getConstructor()?->getParameters() ?? [],
+                    $params,
+                    "$className::__construct"
+                )
+            );
+        } catch (ReflectionException $e) {
+            // The check for !isInstantiable() should make this unreachable
+            throw new InjectorException("Could not instantiate $className", $e);
+        }
 
         $this->injectAutowireFunctions($instance);
 
@@ -139,26 +143,22 @@ trait InjectorTrait
     }
 
     /**
-     * @template TResult
-     *
-     * @param callable(list<mixed>):TResult $function
      * @param array<ReflectionParameter> $rParameters
      * @param array<mixed> $params
      * @param string $functionName
-     *
-     * @return TResult
-     * @throws DependencyInjectionException If a value could not be resolved for any of the parameters
+     * @return list<mixed>
      */
-    private function invoke(callable $function, array $rParameters, array $params, string $functionName): mixed
+    public function resolveParameterList(array $rParameters, array $params, string $functionName): array
     {
+        /** @var list<mixed> $paramValues */
         $paramValues = [];
 
         foreach ($rParameters as $rParam) {
-            /** @psalm-suppress MixedAssignment Type of assignment not needed for analysis */
+            /** @psalm-suppress MixedAssignment This assignment should be mixed */
             $paramValues[] = $this->resolveParameter($rParam, $params, $functionName);
         }
 
-        return $function($paramValues);
+        return $paramValues;
     }
 
     /**
@@ -167,6 +167,7 @@ trait InjectorTrait
      * @param string $functionName
      *
      * @return mixed|null
+     * @throws UnresolvedParameterException|CircularParameterException
      */
     private function resolveParameter(ReflectionParameter $rParam, array $params, string $functionName): mixed
     {
@@ -185,13 +186,9 @@ trait InjectorTrait
                 return $paramValue;
             }
         } catch (CircularDependencyException $e) {
-            throw new CircularParameterException(
-                $e->getClassName(),
-                $functionName,
-                $rParam->getName(),
-                $e->getPrevious()
-            );
-        } catch (UnresolvedParameterException $e) {
+            /** @psalm-var CircularDependencyException<object> $e */
+            throw CircularParameterException::fromCircularDependencyException($e, $functionName, $rParam->getName());
+        } catch (DependencyInjectionException $e) {
             $deferredException = $e;
         }
 
@@ -206,7 +203,7 @@ trait InjectorTrait
         throw new UnresolvedParameterException(
             $functionName,
             $rParam->getName(),
-            self::getReflectionTypeName($rParam->getType()),
+            self::getParameterTypeName($rParam->getType()),
             $deferredException
         );
     }
@@ -214,29 +211,27 @@ trait InjectorTrait
     /**
      * @psalm-pure
      */
-    private static function getReflectionTypeName(?ReflectionType $rType): ?string
+    private static function getParameterTypeName(?ReflectionType $rType): ?string
     {
-        if ($rType === null) {
-            return null;
-        }
+        return match (true) {
+            $rType instanceof ReflectionNamedType => $rType->getName(),
+            $rType instanceof ReflectionUnionType => self::getCombinedParameterTypeName($rType, '|'),
+            $rType instanceof ReflectionIntersectionType => self::getCombinedParameterTypeName($rType, '&'),
+            default => null // covers null $rType as well as any new types introduced after PHP 8.1
+        };
+    }
 
-        if ($rType instanceof ReflectionNamedType) {
-            return $rType->getName();
-        }
-
-        if ($rType instanceof ReflectionUnionType) {
-            $delimiter = '|';
-        } elseif ($rType instanceof ReflectionIntersectionType) {
-            $delimiter = '&';
-        } else {
-            // Future-proofing. All types covered as of PHP 8.1.
-            return null;
-        }
-
+    /**
+     * @psalm-pure
+     */
+    public static function getCombinedParameterTypeName(
+        ReflectionUnionType|ReflectionIntersectionType $rType,
+        string $delimiter
+    ): string {
         $parts = [];
 
         foreach ($rType->getTypes() as $rNestedType) {
-            $parts[] = self::getReflectionTypeName($rNestedType);
+            $parts[] = self::getParameterTypeName($rNestedType);
         }
 
         return implode($delimiter, $parts);
