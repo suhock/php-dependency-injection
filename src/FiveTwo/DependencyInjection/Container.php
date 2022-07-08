@@ -44,7 +44,7 @@ class Container implements
      */
     public function __construct(?InjectorInterface $injector = null)
     {
-        $this->injector = $injector ?? new Injector($this);
+        $this->injector = $injector ?? new ContainerInjector($this);
     }
 
     /**

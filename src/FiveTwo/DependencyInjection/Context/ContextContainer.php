@@ -43,7 +43,7 @@ class ContextContainer implements ContainerInterface
     public function __construct(
         private readonly Closure $containerFactory
     ) {
-        $this->injector = new ContextInjector($this);
+        $this->injector = new ContextContainerInjector($this);
     }
 
     /**

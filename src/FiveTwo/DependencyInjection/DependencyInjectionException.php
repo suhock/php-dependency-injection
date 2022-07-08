@@ -22,8 +22,6 @@ abstract class DependencyInjectionException extends LogicException
     protected ?DependencyInjectionException $consolidatedException = null;
 
     /**
-     * @inheritDoc
-     *
      * @param string $message [optional] The Exception message to throw.
      * @param Throwable|null $previous [optional] The previous throwable used for exception chaining. If the throwable
      * is of type {@see DependencyInjectionException} then its message and previous exception will be consolidated into

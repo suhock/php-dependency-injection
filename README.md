@@ -817,14 +817,14 @@ function in a controller instead of the constructor.
 
 ```php
 use FiveTwo\DependencyInjection\Container;
-use FiveTwo\DependencyInjection\Injector;
+use FiveTwo\DependencyInjection\ContainerInjector;
 
 // Create the container and build it
 $container = new Container();
 // ... build the container ...
 
 // Create an injector backed by the container
-$injector = new Injector($container);
+$injector = new ContainerInjector($container);
 
 // Fetch the application router from the container
 $router = $container->get(Router::class);

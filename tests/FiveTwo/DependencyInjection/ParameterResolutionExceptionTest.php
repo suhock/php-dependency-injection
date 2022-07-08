@@ -12,58 +12,48 @@ declare(strict_types=1);
 namespace FiveTwo\DependencyInjection;
 
 use PHPUnit\Framework\TestCase;
+use ReflectionParameter;
 
 /**
  * Test suite for {@see ParameterResolutionException}.
  */
 class ParameterResolutionExceptionTest extends TestCase
 {
+    private function fakeFunction(string $fakeParameter): void
+    {
+    }
+
+    private function createException(): ParameterResolutionException
+    {
+        /** @noinspection PhpUnhandledExceptionInspection */
+        return new ParameterResolutionException(new ReflectionParameter($this->fakeFunction(...), 'fakeParameter'));
+    }
+
     public function testGetMessage_HasFunctionName_ContainsFunctionName(): void
     {
-        $exception = new ParameterResolutionException('testFunction', 'testParameter');
+        $exception = $this->createException();
 
-        self::assertStringContainsString('testFunction', $exception->getMessage());
+        self::assertStringContainsString('fakeFunction', $exception->getMessage());
     }
 
     public function testGetMessage_HasParameterName_ContainsParameterName(): void
     {
-        $exception = new ParameterResolutionException('testFunction', 'testParameter');
+        $exception = $this->createException();
 
-        self::assertStringContainsString('testParameter', $exception->getMessage());
+        self::assertStringContainsString('fakeParameter', $exception->getMessage());
     }
 
     public function testGetMessage_HasParameterType_ContainsParameterType(): void
     {
-        $exception = new ParameterResolutionException('testFunction', 'testParameter', 'string');
+        $exception = $this->createException();
 
         self::assertStringContainsString('string', $exception->getMessage());
     }
 
-    public function testGetFunctionName_HasFunctionName_ReturnsFunctionName(): void
+    public function testGetReflectionParameter_ReturnsReflectionParameter(): void
     {
-        $exception = new ParameterResolutionException('testFunction', 'testParameter');
+        $exception = $this->createException();
 
-        self::assertSame('testFunction', $exception->getFunctionName());
-    }
-
-    public function testGetParameterName_HasParameterName_ReturnsParameterName(): void
-    {
-        $exception = new ParameterResolutionException('testFunction', 'testParameter');
-
-        self::assertSame('testParameter', $exception->getParameterName());
-    }
-
-    public function testGetParameterType_HasParameterType_ReturnsParameterType(): void
-    {
-        $exception = new ParameterResolutionException('testFunction', 'testParameter', 'string');
-
-        self::assertSame('string', $exception->getParameterType());
-    }
-
-    public function testGetParameterType_ParameterTypeIsNull_ReturnsNull(): void
-    {
-        $exception = new ParameterResolutionException('testFunction', 'testParameter');
-
-        self::assertNull($exception->getParameterType());
+        self::assertInstanceOf(ReflectionParameter::class, $exception->getReflectionParameter());
     }
 }

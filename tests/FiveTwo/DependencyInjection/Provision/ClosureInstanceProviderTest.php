@@ -11,11 +11,11 @@ declare(strict_types=1);
 
 namespace FiveTwo\DependencyInjection\Provision;
 
+use FiveTwo\DependencyInjection\ContainerInjector;
 use FiveTwo\DependencyInjection\ContainerInterface;
 use FiveTwo\DependencyInjection\DependencyInjectionTestCase;
 use FiveTwo\DependencyInjection\FakeClassExtendsNoConstructor;
 use FiveTwo\DependencyInjection\FakeClassNoConstructor;
-use FiveTwo\DependencyInjection\Injector;
 use FiveTwo\DependencyInjection\InjectorInterface;
 
 /**
@@ -64,7 +64,7 @@ class ClosureInstanceProviderTest extends DependencyInjectionTestCase
         $factory = new ClosureInstanceProvider(
             FakeClassExtendsNoConstructor::class,
             fn () => new FakeClassNoConstructor(),
-            new Injector($this->createStub(ContainerInterface::class))
+            new ContainerInjector($this->createStub(ContainerInterface::class))
         );
 
         self::assertThrowsInstanceTypeException(

@@ -30,7 +30,7 @@ class InjectorTest extends DependencyInjectionTestCase
      */
     protected function createInjector(array $classMapping = []): Injector
     {
-        return new Injector(new FakeContainer($classMapping));
+        return new ContainerInjector(new FakeContainer($classMapping));
     }
 
     public function testInstantiate_WithDependenciesInContainer_ReturnsInstanceWithValuesFromContainer(): void
@@ -182,7 +182,7 @@ class InjectorTest extends DependencyInjectionTestCase
     {
         $container = new Container();
         $container->addSingletonClass(FakeClassWithConstructor::class);
-        $injector = new Injector($container);
+        $injector = new ContainerInjector($container);
 
         $this->expectException(InjectorException::class);
         $injector->call(fn (FakeClassWithConstructor $obj) => $obj);
@@ -193,9 +193,8 @@ class InjectorTest extends DependencyInjectionTestCase
         $injector = $this->createInjector();
 
         self::assertThrowsParameterResolutionException(
-            'Closure::__invoke',
+            __NAMESPACE__ . '\\{closure}',
             'a',
-            'string',
             null,
             static fn () => $injector->call(fn (string $a) => $a)
         );
@@ -242,9 +241,8 @@ class InjectorTest extends DependencyInjectionTestCase
         ]);
 
         self::assertThrowsParameterResolutionException(
-            'Closure::__invoke',
+            __NAMESPACE__ . '\\{closure}',
             'obj',
-            FakeInterfaceOne::class . '|' . FakeInterfaceTwo::class,
             null,
             static fn () => $injector->call(fn (FakeInterfaceOne|FakeInterfaceTwo $obj) => $obj)
         );
@@ -296,9 +294,8 @@ class InjectorTest extends DependencyInjectionTestCase
         $injector = $this->createInjector([FakeInterfaceOne::class => fn () => new FakeClassImplementsInterfaces()]);
 
         self::assertThrowsParameterResolutionException(
-            'Closure::__invoke',
+            __NAMESPACE__ . '\\{closure}',
             'obj',
-            FakeInterfaceOne::class . '&' . FakeInterfaceThree::class,
             null,
             static fn () => $injector->call(fn (FakeInterfaceOne&FakeInterfaceThree $obj) => $obj)
         );
@@ -312,12 +309,11 @@ class InjectorTest extends DependencyInjectionTestCase
             fn (FakeClassNoConstructor $obj) => $obj
         );
 
-        $injector = new Injector($container);
+        $injector = new ContainerInjector($container);
 
         self::assertThrowsParameterResolutionException(
-            'Closure::__invoke',
+            __NAMESPACE__ . '\\{closure}',
             'obj',
-            FakeClassNoConstructor::class,
             /** @param ClassResolutionException<FakeClassNoConstructor> $exception */
             static fn (ClassResolutionException $exception) => self::assertClassResolutionException(
                 FakeClassNoConstructor::class,

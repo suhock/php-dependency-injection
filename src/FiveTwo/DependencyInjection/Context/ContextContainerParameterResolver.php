@@ -11,10 +11,8 @@ declare(strict_types=1);
 
 namespace FiveTwo\DependencyInjection\Context;
 
-use FiveTwo\DependencyInjection\ContainerInjectorTrait;
+use FiveTwo\DependencyInjection\AbstractContainerParameterResolver;
 use FiveTwo\DependencyInjection\ContainerInterface;
-use FiveTwo\DependencyInjection\InjectorInterface;
-use FiveTwo\DependencyInjection\InjectorTrait;
 use ReflectionAttribute;
 use ReflectionMethod;
 use ReflectionParameter;
@@ -23,43 +21,27 @@ use UnitEnum;
 use function count;
 
 /**
- * Context-aware injector for injecting dependencies into function and constructor calls.
- *
- * @template TContainer of ContainerInterface
+  * Resolves function parameters using a {@see ContextContainer}.
  */
-class ContextInjector implements InjectorInterface
+class ContextContainerParameterResolver extends AbstractContainerParameterResolver
 {
-    use InjectorTrait;
-    use ContainerInjectorTrait;
-
     /**
-     * @param ContextContainer<TContainer> $container The container from which dependencies will be resolved
-     * @psalm-mutation-free
+     * @param ContextContainer<ContainerInterface> $container
      */
     public function __construct(
         private readonly ContextContainer $container
     ) {
+        parent::__construct($container);
     }
 
-    /**
-     * @psalm-mutation-free
-     */
-    protected function getContainer(): ContainerInterface
-    {
-        return $this->container;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    protected function tryResolveParameter(ReflectionParameter $rParam, mixed &$paramValue): bool
+    protected function tryResolveParameter(ReflectionParameter $rParam, mixed &$result): bool
     {
         $contextCount = 0;
 
         try {
             $this->pushContextsFromParameter($contextCount, $rParam);
 
-            return $this->getInstanceFromParameter($rParam, $paramValue);
+            return $this->tryGetInstanceFromParameter($rParam, $result);
         } finally {
             $this->popContexts($contextCount);
         }
@@ -70,9 +52,9 @@ class ContextInjector implements InjectorInterface
         $rFunction = $rParam->getDeclaringFunction();
 
         if ($rFunction instanceof ReflectionMethod) {
-            /** @psalm-var ReflectionAttribute<Context>[] $rAttributes
-             * Psalm resolves as ReflectionAttribute<object>[] */
             $rAttributes = $rFunction->getDeclaringClass()->getAttributes(Context::class);
+            /** @psalm-suppress ArgumentTypeCoercion Psalm resolves as ReflectionAttribute template type as object
+             * instead of Context */
             $this->pushContextFromAttributes($contextCount, $rAttributes);
         }
 

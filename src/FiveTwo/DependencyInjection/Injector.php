@@ -11,39 +11,157 @@ declare(strict_types=1);
 
 namespace FiveTwo\DependencyInjection;
 
+use ReflectionClass;
+use ReflectionException;
+use ReflectionFunction;
+use ReflectionMethod;
 use ReflectionParameter;
 
+use function array_key_exists;
+use function count;
+use function is_callable;
+
 /**
- * Default implementation for the {@see InjectorInterface} that injects missing parameter values from a
- * {@see ContainerInterface}
+ * Default implementation for {@see InjectorInterface} that resolves missing parameter values using a
+ * {@see ParameterResolverInterface}.
  */
 class Injector implements InjectorInterface
 {
-    use InjectorTrait;
-    use ContainerInjectorTrait;
-
     /**
-     * @param ContainerInterface $container The container from which to resolve parameter values
+     * @param ParameterResolverInterface $resolver The resolver to use for resolving parameters
+     *
      * @psalm-mutation-free
      */
     public function __construct(
-        private readonly ContainerInterface $container
+        private readonly ParameterResolverInterface $resolver
     ) {
     }
 
     /**
-     * @psalm-mutation-free
+     * Calls the specified function, injecting any parameter values. Each parameter value is determined as follows:
+     *  1. From the {@see $params} array
+     *  2. From the injector's dependency resolution logic (e.g. from a container)
+     *  3. The parameter's default value, if available
+     *  4. <code>null</code> if the parameter is nullable
+     *
+     * @param callable $function The function to call
+     * @param array<mixed> $params A list of parameter values to provide to the function. String keys will be matched by
+     * name. Integer keys will be matched by position.
+     *
+     * @return mixed The value returned by the function
+     * @throws InjectorException If there was an error while resolving a value for any of the function parameters or
+     * while invoking the function
      */
-    protected function getContainer(): ContainerInterface
+    public function call(callable $function, array $params = []): mixed
     {
-        return $this->container;
+        is_callable($function, false, $functionName);
+
+        try {
+            $rFunction = new ReflectionFunction($function(...));
+        } catch (ReflectionException $e) {
+            // The callable parameter type constraint should make this unreachable
+            throw new InjectorException("Function $functionName() does not exist", $e);
+        }
+
+        return $rFunction->invokeArgs(
+            $this->resolveParameterList(
+                $rFunction->getParameters(),
+                $params
+            )
+        );
     }
 
     /**
-     * @inheritDoc
+     * Creates a new instance of the specified class, injecting any parameter values. Each parameter value is determined
+     * as follows:
+     *  1. From the {@see $params} array
+     *  2. From the injector's dependency resolution logic (e.g. from a container)
+     *  3. The parameter's default value, if available
+     *  4. <code>null</code> if the parameter is nullable
+     *
+     * @template TClass of object
+     *
+     * @param class-string<TClass> $className The name of the class to instantiate
+     * @param array<mixed> $params A list of parameter values to provide to the constructor. String keys will be matched
+     * by name; integer keys will be matched by position.
+     *
+     * @return TClass A new instance of the specified class
+     * @throws InjectorException If there was an error while resolving a value for any of the constructor parameters or
+     * while creating the object instance
      */
-    protected function tryResolveParameter(ReflectionParameter $rParam, mixed &$paramValue): bool
+    public function instantiate(string $className, array $params = []): object
     {
-        return $this->getInstanceFromParameter($rParam, $paramValue);
+        try {
+            $rClass = new ReflectionClass($className);
+            /** @phpstan-ignore-next-line PHPStan assumes an exception can never be thrown because it infers that
+             * $className will always be a valid from the PHPDoc. */
+        } catch (ReflectionException $e) {
+            throw new InjectorException("Class $className does not exist", $e);
+        }
+
+        if (!$rClass->isInstantiable()) {
+            throw new InjectorException("Class $className is not instantiable");
+        }
+
+        try {
+            /** @var TClass $instance */
+            $instance = $rClass->newInstanceArgs(
+                $this->resolveParameterList(
+                    $rClass->getConstructor()
+                        ?->getParameters() ?? [],
+                    $params
+                )
+            );
+        } catch (ReflectionException $e) {
+            // The check for !isInstantiable() should make this unreachable
+            throw new InjectorException("Could not instantiate $className", $e);
+        }
+
+        $this->injectAutowireFunctions($instance);
+
+        return $instance;
+    }
+
+    private function injectAutowireFunctions(object $instance): void
+    {
+        $rClass = new ReflectionClass($instance);
+
+        foreach ($rClass->getMethods(ReflectionMethod::IS_PUBLIC) as $rMethod) {
+            if (count($rMethod->getAttributes(Autowire::class)) > 0) {
+                /** @phpstan-ignore-next-line PHPStan complains about possible null return */
+                $this->call($rMethod->getClosure($instance));
+            }
+        }
+    }
+
+    /**
+     * @param array<ReflectionParameter> $rParameters
+     * @phpstan-param array<mixed> $params
+     *
+     * @return list<mixed>
+     */
+    private function resolveParameterList(array $rParameters, array $params): array
+    {
+        /** @var list<mixed> $paramValues */
+        $paramValues = [];
+
+        foreach ($rParameters as $rParam) {
+            /** @psalm-suppress MixedAssignment $paramValues is declared as list<mixed>... */
+            $paramValues[] = $this->resolveParameter($rParam, $params);
+        }
+
+        return $paramValues;
+    }
+
+    /**
+     * @phpstan-param array<mixed> $params
+     */
+    private function resolveParameter(ReflectionParameter $rParam, array $params): mixed
+    {
+        return match (true) {
+            array_key_exists($rParam->getPosition(), $params) => $params[$rParam->getPosition()],
+            array_key_exists($rParam->getName(), $params) => $params[$rParam->getName()],
+            default => $this->resolver->resolveParameter($rParam)
+        };
     }
 }

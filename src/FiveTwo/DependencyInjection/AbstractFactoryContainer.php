@@ -38,7 +38,7 @@ abstract class AbstractFactoryContainer implements ContainerInterface
         ?InjectorInterface $injector = null,
         ?callable $factory = null
     ) {
-        $this->injector = $injector ?? new Injector($this);
+        $this->injector = $injector ?? new ContainerInjector($this);
         $this->factory = $factory !== null ?
             $factory(...) :
             $this->injector->instantiate(...);

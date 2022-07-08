@@ -18,30 +18,57 @@ use ReflectionType;
 use ReflectionUnionType;
 
 /**
- * Helper methods for resolving function dependencies from a container.
+ * Abstract base class for {@see ParameterResolverInterface} implementations that resolve dependencies from an
+ * implementation of {@see ContainerInterface}.
  */
-trait ContainerInjectorTrait
+abstract class AbstractContainerParameterResolver implements ParameterResolverInterface
 {
-    abstract protected function getContainer(): ContainerInterface;
+    public function __construct(
+        private readonly ContainerInterface $container
+    ) {
+    }
 
     /**
-     * @param ReflectionParameter $rParam
-     * @param mixed $result
-     * @param-out object|null $result
+     * Should attempt to resolve the parameter to a concrete value using the container.
      *
-     * @return bool
+     * @param ReflectionParameter $rParam The parameter for which to attempt to resolve a value
+     * @param mixed $result Reference parameter that will receive a concrete value for the parameter if one can be
+     * resolved
+     *
+     * @return bool <code>true</code> if a value could be resolved, <code>false</code> otherwise
      */
-    protected function getInstanceFromParameter(ReflectionParameter $rParam, mixed &$result): bool
+    abstract protected function tryResolveParameter(ReflectionParameter $rParam, mixed &$result): bool;
+
+    public function resolveParameter(ReflectionParameter $rParam): mixed
+    {
+        $deferredException = null;
+
+        try {
+            if ($this->tryResolveParameter($rParam, $paramValue)) {
+                return $paramValue;
+            }
+        } catch (ClassResolutionException $e) {
+            $deferredException = $e;
+        }
+
+        if ($rParam->isDefaultValueAvailable()) {
+            return $rParam->getDefaultValue();
+        }
+
+        if ($rParam->allowsNull()) {
+            return null;
+        }
+
+        throw new ParameterResolutionException($rParam, $deferredException);
+    }
+
+    protected function tryGetInstanceFromParameter(ReflectionParameter $rParam, mixed &$result): bool
     {
         return $rParam->getType() !== null && $this->tryGetInstanceFromType($rParam->getType(), $result);
     }
 
     /**
-     * @param ReflectionType $rType
-     * @param mixed $result
      * @param-out object|null $result
-     *
-     * @return bool
      */
     private function tryGetInstanceFromType(ReflectionType $rType, mixed &$result): bool
     {
@@ -54,13 +81,9 @@ trait ContainerInjectorTrait
     }
 
     /**
-     * @param ReflectionNamedType $rType
-     * @param mixed $result
      * @param-out object|null $result
-     *
-     * @return bool
      */
-    private function tryGetFromNamedType(ReflectionNamedType $rType, mixed &$result): bool
+    protected function tryGetFromNamedType(ReflectionNamedType $rType, mixed &$result): bool
     {
         /** @phpstan-ignore-next-line PHPStan is not able to figure out that getName() will return a class name */
         if ($rType->isBuiltin() || !$this->container->has($rType->getName())) {
@@ -74,11 +97,7 @@ trait ContainerInjectorTrait
     }
 
     /**
-     * @param ReflectionUnionType $rType
-     * @param mixed $result
      * @param-out object|null $result
-     *
-     * @return bool
      */
     private function tryGetFromUnionType(ReflectionUnionType $rType, mixed &$result): bool
     {
@@ -92,11 +111,7 @@ trait ContainerInjectorTrait
     }
 
     /**
-     * @param ReflectionIntersectionType $rType
-     * @param mixed $result
      * @param-out object|null $result
-     *
-     * @return bool
      */
     private function tryGetFromIntersectionType(
         ReflectionIntersectionType $rType,
@@ -111,12 +126,12 @@ trait ContainerInjectorTrait
             /** @var class-string $className */
             $className = $rInnerType->getName();
 
-            if (!$this->getContainer()->has($className)) {
+            if (!$this->container->has($className)) {
                 continue;
             }
 
             // only way to tell if it's a match is to get an instance and check
-            $instance = $this->getContainer()->get($className);
+            $instance = $this->container->get($className);
 
             if ($this->isIntersectionMatch($rType, $instance)) {
                 $result = $instance;

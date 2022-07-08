@@ -11,6 +11,12 @@ declare(strict_types=1);
 
 namespace FiveTwo\DependencyInjection;
 
+use ReflectionIntersectionType;
+use ReflectionMethod;
+use ReflectionNamedType;
+use ReflectionParameter;
+use ReflectionType;
+use ReflectionUnionType;
 use Throwable;
 
 /**
@@ -19,55 +25,103 @@ use Throwable;
 class ParameterResolutionException extends InjectorException
 {
     /**
-     * @inheritDoc
-     *
-     * @param string $functionName The name of the function requiring the parameter
-     * @param string $parameterName The name of the unresolved parameter
-     * @param string|null $parameterType [optional] The type of the unresolved parameter
+     * @param ReflectionParameter $reflectionParameter The unresolved parameter
      * @param Throwable|null $previous [optional] The previous throwable used for exception chaining. If the throwable
      * is an instance of {@see DependencyInjectionException} then its content will be consolidated into the new
      * instance.
+     *
      * @psalm-mutation-free
      */
     public function __construct(
-        private readonly string $functionName,
-        private readonly string $parameterName,
-        private readonly ?string $parameterType = null,
+        private readonly ReflectionParameter $reflectionParameter,
         ?Throwable $previous = null
     ) {
-        parent::__construct(
-            $parameterType !== null ?
-                "Could not provide a value for required parameter $parameterType \$$parameterName in function " .
-                    "$this->functionName()" :
-                "Could not provide a value for required parameter \$$parameterName in function $this->functionName()",
-            $previous
-        );
+        parent::__construct(self::buildMessage($reflectionParameter), $previous);
     }
 
     /**
-     * @return string The name of the function requiring the parameter
-     * @psalm-mutation-free
+     * @return ReflectionParameter
      */
-    public function getFunctionName(): string
+    public function getReflectionParameter(): ReflectionParameter
     {
-        return $this->functionName;
+        return $this->reflectionParameter;
+    }
+
+    private static function buildMessage(ReflectionParameter $rParam): string
+    {
+        $functionName = self::buildFunctionName($rParam);
+        $paramName = self::buildParameterName($rParam);
+
+        return "Could not provide a value for parameter $paramName in $functionName";
     }
 
     /**
-     * @return string The name of the unresolved parameter
-     * @psalm-mutation-free
+     * @param ReflectionParameter $rParam
+     *
+     * @return string
      */
-    public function getParameterName(): string
+    private static function buildFunctionName(ReflectionParameter $rParam): string
     {
-        return $this->parameterName;
+        $rFunction = $rParam->getDeclaringFunction();
+        $functionName = $rFunction->getName();
+
+        if ($rFunction instanceof ReflectionMethod) {
+            $functionName = $rFunction->getDeclaringClass() . "::$functionName";
+        }
+
+        if (!$rFunction->isClosure()) {
+            $functionName = "function $functionName()";
+        } elseif ($rFunction->getClosureScopeClass()) {
+            $functionName .= ' scoped in ' .
+                $rFunction->getClosureScopeClass()->getName();
+        }
+
+        return $functionName;
     }
 
     /**
-     * @return string|null The type of the unresolved parameter, or <code>null</code> if none is specified
-     * @psalm-mutation-free
+     * @param ReflectionParameter $rParam
+     *
+     * @return string
      */
-    public function getParameterType(): ?string
+    private static function buildParameterName(ReflectionParameter $rParam): string
     {
-        return $this->parameterType;
+        $paramName = '$' . $rParam->getName();
+        $paramType = self::buildParameterTypeName($rParam->getType());
+
+        if ($paramType !== null) {
+            $paramName = "$paramType $paramName";
+        }
+
+        return $paramName;
+    }
+
+    /**
+     * @psalm-pure
+     */
+    private static function buildParameterTypeName(?ReflectionType $rType): ?string
+    {
+        return match (true) {
+            $rType instanceof ReflectionNamedType => $rType->getName(),
+            $rType instanceof ReflectionUnionType => self::buildCombinedParameterTypeName($rType, '|'),
+            $rType instanceof ReflectionIntersectionType => self::buildCombinedParameterTypeName($rType, '&'),
+            default => null // covers null $rType as well as any new types introduced after PHP 8.1
+        };
+    }
+
+    /**
+     * @psalm-pure
+     */
+    private static function buildCombinedParameterTypeName(
+        ReflectionUnionType|ReflectionIntersectionType $rType,
+        string $delimiter
+    ): string {
+        $parts = [];
+
+        foreach ($rType->getTypes() as $rNestedType) {
+            $parts[] = self::buildParameterTypeName($rNestedType);
+        }
+
+        return implode($delimiter, $parts);
     }
 }

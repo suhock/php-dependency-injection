@@ -11,10 +11,10 @@ declare(strict_types=1);
 
 namespace FiveTwo\DependencyInjection\Provision;
 
+use FiveTwo\DependencyInjection\ContainerInjector;
 use FiveTwo\DependencyInjection\ContainerInterface;
 use FiveTwo\DependencyInjection\DependencyInjectionTestCase;
 use FiveTwo\DependencyInjection\FakeClassNoConstructor;
-use FiveTwo\DependencyInjection\Injector;
 use FiveTwo\DependencyInjection\InjectorInterface;
 
 /**
@@ -40,7 +40,7 @@ class ClassInstanceProviderTest extends DependencyInjectionTestCase
     {
         $factory = new ClassInstanceProvider(
             FakeClassNoConstructor::class,
-            new Injector($this->createMock(ContainerInterface::class)),
+            new ContainerInjector($this->createMock(ContainerInterface::class)),
             function (FakeClassNoConstructor $obj) {
                 $obj->string = 'test';
             }

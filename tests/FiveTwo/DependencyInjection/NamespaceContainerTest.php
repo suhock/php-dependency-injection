@@ -43,7 +43,7 @@ class NamespaceContainerTest extends DependencyInjectionTestCase
 
         $namespaceContainer = new NamespaceContainer(
             __NAMESPACE__,
-            new Injector($container),
+            new ContainerInjector($container),
             fn (string $className, Throwable $throwable, RuntimeException $runtimeException) =>
                 new FakeClassWithContexts($throwable, $runtimeException)
         );

@@ -53,7 +53,7 @@ class ContextInjectorTest extends TestCase
     {
         $container = $this->createContainerWithDefaultContext();
         $expectedInstance = $container->context('default')->get(FakeClassNoConstructor::class);
-        $injector = new ContextInjector($container);
+        $injector = new ContextContainerInjector($container);
 
         self::assertSame($expectedInstance, $injector->call(fn (FakeClassNoConstructor $obj) => $obj));
     }
@@ -66,7 +66,7 @@ class ContextInjectorTest extends TestCase
         $container->context('context1')
             ->addSingletonInstance(FakeClassNoConstructor::class, $expectedInstance);
 
-        $injector = new ContextInjector($container);
+        $injector = new ContextContainerInjector($container);
 
         self::assertSame(
             $expectedInstance,
@@ -82,7 +82,7 @@ class ContextInjectorTest extends TestCase
         $container->context('context1')
             ->addSingletonInstance(FakeClassNoConstructor::class, $expectedInstance);
 
-        $injector = new ContextInjector($container);
+        $injector = new ContextContainerInjector($container);
 
         self::assertSame(
             $expectedInstance,
@@ -101,7 +101,7 @@ class ContextInjectorTest extends TestCase
         $container->context('context2')
             ->addSingletonInstance(FakeClassNoConstructor::class, $expectedInstance);
 
-        $injector = new ContextInjector($container);
+        $injector = new ContextContainerInjector($container);
 
         self::assertSame(
             $expectedInstance,
@@ -119,7 +119,7 @@ class ContextInjectorTest extends TestCase
 
         $container->context('context2');
 
-        $injector = new ContextInjector($container);
+        $injector = new ContextContainerInjector($container);
 
         self::assertSame(
             $expectedInstance,
@@ -136,7 +136,7 @@ class ContextInjectorTest extends TestCase
             ->addSingletonInstance(FakeInterfaceOne::class, $expectedInstance);
         $container->push('default');
 
-        $injector = new ContextInjector($container);
+        $injector = new ContextContainerInjector($container);
 
         self::assertSame(
             $expectedInstance,
@@ -153,7 +153,7 @@ class ContextInjectorTest extends TestCase
             ->addSingletonInstance(FakeInterfaceOne::class, $expectedInstance);
         $container->push('default');
 
-        $injector = new ContextInjector($container);
+        $injector = new ContextContainerInjector($container);
 
         self::assertSame(
             $expectedInstance,
@@ -167,7 +167,7 @@ class ContextInjectorTest extends TestCase
         $container->context('default')->addSingletonClass(FakeClassWithConstructor::class);
         $expectedInstance = $container->context('default')->get(FakeClassNoConstructor::class);
 
-        $injector = new ContextInjector($container);
+        $injector = new ContextContainerInjector($container);
 
         self::assertSame($expectedInstance, $injector->instantiate(FakeClassWithConstructor::class)->obj);
     }
@@ -192,7 +192,7 @@ class ContextInjectorTest extends TestCase
         $container->context('context4');
         $container->push('default');
 
-        $injector = new ContextInjector($container);
+        $injector = new ContextContainerInjector($container);
 
         self::assertSame($throwable3, $injector->instantiate(FakeClassWithContexts::class)->throwable);
         self::assertSame($runtime1, $injector->instantiate(FakeClassWithContexts::class)->runtimeException);

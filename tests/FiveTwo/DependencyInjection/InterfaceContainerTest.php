@@ -38,7 +38,7 @@ class InterfaceContainerTest extends DependencyInjectionTestCase
 
         $implContainer = new InterfaceContainer(
             FakeInterfaceOne::class,
-            new Injector($container),
+            new ContainerInjector($container),
             fn (string $className, FakeClassNoConstructor $obj) => new FakeClassWithConstructor($obj)
         );
 

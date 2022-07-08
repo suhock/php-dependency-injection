@@ -285,7 +285,6 @@ class DependencyInjectionTestCase extends TestCase
     /**
      * @param string $exFunctionName
      * @param string $exParameterName
-     * @param string|null $exParameterType
      * @param callable|null $previousTest
      * @param callable $codeUnderTest
      *
@@ -294,7 +293,6 @@ class DependencyInjectionTestCase extends TestCase
     public static function assertThrowsParameterResolutionException(
         string $exFunctionName,
         string $exParameterName,
-        ?string $exParameterType,
         ?callable $previousTest,
         callable $codeUnderTest
     ): void {
@@ -303,7 +301,6 @@ class DependencyInjectionTestCase extends TestCase
             static fn (ParameterResolutionException $exception) => self::assertParameterResolutionException(
                 $exFunctionName,
                 $exParameterName,
-                $exParameterType,
                 $previousTest,
                 $exception
             ),
@@ -314,7 +311,6 @@ class DependencyInjectionTestCase extends TestCase
     /**
      * @param string $exFunctionName
      * @param string $exParameterName
-     * @param string|null $exParameterType
      * @param callable|null $previousTest
      * @param ParameterResolutionException $actualException
      *
@@ -323,24 +319,18 @@ class DependencyInjectionTestCase extends TestCase
     public static function assertParameterResolutionException(
         string $exFunctionName,
         string $exParameterName,
-        ?string $exParameterType,
         ?callable $previousTest,
         ParameterResolutionException $actualException
     ): void {
         self::assertSame(
             $exFunctionName,
-            $actualException->getFunctionName(),
+            $actualException->getReflectionParameter()->getDeclaringFunction()->getName(),
             'Failed asserting that function name is identical'
         );
         self::assertSame(
             $exParameterName,
-            $actualException->getParameterName(),
+            $actualException->getReflectionParameter()->getName(),
             'Failed asserting that parameter name is identical'
-        );
-        self::assertSame(
-            $exParameterType,
-            $actualException->getParameterType(),
-            'Failed asserting that parameter type is identical'
         );
 
         if ($previousTest !== null) {
