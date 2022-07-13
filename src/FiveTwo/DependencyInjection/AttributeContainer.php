@@ -31,12 +31,12 @@ class AttributeContainer implements ContainerInterface
      * @param class-string<TAttr> $attributeName The name of the attribute that must be present to enable this container
      * for a class
      * @param InjectorInterface|null $injector [optional] The injector to use for calling the factory method
-     * @param callable|null $factory [optional] A factory to use for acquiring instances of classes. The first argument
-     * will be the name of the class. The second argument will be an instance of the attribute. Additional arguments can
-     * be provided from this container's {@see Injector}. If no factory is provided, a default factory that directly
-     * instantiates the class will be used.
+     * @param callable|null $factory [optional] The factory to use for acquiring instances of classes. The first
+     * argument will be the name of the class. The second argument will be an instance of the attribute attached to the
+     * class. Additional arguments can be provided from this container's {@see Injector}. If no factory is provided, a
+     * default factory that directly instantiates the class will be used.
      * <code>
-     * function&lt;TClass, TAttr&gt;(class-string&lt;TClass&gt; $className, TAttr $attr, ...): TClass
+     * callable&lt;TClass, TAttr&gt;(class-string&lt;TClass&gt; $className, TAttr $attr, ...): TClass
      * </code>
      *
      * @psalm-mutation-free

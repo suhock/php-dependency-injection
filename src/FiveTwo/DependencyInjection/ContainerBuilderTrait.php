@@ -38,8 +38,9 @@ trait ContainerBuilderTrait
      * @template TClass of object
      *
      * @param class-string<TClass> $className The name of the class to add
-     * @param LifetimeStrategy<TClass> $lifetimeStrategy The lifetime strategy to use to manage instances
-     * @param InstanceProvider<TClass> $instanceProvider The instance provider to use to create new instances
+     * @param LifetimeStrategy<TClass> $lifetimeStrategy The lifetime strategy to use to manage instances of the class
+     * @param InstanceProvider<TClass> $instanceProvider The instance provider to use to create new instances of the
+     * class
      *
      * @return $this
      * @psalm-external-mutation-free

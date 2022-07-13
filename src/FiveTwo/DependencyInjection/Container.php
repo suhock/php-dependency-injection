@@ -38,7 +38,7 @@ class Container implements
     private InjectorInterface $injector;
 
     /**
-     * @param InjectorInterface|null $injector [Optional] An existing injector to use for injecting dependencies into
+     * @param InjectorInterface|null $injector [optional] An existing injector to use for injecting dependencies into
      * factories
      * @psalm-mutation-free
      */

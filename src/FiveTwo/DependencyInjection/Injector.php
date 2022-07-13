@@ -37,21 +37,6 @@ class Injector implements InjectorInterface
     ) {
     }
 
-    /**
-     * Calls the specified function, injecting any parameter values. Each parameter value is determined as follows:
-     *  1. From the {@see $params} array
-     *  2. From the injector's dependency resolution logic (e.g. from a container)
-     *  3. The parameter's default value, if available
-     *  4. <code>null</code> if the parameter is nullable
-     *
-     * @param callable $function The function to call
-     * @param array<mixed> $params A list of parameter values to provide to the function. String keys will be matched by
-     * name. Integer keys will be matched by position.
-     *
-     * @return mixed The value returned by the function
-     * @throws InjectorException If there was an error while resolving a value for any of the function parameters or
-     * while invoking the function
-     */
     public function call(callable $function, array $params = []): mixed
     {
         is_callable($function, false, $functionName);
@@ -72,22 +57,9 @@ class Injector implements InjectorInterface
     }
 
     /**
-     * Creates a new instance of the specified class, injecting any parameter values. Each parameter value is determined
-     * as follows:
-     *  1. From the {@see $params} array
-     *  2. From the injector's dependency resolution logic (e.g. from a container)
-     *  3. The parameter's default value, if available
-     *  4. <code>null</code> if the parameter is nullable
-     *
      * @template TClass of object
-     *
-     * @param class-string<TClass> $className The name of the class to instantiate
-     * @param array<mixed> $params A list of parameter values to provide to the constructor. String keys will be matched
-     * by name; integer keys will be matched by position.
-     *
-     * @return TClass A new instance of the specified class
-     * @throws InjectorException If there was an error while resolving a value for any of the constructor parameters or
-     * while creating the object instance
+     * @psalm-param class-string<TClass> $className
+     * @psalm-return TClass
      */
     public function instantiate(string $className, array $params = []): object
     {

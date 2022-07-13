@@ -19,7 +19,7 @@ namespace FiveTwo\DependencyInjection;
 class InterfaceContainer extends AbstractFactoryContainer
 {
     /**
-     * @param class-string<TInterface> $interfaceName The name of the interface or base class
+     * @param class-string<TInterface> $interfaceName The fully qualified name of the interface or base class
      * @param InjectorInterface|null $injector [optional] The injector to use for calling the factory method
      * @param callable|null $factory [optional] A factory to use for acquiring instances of classes. The first argument
      * will be the name of the class. Additional arguments can be provided from this container's {@see Injector}. If no

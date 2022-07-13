@@ -44,7 +44,7 @@ class Context
     }
 
     /**
-     * @return string
+     * @return string The name of the context as a string
      */
     public function getName(): string
     {
@@ -52,9 +52,9 @@ class Context
     }
 
     /**
-     * @param string|UnitEnum $name
+     * @param string|UnitEnum $name The name of the context as a string or an enum
      *
-     * @return string
+     * @return string The name of the context as a string
      */
     public static function getNameFromStringOrEnum(string|UnitEnum $name): string
     {

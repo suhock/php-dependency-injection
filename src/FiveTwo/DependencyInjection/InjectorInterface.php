@@ -24,8 +24,8 @@ interface InjectorInterface
      * matched by name; integer keys will be matched by position.
      *
      * @return mixed The value returned by the function
-     * @throws DependencyInjectionException If there was an error resolving values for the function parameters or
-     * invoking the function
+     * @throws InjectorException If there was an error resolving values for the function parameters or invoking the
+     * function
      */
     public function call(callable $function, array $params = []): mixed;
 
@@ -39,8 +39,8 @@ interface InjectorInterface
      * be matched by name; integer keys will be matched by position.
      *
      * @return T A new instance of the specified class
-     * @throws DependencyInjectionException If there was an error resolving values for the constructor parameters or
-     * invoking the constructor
+     * @throws InjectorException If there was an error resolving values for the constructor parameters or invoking the
+     * constructor
      */
     public function instantiate(string $className, array $params = []): object;
 }

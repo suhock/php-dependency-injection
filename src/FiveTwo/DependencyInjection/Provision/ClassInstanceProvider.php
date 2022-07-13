@@ -28,7 +28,7 @@ class ClassInstanceProvider implements InstanceProvider
     /**
      * @param class-string<TClass> $className The name of the class this factory will instantiate
      * @param InjectorInterface $injector The injector that will be used for instantiation
-     * @param callable|null $mutator [Optional] Mutator function that allows additional changes to the instantiated
+     * @param callable|null $mutator [optional] Mutator function that allows additional changes to the instantiated
      * instance. The first parameter will be the new object instance. Any other parameters will be injected.
      */
     public function __construct(

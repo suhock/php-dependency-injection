@@ -14,13 +14,12 @@ namespace FiveTwo\DependencyInjection;
 use FiveTwo\DependencyInjection\Lifetime\TransientStrategy;
 use FiveTwo\DependencyInjection\Provision\ClassInstanceProvider;
 use FiveTwo\DependencyInjection\Provision\ClosureInstanceProvider;
-use FiveTwo\DependencyInjection\Provision\ImplementationException;
 use FiveTwo\DependencyInjection\Provision\ImplementationInstanceProvider;
 use FiveTwo\DependencyInjection\Provision\InstanceProvider;
 
 /**
  * Default implementation for {@see ContainerTransientBuilderInterface}. Classes using this trait must implement
- * {@see ContainerBuilderInterface}.
+ * {@see ContainerBuilderInterface} and the {@see getInjector()} function.
  *
  * @psalm-require-implements ContainerBuilderInterface
  * @psalm-external-mutation-free
@@ -31,12 +30,8 @@ trait ContainerTransientBuilderTrait
 
     /**
      * @template TClass of object
-     *
-     * @param class-string<TClass> $className
-     * @param InstanceProvider<TClass> $instanceProvider
-     *
-     * @return $this
-     * @psalm-external-mutation-free
+     * @psalm-param class-string<TClass> $className
+     * @param-param InstanceProvider<TClass> $instanceProvider
      */
     public function addTransient(string $className, InstanceProvider $instanceProvider): static
     {
@@ -45,14 +40,6 @@ trait ContainerTransientBuilderTrait
         return $this;
     }
 
-    /**
-     * @param class-string $className
-     * @param callable|null $mutator
-     *
-     * @return $this
-     * @throws ImplementationException
-     * @psalm-external-mutation-free
-     */
     public function addTransientClass(string $className, ?callable $mutator = null): static
     {
         $this->addTransient(
@@ -62,16 +49,12 @@ trait ContainerTransientBuilderTrait
 
         return $this;
     }
+
     /**
      * @template TClass of object
      * @template TImplementation of TClass
-     *
-     * @param class-string<TClass> $className
-     * @param class-string<TImplementation> $implementationClassName
-     *
-     * @return $this
-     * @throws ImplementationException
-     * @psalm-external-mutation-free
+     * @psalm-param class-string<TClass> $className
+     * @psalm-param class-string<TImplementation> $implementationClassName
      */
     public function addTransientImplementation(string $className, string $implementationClassName): static
     {
@@ -83,13 +66,6 @@ trait ContainerTransientBuilderTrait
         return $this;
     }
 
-    /**
-     * @param class-string $className
-     * @param callable $factory
-     *
-     * @return $this
-     * @psalm-external-mutation-free
-     */
     public function addTransientFactory(string $className, callable $factory): static
     {
         $this->addTransient(
@@ -100,10 +76,6 @@ trait ContainerTransientBuilderTrait
         return $this;
     }
 
-    /**
-     * @inheritDoc
-     * @psalm-external-mutation-free
-     */
     public function addTransientContainer(ContainerInterface $container): static
     {
         $this->addContainer(
@@ -115,13 +87,6 @@ trait ContainerTransientBuilderTrait
         return $this;
     }
 
-    /**
-     * @param string $namespace
-     * @param callable|null $factory
-     *
-     * @return $this
-     * @psalm-external-mutation-free
-     */
     public function addTransientNamespace(string $namespace, ?callable $factory = null): static
     {
         $this->addTransientContainer(new NamespaceContainer($namespace, $this->getInjector(), $factory));
@@ -129,13 +94,6 @@ trait ContainerTransientBuilderTrait
         return $this;
     }
 
-    /**
-     * @param class-string $interfaceName
-     * @param callable|null $factory
-     *
-     * @return $this
-     * @psalm-external-mutation-free
-     */
     public function addTransientInterface(string $interfaceName, ?callable $factory = null): static
     {
         $this->addTransientContainer(new InterfaceContainer($interfaceName, $this->getInjector(), $factory));
@@ -143,13 +101,6 @@ trait ContainerTransientBuilderTrait
         return $this;
     }
 
-    /**
-     * @param class-string $attributeName
-     * @param callable|null $factory
-     *
-     * @return $this
-     * @psalm-external-mutation-free
-     */
     public function addTransientAttribute(string $attributeName, ?callable $factory = null): static
     {
         $this->addTransientContainer(new AttributeContainer($attributeName, $this->getInjector(), $factory));

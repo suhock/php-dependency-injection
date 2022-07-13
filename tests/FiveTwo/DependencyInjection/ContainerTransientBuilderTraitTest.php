@@ -26,11 +26,10 @@ class ContainerTransientBuilderTraitTest extends DependencyInjectionTestCase
     }
 
     /**
-     * @param Container $container
-     * @param class-string $className
-     * @param class-string|null $implementationClassName
-     *
-     * @return void
+     * @template TClass of object
+     * @template TImplementation of TClass
+     * @param class-string<TClass> $className
+     * @param class-string<TImplementation>|null $implementationClassName
      */
     private function assertTransient(
         Container $container,

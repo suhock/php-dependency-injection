@@ -39,9 +39,6 @@ class ParameterResolutionException extends InjectorException
         parent::__construct(self::buildMessage($reflectionParameter), $previous);
     }
 
-    /**
-     * @return ReflectionParameter
-     */
     public function getReflectionParameter(): ReflectionParameter
     {
         return $this->reflectionParameter;
@@ -55,11 +52,6 @@ class ParameterResolutionException extends InjectorException
         return "Could not provide a value for parameter $paramName in $functionName";
     }
 
-    /**
-     * @param ReflectionParameter $rParam
-     *
-     * @return string
-     */
     private static function buildFunctionName(ReflectionParameter $rParam): string
     {
         $rFunction = $rParam->getDeclaringFunction();
@@ -79,11 +71,6 @@ class ParameterResolutionException extends InjectorException
         return $functionName;
     }
 
-    /**
-     * @param ReflectionParameter $rParam
-     *
-     * @return string
-     */
     private static function buildParameterName(ReflectionParameter $rParam): string
     {
         $paramName = '$' . $rParam->getName();

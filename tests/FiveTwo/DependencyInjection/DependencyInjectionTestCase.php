@@ -50,10 +50,8 @@ class DependencyInjectionTestCase extends TestCase
     }
 
     /**
-     * @param class-string $exClassName
-     * @param callable $codeUnderTest
-     *
-     * @return void
+     * @template TClass of object
+     * @param class-string<TClass> $exClassName
      */
     public static function assertThrowsCircularDependencyException(
         string $exClassName,
@@ -71,11 +69,8 @@ class DependencyInjectionTestCase extends TestCase
 
     /**
      * @template TClass of object
-     *
      * @param class-string<TClass> $exClassName
      * @param CircularDependencyException<TClass> $actualException
-     *
-     * @return void
      */
     public static function assertCircularDependencyException(
         string $exClassName,
@@ -89,11 +84,10 @@ class DependencyInjectionTestCase extends TestCase
     }
 
     /**
-     * @param class-string $exExpectedClassName
-     * @param class-string $exActualClassName
-     * @param callable $codeUnderTest
-     *
-     * @return void
+     * @template TExpected of object
+     * @template TActual of object
+     * @param class-string<TExpected> $exExpectedClassName
+     * @param class-string<TActual> $exActualClassName
      */
     public static function assertThrowsImplementationException(
         string $exExpectedClassName,
@@ -114,12 +108,9 @@ class DependencyInjectionTestCase extends TestCase
     /**
      * @template TExpected of object
      * @template TActual of object
-     *
      * @param class-string<TExpected> $exExpectedClassName
      * @param class-string<TActual> $exActualClassName
      * @param ImplementationException<TExpected, TActual> $actualException
-     *
-     * @return void
      */
     public static function assertImplementationException(
         string $exExpectedClassName,
@@ -139,11 +130,10 @@ class DependencyInjectionTestCase extends TestCase
     }
 
     /**
-     * @param class-string $exExpectedClassName
-     * @param class-string|null $exActualClassName
-     * @param callable $codeUnderTest
-     *
-     * @return void
+     * @template TExpected of object
+     * @template TActual of object
+     * @param class-string<TExpected> $exExpectedClassName
+     * @param class-string<TActual>|null $exActualClassName
      */
     public static function assertThrowsInstanceTypeException(
         string $exExpectedClassName,
@@ -163,12 +153,9 @@ class DependencyInjectionTestCase extends TestCase
 
     /**
      * @template TExpected of object
-     *
      * @param class-string<TExpected> $exExpectedClassName
      * @param class-string|null $exActualClassName
      * @param InstanceTypeException<TExpected> $actualException
-     *
-     * @return void
      */
     public static function assertInstanceTypeException(
         string $exExpectedClassName,
@@ -196,10 +183,8 @@ class DependencyInjectionTestCase extends TestCase
     }
 
     /**
-     * @param class-string $expectedClassName
-     * @param callable $codeUnderTest
-     *
-     * @return void
+     * @template TExpected of object
+     * @param class-string<TExpected> $expectedClassName
      */
     public static function assertThrowsClassNotFoundException(
         string $expectedClassName,
@@ -235,11 +220,8 @@ class DependencyInjectionTestCase extends TestCase
     }
 
     /**
-     * @param class-string $expectedClassName
-     * @param callable|null $previousExceptionTest
-     * @param callable $codeUnderTest
-     *
-     * @return void
+     * @template TExpected of object
+     * @param class-string<TExpected> $expectedClassName
      */
     public static function assertThrowsClassResolutionException(
         string $expectedClassName,
@@ -282,14 +264,6 @@ class DependencyInjectionTestCase extends TestCase
         }
     }
 
-    /**
-     * @param string $exFunctionName
-     * @param string $exParameterName
-     * @param callable|null $previousTest
-     * @param callable $codeUnderTest
-     *
-     * @return void
-     */
     public static function assertThrowsParameterResolutionException(
         string $exFunctionName,
         string $exParameterName,
@@ -308,14 +282,6 @@ class DependencyInjectionTestCase extends TestCase
         );
     }
 
-    /**
-     * @param string $exFunctionName
-     * @param string $exParameterName
-     * @param callable|null $previousTest
-     * @param ParameterResolutionException $actualException
-     *
-     * @return void
-     */
     public static function assertParameterResolutionException(
         string $exFunctionName,
         string $exParameterName,
