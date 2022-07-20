@@ -50,8 +50,7 @@ class DependencyInjectionTestCase extends TestCase
     }
 
     /**
-     * @template TClass of object
-     * @param class-string<TClass> $exClassName
+     * @param class-string $exClassName
      */
     public static function assertThrowsCircularDependencyException(
         string $exClassName,
@@ -68,9 +67,8 @@ class DependencyInjectionTestCase extends TestCase
     }
 
     /**
-     * @template TClass of object
-     * @param class-string<TClass> $exClassName
-     * @param CircularDependencyException<TClass> $actualException
+     * @param class-string $exClassName
+     * @param CircularDependencyException<object> $actualException
      */
     public static function assertCircularDependencyException(
         string $exClassName,
@@ -84,10 +82,8 @@ class DependencyInjectionTestCase extends TestCase
     }
 
     /**
-     * @template TExpected of object
-     * @template TActual of object
-     * @param class-string<TExpected> $exExpectedClassName
-     * @param class-string<TActual> $exActualClassName
+     * @param class-string $exExpectedClassName
+     * @param class-string $exActualClassName
      */
     public static function assertThrowsImplementationException(
         string $exExpectedClassName,
@@ -130,10 +126,8 @@ class DependencyInjectionTestCase extends TestCase
     }
 
     /**
-     * @template TExpected of object
-     * @template TActual of object
-     * @param class-string<TExpected> $exExpectedClassName
-     * @param class-string<TActual>|null $exActualClassName
+     * @param class-string $exExpectedClassName
+     * @param class-string|null $exActualClassName
      */
     public static function assertThrowsInstanceTypeException(
         string $exExpectedClassName,
@@ -152,10 +146,9 @@ class DependencyInjectionTestCase extends TestCase
     }
 
     /**
-     * @template TExpected of object
-     * @param class-string<TExpected> $exExpectedClassName
+     * @param class-string $exExpectedClassName
      * @param class-string|null $exActualClassName
-     * @param InstanceTypeException<TExpected> $actualException
+     * @param InstanceTypeException<object> $actualException
      */
     public static function assertInstanceTypeException(
         string $exExpectedClassName,
@@ -183,8 +176,7 @@ class DependencyInjectionTestCase extends TestCase
     }
 
     /**
-     * @template TExpected of object
-     * @param class-string<TExpected> $expectedClassName
+     * @param class-string $expectedClassName
      */
     public static function assertThrowsClassNotFoundException(
         string $expectedClassName,
@@ -201,12 +193,8 @@ class DependencyInjectionTestCase extends TestCase
     }
 
     /**
-     * @template TExpected of object
-     *
-     * @param class-string<TExpected> $expectedClassName
-     * @param ClassNotFoundException<TExpected> $actualException
-     *
-     * @return void
+     * @param class-string $expectedClassName
+     * @param ClassNotFoundException<object> $actualException
      */
     public static function assertClassNotFoundException(
         string $expectedClassName,
@@ -220,8 +208,7 @@ class DependencyInjectionTestCase extends TestCase
     }
 
     /**
-     * @template TExpected of object
-     * @param class-string<TExpected> $expectedClassName
+     * @param class-string $expectedClassName
      */
     public static function assertThrowsClassResolutionException(
         string $expectedClassName,
@@ -240,13 +227,9 @@ class DependencyInjectionTestCase extends TestCase
     }
 
     /**
-     * @template TClass of object
-     *
-     * @param class-string<TClass> $expectedClassName
+     * @param class-string $expectedClassName
      * @param callable|null $previousExceptionTest
-     * @param ClassResolutionException<TClass> $actualException
-     *
-     * @return void
+     * @param ClassResolutionException<object> $actualException
      */
     public static function assertClassResolutionException(
         string $expectedClassName,

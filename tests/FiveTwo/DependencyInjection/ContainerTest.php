@@ -133,7 +133,6 @@ class ContainerTest extends DependencyInjectionTestCase
 
         self::assertThrowsClassResolutionException(
             FakeClassNoConstructor::class,
-            /** @param CircularDependencyException<FakeClassNoConstructor> $exception */
             static fn (CircularDependencyException $exception) => self::assertCircularDependencyException(
                 FakeClassNoConstructor::class,
                 $exception

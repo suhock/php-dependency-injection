@@ -31,8 +31,11 @@ trait ContainerSingletonBuilderTrait
 
     /**
      * @template TClass of object
-     * @psalm-param class-string<TClass> $className
-     * @param-param InstanceProvider<TClass> $instanceProvider
+     *
+     * @param class-string<TClass> $className
+     * @param InstanceProvider<TClass> $instanceProvider
+     *
+     * @return $this
      */
     public function addSingleton(string $className, InstanceProvider $instanceProvider): static
     {
@@ -41,6 +44,9 @@ trait ContainerSingletonBuilderTrait
         return $this;
     }
 
+    /**
+     * @param class-string $className
+     */
     public function addSingletonClass(string $className, ?callable $mutator = null): static
     {
         $this->addSingleton(
@@ -67,6 +73,9 @@ trait ContainerSingletonBuilderTrait
         return $this;
     }
 
+    /**
+     * @param class-string $className
+     */
     public function addSingletonFactory(string $className, callable $factory): static
     {
         $this->addSingleton(
@@ -80,8 +89,8 @@ trait ContainerSingletonBuilderTrait
     /**
      * @template TClass of object
      * @template TInstance of TClass
-     * @psalm-param class-string<TClass> $className
-     * @psalm-param TInstance $instance
+     * @param class-string<TClass> $className
+     * @param TInstance $instance
      */
     public function addSingletonInstance(string $className, object $instance): static
     {
@@ -111,6 +120,9 @@ trait ContainerSingletonBuilderTrait
         return $this;
     }
 
+    /**
+     * @param class-string $interfaceName
+     */
     public function addSingletonInterface(string $interfaceName, ?callable $factory = null): static
     {
         $this->addSingletonContainer(new InterfaceContainer($interfaceName, $this->getInjector(), $factory));
@@ -118,6 +130,9 @@ trait ContainerSingletonBuilderTrait
         return $this;
     }
 
+    /**
+     * @param class-string $attributeName
+     */
     public function addSingletonAttribute(string $attributeName, ?callable $factory = null): static
     {
         $this->addSingletonContainer(new AttributeContainer($attributeName, $this->getInjector(), $factory));

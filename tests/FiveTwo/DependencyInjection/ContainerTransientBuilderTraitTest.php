@@ -129,7 +129,6 @@ class ContainerTransientBuilderTraitTest extends DependencyInjectionTestCase
 
         self::assertThrowsClassResolutionException(
             FakeClassNoConstructor::class,
-            /** @param InstanceTypeException<FakeClassNoConstructor> $exception */
             static fn (InstanceTypeException $exception) => self::assertInstanceTypeException(
                 FakeClassNoConstructor::class,
                 null,
@@ -149,7 +148,6 @@ class ContainerTransientBuilderTraitTest extends DependencyInjectionTestCase
 
         self::assertThrowsClassResolutionException(
             FakeClassNoConstructor::class,
-            /** @param InstanceTypeException<FakeClassNoConstructor> $exception */
             static fn (InstanceTypeException $exception) => self::assertInstanceTypeException(
                 FakeClassNoConstructor::class,
                 LogicException::class,

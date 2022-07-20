@@ -30,8 +30,11 @@ trait ContainerTransientBuilderTrait
 
     /**
      * @template TClass of object
-     * @psalm-param class-string<TClass> $className
-     * @param-param InstanceProvider<TClass> $instanceProvider
+     *
+     * @param class-string<TClass> $className
+     * @param InstanceProvider<TClass> $instanceProvider
+     *
+     * @return $this
      */
     public function addTransient(string $className, InstanceProvider $instanceProvider): static
     {
@@ -40,6 +43,9 @@ trait ContainerTransientBuilderTrait
         return $this;
     }
 
+    /**
+     * @param class-string $className
+     */
     public function addTransientClass(string $className, ?callable $mutator = null): static
     {
         $this->addTransient(
@@ -53,8 +59,8 @@ trait ContainerTransientBuilderTrait
     /**
      * @template TClass of object
      * @template TImplementation of TClass
-     * @psalm-param class-string<TClass> $className
-     * @psalm-param class-string<TImplementation> $implementationClassName
+     * @param class-string<TClass> $className
+     * @param class-string<TImplementation> $implementationClassName
      */
     public function addTransientImplementation(string $className, string $implementationClassName): static
     {
@@ -66,6 +72,9 @@ trait ContainerTransientBuilderTrait
         return $this;
     }
 
+    /**
+     * @param class-string $className
+     */
     public function addTransientFactory(string $className, callable $factory): static
     {
         $this->addTransient(
@@ -94,6 +103,9 @@ trait ContainerTransientBuilderTrait
         return $this;
     }
 
+    /**
+     * @param class-string $interfaceName
+     */
     public function addTransientInterface(string $interfaceName, ?callable $factory = null): static
     {
         $this->addTransientContainer(new InterfaceContainer($interfaceName, $this->getInjector(), $factory));
@@ -101,6 +113,9 @@ trait ContainerTransientBuilderTrait
         return $this;
     }
 
+    /**
+     * @param class-string $attributeName
+     */
     public function addTransientAttribute(string $attributeName, ?callable $factory = null): static
     {
         $this->addTransientContainer(new AttributeContainer($attributeName, $this->getInjector(), $factory));

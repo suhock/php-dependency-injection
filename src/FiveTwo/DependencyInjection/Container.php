@@ -100,7 +100,9 @@ class Container implements
     }
 
     /**
-     * @inheritDoc
+     * @template TClass of object
+     * @param class-string<TClass> $className
+     * @return TClass
      * @throws CircularDependencyException
      * @throws ClassNotFoundException
      */
@@ -108,6 +110,7 @@ class Container implements
     {
         if ($this->tryGetFromDescriptor($className, $instance) ||
             $this->tryGetFromContainer($className, $instance)) {
+            /** @var TClass $instance */
             return $instance;
         }
 
@@ -125,14 +128,11 @@ class Container implements
 
     /**
      * @template TClass of object
-     *
      * @param class-string<TClass> $className
-     * @param TClass|null $instance
-     *
-     * @return bool
+     * @param-out TClass|null $instance
      * @throws CircularDependencyException
      */
-    private function tryGetFromDescriptor(string $className, ?object &$instance): bool
+    private function tryGetFromDescriptor(string $className, mixed &$instance): bool
     {
         if (!$this->hasDescriptor($className)) {
             return false;
@@ -205,11 +205,14 @@ class Container implements
 
     /**
      * @template TClass as object
+     *
      * @param class-string<TClass> $className
-     * @param TClass|null $instance
-     * @throws CircularDependencyException
+     * @param mixed $instance
+     * @param-out TClass|null $instance
+     *
+     * @return bool
      */
-    private function tryGetFromContainer(string $className, ?object &$instance): bool
+    private function tryGetFromContainer(string $className, mixed &$instance): bool
     {
         return $this->tryAddFromFirstMatchingContainer($className) &&
             $this->tryGetFromDescriptor($className, $instance);

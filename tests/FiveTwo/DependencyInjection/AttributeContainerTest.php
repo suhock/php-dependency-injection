@@ -56,7 +56,7 @@ class AttributeContainerTest extends DependencyInjectionTestCase
          * @psalm-suppress ArgumentTypeCoercion,UndefinedClass
          */
         self::assertThrowsClassNotFoundException(
-        /** @phpstan-ignore-next-line */
+            /** @phpstan-ignore-next-line */
             'NonExistentClass',
             /** @phpstan-ignore-next-line */
             static fn () => $container->get('NonExistentClass')
