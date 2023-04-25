@@ -1,7 +1,6 @@
 <?php
 /*
  * Copyright (c) 2022 Matthew Suhocki. All rights reserved.
- * Copyright (c) 2022-2023 Five Two Foundation, LLC. All rights reserved.
  *
  * This software is licensed under the terms of the MIT License <https://opensource.org/licenses/MIT>.
  * The above copyright notice and this notice shall be included in all copies or substantial portions of this software.
@@ -33,8 +32,6 @@ class ContainerDescriptor
     public function __construct(
         public readonly ContainerInterface $container,
         public readonly InjectorInterface $injector,
-        /** @phpstan-ignore-next-line PHPStan does not support callable-level generics but complains that
-         * LifetimeStrategy does not have its generic type specified */
         public readonly Closure $lifetimeStrategyFactory
     ) {
     }
