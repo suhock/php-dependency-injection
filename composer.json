@@ -1,0 +1,58 @@
+{
+    "name": "suhock/dependency-injection",
+    "description": "The Suhock PHP Dependency Injection Library",
+    "type": "library",
+    "keywords": [
+        "dependency injection",
+        "dependency",
+        "injection",
+        "di",
+        "inversion of control",
+        "ioc"
+    ],
+    "homepage": "https://github.com/suhock/php-dependency-injection",
+    "readme": "README.md",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Matthew Suhocki",
+            "email": "matt@suhock.net"
+        }
+    ],
+    "require": {
+        "php": "^8.1"
+    },
+    "require-dev": {
+        "fivetwo/remove-symfony-polyfill": "^8.1",
+        "friendsofphp/php-cs-fixer": "^3.8",
+        "jetbrains/phpstorm-stubs": ">=2022.1",
+        "phpstan/phpstan": "^1.7",
+        "phpunit/phpunit": "^9.5",
+        "psalm/plugin-phpunit": ">=0.16",
+        "vimeo/psalm": "^4.23"
+    },
+    "autoload": {
+        "psr-4": {
+            "Suhock\\DependencyInjection\\": "src/Suhock/DependencyInjection/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Suhock\\DependencyInjection\\": "tests/Suhock/DependencyInjection/"
+        }
+    },
+    "minimum-stability": "stable",
+    "config": {
+        "allow-plugins": {
+            "psalm/plugin-phpunit": true
+        },
+        "optimize-autoloader": true,
+        "sort-packages": true
+    },
+    "scripts": {
+        "php-cs-fixer": "php-cs-fixer fix .",
+        "phpstan": "phpstan analyse -c phpstan.neon.dist",
+        "psalm": "psalm --show-info=true --find-unused-psalm-suppress=true -c psalm.xml.dist",
+        "test": "phpunit -c ."
+    }
+}
