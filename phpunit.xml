@@ -16,7 +16,7 @@
     </php>
 
     <testsuites>
-        <testsuite name="Five Two Dependency Injection Test Suite">
+        <testsuite name="Suhock PHP Dependency Injection Test Suite">
             <directory>./tests/</directory>
         </testsuite>
     </testsuites>

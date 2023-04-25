@@ -9,15 +9,17 @@
 
 declare(strict_types=1);
 
-return (new PhpCsFixer\Config())
-    ->setRules([
-        '@PSR12' => true,
-        //'strict_param' => true,
-        'array_syntax' => ['syntax' => 'short'],
-    ])
-    ->setFinder(
-        PhpCsFixer\Finder::create()
-            ->exclude('vendor')
-            ->in(__DIR__)
-    );
+namespace Suhock\DependencyInjection;
 
+use ReflectionParameter;
+
+/**
+ * Provides a method for resolving function parameters to concrete values.
+ */
+interface ParameterResolverInterface
+{
+    /**
+     * @throws ParameterResolutionException If a value for the parameter could not be resolved
+     */
+    public function resolveParameter(ReflectionParameter $rParam): mixed;
+}

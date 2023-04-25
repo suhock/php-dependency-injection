@@ -9,15 +9,17 @@
 
 declare(strict_types=1);
 
-return (new PhpCsFixer\Config())
-    ->setRules([
-        '@PSR12' => true,
-        //'strict_param' => true,
-        'array_syntax' => ['syntax' => 'short'],
-    ])
-    ->setFinder(
-        PhpCsFixer\Finder::create()
-            ->exclude('vendor')
-            ->in(__DIR__)
-    );
+namespace Suhock\DependencyInjection;
 
+use Attribute;
+
+/**
+ * Indicates that a method should be autowired when instantiating a class. Also, can be used to indicate that a class's
+ * constructor should be autowired when used in conjunction with an {@see AttributeContainer}.
+ *
+ * @psalm-immutable
+ */
+#[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD)]
+class Autowire
+{
+}

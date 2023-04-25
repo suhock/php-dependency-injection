@@ -1,6 +1,6 @@
 {
-    "name": "fivetwo/dependency-injection",
-    "description": "The Five Two Dependency Injection Library",
+    "name": "suhock/dependency-injection",
+    "description": "The Suhock PHP Dependency Injection Library",
     "type": "library",
     "keywords": [
         "dependency injection",
@@ -10,13 +10,13 @@
         "inversion of control",
         "ioc"
     ],
-    "homepage": "https://github.com/fivetwo/dependency-injection",
+    "homepage": "https://github.com/suhock/php-dependency-injection",
     "readme": "README.md",
     "license": "MIT",
     "authors": [
         {
             "name": "Matthew Suhocki",
-            "email": "matt@fivetwo.org"
+            "email": "matt@suhock.net"
         }
     ],
     "require": {
@@ -33,12 +33,12 @@
     },
     "autoload": {
         "psr-4": {
-            "FiveTwo\\DependencyInjection\\": "src/FiveTwo/DependencyInjection/"
+            "Suhock\\DependencyInjection\\": "src/Suhock/DependencyInjection/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "FiveTwo\\DependencyInjection\\": "tests/FiveTwo/DependencyInjection/"
+            "Suhock\\DependencyInjection\\": "tests/Suhock/DependencyInjection/"
         }
     },
     "minimum-stability": "stable",

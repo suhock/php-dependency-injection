@@ -1,6 +1,6 @@
 # Dependency Injection Library for PHP
 
-The Five Two Dependency Injection library provides a highly customizable
+The Suhock PHP Dependency Injection library provides a highly customizable
 dependency injection framework for projects running on PHP 8.1 or later. This
 library focuses on facilitating sound object-oriented practices, testing,
 refactoring, and static analysis by emphasizing factory methods and class
@@ -10,7 +10,7 @@ not rely on configuration files or arbitrary identifiers for the container
 specification.
 
 ```php
-$container = new FiveTwo\DependencyInjection\Container();
+$container = new Suhock\DependencyInjection\Container();
 $container->addSingletonClass(MyApplication::class)
     // Add the rest of your dependencies...
     ->get(MyApplication::class)
@@ -65,13 +65,13 @@ parameters into a specific function or constructor.
 
 ## Installation
 
-Add `fivetwo/dependency-injection` to the `require` section of your project's
+Add `suhock/dependency-injection` to the `require` section of your project's
 `composer.json` file.
 
 ```json
 {
     "require": {
-        "fivetwo/dependency-injection": "^0.1"
+        "suhock/dependency-injection": "^0.1"
     }
 }
 ```
@@ -79,7 +79,7 @@ Add `fivetwo/dependency-injection` to the `require` section of your project's
 Alternatively, use the command line from your project's root directory.
 
 ```shell
-composer require "fivetwo/dependency-injection"
+composer require "suhock/dependency-injection"
 ```
 
 ## Basic Usage
@@ -88,7 +88,7 @@ The basic `Container` class contains methods for building the container and
 retrieving instances. Start by constructing an instance.
 
 ```php
-use FiveTwo\DependencyInjection\Container;
+use Suhock\DependencyInjection\Container;
 
 $container = new Container();
 ```
@@ -266,7 +266,7 @@ When the container provides an instance of `CurlHttpClient`, it will see that
 instance resolved from the container.
 
 ```php
-use FiveTwo\DependencyInjection\Autowire;
+use Suhock\DependencyInjection\Autowire;
 
 class CurlHttpClient
 {
@@ -691,8 +691,8 @@ stack can be managed by the `push()` and `pop()` methods, or using the `Context`
 attribute on class, function, or parameter declarations.
 
 ```php
-use FiveTwo\DependencyInjection\Context\ContextContainerFactory;
-use FiveTwo\DependencyInjection\Context\Context;
+use Suhock\DependencyInjection\Context\ContextContainerFactory;
+use Suhock\DependencyInjection\Context\Context;
 
 /*
  * Strings or enums can be used as identifiers for contexts. To help ease
@@ -816,8 +816,8 @@ The following is an example where dependencies need to be injected into a
 function in a controller instead of the constructor.
 
 ```php
-use FiveTwo\DependencyInjection\Container;
-use FiveTwo\DependencyInjection\ContainerInjector;
+use Suhock\DependencyInjection\Container;
+use Suhock\DependencyInjection\ContainerInjector;
 
 // Create the container and build it
 $container = new Container();

@@ -9,15 +9,19 @@
 
 declare(strict_types=1);
 
-return (new PhpCsFixer\Config())
-    ->setRules([
-        '@PSR12' => true,
-        //'strict_param' => true,
-        'array_syntax' => ['syntax' => 'short'],
-    ])
-    ->setFinder(
-        PhpCsFixer\Finder::create()
-            ->exclude('vendor')
-            ->in(__DIR__)
-    );
+namespace Suhock\DependencyInjection\Cache;
 
+use OutOfBoundsException;
+
+class NoCache implements CacheInterface
+{
+    public function get(string $id): mixed
+    {
+        throw new OutOfBoundsException();
+    }
+
+    public function has(string $id): bool
+    {
+        return false;
+    }
+}

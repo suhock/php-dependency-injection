@@ -9,15 +9,19 @@
 
 declare(strict_types=1);
 
-return (new PhpCsFixer\Config())
-    ->setRules([
-        '@PSR12' => true,
-        //'strict_param' => true,
-        'array_syntax' => ['syntax' => 'short'],
-    ])
-    ->setFinder(
-        PhpCsFixer\Finder::create()
-            ->exclude('vendor')
-            ->in(__DIR__)
-    );
+namespace Suhock\DependencyInjection;
 
+use Suhock\DependencyInjection\Context\Context;
+
+/**
+ * Fakes a simple class which specifies contexts at various scopes.
+ */
+#[FakeAttribute('test')]
+class FakeClassWithAttribute
+{
+    #[Context('context2')]
+    public function __construct(
+        public readonly string $value = ''
+    ) {
+    }
+}

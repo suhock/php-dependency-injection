@@ -9,15 +9,12 @@
 
 declare(strict_types=1);
 
-return (new PhpCsFixer\Config())
-    ->setRules([
-        '@PSR12' => true,
-        //'strict_param' => true,
-        'array_syntax' => ['syntax' => 'short'],
-    ])
-    ->setFinder(
-        PhpCsFixer\Finder::create()
-            ->exclude('vendor')
-            ->in(__DIR__)
-    );
+namespace Suhock\DependencyInjection;
 
+/**
+ * Exception that indicates an error specific to a container occurred (i.e. while building or retrieving instances from
+ * the container).
+ */
+class ContainerException extends DependencyInjectionException
+{
+}

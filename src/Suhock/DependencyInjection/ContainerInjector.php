@@ -9,15 +9,15 @@
 
 declare(strict_types=1);
 
-return (new PhpCsFixer\Config())
-    ->setRules([
-        '@PSR12' => true,
-        //'strict_param' => true,
-        'array_syntax' => ['syntax' => 'short'],
-    ])
-    ->setFinder(
-        PhpCsFixer\Finder::create()
-            ->exclude('vendor')
-            ->in(__DIR__)
-    );
+namespace Suhock\DependencyInjection;
 
+/**
+ * Injects dependencies resolved from a container.
+ */
+class ContainerInjector extends Injector
+{
+    public function __construct(ContainerInterface $container)
+    {
+        parent::__construct(new ContainerParameterResolver($container));
+    }
+}

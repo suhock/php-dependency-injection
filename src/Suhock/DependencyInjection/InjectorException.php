@@ -9,15 +9,12 @@
 
 declare(strict_types=1);
 
-return (new PhpCsFixer\Config())
-    ->setRules([
-        '@PSR12' => true,
-        //'strict_param' => true,
-        'array_syntax' => ['syntax' => 'short'],
-    ])
-    ->setFinder(
-        PhpCsFixer\Finder::create()
-            ->exclude('vendor')
-            ->in(__DIR__)
-    );
+namespace Suhock\DependencyInjection;
 
+/**
+ * Exception that indicates an error occurred as part of the dependency injection process (i.e. while resolving or
+ * injecting dependencies when calling a function or building an object).
+ */
+class InjectorException extends DependencyInjectionException
+{
+}

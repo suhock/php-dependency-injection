@@ -9,15 +9,21 @@
 
 declare(strict_types=1);
 
-return (new PhpCsFixer\Config())
-    ->setRules([
-        '@PSR12' => true,
-        //'strict_param' => true,
-        'array_syntax' => ['syntax' => 'short'],
-    ])
-    ->setFinder(
-        PhpCsFixer\Finder::create()
-            ->exclude('vendor')
-            ->in(__DIR__)
-    );
+namespace Suhock\DependencyInjection\Lifetime;
 
+/**
+ * Manages the lifetime of a transient object.
+ *
+ * @template TClass of object
+ * @extends LifetimeStrategy<TClass>
+ */
+class TransientStrategy extends LifetimeStrategy
+{
+    /**
+     * @inheritDoc
+     */
+    public function get(callable $factory): object
+    {
+        return $factory();
+    }
+}

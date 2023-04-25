@@ -9,15 +9,18 @@
 
 declare(strict_types=1);
 
-return (new PhpCsFixer\Config())
-    ->setRules([
-        '@PSR12' => true,
-        //'strict_param' => true,
-        'array_syntax' => ['syntax' => 'short'],
-    ])
-    ->setFinder(
-        PhpCsFixer\Finder::create()
-            ->exclude('vendor')
-            ->in(__DIR__)
-    );
+namespace Suhock\DependencyInjection;
 
+/**
+ * Fake class with an autowired method.
+ */
+class FakeClassWithAutowireFunction
+{
+    public ?FakeClassNoConstructor $obj = null;
+
+    #[Autowire]
+    public function setObj(FakeClassNoConstructor $obj): void
+    {
+        $this->obj = $obj;
+    }
+}
