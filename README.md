@@ -1,13 +1,7 @@
 # Dependency Injection Library for PHP
 
-The Suhock PHP Dependency Injection library provides a highly customizable
-dependency injection framework for projects running on PHP 8.1 or later. This
-library focuses on facilitating sound object-oriented practices, testing,
-refactoring, and static analysis by emphasizing factory methods and class
-constructors as the primary means of building complex dependencies. By design
-the framework can only resolve and inject `object` type dependencies and does
-not rely on configuration files or arbitrary identifiers for the container
-specification.
+The PHP Dependency Injection library provides a customizable dependency
+injection framework for projects running on PHP 8.1 or later.
 
 ```php
 $container = new Suhock\DependencyInjection\Container();
