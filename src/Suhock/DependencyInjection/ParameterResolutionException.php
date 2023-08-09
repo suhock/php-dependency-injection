@@ -57,14 +57,14 @@ class ParameterResolutionException extends InjectorException
         $functionName = $rFunction->getName();
 
         if ($rFunction instanceof ReflectionMethod) {
-            $functionName = $rFunction->getDeclaringClass() . "::$functionName";
+            $functionName = $rFunction->getDeclaringClass()->getName() . "::$functionName";
         }
 
         if (!$rFunction->isClosure()) {
             $functionName = "function $functionName()";
-        } elseif ($rFunction->getClosureScopeClass()) {
-            $functionName .= ' scoped in ' .
-                $rFunction->getClosureScopeClass()->getName();
+        } elseif ($rFunction->getFileName() !== false) {
+            $functionName .= ' defined in \'' .
+                $rFunction->getFileName() . '\':' . $rFunction->getStartLine();
         }
 
         return $functionName;
