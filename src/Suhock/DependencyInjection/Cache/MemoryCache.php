@@ -10,17 +10,20 @@ declare(strict_types=1);
 
 namespace Suhock\DependencyInjection\Cache;
 
+use OutOfBoundsException;
+
 use function array_key_exists;
 
 class MemoryCache implements CacheInterface
 {
+    /** @var array<mixed> */
     private array $cache = [];
 
     public function get(string $id): mixed
     {
         return $this->has($id) ?
             $this->cache[$id] :
-            throw new \OutOfBoundsException("Key not found in cache: $id");
+            throw new OutOfBoundsException("Key not found in cache: $id");
     }
 
     public function has(string $id): bool
