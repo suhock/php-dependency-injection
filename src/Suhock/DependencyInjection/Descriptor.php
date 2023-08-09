@@ -11,7 +11,7 @@ declare(strict_types=1);
 namespace Suhock\DependencyInjection;
 
 use Suhock\DependencyInjection\Lifetime\LifetimeStrategy;
-use Suhock\DependencyInjection\Provision\InstanceProvider;
+use Suhock\DependencyInjection\Provision\InstanceProviderInterface;
 
 /**
  * Contains information about how to resolve a dependency.
@@ -26,13 +26,14 @@ class Descriptor
     /**
      * @param class-string<TClass> $className
      * @param LifetimeStrategy<TClass> $lifetimeStrategy
-     * @param InstanceProvider<TClass> $instanceProvider
+     * @param InstanceProviderInterface<TClass> $instanceProvider
+     *
      * @psalm-mutation-free
      */
     public function __construct(
         public readonly string $className,
         public readonly LifetimeStrategy $lifetimeStrategy,
-        public readonly InstanceProvider $instanceProvider
+        public readonly InstanceProviderInterface $instanceProvider
     ) {
     }
 }

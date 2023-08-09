@@ -11,7 +11,7 @@ declare(strict_types=1);
 namespace Suhock\DependencyInjection;
 
 use Suhock\DependencyInjection\Lifetime\LifetimeStrategy;
-use Suhock\DependencyInjection\Provision\InstanceProvider;
+use Suhock\DependencyInjection\Provision\InstanceProviderInterface;
 
 /**
  * Default implementation for {@see ContainerBuilderInterface}.
@@ -38,7 +38,7 @@ trait ContainerBuilderTrait
      *
      * @param class-string<TClass> $className The name of the class to add
      * @param LifetimeStrategy<TClass> $lifetimeStrategy The lifetime strategy to use to manage instances of the class
-     * @param InstanceProvider<TClass> $instanceProvider The instance provider to use to create new instances of the
+     * @param InstanceProviderInterface<TClass> $instanceProvider The instance provider to use to create new instances of the
      * class
      *
      * @return $this
@@ -47,7 +47,7 @@ trait ContainerBuilderTrait
     public function add(
         string $className,
         LifetimeStrategy $lifetimeStrategy,
-        InstanceProvider $instanceProvider
+        InstanceProviderInterface $instanceProvider
     ): static {
         $this->addDescriptor(new Descriptor($className, $lifetimeStrategy, $instanceProvider));
 

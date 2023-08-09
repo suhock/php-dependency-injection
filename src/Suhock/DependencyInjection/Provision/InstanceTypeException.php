@@ -19,7 +19,7 @@ use function gettype;
 use function is_object;
 
 /**
- * Exception that indicates the type returned by an {@see InstanceProvider} is different from the expected type.
+ * Exception that indicates the type returned by an {@see InstanceProviderInterface} is different from the expected type.
  *
  * @template TExpected of object
  */

@@ -11,7 +11,7 @@ declare(strict_types=1);
 namespace Suhock\DependencyInjection;
 
 use Suhock\DependencyInjection\Lifetime\LifetimeStrategy;
-use Suhock\DependencyInjection\Provision\InstanceProvider;
+use Suhock\DependencyInjection\Provision\InstanceProviderInterface;
 
 /**
  * Interface for building a dependency container.
@@ -25,7 +25,7 @@ interface ContainerBuilderInterface
      *
      * @param class-string<TClass> $className The name of the class to add
      * @param LifetimeStrategy<TClass> $lifetimeStrategy The lifetime strategy to use to manage instances
-     * @param InstanceProvider<TClass> $instanceProvider The instance provider to use to create new instances
+     * @param InstanceProviderInterface<TClass> $instanceProvider The instance provider to use to create new instances
      *
      * @return $this
      * @psalm-external-mutation-free
@@ -33,7 +33,7 @@ interface ContainerBuilderInterface
     public function add(
         string $className,
         LifetimeStrategy $lifetimeStrategy,
-        InstanceProvider $instanceProvider
+        InstanceProviderInterface $instanceProvider
     ): static;
 
     /**

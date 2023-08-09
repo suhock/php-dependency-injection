@@ -18,9 +18,9 @@ use Suhock\DependencyInjection\InjectorInterface;
  * Factory that provides instances of a class by using a factory method.
  *
  * @template TClass of object
- * @template-implements InstanceProvider<TClass>
+ * @template-implements InstanceProviderInterface<TClass>
  */
-class ClosureInstanceProvider implements InstanceProvider
+class ClosureInstanceProvider implements InstanceProviderInterface
 {
     /**
      * @param class-string<TClass> $className The name of the class this factory will provide

@@ -11,11 +11,8 @@ declare(strict_types=1);
 namespace Suhock\DependencyInjection;
 
 use Suhock\DependencyInjection\Lifetime\SingletonStrategy;
-use Suhock\DependencyInjection\Provision\ClassInstanceProvider;
-use Suhock\DependencyInjection\Provision\ClosureInstanceProvider;
-use Suhock\DependencyInjection\Provision\ImplementationInstanceProvider;
-use Suhock\DependencyInjection\Provision\InstanceProvider;
-use Suhock\DependencyInjection\Provision\ObjectInstanceProvider;
+use Suhock\DependencyInjection\Provision\InstanceProviderFactory;
+use Suhock\DependencyInjection\Provision\InstanceProviderInterface;
 
 /**
  * Default implementation for {@see ContainerSingletonBuilderInterface}. Classes using this trait must implement
@@ -26,31 +23,41 @@ use Suhock\DependencyInjection\Provision\ObjectInstanceProvider;
  */
 trait ContainerSingletonBuilderTrait
 {
-    abstract protected function getInjector(): InjectorInterface;
+    public function addSingleton(string $className, string|object|null $source = null): static
+    {
+        $this->addSingletonInstanceProvider(
+            $className,
+            InstanceProviderFactory::createInstanceProvider($this->getInjector(), $this, $className, $source)
+        );
+
+        return $this;
+    }
 
     /**
      * @template TClass of object
      *
      * @param class-string<TClass> $className
-     * @param InstanceProvider<TClass> $instanceProvider
+     * @param InstanceProviderInterface<TClass> $instanceProvider
      *
      * @return $this
      */
-    public function addSingleton(string $className, InstanceProvider $instanceProvider): static
+    public function addSingletonInstanceProvider(string $className, InstanceProviderInterface $instanceProvider): static
     {
         $this->add($className, new SingletonStrategy($className), $instanceProvider);
 
         return $this;
     }
 
+    abstract protected function getInjector(): InjectorInterface;
+
     /**
      * @param class-string $className
      */
     public function addSingletonClass(string $className, ?callable $mutator = null): static
     {
-        $this->addSingleton(
+        $this->addSingletonInstanceProvider(
             $className,
-            new ClassInstanceProvider($className, $this->getInjector(), $mutator)
+            InstanceProviderFactory::createClassInstanceProvider($this->getInjector(), $className, $mutator)
         );
 
         return $this;
@@ -64,9 +71,9 @@ trait ContainerSingletonBuilderTrait
      */
     public function addSingletonImplementation(string $className, string $implementationClassName): static
     {
-        $this->addSingleton(
+        $this->addSingletonInstanceProvider(
             $className,
-            new ImplementationInstanceProvider($className, $implementationClassName, $this)
+            InstanceProviderFactory::createImplementationInstanceProvider($this, $className, $implementationClassName)
         );
 
         return $this;
@@ -77,9 +84,9 @@ trait ContainerSingletonBuilderTrait
      */
     public function addSingletonFactory(string $className, callable $factory): static
     {
-        $this->addSingleton(
+        $this->addSingletonInstanceProvider(
             $className,
-            new ClosureInstanceProvider($className, $factory(...), $this->getInjector())
+            InstanceProviderFactory::createClosureInstanceProvider($this->getInjector(), $className, $factory(...))
         );
 
         return $this;
@@ -88,14 +95,17 @@ trait ContainerSingletonBuilderTrait
     /**
      * @template TClass of object
      * @template TInstance of TClass
+     *
      * @param class-string<TClass> $className
      * @param TInstance $instance
+     *
+     * @return $this
      */
     public function addSingletonInstance(string $className, object $instance): static
     {
-        $this->addSingleton(
+        $this->addSingletonInstanceProvider(
             $className,
-            new ObjectInstanceProvider($className, $instance)
+            InstanceProviderFactory::createObjectInstanceProvider($className, $instance)
         );
 
         return $this;
@@ -104,8 +114,7 @@ trait ContainerSingletonBuilderTrait
     public function addSingletonContainer(ContainerInterface $container): static
     {
         $this->addContainer(
-            $container,
-            /** @param class-string $className */
+            $container, /** @param class-string $className */
             fn (string $className) => new SingletonStrategy($className)
         );
 

@@ -10,11 +10,10 @@ declare(strict_types=1);
 
 namespace Suhock\DependencyInjection;
 
+use Closure;
 use Suhock\DependencyInjection\Lifetime\TransientStrategy;
-use Suhock\DependencyInjection\Provision\ClassInstanceProvider;
-use Suhock\DependencyInjection\Provision\ClosureInstanceProvider;
-use Suhock\DependencyInjection\Provision\ImplementationInstanceProvider;
-use Suhock\DependencyInjection\Provision\InstanceProvider;
+use Suhock\DependencyInjection\Provision\InstanceProviderFactory;
+use Suhock\DependencyInjection\Provision\InstanceProviderInterface;
 
 /**
  * Default implementation for {@see ContainerTransientBuilderInterface}. Classes using this trait must implement
@@ -27,15 +26,25 @@ trait ContainerTransientBuilderTrait
 {
     abstract protected function getInjector(): InjectorInterface;
 
+    public function addTransient(string $className, string|Closure|null $source = null): static
+    {
+        $this->addSingletonInstanceProvider(
+            $className,
+            InstanceProviderFactory::createInstanceProvider($this->getInjector(), $this, $className, $source)
+        );
+
+        return $this;
+    }
+
     /**
      * @template TClass of object
      *
      * @param class-string<TClass> $className
-     * @param InstanceProvider<TClass> $instanceProvider
+     * @param InstanceProviderInterface<TClass> $instanceProvider
      *
      * @return $this
      */
-    public function addTransient(string $className, InstanceProvider $instanceProvider): static
+    public function addTransientInstanceProvider(string $className, InstanceProviderInterface $instanceProvider): static
     {
         $this->add($className, new TransientStrategy($className), $instanceProvider);
 
@@ -47,9 +56,9 @@ trait ContainerTransientBuilderTrait
      */
     public function addTransientClass(string $className, ?callable $mutator = null): static
     {
-        $this->addTransient(
+        $this->addTransientInstanceProvider(
             $className,
-            new ClassInstanceProvider($className, $this->getInjector(), $mutator)
+            InstanceProviderFactory::createClassInstanceProvider($this->getInjector(), $className, $mutator)
         );
 
         return $this;
@@ -63,9 +72,9 @@ trait ContainerTransientBuilderTrait
      */
     public function addTransientImplementation(string $className, string $implementationClassName): static
     {
-        $this->addTransient(
+        $this->addTransientInstanceProvider(
             $className,
-            new ImplementationInstanceProvider($className, $implementationClassName, $this)
+            InstanceProviderFactory::createImplementationInstanceProvider($this, $className, $implementationClassName)
         );
 
         return $this;
@@ -76,9 +85,9 @@ trait ContainerTransientBuilderTrait
      */
     public function addTransientFactory(string $className, callable $factory): static
     {
-        $this->addTransient(
+        $this->addTransientInstanceProvider(
             $className,
-            new ClosureInstanceProvider($className, $factory(...), $this->getInjector())
+            InstanceProviderFactory::createClosureInstanceProvider($this->getInjector(), $className, $factory(...))
         );
 
         return $this;

@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Copyright (c) 2022-2023 Matthew Suhocki. All rights reserved.
  *
@@ -10,14 +11,16 @@ declare(strict_types=1);
 
 namespace Suhock\DependencyInjection\Provision;
 
+use function assert;
+
 /**
  * Factory that provides a previously constructed instance of the class.
  *
  * @template TClass of object
- * @template-implements InstanceProvider<TClass>
+ * @template-implements InstanceProviderInterface<TClass>
  * @psalm-immutable
  */
-class ObjectInstanceProvider implements InstanceProvider
+class ObjectInstanceProvider implements InstanceProviderInterface
 {
     /**
      * @param class-string<TClass> $className The name of the class or interface provided
@@ -29,9 +32,7 @@ class ObjectInstanceProvider implements InstanceProvider
         string $className,
         private readonly object $instance
     ) {
-        if (!$instance instanceof $className) {
-            throw new InstanceTypeException($className, $instance);
-        }
+        assert($instance instanceof $className, new InstanceTypeException($className, $instance));
     }
 
     /**

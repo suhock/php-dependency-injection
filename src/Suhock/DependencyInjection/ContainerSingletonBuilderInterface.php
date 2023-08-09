@@ -11,7 +11,7 @@ declare(strict_types=1);
 namespace Suhock\DependencyInjection;
 
 use Suhock\DependencyInjection\Provision\ImplementationException;
-use Suhock\DependencyInjection\Provision\InstanceProvider;
+use Suhock\DependencyInjection\Provision\InstanceProviderInterface;
 use Suhock\DependencyInjection\Provision\InstanceTypeException;
 
 /**
@@ -21,14 +21,38 @@ interface ContainerSingletonBuilderInterface
 {
     /**
      * @template TClass of object
+     * @template TImplementation of TClass
+     * @param class-string<TClass> $className The fully qualified name of the class to add
+     * @param class-string<TImplementation>|object|null $source
+     * - If null, indicates that the container should provide an instance of the given class by autowiring its
+     *   constructor.
+     * - If a string, indicates that the container should provide an instance of the given class by retrieving an
+     *   instance of the specified implementation class from the container. The container must also specify how to
+     *   resolve the implementation class.
+     * - If a closure that accepts an object of the specified class as the first parameter, indicates that the container
+     *   should provide an instance of the given class by autowiring its constructor and then passing the constructed
+     *   object to the mutator function.
+     * - If any other closure, indicates that the container should provide an instance of the given class by calling the
+     *   closure.
+     * - If an object, indicates that the container should provide the given object as an instance of the given class.
+     *
+     * @return $this
+     */
+    public function addSingleton(string $className, string|object|null $source = null): static;
+
+    /**
+     * @template TClass of object
      *
      * @param class-string<TClass> $className The fully qualified name of the class to add
-     * @param InstanceProvider<TClass> $instanceProvider
+     * @param InstanceProviderInterface<TClass> $instanceProvider
      *
      * @return $this
      * @psalm-external-mutation-free
      */
-    public function addSingleton(string $className, InstanceProvider $instanceProvider): static;
+    public function addSingletonInstanceProvider(
+        string $className,
+        InstanceProviderInterface $instanceProvider
+    ): static;
 
     /**
      * Indicates that the container should provide a singleton instance of the given class by autowiring its

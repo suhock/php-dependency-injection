@@ -11,6 +11,9 @@ declare(strict_types=1);
 namespace Suhock\DependencyInjection\Provision;
 
 use Closure;
+use DomainException;
+use ReflectionException;
+use ReflectionFunction;
 use Suhock\DependencyInjection\DependencyInjectionException;
 use Suhock\DependencyInjection\InjectorInterface;
 
@@ -18,9 +21,9 @@ use Suhock\DependencyInjection\InjectorInterface;
  * Factory that provides instances of a class by directly instantiating the class.
  *
  * @template TClass of object
- * @template-implements InstanceProvider<TClass>
+ * @template-implements InstanceProviderInterface<TClass>
  */
-class ClassInstanceProvider implements InstanceProvider
+class ClassInstanceProvider implements InstanceProviderInterface
 {
     private readonly ?Closure $mutator;
 
@@ -52,5 +55,35 @@ class ClassInstanceProvider implements InstanceProvider
         }
 
         return $instance;
+    }
+
+    /**
+     * @param callable $function The function to test
+     * @param class-string $className The name of the class that the function must be able to mutate
+     *
+     * @return bool true if the function can mutate the specified class; otherwise, false
+     */
+    public static function isMutator(callable $function, string $className): bool
+    {
+        try {
+            $closureReflection = new ReflectionFunction($function);
+        } catch (ReflectionException $e) {
+            throw new DomainException('Function cannot be reflected', previous: $e);
+        }
+
+        if ($closureReflection->getNumberOfParameters() < 1) {
+            return false;
+        }
+
+        $firstParamType = $closureReflection->getParameters()[0]->getType();
+
+        if ($firstParamType?->isBuiltin() ?? false) {
+            return false;
+        }
+
+        /** @var class-string $firstParamTypeName */
+        $firstParamTypeName = $firstParamType?->getName();
+
+        return $firstParamTypeName === $className || is_subclass_of($className, $firstParamTypeName);
     }
 }
