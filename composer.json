@@ -1,6 +1,6 @@
 {
-    "name": "suhock/dependency-injection",
-    "description": "The Suhock PHP Dependency Injection Library",
+    "name": "suhock/php-dependency-injection",
+    "description": "PHP Dependency Injection Library",
     "type": "library",
     "keywords": [
         "dependency injection",
@@ -26,10 +26,10 @@
         "fivetwo/remove-symfony-polyfill": "^8.1",
         "friendsofphp/php-cs-fixer": "^3.8",
         "jetbrains/phpstorm-stubs": ">=2022.1",
-        "phpstan/phpstan": "^1.7",
+        "phpstan/phpstan": "^1.10",
         "phpunit/phpunit": "^9.5",
         "psalm/plugin-phpunit": ">=0.16",
-        "vimeo/psalm": "^4.23"
+        "vimeo/psalm": "^5.9"
     },
     "autoload": {
         "psr-4": {
