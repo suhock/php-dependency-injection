@@ -22,8 +22,10 @@ interface ContainerTransientBuilderInterface
     /**
      * @template TClass of object
      * @template TImplementation of TClass
+     *
      * @param class-string<TClass> $className The fully qualified name of the class to add
      * @param class-string<TImplementation>|Closure|null $source
+     *
      * - If null, indicates that the container should provide an instance of the given class by autowiring its
      *   constructor.
      * - If a string, indicates that the container should provide an instance of the given class by retrieving an

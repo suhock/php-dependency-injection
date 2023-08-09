@@ -22,8 +22,10 @@ interface ContainerSingletonBuilderInterface
     /**
      * @template TClass of object
      * @template TImplementation of TClass
+     *
      * @param class-string<TClass> $className The fully qualified name of the class to add
      * @param class-string<TImplementation>|object|null $source
+     *
      * - If null, indicates that the container should provide an instance of the given class by autowiring its
      *   constructor.
      * - If a string, indicates that the container should provide an instance of the given class by retrieving an
@@ -59,7 +61,9 @@ interface ContainerSingletonBuilderInterface
      * constructor. An optional mutator function can be specified to perform additional initialization on the
      * constructed object.
      *
-     * @param class-string $className The fully qualified name of the class to add
+     * @template TClass of object
+     *
+     * @param class-string<TClass> $className The fully qualified name of the class to add
      * @param callable|null $mutator [optional] This function will be called after an instance of the class has been
      * created. The class instance will be provided as the first parameter. Any additional parameters will be injected.
      *
@@ -91,7 +95,9 @@ interface ContainerSingletonBuilderInterface
      * Indicates that the container should provide a singleton instance of the given class by calling the specified
      * factory method.
      *
-     * @param class-string $className The fully qualified name of the class to add
+     * @template TClass of object
+     *
+     * @param class-string<TClass> $className The fully qualified name of the class to add
      * @param callable $factory A factory method that returns an instance of the class specified by {@see $className}.
      * Any method parameters will be injected.
      *

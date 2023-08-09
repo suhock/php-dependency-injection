@@ -26,6 +26,15 @@ trait ContainerTransientBuilderTrait
 {
     abstract protected function getInjector(): InjectorInterface;
 
+    /**
+     * @template TClass of object
+     * @template TImplementation of TClass
+     *
+     * @param class-string<TClass> $className
+     * @param class-string<TImplementation>|Closure|null $source
+     *
+     * @return $this
+     */
     public function addTransient(string $className, string|Closure|null $source = null): static
     {
         $this->addSingletonInstanceProvider(

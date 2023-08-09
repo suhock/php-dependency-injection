@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 namespace Suhock\DependencyInjection;
 
+use Closure;
 use Suhock\DependencyInjection\Lifetime\SingletonStrategy;
 use Suhock\DependencyInjection\Provision\InstanceProviderFactory;
 use Suhock\DependencyInjection\Provision\InstanceProviderInterface;
@@ -23,6 +24,15 @@ use Suhock\DependencyInjection\Provision\InstanceProviderInterface;
  */
 trait ContainerSingletonBuilderTrait
 {
+    /**
+     * @template TClass of object
+     * @template TImplementation of TClass
+     *
+     * @param class-string<TClass> $className
+     * @param class-string<TImplementation>|TClass|Closure|null $source
+     *
+     * @return $this
+     */
     public function addSingleton(string $className, string|object|null $source = null): static
     {
         $this->addSingletonInstanceProvider(
@@ -51,7 +61,9 @@ trait ContainerSingletonBuilderTrait
     abstract protected function getInjector(): InjectorInterface;
 
     /**
-     * @param class-string $className
+     * @template TClass of object
+     *
+     * @param class-string<TClass> $className
      */
     public function addSingletonClass(string $className, ?callable $mutator = null): static
     {
@@ -80,7 +92,9 @@ trait ContainerSingletonBuilderTrait
     }
 
     /**
-     * @param class-string $className
+     * @template TClass of object
+     *
+     * @param class-string<TClass> $className
      */
     public function addSingletonFactory(string $className, callable $factory): static
     {

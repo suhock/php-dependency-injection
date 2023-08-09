@@ -58,7 +58,8 @@ class ClassInstanceProvider implements InstanceProviderInterface
     }
 
     /**
-     * @param callable $function The function to test
+     * @param Closure|string $function The function to test
+     * @psalm-param Closure|callable-string $function
      * @param class-string $className The name of the class that the function must be able to mutate
      *
      * @return bool true if the function can mutate the specified class; otherwise, false
