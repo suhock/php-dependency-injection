@@ -99,8 +99,7 @@ class Injector implements InjectorInterface
 
         foreach ($rClass->getMethods(ReflectionMethod::IS_PUBLIC) as $rMethod) {
             if (count($rMethod->getAttributes(Autowire::class)) > 0) {
-                /** @phpstan-ignore-next-line PHPStan complains about possible null return */
-                $this->call($rMethod->getClosure($instance));
+                $this->call($rMethod->getClosure($instance) ?? throw new InjectorException());
             }
         }
     }

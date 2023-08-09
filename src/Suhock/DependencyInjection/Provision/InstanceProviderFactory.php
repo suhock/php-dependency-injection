@@ -18,6 +18,17 @@ use function is_string;
 
 final class InstanceProviderFactory
 {
+    /**
+     * @template TClass of object
+     * @template TImplementation of TClass
+     *
+     * @param InjectorInterface $injector
+     * @param ContainerInterface $container
+     * @param class-string<TClass> $className
+     * @param class-string<TImplementation>|TImplementation|null $source
+     *
+     * @return InstanceProviderInterface<TClass>|InstanceProviderInterface<TImplementation>
+     */
     public static function createInstanceProvider(
         InjectorInterface $injector,
         ContainerInterface $container,
@@ -43,6 +54,15 @@ final class InstanceProviderFactory
         return self::createClosureInstanceProvider($injector, $className, $source);
     }
 
+    /**
+     * @template TClass of object
+     *
+     * @param InjectorInterface $injector
+     * @param class-string<TClass> $className
+     * @param callable|null $mutator
+     *
+     * @return ClassInstanceProvider<TClass>
+     */
     public static function createClassInstanceProvider(
         InjectorInterface $injector,
         string $className,
@@ -51,6 +71,16 @@ final class InstanceProviderFactory
         return new ClassInstanceProvider($className, $injector, $mutator);
     }
 
+    /**
+     * @template TClass of object
+     * @template TImplementation of TClass
+     *
+     * @param ContainerInterface $container
+     * @param class-string<TClass> $className
+     * @param class-string<TImplementation> $implementationClassName
+     *
+     * @return ImplementationInstanceProvider<TClass, TImplementation>
+     */
     public static function createImplementationInstanceProvider(
         ContainerInterface $container,
         string $className,
@@ -59,6 +89,15 @@ final class InstanceProviderFactory
         return new ImplementationInstanceProvider($className, $implementationClassName, $container);
     }
 
+    /**
+     * @template TClass of object
+     * @template TInstance of TClass
+     *
+     * @param class-string<TClass> $className
+     * @param TInstance $object
+     *
+     * @return ObjectInstanceProvider<TClass>
+     */
     public static function createObjectInstanceProvider(
         string $className,
         object $object
@@ -66,6 +105,15 @@ final class InstanceProviderFactory
         return new ObjectInstanceProvider($className, $object);
     }
 
+    /**
+     * @template TClass of object
+     *
+     * @param InjectorInterface $injector
+     * @param class-string<TClass> $className
+     * @param callable $closure
+     *
+     * @return ClosureInstanceProvider<TClass>
+     */
     public static function createClosureInstanceProvider(
         InjectorInterface $injector,
         string $className,
