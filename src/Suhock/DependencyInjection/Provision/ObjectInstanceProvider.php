@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Copyright (c) 2022-2023 Matthew Suhocki. All rights reserved.
  *
@@ -12,12 +13,12 @@ namespace Suhock\DependencyInjection\Provision;
 
 /**
  * Factory that provides a previously constructed instance of the class.
- *
  * @template TClass of object
- * @template-implements InstanceProvider<TClass>
+ *
+ * @template-implements InstanceProviderInterface<TClass>
  * @psalm-immutable
  */
-class ObjectInstanceProvider implements InstanceProvider
+class ObjectInstanceProvider implements InstanceProviderInterface
 {
     /**
      * @param class-string<TClass> $className The name of the class or interface provided

@@ -15,7 +15,7 @@ namespace Suhock\DependencyInjection\Provision;
  *
  * @template TClass of object
  */
-interface InstanceProvider
+interface InstanceProviderInterface
 {
     /**
      * @return TClass An instance of the class

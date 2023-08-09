@@ -19,9 +19,9 @@ use Suhock\DependencyInjection\ContainerInterface;
  *
  * @template TClass of object
  * @template TImplementation of TClass
- * @template-implements InstanceProvider<TClass>
+ * @template-implements InstanceProviderInterface<TClass>
  */
-class ImplementationInstanceProvider implements InstanceProvider
+class ImplementationInstanceProvider implements InstanceProviderInterface
 {
     /**
      * @param class-string<TClass> $className The name of the class or interface provided
