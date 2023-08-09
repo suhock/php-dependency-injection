@@ -11,12 +11,10 @@ declare(strict_types=1);
 
 namespace Suhock\DependencyInjection\Provision;
 
-use function assert;
-
 /**
  * Factory that provides a previously constructed instance of the class.
- *
  * @template TClass of object
+ *
  * @template-implements InstanceProviderInterface<TClass>
  * @psalm-immutable
  */
@@ -32,7 +30,9 @@ class ObjectInstanceProvider implements InstanceProviderInterface
         string $className,
         private readonly object $instance
     ) {
-        assert($instance instanceof $className, new InstanceTypeException($className, $instance));
+        if (!$instance instanceof $className) {
+            throw new InstanceTypeException($className, $instance);
+        }
     }
 
     /**
