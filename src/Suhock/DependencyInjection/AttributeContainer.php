@@ -82,7 +82,10 @@ class AttributeContainer implements ContainerInterface
             throw new ClassNotFoundException($className);
         }
 
-        return $this->injector->call($this->factory, [$className, $rAttr->newInstance()]);
+        /** @var TClass $instance */
+        $instance = $this->injector->call($this->factory, [$className, $rAttr->newInstance()]);
+
+        return $instance;
     }
 
     /**
