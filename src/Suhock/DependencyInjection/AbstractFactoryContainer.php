@@ -52,9 +52,14 @@ abstract class AbstractFactoryContainer implements ContainerInterface
      */
     public function get(string $className): object
     {
-        return $this->has($className) ?
-            $this->injector->call($this->factory, [$className]) :
-            throw new ClassNotFoundException($className);
+        if (!$this->has($className)) {
+            return throw new ClassNotFoundException($className);
+        }
+
+        /** @var TClass $instance */
+        $instance = $this->injector->call($this->factory, [$className]);
+
+        return $instance;
     }
 
     /**
