@@ -15,6 +15,7 @@ use DomainException;
 use ReflectionException;
 use ReflectionFunction;
 use ReflectionNamedType;
+use ReflectionUnionType;
 use Suhock\DependencyInjection\DependencyInjectionException;
 use Suhock\DependencyInjection\InjectorInterface;
 
@@ -79,13 +80,22 @@ class ClassInstanceProvider implements InstanceProviderInterface
 
         $firstParamType = $closureReflection->getParameters()[0]->getType();
 
-        if (!$firstParamType instanceof ReflectionNamedType || $firstParamType->isBuiltin()) {
-            return false;
+        $paramTypes = match (true) {
+            $firstParamType instanceof ReflectionNamedType => [$firstParamType],
+            $firstParamType instanceof ReflectionUnionType => $firstParamType->getTypes(),
+            default => []
+        };
+
+        foreach ($paramTypes as $paramType) {
+            if ($paramType->isBuiltin()) {
+                continue;
+            }
+
+            if (is_a($className, $paramType->getName(), true)) {
+                return true;
+            }
         }
 
-        /** @var class-string $firstParamTypeName */
-        $firstParamTypeName = $firstParamType->getName();
-
-        return $firstParamTypeName === $className || is_subclass_of($className, $firstParamTypeName);
+        return false;
     }
 }
