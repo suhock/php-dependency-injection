@@ -14,6 +14,7 @@ use Closure;
 use DomainException;
 use ReflectionException;
 use ReflectionFunction;
+use ReflectionNamedType;
 use Suhock\DependencyInjection\DependencyInjectionException;
 use Suhock\DependencyInjection\InjectorInterface;
 
@@ -78,12 +79,12 @@ class ClassInstanceProvider implements InstanceProviderInterface
 
         $firstParamType = $closureReflection->getParameters()[0]->getType();
 
-        if ($firstParamType?->isBuiltin() ?? false) {
+        if (!$firstParamType instanceof ReflectionNamedType || $firstParamType->isBuiltin()) {
             return false;
         }
 
         /** @var class-string $firstParamTypeName */
-        $firstParamTypeName = $firstParamType?->getName();
+        $firstParamTypeName = $firstParamType->getName();
 
         return $firstParamTypeName === $className || is_subclass_of($className, $firstParamTypeName);
     }

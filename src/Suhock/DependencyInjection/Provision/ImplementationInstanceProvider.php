@@ -18,14 +18,13 @@ use Suhock\DependencyInjection\ContainerInterface;
  * the container.
  *
  * @template TClass of object
- * @template TImplementation of TClass
  * @template-implements InstanceProviderInterface<TClass>
  */
 class ImplementationInstanceProvider implements InstanceProviderInterface
 {
     /**
      * @param class-string<TClass> $className The name of the class or interface provided
-     * @param class-string<TImplementation> $implementationClassName The name of the class providing the implementation
+     * @param class-string<TClass> $implementationClassName The name of the class providing the implementation
      * instance
      *
      * @throws ImplementationException If {@see $implementationClassName} is not a subclass of {@see $className}
@@ -43,8 +42,6 @@ class ImplementationInstanceProvider implements InstanceProviderInterface
     /**
      * @inheritDoc
      * @return TClass An instance of the class
-     * @psalm-return TClass An instance of the class
-     * @phpstan-return TImplementation
      * @throws ClassNotFoundException If the container could not resolve a value for the specified class
      */
     public function get(): object

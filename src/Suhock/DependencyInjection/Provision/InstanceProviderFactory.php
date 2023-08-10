@@ -20,14 +20,13 @@ final class InstanceProviderFactory
 {
     /**
      * @template TClass of object
-     * @template TImplementation of TClass
      *
      * @param InjectorInterface $injector
      * @param ContainerInterface $container
      * @param class-string<TClass> $className
-     * @param class-string<TImplementation>|TImplementation|null $source
+     * @param class-string<TClass>|TClass|Closure|null $source
      *
-     * @return InstanceProviderInterface<TClass>|InstanceProviderInterface<TImplementation>
+     * @return InstanceProviderInterface<TClass>
      */
     public static function createInstanceProvider(
         InjectorInterface $injector,
@@ -73,13 +72,12 @@ final class InstanceProviderFactory
 
     /**
      * @template TClass of object
-     * @template TImplementation of TClass
      *
      * @param ContainerInterface $container
      * @param class-string<TClass> $className
-     * @param class-string<TImplementation> $implementationClassName
+     * @param class-string<TClass> $implementationClassName
      *
-     * @return ImplementationInstanceProvider<TClass, TImplementation>
+     * @return ImplementationInstanceProvider<TClass>
      */
     public static function createImplementationInstanceProvider(
         ContainerInterface $container,
@@ -91,10 +89,9 @@ final class InstanceProviderFactory
 
     /**
      * @template TClass of object
-     * @template TInstance of TClass
      *
      * @param class-string<TClass> $className
-     * @param TInstance $object
+     * @param TClass $object
      *
      * @return ObjectInstanceProvider<TClass>
      */
@@ -119,6 +116,6 @@ final class InstanceProviderFactory
         string $className,
         callable $closure
     ): ClosureInstanceProvider {
-        return new ClosureInstanceProvider($className, $closure, $injector);
+        return new ClosureInstanceProvider($className, $closure(...), $injector);
     }
 }

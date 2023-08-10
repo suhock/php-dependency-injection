@@ -28,10 +28,9 @@ trait ContainerTransientBuilderTrait
 
     /**
      * @template TClass of object
-     * @template TImplementation of TClass
      *
      * @param class-string<TClass> $className
-     * @param class-string<TImplementation>|Closure|null $source
+     * @param class-string<TClass>|Closure|null $source
      *
      * @return $this
      */
