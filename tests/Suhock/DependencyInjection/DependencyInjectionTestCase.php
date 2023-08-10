@@ -23,10 +23,10 @@ use Throwable;
 class DependencyInjectionTestCase extends TestCase
 {
     /**
-     * @template T of Throwable
+     * @template TClass of Throwable
      *
-     * @param class-string<T> $expectedException
-     * @param callable(T):void $exceptionTest
+     * @param class-string<TClass> $expectedException
+     * @param callable(TClass):void $exceptionTest
      * @param callable $codeUnderTest
      *
      * @return void
@@ -43,7 +43,7 @@ class DependencyInjectionTestCase extends TestCase
             throw $e;
         } catch (Throwable $exception) {
             self::assertInstanceOf($expectedException, $exception, $exception->getMessage());
-            /** @var T $exception */
+            /** @var TClass $exception */
             $exceptionTest($exception);
         }
     }
