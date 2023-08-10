@@ -37,7 +37,7 @@ trait ContainerTransientBuilderTrait
      */
     public function addTransient(string $className, string|Closure|null $source = null): static
     {
-        $this->addSingletonInstanceProvider(
+        $this->addTransientInstanceProvider(
             $className,
             InstanceProviderFactory::createInstanceProvider($this->getInjector(), $this, $className, $source)
         );
