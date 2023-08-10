@@ -49,7 +49,6 @@ interface ContainerSingletonBuilderInterface
      * @param InstanceProviderInterface<TClass> $instanceProvider
      *
      * @return $this
-     * @psalm-external-mutation-free
      */
     public function addSingletonInstanceProvider(
         string $className,
@@ -69,7 +68,6 @@ interface ContainerSingletonBuilderInterface
      *
      * @return $this
      * @throws ImplementationException
-     * @psalm-external-mutation-free
      */
     public function addSingletonClass(string $className, ?callable $mutator = null): static;
 
@@ -87,7 +85,6 @@ interface ContainerSingletonBuilderInterface
      *
      * @return $this
      * @throws ImplementationException If the implementation class is not a subclass of the class being added
-     * @psalm-external-mutation-free
      */
     public function addSingletonImplementation(string $className, string $implementationClassName): static;
 
@@ -102,7 +99,6 @@ interface ContainerSingletonBuilderInterface
      * Any method parameters will be injected.
      *
      * @return $this
-     * @psalm-external-mutation-free
      */
     public function addSingletonFactory(string $className, callable $factory): static;
 
@@ -117,7 +113,6 @@ interface ContainerSingletonBuilderInterface
      *
      * @return $this
      * @throws InstanceTypeException
-     * @psalm-external-mutation-free
      */
     public function addSingletonInstance(string $className, object $instance): static;
 
@@ -125,7 +120,6 @@ interface ContainerSingletonBuilderInterface
      * @param ContainerInterface $container
      *
      * @return $this
-     * @psalm-external-mutation-free
      */
     public function addSingletonContainer(ContainerInterface $container): static;
 
@@ -140,7 +134,6 @@ interface ContainerSingletonBuilderInterface
      * factory is provided, a default factory that directly instantiates the class will be used.
      *
      * @return $this
-     * @psalm-external-mutation-free
      */
     public function addSingletonNamespace(string $namespace, ?callable $factory = null): static;
 

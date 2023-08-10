@@ -16,7 +16,6 @@ namespace Suhock\DependencyInjection\Provision;
  * @template TClass of object
  *
  * @template-implements InstanceProviderInterface<TClass>
- * @psalm-immutable
  */
 class ObjectInstanceProvider implements InstanceProviderInterface
 {

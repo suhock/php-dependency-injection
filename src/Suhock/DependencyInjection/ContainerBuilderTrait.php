@@ -15,8 +15,6 @@ use Suhock\DependencyInjection\Provision\InstanceProviderInterface;
 
 /**
  * Default implementation for {@see ContainerBuilderInterface}.
- *
- * @psalm-require-implements ContainerBuilderInterface
  */
 trait ContainerBuilderTrait
 {
@@ -42,7 +40,6 @@ trait ContainerBuilderTrait
      * class
      *
      * @return $this
-     * @psalm-external-mutation-free
      */
     public function add(
         string $className,
@@ -59,7 +56,6 @@ trait ContainerBuilderTrait
      * @param callable(class-string):LifetimeStrategy $lifetimeStrategyFactory A factory method for generating lifetime
      * strategies to manage instances within the container being built
      *
-     * @psalm-external-mutation-free
      * @phpstan-ignore-next-line PHPStan does not support callable-level generics but complains that LifetimeStrategy
      * does not have its generic type specified
      */
@@ -73,18 +69,14 @@ trait ContainerBuilderTrait
     }
 
     /**
-     * @psalm-template TBuilder of ContainerBuilderInterface
-     *
      * @param callable(static):mixed $builder
-     * @psalm-param callable(TBuilder):mixed $builder
      *
      * @return $this
      */
     public function build(callable $builder): static
     {
         /**
-         * Psalm and PHPStan don't think Container implements ContainerBuilderInterface?
-         * @psalm-suppress InvalidArgument
+         * PHPStan doesn't think Container implements ContainerBuilderInterface?
          * @phpstan-ignore-next-line
          */
         $builder($this);

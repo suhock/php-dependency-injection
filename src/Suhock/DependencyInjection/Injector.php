@@ -28,8 +28,6 @@ class Injector implements InjectorInterface
 {
     /**
      * @param ParameterResolverInterface $resolver The resolver to use for resolving parameters
-     *
-     * @psalm-mutation-free
      */
     public function __construct(
         private readonly ParameterResolverInterface $resolver
@@ -56,9 +54,14 @@ class Injector implements InjectorInterface
     }
 
     /**
+     * @inheritDoc
+     *
      * @template TClass of object
-     * @psalm-param class-string<TClass> $className
-     * @psalm-return TClass
+     *
+     * @param class-string<TClass> $className
+     * @param array<mixed> $params
+     *
+     * @return TClass
      */
     public function instantiate(string $className, array $params = []): object
     {
@@ -116,7 +119,6 @@ class Injector implements InjectorInterface
         $paramValues = [];
 
         foreach ($rParameters as $rParam) {
-            /** @psalm-suppress MixedAssignment $paramValues is declared as list<mixed>... */
             $paramValues[] = $this->resolveParameter($rParam, $params);
         }
 

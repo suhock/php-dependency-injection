@@ -26,7 +26,6 @@ class ClassResolutionException extends ContainerException
      * @param Throwable|null $previous [optional] The previous throwable used for exception chaining. If the throwable
      * is an instance of {@see DependencyInjectionException} then its content will be consolidated into the new
      * instance.
-     * @psalm-mutation-free
      */
     public function __construct(
         private readonly string $className,
@@ -37,7 +36,6 @@ class ClassResolutionException extends ContainerException
 
     /**
      * @return class-string<TClass> The name of the class the container could not resolve
-     * @psalm-mutation-free
      */
     public function getClassName(): string
     {

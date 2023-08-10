@@ -58,7 +58,7 @@ final class InstanceProviderFactory
      *
      * @param InjectorInterface $injector
      * @param class-string<TClass> $className
-     * @param callable|null $mutator
+     * @param Closure|callable-string|null $mutator
      *
      * @return ClassInstanceProvider<TClass>
      */

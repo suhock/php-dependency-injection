@@ -37,8 +37,6 @@ class AttributeContainer implements ContainerInterface
      * <code>
      * callable&lt;TClass, TAttr&gt;(class-string&lt;TClass&gt; $className, TAttr $attr, ...): TClass
      * </code>
-     *
-     * @psalm-mutation-free
      */
     public function __construct(
         private readonly string $attributeName,
@@ -71,7 +69,6 @@ class AttributeContainer implements ContainerInterface
      *
      * @return TClass An instance of {@see $className}
      * @throws ClassNotFoundException If the specified class does not implement or extend {@see $interfaceName}
-     * @psalm-suppress MixedInferredReturnType
      */
     public function get(string $className): object
     {
@@ -85,13 +82,11 @@ class AttributeContainer implements ContainerInterface
             throw new ClassNotFoundException($className);
         }
 
-        /** @psalm-suppress MixedReturnStatement Psalm cannot infer a type from generic Closure */
         return $this->injector->call($this->factory, [$className, $rAttr->newInstance()]);
     }
 
     /**
      * @inheritDoc
-     * @psalm-mutation-free
      */
     public function has(string $className): bool
     {
@@ -106,7 +101,6 @@ class AttributeContainer implements ContainerInterface
      * @param class-string $className
      * @return ReflectionAttribute<object>|null
      * @throws ReflectionException
-     * @psalm-mutation-free
      */
     private function getAttribute(string $className): ?ReflectionAttribute
     {

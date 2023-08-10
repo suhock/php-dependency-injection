@@ -26,8 +26,6 @@ class InterfaceContainer extends AbstractFactoryContainer
      * <code>
      * function&lt;TClass of TInterface&gt;(class-string&lt;TClass&gt; $className, [object ...]): TClass
      * </code>
-     *
-     * @psalm-mutation-free
      */
     public function __construct(
         private readonly string $interfaceName,
@@ -41,7 +39,6 @@ class InterfaceContainer extends AbstractFactoryContainer
      * @param class-string $className The name of the class to test
      *
      * @return bool <code>true</code> if the container can provide a value, <code>false</code> otherwise
-     * @psalm-mutation-free
      */
     public function has(string $className): bool
     {

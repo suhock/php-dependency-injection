@@ -19,7 +19,6 @@ class FakeContainer implements ContainerInterface
 {
     /**
      * @param array<callable> $classMapping
-     * @psalm-param array<class-string, callable():object> $classMapping
      * @phpstan-param array<class-string, callable():object> $classMapping
      */
     public function __construct(
@@ -27,11 +26,9 @@ class FakeContainer implements ContainerInterface
     ) {
     }
 
-    /** @psalm-suppress InvalidReturnType */
     public function get(string $className): object
     {
         /**
-         * @psalm-suppress InvalidReturnStatement Psalm does not support array class mappings
          * @phpstan-ignore-next-line PHPStan does not support array class mappings
          */
         return $this->has($className) ?
@@ -42,7 +39,6 @@ class FakeContainer implements ContainerInterface
     /**
      * @template TClass of object
      * @param class-string<TClass> $className The name of the class to test
-     * @psalm-mutation-free
      */
     public function has(string $className): bool
     {

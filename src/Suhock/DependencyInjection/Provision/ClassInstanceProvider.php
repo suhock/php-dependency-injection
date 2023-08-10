@@ -31,8 +31,9 @@ class ClassInstanceProvider implements InstanceProviderInterface
     /**
      * @param class-string<TClass> $className The name of the class this factory will instantiate
      * @param InjectorInterface $injector The injector that will be used for instantiation
-     * @param callable|null $mutator [optional] Mutator function that allows additional changes to the instantiated
-     * instance. The first parameter will be the new object instance. Any other parameters will be injected.
+     * @param Closure|callable-string|null $mutator [optional] Mutator function that allows additional changes to the
+     * instantiated instance. The first parameter will be the new object instance. Any other parameters will be
+     * injected.
      */
     public function __construct(
         private readonly string $className,
@@ -59,8 +60,7 @@ class ClassInstanceProvider implements InstanceProviderInterface
     }
 
     /**
-     * @param Closure|string $function The function to test
-     * @psalm-param Closure|callable-string $function
+     * @param Closure|callable-string $function The function to test
      * @param class-string $className The name of the class that the function must be able to mutate
      *
      * @return bool true if the function can mutate the specified class; otherwise, false

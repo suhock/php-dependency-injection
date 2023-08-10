@@ -25,7 +25,6 @@ class ContainerDescriptor
      * @param InjectorInterface $injector
      * @param Closure(class-string):LifetimeStrategy $lifetimeStrategyFactory
      *
-     * @psalm-mutation-free
      * @phpstan-ignore-next-line PHPStan does not support callable-level generics but complains that LifetimeStrategy
      * does not have its generic type specified
      */

@@ -42,7 +42,6 @@ abstract class DependencyInjectionException extends LogicException
     /**
      * @return DependencyInjectionException|null The {@see DependencyInjectionException} that was passed in as previous,
      * but was consolidated into this instance, or <code>null</code>
-     * @psalm-mutation-free
      */
     public function getConsolidatedException(): ?DependencyInjectionException
     {

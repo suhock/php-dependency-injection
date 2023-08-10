@@ -39,7 +39,6 @@ class Container implements
     /**
      * @param InjectorInterface|null $injector [optional] An existing injector to use for injecting dependencies into
      * factories
-     * @psalm-mutation-free
      */
     public function __construct(?InjectorInterface $injector = null)
     {
@@ -52,7 +51,6 @@ class Container implements
      * @param Descriptor<TClass> $descriptor
      *
      * @return $this
-     * @psalm-external-mutation-free
      */
     protected function addDescriptor(Descriptor $descriptor): static
     {
@@ -65,9 +63,6 @@ class Container implements
         return $this;
     }
 
-    /**
-     * @psalm-external-mutation-free
-     */
     protected function addContainerDescriptor(ContainerDescriptor $descriptor): static
     {
         $this->containerDescriptors[] = $descriptor;
@@ -75,9 +70,6 @@ class Container implements
         return $this;
     }
 
-    /**
-     * @psalm-mutation-free
-     */
     protected function getInjector(): InjectorInterface
     {
         return $this->injector;
@@ -89,7 +81,6 @@ class Container implements
      * @param class-string $className
      *
      * @return $this
-     * @psalm-external-mutation-free
      */
     public function remove(string $className): static
     {
@@ -118,7 +109,6 @@ class Container implements
 
     /**
      * @inheritDoc
-     * @psalm-mutation-free
      */
     public function has(string $className): bool
     {
@@ -146,8 +136,6 @@ class Container implements
         $descriptor->isResolving = true;
 
         try {
-            /** @psalm-var Closure():TClass $instanceFactory Psalm doesn't resolve the template type on InstanceProvider
-             * correctly */
             $instanceFactory = $descriptor->instanceProvider->get(...);
             $instance = $descriptor->lifetimeStrategy->get($instanceFactory);
         } catch (DependencyInjectionException $e) {
@@ -165,12 +153,10 @@ class Container implements
      * @param class-string<TClass> $className
      *
      * @return Descriptor<TClass>
-     * @psalm-mutation-free
      */
     protected function getDescriptor(string $className): Descriptor
     {
         /**
-         * @psalm-var Descriptor<TClass>[] $this->descriptors Psalm does not support class-mapped arrays
          * @phpstan-ignore-next-line PHPStan does not support class-mapped arrays
          */
         return $this->descriptors[$className];
@@ -179,7 +165,6 @@ class Container implements
     /**
      * @template TClass of object
      * @param class-string<TClass> $className
-     * @psalm-mutation-free
      */
     private function hasDescriptor(string $className): bool
     {
@@ -189,7 +174,6 @@ class Container implements
     /**
      * @template TClass of object
      * @param class-string<TClass> $className
-     * @psalm-mutation-free
      */
     private function hasContainerDescriptor(string $className): bool
     {

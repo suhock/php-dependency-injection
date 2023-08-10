@@ -28,8 +28,6 @@ class ParameterResolutionException extends InjectorException
      * @param Throwable|null $previous [optional] The previous throwable used for exception chaining. If the throwable
      * is an instance of {@see DependencyInjectionException} then its content will be consolidated into the new
      * instance.
-     *
-     * @psalm-mutation-free
      */
     public function __construct(
         private readonly ReflectionParameter $reflectionParameter,
@@ -82,9 +80,6 @@ class ParameterResolutionException extends InjectorException
         return $paramName;
     }
 
-    /**
-     * @psalm-pure
-     */
     private static function buildParameterTypeName(?ReflectionType $rType): ?string
     {
         return match (true) {
@@ -95,9 +90,6 @@ class ParameterResolutionException extends InjectorException
         };
     }
 
-    /**
-     * @psalm-pure
-     */
     private static function buildCombinedParameterTypeName(
         ReflectionUnionType|ReflectionIntersectionType $rType,
         string $delimiter

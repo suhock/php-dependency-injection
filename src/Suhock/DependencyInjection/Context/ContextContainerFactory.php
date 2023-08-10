@@ -15,8 +15,6 @@ use Suhock\DependencyInjection\InjectorInterface;
 
 /**
  * Provides factory methods for creating {@see ContextContainer} instances.
- *
- * @psalm-immutable
  */
 class ContextContainerFactory
 {
