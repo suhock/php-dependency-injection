@@ -48,7 +48,6 @@ interface ContainerTransientBuilderInterface
      * @param InstanceProviderInterface<TClass> $instanceProvider
      *
      * @return $this
-     * @psalm-external-mutation-free
      */
     public function addTransientInstanceProvider(
         string $className,
@@ -66,7 +65,6 @@ interface ContainerTransientBuilderInterface
      *
      * @return $this
      * @throws ImplementationException
-     * @psalm-external-mutation-free
      */
     public function addTransientClass(string $className, ?callable $mutator = null): static;
 
@@ -84,7 +82,6 @@ interface ContainerTransientBuilderInterface
      *
      * @return $this
      * @throws ImplementationException If the implementation class is not a subclass of the class being added
-     * @psalm-external-mutation-free
      */
     public function addTransientImplementation(string $className, string $implementationClassName): static;
 
@@ -97,7 +94,6 @@ interface ContainerTransientBuilderInterface
      * Any method parameters will be injected.
      *
      * @return $this
-     * @psalm-external-mutation-free
      */
     public function addTransientFactory(string $className, callable $factory): static;
 
@@ -105,7 +101,6 @@ interface ContainerTransientBuilderInterface
      * @param ContainerInterface $container
      *
      * @return $this
-     * @psalm-external-mutation-free
      */
     public function addTransientContainer(ContainerInterface $container): static;
 
@@ -120,7 +115,6 @@ interface ContainerTransientBuilderInterface
      * factory is provided, a default factory that directly instantiates the class will be used.
      *
      * @return $this
-     * @psalm-external-mutation-free
      */
     public function addTransientNamespace(string $namespace, ?callable $factory = null): static;
 

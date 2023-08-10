@@ -18,9 +18,6 @@ use Suhock\DependencyInjection\Provision\InstanceProviderInterface;
 /**
  * Default implementation for {@see ContainerSingletonBuilderInterface}. Classes using this trait must implement
  * {@see ContainerBuilderInterface} and the {@see getInjector()} function.
- *
- * @psalm-require-implements ContainerBuilderInterface
- * @psalm-external-mutation-free
  */
 trait ContainerSingletonBuilderTrait
 {
@@ -61,9 +58,12 @@ trait ContainerSingletonBuilderTrait
     abstract protected function getInjector(): InjectorInterface;
 
     /**
+     * @inheritDoc
+     *
      * @template TClass of object
      *
      * @param class-string<TClass> $className
+     * @param Closure|callable-string|null $mutator
      */
     public function addSingletonClass(string $className, ?callable $mutator = null): static
     {
@@ -78,8 +78,6 @@ trait ContainerSingletonBuilderTrait
     /**
      * @template TClass of object
      * @template TImplementation of TClass
-     * @psalm-param class-string<TClass> $className
-     * @psalm-param class-string<TImplementation> $implementationClassName
      */
     public function addSingletonImplementation(string $className, string $implementationClassName): static
     {

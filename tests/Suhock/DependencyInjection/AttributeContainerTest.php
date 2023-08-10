@@ -51,9 +51,6 @@ class AttributeContainerTest extends DependencyInjectionTestCase
     {
         $container = new AttributeContainer(FakeAttribute::class);
 
-        /**
-         * @psalm-suppress ArgumentTypeCoercion,UndefinedClass
-         */
         self::assertThrowsClassNotFoundException(
             /** @phpstan-ignore-next-line */
             'NonExistentClass',
@@ -81,7 +78,6 @@ class AttributeContainerTest extends DependencyInjectionTestCase
         $container = new AttributeContainer(FakeAttribute::class);
 
         /**
-         * @psalm-suppress ArgumentTypeCoercion,UndefinedClass
          * @phpstan-ignore-next-line
          */
         self::assertFalse($container->has('NonExistentClass'));

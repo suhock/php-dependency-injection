@@ -52,8 +52,6 @@ class ContextContainerParameterResolver extends AbstractContainerParameterResolv
 
         if ($rFunction instanceof ReflectionMethod) {
             $rAttributes = $rFunction->getDeclaringClass()->getAttributes(Context::class);
-            /** @psalm-suppress ArgumentTypeCoercion Psalm resolves as ReflectionAttribute template type as object
-             * instead of Context */
             $this->pushContextFromAttributes($contextCount, $rAttributes);
         }
 

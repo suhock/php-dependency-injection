@@ -27,8 +27,6 @@ class Descriptor
      * @param class-string<TClass> $className
      * @param LifetimeStrategy<TClass> $lifetimeStrategy
      * @param InstanceProviderInterface<TClass> $instanceProvider
-     *
-     * @psalm-mutation-free
      */
     public function __construct(
         public readonly string $className,

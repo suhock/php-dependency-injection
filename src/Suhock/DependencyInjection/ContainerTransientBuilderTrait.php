@@ -18,9 +18,6 @@ use Suhock\DependencyInjection\Provision\InstanceProviderInterface;
 /**
  * Default implementation for {@see ContainerTransientBuilderInterface}. Classes using this trait must implement
  * {@see ContainerBuilderInterface} and the {@see getInjector()} function.
- *
- * @psalm-require-implements ContainerBuilderInterface
- * @psalm-external-mutation-free
  */
 trait ContainerTransientBuilderTrait
 {
@@ -60,7 +57,10 @@ trait ContainerTransientBuilderTrait
     }
 
     /**
+     * @inheritDoc
+     *
      * @param class-string $className
+     * @param Closure|callable-string|null $mutator
      */
     public function addTransientClass(string $className, ?callable $mutator = null): static
     {

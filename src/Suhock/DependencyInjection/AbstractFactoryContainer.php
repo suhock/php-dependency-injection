@@ -30,8 +30,6 @@ abstract class AbstractFactoryContainer implements ContainerInterface
      * <code>
      * function&lt;TClass&gt;(class-string&lt;TClass&gt; $className, [object ...]): TClass
      * </code>
-     *
-     * @psalm-mutation-free
      */
     public function __construct(
         ?InjectorInterface $injector = null,
@@ -51,14 +49,9 @@ abstract class AbstractFactoryContainer implements ContainerInterface
      *
      * @return TClass An instance of {@see $className}
      * @throws ClassNotFoundException If the specified class does not implement or extend {@see $interfaceName}
-     * @psalm-suppress MixedInferredReturnType Psalm cannot infer a return type from a generic return type on a callable
      */
     public function get(string $className): object
     {
-        /**
-         * @psalm-suppress MixedReturnStatement Psalm cannot infer a return type from a generic return type on a
-         * callable
-         */
         return $this->has($className) ?
             $this->injector->call($this->factory, [$className]) :
             throw new ClassNotFoundException($className);
@@ -70,7 +63,6 @@ abstract class AbstractFactoryContainer implements ContainerInterface
      * @param class-string<TClass> $className The name of the class to test
      *
      * @return bool <code>true</code> if the container can provide a value, <code>false</code> otherwise
-     * @psalm-mutation-free
      */
     abstract public function has(string $className): bool;
 }

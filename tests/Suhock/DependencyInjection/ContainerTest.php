@@ -64,7 +64,6 @@ class ContainerTest extends DependencyInjectionTestCase
             ->method('build')
             ->with($container);
 
-        /** @psalm-var FakeBuilder $builder Psalm gets confused by the union with the MockObject type here */
         $container->build($builder->build(...));
     }
 

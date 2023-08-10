@@ -27,9 +27,7 @@
         "friendsofphp/php-cs-fixer": "^3.8",
         "jetbrains/phpstorm-stubs": ">=2022.1",
         "phpstan/phpstan": "^1.10",
-        "phpunit/phpunit": "^9.5",
-        "psalm/plugin-phpunit": ">=0.16",
-        "vimeo/psalm": "^5.9"
+        "phpunit/phpunit": "^9.5"
     },
     "autoload": {
         "psr-4": {
@@ -43,16 +41,12 @@
     },
     "minimum-stability": "stable",
     "config": {
-        "allow-plugins": {
-            "psalm/plugin-phpunit": true
-        },
         "optimize-autoloader": true,
         "sort-packages": true
     },
     "scripts": {
         "php-cs-fixer": "php-cs-fixer fix .",
         "phpstan": "phpstan analyse -c phpstan.neon.dist",
-        "psalm": "psalm --show-info=true --find-unused-psalm-suppress=true -c psalm.xml.dist",
         "test": "phpunit -c ."
     }
 }

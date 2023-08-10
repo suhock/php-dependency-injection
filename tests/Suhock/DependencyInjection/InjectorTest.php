@@ -23,7 +23,6 @@ class InjectorTest extends DependencyInjectionTestCase
     /**
      * @param array<callable> $classMapping
      *
-     * @psalm-param array<class-string, callable():object> $classMapping
      * @phpstan-param array<class-string, callable():object> $classMapping
      * @return Injector
      */
@@ -59,7 +58,6 @@ class InjectorTest extends DependencyInjectionTestCase
 
         $this->expectException(InjectorException::class);
         /**
-         * @psalm-suppress ArgumentTypeCoercion,UndefinedClass warns about issue currently under test
          * @phpstan-ignore-next-line warns about issue currently under test
          */
         $injector->instantiate('NonExistentClass');

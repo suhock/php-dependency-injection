@@ -28,7 +28,6 @@ class CircularDependencyException extends ContainerException implements Circular
      * @param Throwable|null $previous [optional] The previous throwable used for exception chaining. If the throwable
      * is an instance of {@see DependencyInjectionException} then its content will be consolidated into the new
      * instance.
-     * @psalm-mutation-free
      */
     public function __construct(
         private readonly string $className,
@@ -39,7 +38,6 @@ class CircularDependencyException extends ContainerException implements Circular
 
     /**
      * @return class-string<TClass>
-     * @psalm-mutation-free
      */
     public function getClassName(): string
     {
