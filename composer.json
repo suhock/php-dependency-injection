@@ -2,6 +2,7 @@
     "name": "suhock/php-dependency-injection",
     "description": "PHP Dependency Injection Library",
     "type": "library",
+    "version": "0.1",
     "keywords": [
         "dependency injection",
         "dependency",
@@ -20,12 +21,11 @@
         }
     ],
     "require": {
-        "php": "^8.1"
+        "php": "^8.2"
     },
     "require-dev": {
         "fivetwo/remove-symfony-polyfill": "^8.1",
         "friendsofphp/php-cs-fixer": "^3.8",
-        "jetbrains/phpstorm-stubs": ">=2022.1",
         "phpstan/phpstan": "^1.10",
         "phpunit/phpunit": "^9.5"
     },
