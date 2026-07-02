@@ -17,7 +17,7 @@ use UnitEnum;
  *
  * @template TInterface of object
  */
-class InterfaceContainer extends AbstractFactoryContainer
+final class InterfaceContainer extends AbstractFactoryContainer
 {
     /**
      * @param class-string<TInterface> $interfaceName The fully qualified name of the interface or base class

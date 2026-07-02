@@ -21,7 +21,7 @@ use UnitEnum;
  *
  * @template TAttr of object
  */
-class AttributeContainer implements ContainerInterface
+final class AttributeContainer implements ContainerInterface
 {
     private readonly Closure $factory;
 

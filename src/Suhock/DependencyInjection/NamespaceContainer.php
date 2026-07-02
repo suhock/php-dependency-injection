@@ -15,7 +15,7 @@ use UnitEnum;
 /**
  * Provides instances of classes within the given namespace.
  */
-class NamespaceContainer extends AbstractFactoryContainer
+final class NamespaceContainer extends AbstractFactoryContainer
 {
     private readonly string $namespace;
 

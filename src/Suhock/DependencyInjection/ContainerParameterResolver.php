@@ -20,7 +20,7 @@ use function count;
  * keyed parameter is resolved absolutely against that key; an unkeyed parameter is resolved by type. Only the parameter
  * itself is inspected — no scope is tracked and the declaring function and class are not traversed.
  */
-class ContainerParameterResolver extends AbstractContainerParameterResolver
+final class ContainerParameterResolver extends AbstractContainerParameterResolver
 {
     protected function tryResolveParameter(ReflectionParameter $rParam, ?object &$result): bool
     {

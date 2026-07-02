@@ -25,7 +25,7 @@ use Suhock\DependencyInjection\InjectorInterface;
  * @template TClass of object
  * @template-implements InstanceProviderInterface<TClass>
  */
-class ClassInstanceProvider implements InstanceProviderInterface
+final class ClassInstanceProvider implements InstanceProviderInterface
 {
     private readonly ?Closure $mutator;
 
