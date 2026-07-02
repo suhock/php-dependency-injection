@@ -22,6 +22,8 @@ use UnitEnum;
  */
 trait ContainerSingletonBuilderTrait
 {
+    abstract protected function getInjector(): InjectorInterface;
+
     /**
      * @template TClass of object
      * @template TImplementation of TClass
@@ -71,8 +73,6 @@ trait ContainerSingletonBuilderTrait
 
         return $this;
     }
-
-    abstract protected function getInjector(): InjectorInterface;
 
     /**
      * @inheritDoc
