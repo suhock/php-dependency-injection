@@ -14,7 +14,7 @@ use Suhock\DependencyInjection\Lifetime\LifetimeStrategy;
 use Suhock\DependencyInjection\Provision\InstanceProviderInterface;
 
 /**
- * Contains information about how to resolve a dependency.
+ * Contains information about how to resolve a service.
  *
  * @template TClass as object
  * @internal

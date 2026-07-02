@@ -244,8 +244,6 @@ class Container implements
 
     /**
      * @param class-string $className
-     *
-     * @return bool
      */
     private function tryGetFromContainer(string $className, ?object &$instance): bool
     {

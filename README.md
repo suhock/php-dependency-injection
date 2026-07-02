@@ -6,14 +6,14 @@ injection framework for projects running on PHP 8.1 or later.
 ```php
 $container = new Suhock\DependencyInjection\Container();
 $container->addSingletonClass(MyApplication::class)
-    // Add the rest of your dependencies...
+    // Add the rest of your services...
     ->get(MyApplication::class)
     ->run();
 ```
 
 Out of the box, this library provides [singleton](#singleton) and
 [transient](#transient) lifetime strategies and a variety ways of
-[provisioning instances](#adding-dependencies-to-the-container) of specific
+[registering services](#adding-services-to-the-container) of specific
 types, as well as specifying factories for all classes in a particular
 [namespace](#namespace-container) or implementing a specific
 [interface](#interface-container). You can also register more than one
@@ -32,7 +32,7 @@ constructor.
 - [Instance lifetime](#instance-lifetime)
     - [Singleton](#singleton)
     - [Transient](#transient)
-- [Adding dependencies to the container](#adding-dependencies-to-the-container)
+- [Adding services to the container](#adding-services-to-the-container)
     - [Autowire a class](#autowire-a-class)
     - [Map an interface to an implementation](#map-an-interface-to-an-implementation)
     - [Call a factory method](#call-a-factory-method)
@@ -88,7 +88,7 @@ $container = new Container();
 ```
 
 Next, build your container, i.e., tell the container how it should resolve
-specific dependencies in your application.
+specific services in your application.
 
 ```php
 $container
@@ -182,7 +182,7 @@ request for a transient instance, it will call the factory you specified for
 that class. The default `Container` provides convenience methods for adding
 transient factories, all starting with the prefix `addTransient`.
 
-### Adding dependencies to the container
+### Adding services to the container
 
 There are a number of built-in ways to specify how new instances should be
 created.

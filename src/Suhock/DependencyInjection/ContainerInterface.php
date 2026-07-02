@@ -13,12 +13,12 @@ namespace Suhock\DependencyInjection;
 use UnitEnum;
 
 /**
- * Interface for retrieving dependencies from a container.
+ * Interface for retrieving services from a container.
  */
 interface ContainerInterface
 {
     /**
-     * Retrieves an object or <code>null</code> from the container identified by its class name.
+     * Retrieves a service from the container, identified by its class name.
      *
      * @template TClass of object
      *
@@ -26,12 +26,12 @@ interface ContainerInterface
      * @param string|UnitEnum|null $key [optional] The key of the service to retrieve.
      *
      * @return TClass An instance of {@see $className}
-     * @throws ClassNotFoundException If the container could not resolve a value for the specified class
+     * @throws ClassNotFoundException If the container could not resolve a service for the specified class
      */
     public function get(string $className, string|UnitEnum|null $key = null): object;
 
     /**
-     * Indicates whether the container can provide a value for a given class name. A <code>true</code> return value
+     * Indicates whether the container can provide a service for a given class name. A <code>true</code> return value
      * <em>does not</em> indicate that {@see get()} will not throw an error while attempting to provide an instance.
      *
      * @template TClass of object
@@ -39,7 +39,7 @@ interface ContainerInterface
      * @param class-string<TClass> $className The class name of the service to test for.
      * @param string|UnitEnum|null $key [optional] The key of the service to test for.
      *
-     * @return bool <code>true</code> if the container can provide a value, <code>false</code> otherwise
+     * @return bool <code>true</code> if the container can provide a service, <code>false</code> otherwise
      */
     public function has(string $className, string|UnitEnum|null $key = null): bool;
 }
