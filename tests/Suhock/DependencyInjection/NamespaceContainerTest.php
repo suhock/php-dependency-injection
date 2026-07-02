@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2022-2023 Matthew Suhocki. All rights reserved.
+ * Copyright (c) 2022-2026 Matthew Suhocki. All rights reserved.
  *
  * This software is licensed under the terms of the MIT License <https://opensource.org/licenses/MIT>.
  * The above copyright notice and this notice shall be included in all copies or substantial portions of this software.
@@ -32,11 +32,13 @@ class NamespaceContainerTest extends DependencyInjectionTestCase
 
     public function testGet_WithExplicitInjectorAndExplicitFactory_UsesInjectorAndFactory(): void
     {
-        $container = $this->createMock(ContainerInterface::class);
-        $container->expects(self::exactly(2))
-            ->method('get')
-            ->withConsecutive([Throwable::class], [RuntimeException::class])
-            ->willReturnOnConsecutiveCalls(new Exception('test'), new RuntimeException('test'));
+        $container = $this->createStub(ContainerInterface::class);
+        $container->method('get')
+            ->willReturnCallback(fn (string $className) => match ($className) {
+                Throwable::class => new Exception('test1'),
+                RuntimeException::class => new RuntimeException('test2'),
+                default => self::fail("Unexpected request for $className")
+            });
         $container->method('has')
             ->willReturn(true);
 
@@ -50,14 +52,15 @@ class NamespaceContainerTest extends DependencyInjectionTestCase
         $result = $namespaceContainer->get(FakeClassWithContexts::class);
 
         self::assertInstanceOf(FakeClassWithContexts::class, $result);
-        self::assertSame('test', $result->throwable->getMessage());
+        self::assertSame('test1', $result->throwable->getMessage());
+        self::assertSame('test2', $result->runtimeException->getMessage());
     }
 
     public function testGet_WithClassNotInNamespace_ThrowsClassNotFoundException(): void
     {
         $container = new NamespaceContainer(
             __NAMESPACE__,
-            $this->createMock(InjectorInterface::class),
+            $this->createStub(InjectorInterface::class),
             fn () => null
         );
 

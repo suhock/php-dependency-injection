@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2022-2023 Matthew Suhocki. All rights reserved.
+ * Copyright (c) 2022-2026 Matthew Suhocki. All rights reserved.
  *
  * This software is licensed under the terms of the MIT License <https://opensource.org/licenses/MIT>.
  * The above copyright notice and this notice shall be included in all copies or substantial portions of this software.
@@ -270,11 +270,23 @@ class DependencyInjectionTestCase extends TestCase
         ?callable $previousTest,
         ParameterResolutionException $actualException
     ): void {
-        self::assertSame(
-            $exFunctionName,
-            $actualException->getReflectionParameter()->getDeclaringFunction()->getName(),
-            'Failed asserting that function name is identical'
-        );
+        $actualFunctionName = $actualException->getReflectionParameter()->getDeclaringFunction()->getName();
+
+        // Closures generate a runtime-defined, PHP-version-dependent name (e.g. "{closure:File.php:42}" as of
+        // PHP 8.4), so only assert that the declaring function is a closure rather than matching an exact name.
+        if (str_ends_with($exFunctionName, '{closure}')) {
+            self::assertStringContainsString(
+                '{closure',
+                $actualFunctionName,
+                'Failed asserting that function is a closure'
+            );
+        } else {
+            self::assertSame(
+                $exFunctionName,
+                $actualFunctionName,
+                'Failed asserting that function name is identical'
+            );
+        }
         self::assertSame(
             $exParameterName,
             $actualException->getReflectionParameter()->getName(),
