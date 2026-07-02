@@ -11,7 +11,7 @@ declare(strict_types=1);
 namespace Suhock\DependencyInjection\Lifetime;
 
 use PHPUnit\Framework\TestCase;
-use Suhock\DependencyInjection\FakeClassNoConstructor;
+use Suhock\DependencyInjection\Fakes\FakeClassNoConstructor;
 
 /**
  * Test suite for {@see SingletonStrategy}.

@@ -11,6 +11,7 @@ declare(strict_types=1);
 namespace Suhock\DependencyInjection;
 
 use PHPUnit\Framework\TestCase;
+use Suhock\DependencyInjection\Fakes\FakeClassNoConstructor;
 
 /**
  * Test suite for {@see CircularDependencyException}.

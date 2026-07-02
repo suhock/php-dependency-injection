@@ -14,12 +14,12 @@ use Exception;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 use Suhock\DependencyInjection\Container;
-use Suhock\DependencyInjection\FakeClassImplementsInterfaces;
-use Suhock\DependencyInjection\FakeClassNoConstructor;
-use Suhock\DependencyInjection\FakeClassWithConstructor;
-use Suhock\DependencyInjection\FakeClassWithContexts;
-use Suhock\DependencyInjection\FakeInterfaceOne;
-use Suhock\DependencyInjection\FakeInterfaceTwo;
+use Suhock\DependencyInjection\Fakes\FakeClassImplementsInterfaces;
+use Suhock\DependencyInjection\Fakes\FakeClassNoConstructor;
+use Suhock\DependencyInjection\Fakes\FakeClassWithConstructor;
+use Suhock\DependencyInjection\Fakes\FakeClassWithContexts;
+use Suhock\DependencyInjection\Fakes\FakeInterfaceOne;
+use Suhock\DependencyInjection\Fakes\FakeInterfaceTwo;
 use Throwable;
 
 /**

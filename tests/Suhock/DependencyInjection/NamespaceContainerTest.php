@@ -13,6 +13,8 @@ namespace Suhock\DependencyInjection;
 use DateTime;
 use Exception;
 use RuntimeException;
+use Suhock\DependencyInjection\Fakes\FakeClassNoConstructor;
+use Suhock\DependencyInjection\Fakes\FakeClassWithContexts;
 use Throwable;
 
 /**

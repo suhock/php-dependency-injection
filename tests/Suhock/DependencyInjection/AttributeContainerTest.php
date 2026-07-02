@@ -10,6 +10,10 @@ declare(strict_types=1);
 
 namespace Suhock\DependencyInjection;
 
+use Suhock\DependencyInjection\Fakes\FakeAttribute;
+use Suhock\DependencyInjection\Fakes\FakeClassWithAttribute;
+use Suhock\DependencyInjection\Fakes\FakeClassWithContexts;
+
 /**
  * Test suite for {@see AttributeContainer}.
  */

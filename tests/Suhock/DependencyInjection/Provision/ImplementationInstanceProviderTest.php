@@ -12,8 +12,8 @@ namespace Suhock\DependencyInjection\Provision;
 
 use Suhock\DependencyInjection\ContainerInterface;
 use Suhock\DependencyInjection\DependencyInjectionTestCase;
-use Suhock\DependencyInjection\FakeClassExtendsNoConstructor;
-use Suhock\DependencyInjection\FakeClassNoConstructor;
+use Suhock\DependencyInjection\Fakes\FakeClassExtendsNoConstructor;
+use Suhock\DependencyInjection\Fakes\FakeClassNoConstructor;
 
 /**
  * Test suite for {@see ImplementationInstanceProvider}.

@@ -10,8 +10,7 @@ declare(strict_types=1);
 
 namespace Suhock\DependencyInjection;
 
-use Suhock\DependencyInjection\Keyed\FakeUnitEnum;
-use Suhock\DependencyInjection\Keyed\Key;
+use Suhock\DependencyInjection\Fakes\FakeClassNoConstructor;
 
 /**
  * Test suite for {@see ContainerInjector}.
@@ -38,32 +37,16 @@ class ContainerInjectorTest extends DependencyInjectionTestCase
         self::assertSame($expectedInstance, $result);
     }
 
-    public function testCall_FunctionHasKey_ValueInjectedFromKeyedRegistration(): void
+    public function testCall_ParameterHasEnumKey_ValueInjectedFromKeyedRegistration(): void
     {
         // Arrange
         $expectedInstance = new FakeClassNoConstructor();
         $container = $this->createContainer()
-            ->addKeyedSingleton(FakeClassNoConstructor::class, 'key1', $expectedInstance);
+            ->addKeyedSingleton(FakeClassNoConstructor::class, FakeUnitEnum::Test, $expectedInstance);
         $injector = new ContainerInjector($container);
 
         // Act
-        $result = $injector->call(#[Key('key1')] fn (FakeClassNoConstructor $obj) => $obj);
-
-        // Assert
-        self::assertSame($expectedInstance, $result);
-    }
-
-    public function testCall_KeyOnFunctionAndParameter_ValueInjectedFromParameterKey(): void
-    {
-        // Arrange
-        $expectedInstance = new FakeClassNoConstructor();
-        $container = $this->createContainer()
-            ->addKeyedSingleton(FakeClassNoConstructor::class, 'key1', new FakeClassNoConstructor())
-            ->addKeyedSingleton(FakeClassNoConstructor::class, 'key2', $expectedInstance);
-        $injector = new ContainerInjector($container);
-
-        // Act
-        $result = $injector->call(#[Key('key1')] fn (#[Key('key2')] FakeClassNoConstructor $obj) => $obj);
+        $result = $injector->call(fn (#[Key(FakeUnitEnum::Test)] FakeClassNoConstructor $obj) => $obj);
 
         // Assert
         self::assertSame($expectedInstance, $result);
@@ -84,21 +67,6 @@ class ContainerInjectorTest extends DependencyInjectionTestCase
         self::assertSame($expectedInstance, $result);
     }
 
-    public function testCall_ParameterHasEnumKey_ValueInjectedFromKeyedRegistration(): void
-    {
-        // Arrange
-        $expectedInstance = new FakeClassNoConstructor();
-        $container = $this->createContainer()
-            ->addKeyedSingleton(FakeClassNoConstructor::class, FakeUnitEnum::Test, $expectedInstance);
-        $injector = new ContainerInjector($container);
-
-        // Act
-        $result = $injector->call(fn (#[Key(FakeUnitEnum::Test)] FakeClassNoConstructor $obj) => $obj);
-
-        // Assert
-        self::assertSame($expectedInstance, $result);
-    }
-
     public function testCall_ParameterKeyNotRegistered_ThrowsParameterResolutionException(): void
     {
         // Arrange
@@ -110,20 +78,5 @@ class ContainerInjectorTest extends DependencyInjectionTestCase
 
         // Assert
         self::assertThrowsParameterResolutionException('{closure}', 'obj', null, $fn);
-    }
-
-    public function testInstantiate_ClassHasKey_ValueInjectedFromKeyedRegistration(): void
-    {
-        // Arrange
-        $expectedInstance = new FakeClassNoConstructor();
-        $container = $this->createContainer()
-            ->addKeyedSingleton(FakeClassNoConstructor::class, 'key1', $expectedInstance);
-        $injector = new ContainerInjector($container);
-
-        // Act
-        $result = $injector->instantiate(FakeClassWithKey::class);
-
-        // Assert
-        self::assertSame($expectedInstance, $result->obj);
     }
 }

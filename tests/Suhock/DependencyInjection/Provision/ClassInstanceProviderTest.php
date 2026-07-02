@@ -13,7 +13,7 @@ namespace Suhock\DependencyInjection\Provision;
 use Suhock\DependencyInjection\ContainerInjector;
 use Suhock\DependencyInjection\ContainerInterface;
 use Suhock\DependencyInjection\DependencyInjectionTestCase;
-use Suhock\DependencyInjection\FakeClassNoConstructor;
+use Suhock\DependencyInjection\Fakes\FakeClassNoConstructor;
 use Suhock\DependencyInjection\InjectorInterface;
 
 /**

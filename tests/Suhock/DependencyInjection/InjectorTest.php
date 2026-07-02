@@ -13,6 +13,16 @@ namespace Suhock\DependencyInjection;
 use Exception;
 use LogicException;
 use RuntimeException;
+use Suhock\DependencyInjection\Fakes\FakeAbstractClass;
+use Suhock\DependencyInjection\Fakes\FakeClassImplementsInterfaces;
+use Suhock\DependencyInjection\Fakes\FakeClassNoConstructor;
+use Suhock\DependencyInjection\Fakes\FakeClassWithAutowireFunction;
+use Suhock\DependencyInjection\Fakes\FakeClassWithConstructor;
+use Suhock\DependencyInjection\Fakes\FakeClassWithContexts;
+use Suhock\DependencyInjection\Fakes\FakeContainer;
+use Suhock\DependencyInjection\Fakes\FakeInterfaceOne;
+use Suhock\DependencyInjection\Fakes\FakeInterfaceThree;
+use Suhock\DependencyInjection\Fakes\FakeInterfaceTwo;
 use Throwable;
 
 /**

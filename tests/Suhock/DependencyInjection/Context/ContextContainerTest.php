@@ -13,7 +13,7 @@ namespace Suhock\DependencyInjection\Context;
 use Suhock\DependencyInjection\Container;
 use Suhock\DependencyInjection\ContainerException;
 use Suhock\DependencyInjection\DependencyInjectionTestCase;
-use Suhock\DependencyInjection\FakeClassNoConstructor;
+use Suhock\DependencyInjection\Fakes\FakeClassNoConstructor;
 use Suhock\DependencyInjection\InjectorInterface;
 
 /**
