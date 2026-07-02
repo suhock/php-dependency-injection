@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2022-2023 Matthew Suhocki. All rights reserved.
+ * Copyright (c) 2022-2026 Matthew Suhocki. All rights reserved.
  *
  * This software is licensed under the terms of the MIT License <https://opensource.org/licenses/MIT>.
  * The above copyright notice and this notice shall be included in all copies or substantial portions of this software.
@@ -11,6 +11,7 @@ declare(strict_types=1);
 namespace Suhock\DependencyInjection;
 
 use Closure;
+use UnitEnum;
 
 /**
  * Abstract base class for containers that calls a common factory method for any class in the container, as indicated by
@@ -46,11 +47,12 @@ abstract class AbstractFactoryContainer implements ContainerInterface
      * @template TClass of object
      *
      * @param class-string<TClass> $className The name of the class to retrieve
+     * @param string|UnitEnum|null $key [optional] The key to use for retrieving the instance
      *
      * @return TClass An instance of {@see $className}
      * @throws ClassNotFoundException If the specified class does not implement or extend {@see $interfaceName}
      */
-    public function get(string $className): object
+    public function get(string $className, string|UnitEnum|null $key = null): object
     {
         if (!$this->has($className)) {
             return throw new ClassNotFoundException($className);
@@ -69,5 +71,5 @@ abstract class AbstractFactoryContainer implements ContainerInterface
      *
      * @return bool <code>true</code> if the container can provide a value, <code>false</code> otherwise
      */
-    abstract public function has(string $className): bool;
+    abstract public function has(string $className, string|UnitEnum|null $key = null): bool;
 }

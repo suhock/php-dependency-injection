@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2022-2023 Matthew Suhocki. All rights reserved.
+ * Copyright (c) 2022-2026 Matthew Suhocki. All rights reserved.
  *
  * This software is licensed under the terms of the MIT License <https://opensource.org/licenses/MIT>.
  * The above copyright notice and this notice shall be included in all copies or substantial portions of this software.
@@ -13,6 +13,7 @@ namespace Suhock\DependencyInjection;
 use Suhock\DependencyInjection\Provision\ImplementationException;
 use Suhock\DependencyInjection\Provision\InstanceProviderInterface;
 use Suhock\DependencyInjection\Provision\InstanceTypeException;
+use UnitEnum;
 
 /**
  * Interface for adding singleton factories to a container.
@@ -25,7 +26,6 @@ interface ContainerSingletonBuilderInterface
      *
      * @param class-string<TClass> $className The fully qualified name of the class to add
      * @param class-string<TImplementation>|object|null $source
-     *
      * - If null, indicates that the container should provide an instance of the given class by autowiring its
      *   constructor.
      * - If a string, indicates that the container should provide an instance of the given class by retrieving an
@@ -41,6 +41,29 @@ interface ContainerSingletonBuilderInterface
      * @return $this
      */
     public function addSingleton(string $className, string|object|null $source = null): static;
+
+    /**
+     * @template TClass of object
+     * @template TImplementation of TClass
+     *
+     * @param class-string<TClass> $className The fully qualified name of the class to add
+     * @param string|UnitEnum $key The service key to register under
+     * @param class-string<TImplementation>|object|null $source
+     * - If null, indicates that the container should provide an instance of the given class by autowiring its
+     *   constructor.
+     * - If a string, indicates that the container should provide an instance of the given class by retrieving an
+     *   instance of the specified implementation class from the container. The container must also specify how to
+     *   resolve the implementation class.
+     * - If a closure that accepts an object of the specified class as the first parameter, indicates that the container
+     *   should provide an instance of the given class by autowiring its constructor and then passing the constructed
+     *   object to the mutator function.
+     * - If any other closure, indicates that the container should provide an instance of the given class by calling the
+     *   closure.
+     * - If an object, indicates that the container should provide the given object as an instance of the given class.
+     *
+     * @return $this
+     */
+    public function addKeyedSingleton(string $className, string|UnitEnum $key, string|object|null $source = null): static;
 
     /**
      * @template TClass of object
@@ -117,8 +140,6 @@ interface ContainerSingletonBuilderInterface
     public function addSingletonInstance(string $className, object $instance): static;
 
     /**
-     * @param ContainerInterface $container
-     *
      * @return $this
      */
     public function addSingletonContainer(ContainerInterface $container): static;

@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2022-2023 Matthew Suhocki. All rights reserved.
+ * Copyright (c) 2022-2026 Matthew Suhocki. All rights reserved.
  *
  * This software is licensed under the terms of the MIT License <https://opensource.org/licenses/MIT>.
  * The above copyright notice and this notice shall be included in all copies or substantial portions of this software.
@@ -15,6 +15,7 @@ use ReflectionNamedType;
 use ReflectionParameter;
 use ReflectionType;
 use ReflectionUnionType;
+use UnitEnum;
 
 /**
  * Abstract base class for {@see ParameterResolverInterface} implementations that resolve dependencies from an
@@ -31,12 +32,12 @@ abstract class AbstractContainerParameterResolver implements ParameterResolverIn
      * Should attempt to resolve the parameter to a concrete value using the container.
      *
      * @param ReflectionParameter $rParam The parameter for which to attempt to resolve a value
-     * @param mixed $result Reference parameter that will receive a concrete value for the parameter if one can be
+     * @param object|null $result Reference parameter that will receive a concrete value for the parameter if one can be
      * resolved
      *
      * @return bool <code>true</code> if a value could be resolved, <code>false</code> otherwise
      */
-    abstract protected function tryResolveParameter(ReflectionParameter $rParam, mixed &$result): bool;
+    abstract protected function tryResolveParameter(ReflectionParameter $rParam, ?object &$result): bool;
 
     public function resolveParameter(ReflectionParameter $rParam): mixed
     {
@@ -61,47 +62,38 @@ abstract class AbstractContainerParameterResolver implements ParameterResolverIn
         throw new ParameterResolutionException($rParam, $deferredException);
     }
 
-    protected function tryGetInstanceFromParameter(ReflectionParameter $rParam, mixed &$result): bool
+    protected function tryGetInstanceFromParameter(ReflectionParameter $rParam, ?object &$result, string|UnitEnum|null $key = null): bool
     {
-        return $rParam->getType() !== null && $this->tryGetInstanceFromType($rParam->getType(), $result);
+        return $rParam->getType() !== null && $this->tryGetInstanceFromType($rParam->getType(), $result, $key);
     }
 
-    /**
-     * @param-out object|null $result
-     */
-    private function tryGetInstanceFromType(ReflectionType $rType, mixed &$result): bool
+    private function tryGetInstanceFromType(ReflectionType $rType, ?object &$result, string|UnitEnum|null $key): bool
     {
         return match (true) {
-            $rType instanceof ReflectionNamedType => $this->tryGetFromNamedType($rType, $result),
-            $rType instanceof ReflectionUnionType => $this->tryGetFromUnionType($rType, $result),
-            $rType instanceof ReflectionIntersectionType => $this->tryGetFromIntersectionType($rType, $result),
+            $rType instanceof ReflectionNamedType => $this->tryGetFromNamedType($rType, $result, $key),
+            $rType instanceof ReflectionUnionType => $this->tryGetFromUnionType($rType, $result, $key),
+            $rType instanceof ReflectionIntersectionType => $this->tryGetFromIntersectionType($rType, $result, $key),
             default => false // encountered an unknown ReflectionType
         };
     }
 
-    /**
-     * @param-out object|null $result
-     */
-    protected function tryGetFromNamedType(ReflectionNamedType $rType, mixed &$result): bool
+    protected function tryGetFromNamedType(ReflectionNamedType $rType, ?object &$result, string|UnitEnum|null $key = null): bool
     {
         /** @phpstan-ignore-next-line PHPStan is not able to figure out that getName() will return a class name */
-        if ($rType->isBuiltin() || !$this->container->has($rType->getName())) {
+        if ($rType->isBuiltin() || !$this->container->has($rType->getName(), $key)) {
             return false;
         }
 
         /** @phpstan-ignore-next-line PHPStan is not able to figure out that getName() will return a class name */
-        $result = $this->container->get($rType->getName());
+        $result = $this->container->get($rType->getName(), $key);
 
         return true;
     }
 
-    /**
-     * @param-out object|null $result
-     */
-    private function tryGetFromUnionType(ReflectionUnionType $rType, mixed &$result): bool
+    private function tryGetFromUnionType(ReflectionUnionType $rType, ?object &$result, string|UnitEnum|null $key): bool
     {
         foreach ($rType->getTypes() as $rInnerType) {
-            if ($this->tryGetFromNamedType($rInnerType, $result)) {
+            if ($this->tryGetInstanceFromType($rInnerType, $result, $key)) {
                 return true;
             }
         }
@@ -109,12 +101,10 @@ abstract class AbstractContainerParameterResolver implements ParameterResolverIn
         return false;
     }
 
-    /**
-     * @param-out object|null $result
-     */
     private function tryGetFromIntersectionType(
         ReflectionIntersectionType $rType,
-        mixed &$result
+        ?object &$result,
+        string|UnitEnum|null $key
     ): bool {
         foreach ($rType->getTypes() as $rInnerType) {
             if (!$rInnerType instanceof ReflectionNamedType) {
@@ -125,12 +115,12 @@ abstract class AbstractContainerParameterResolver implements ParameterResolverIn
             /** @var class-string $className */
             $className = $rInnerType->getName();
 
-            if (!$this->container->has($className)) {
+            if (!$this->container->has($className, $key)) {
                 continue;
             }
 
             // only way to tell if it's a match is to get an instance and check
-            $instance = $this->container->get($className);
+            $instance = $this->container->get($className, $key);
 
             if ($this->isIntersectionMatch($rType, $instance)) {
                 $result = $instance;

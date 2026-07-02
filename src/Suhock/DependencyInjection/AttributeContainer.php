@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2022-2023 Matthew Suhocki. All rights reserved.
+ * Copyright (c) 2022-2026 Matthew Suhocki. All rights reserved.
  *
  * This software is licensed under the terms of the MIT License <https://opensource.org/licenses/MIT>.
  * The above copyright notice and this notice shall be included in all copies or substantial portions of this software.
@@ -14,6 +14,7 @@ use Closure;
 use ReflectionAttribute;
 use ReflectionClass;
 use ReflectionException;
+use UnitEnum;
 
 /**
  * Provides instances of classes with the given attribute.
@@ -65,12 +66,13 @@ class AttributeContainer implements ContainerInterface
      * @inheritDoc
      * @template TClass of object
      *
-     * @param class-string<TClass> $className The name of the class to retrieve
+     * @param class-string<TClass> $className The class name of the service to retrieve
+     * @param string|UnitEnum|null $key [optional] The key on the service to retrieve
      *
      * @return TClass An instance of {@see $className}
      * @throws ClassNotFoundException If the specified class does not implement or extend {@see $interfaceName}
      */
-    public function get(string $className): object
+    public function get(string $className, string|UnitEnum|null $key = null): object
     {
         try {
             $rAttr = $this->getAttribute($className);
@@ -91,7 +93,7 @@ class AttributeContainer implements ContainerInterface
     /**
      * @inheritDoc
      */
-    public function has(string $className): bool
+    public function has(string $className, string|UnitEnum|null $key = null): bool
     {
         try {
             return $this->getAttribute($className) !== null;

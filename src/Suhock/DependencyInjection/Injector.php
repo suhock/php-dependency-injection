@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2022-2023 Matthew Suhocki. All rights reserved.
+ * Copyright (c) 2022-2026 Matthew Suhocki. All rights reserved.
  *
  * This software is licensed under the terms of the MIT License <https://opensource.org/licenses/MIT>.
  * The above copyright notice and this notice shall be included in all copies or substantial portions of this software.
@@ -15,7 +15,6 @@ use ReflectionException;
 use ReflectionFunction;
 use ReflectionMethod;
 use ReflectionParameter;
-
 use function array_key_exists;
 use function count;
 use function is_callable;
@@ -36,6 +35,8 @@ class Injector implements InjectorInterface
 
     public function call(callable $function, array $params = []): mixed
     {
+        // $function is always callable; is_callable is invoked only to capture $functionName for the error message.
+        /** @phpstan-ignore-next-line function.alreadyNarrowedType */
         is_callable($function, false, $functionName);
 
         try {
@@ -102,7 +103,7 @@ class Injector implements InjectorInterface
 
         foreach ($rClass->getMethods(ReflectionMethod::IS_PUBLIC) as $rMethod) {
             if (count($rMethod->getAttributes(Autowire::class)) > 0) {
-                $this->call($rMethod->getClosure($instance) ?? throw new InjectorException());
+                $this->call($rMethod->getClosure($instance));
             }
         }
     }

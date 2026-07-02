@@ -24,34 +24,19 @@ class ContainerTransientBuilderTraitTest extends DependencyInjectionTestCase
         return new Container();
     }
 
-    /**
-     * @template TClass of object
-     * @template TImplementation of TClass
-     * @param class-string<TClass> $className
-     * @param class-string<TImplementation>|null $implementationClassName
-     */
-    private function assertTransient(
-        Container $container,
-        string $className,
-        ?string $implementationClassName = null
-    ): void {
-        $implementationClassName ??= $className;
-
-        $instance = $container->get($className);
-        self::assertInstanceOf($implementationClassName, $instance);
-
-        $newInstance = $container->get($className);
-        self::assertInstanceOf($implementationClassName, $newInstance);
-        self::assertNotSame($instance, $newInstance);
-    }
-
     public function testAddTransientClass_WithValidClassName_GetReturnsInstanceOfClass(): void
     {
         // Arrange
         $container = $this->createContainer()->addTransientClass(FakeClassNoConstructor::class);
 
-        // Act & Assert
-        $this->assertTransient($container, FakeClassNoConstructor::class);
+        // Act
+        $instance = $container->get(FakeClassNoConstructor::class);
+        $newInstance = $container->get(FakeClassNoConstructor::class);
+
+        // Assert
+        self::assertInstanceOf(FakeClassNoConstructor::class, $instance);
+        self::assertInstanceOf(FakeClassNoConstructor::class, $newInstance);
+        self::assertNotSame($instance, $newInstance);
     }
 
     public function testAddTransientClass_WithMutator_GetReturnsMutatedInstance(): void
@@ -79,12 +64,14 @@ class ContainerTransientBuilderTraitTest extends DependencyInjectionTestCase
             ->addTransientClass(FakeClassExtendsNoConstructor::class)
             ->addTransientImplementation(FakeClassNoConstructor::class, FakeClassExtendsNoConstructor::class);
 
-        // Act & Assert
-        $this->assertTransient(
-            $container,
-            FakeClassNoConstructor::class,
-            FakeClassExtendsNoConstructor::class
-        );
+        // Act
+        $instance = $container->get(FakeClassNoConstructor::class);
+        $newInstance = $container->get(FakeClassNoConstructor::class);
+
+        // Assert
+        self::assertInstanceOf(FakeClassExtendsNoConstructor::class, $instance);
+        self::assertInstanceOf(FakeClassExtendsNoConstructor::class, $newInstance);
+        self::assertNotSame($instance, $newInstance);
     }
 
     public function testAddTransientImplementation_WithImplementationSameAsClass_ThrowsImplementationException(): void
@@ -134,12 +121,14 @@ class ContainerTransientBuilderTraitTest extends DependencyInjectionTestCase
                 fn () => new FakeClassExtendsNoConstructor()
             );
 
-        // Act & Assert
-        $this->assertTransient(
-            $container,
-            FakeClassNoConstructor::class,
-            FakeClassExtendsNoConstructor::class
-        );
+        // Act
+        $instance = $container->get(FakeClassNoConstructor::class);
+        $newInstance = $container->get(FakeClassNoConstructor::class);
+
+        // Assert
+        self::assertInstanceOf(FakeClassExtendsNoConstructor::class, $instance);
+        self::assertInstanceOf(FakeClassExtendsNoConstructor::class, $newInstance);
+        self::assertNotSame($instance, $newInstance);
     }
 
     public function testAddTransientFactory_WhenFactoryReturnsNull_GetThrowsWrappedInstanceTypeException(): void
@@ -195,8 +184,14 @@ class ContainerTransientBuilderTraitTest extends DependencyInjectionTestCase
                 new FakeContainer([FakeClassNoConstructor::class => fn () => new FakeClassNoConstructor()])
             );
 
-        // Act & Assert
-        $this->assertTransient($container, FakeClassNoConstructor::class);
+        // Act
+        $instance = $container->get(FakeClassNoConstructor::class);
+        $newInstance = $container->get(FakeClassNoConstructor::class);
+
+        // Assert
+        self::assertInstanceOf(FakeClassNoConstructor::class, $instance);
+        self::assertInstanceOf(FakeClassNoConstructor::class, $newInstance);
+        self::assertNotSame($instance, $newInstance);
     }
 
     public function testAdTransientContainer_WhenClassNotInContainer_GetThrowsClassNotFoundException(): void
@@ -221,12 +216,14 @@ class ContainerTransientBuilderTraitTest extends DependencyInjectionTestCase
         // Arrange
         $container = $this->createContainer()->addTransientNamespace(__NAMESPACE__);
 
-        // Act & Assert
-        $this->assertTransient(
-            $container,
-            FakeClassNoConstructor::class,
-            FakeClassNoConstructor::class
-        );
+        // Act
+        $instance = $container->get(FakeClassNoConstructor::class);
+        $newInstance = $container->get(FakeClassNoConstructor::class);
+
+        // Assert
+        self::assertInstanceOf(FakeClassNoConstructor::class, $instance);
+        self::assertInstanceOf(FakeClassNoConstructor::class, $newInstance);
+        self::assertNotSame($instance, $newInstance);
     }
 
     public function testAddTransientNamespace_WithClassNotInNamespace_GetThrowsClassNotFoundException(): void
@@ -246,12 +243,14 @@ class ContainerTransientBuilderTraitTest extends DependencyInjectionTestCase
         // Arrange
         $container = $this->createContainer()->addTransientInterface(FakeClassNoConstructor::class);
 
-        // Act & Assert
-        $this->assertTransient(
-            $container,
-            FakeClassExtendsNoConstructor::class,
-            FakeClassExtendsNoConstructor::class
-        );
+        // Act
+        $instance = $container->get(FakeClassExtendsNoConstructor::class);
+        $newInstance = $container->get(FakeClassExtendsNoConstructor::class);
+
+        // Assert
+        self::assertInstanceOf(FakeClassExtendsNoConstructor::class, $instance);
+        self::assertInstanceOf(FakeClassExtendsNoConstructor::class, $newInstance);
+        self::assertNotSame($instance, $newInstance);
     }
 
     public function testAddTransientInterface_WhenImplementationNotSubclass_GetThrowsClassNotFoundException(): void
@@ -271,8 +270,14 @@ class ContainerTransientBuilderTraitTest extends DependencyInjectionTestCase
         // Arrange
         $container = $this->createContainer()->addTransientAttribute(FakeAttribute::class);
 
-        // Act & Assert
-        $this->assertTransient($container, FakeClassWithAttribute::class);
+        // Act
+        $instance = $container->get(FakeClassWithAttribute::class);
+        $newInstance = $container->get(FakeClassWithAttribute::class);
+
+        // Assert
+        self::assertInstanceOf(FakeClassWithAttribute::class, $instance);
+        self::assertInstanceOf(FakeClassWithAttribute::class, $newInstance);
+        self::assertNotSame($instance, $newInstance);
     }
 
     public function testAddTransientAttribute_WhenClassDoesNotHaveAttribute_GetThrowsClassNotFoundException(): void
@@ -285,5 +290,57 @@ class ContainerTransientBuilderTraitTest extends DependencyInjectionTestCase
 
         // Assert
         self::assertThrowsClassNotFoundException(DateTime::class, $fn);
+    }
+
+    public function testAddKeyedTransient_WithClassName_GetReturnsInstanceOfClass(): void
+    {
+        // Arrange
+        $container = $this->createContainer()->addKeyedTransient(FakeClassNoConstructor::class, 'key1');
+
+        // Act
+        $instance = $container->get(FakeClassNoConstructor::class, 'key1');
+        $newInstance = $container->get(FakeClassNoConstructor::class, 'key1');
+
+        // Assert
+        self::assertInstanceOf(FakeClassNoConstructor::class, $instance);
+        self::assertInstanceOf(FakeClassNoConstructor::class, $newInstance);
+        self::assertNotSame($instance, $newInstance);
+    }
+
+    public function testAddKeyedTransient_WithImplementation_GetReturnsInstanceOfSubclass(): void
+    {
+        // Arrange
+        $container = $this->createContainer()
+            ->addTransientClass(FakeClassExtendsNoConstructor::class)
+            ->addKeyedTransient(FakeClassNoConstructor::class, 'key1', FakeClassExtendsNoConstructor::class);
+
+        // Act
+        $instance = $container->get(FakeClassNoConstructor::class, 'key1');
+        $newInstance = $container->get(FakeClassNoConstructor::class, 'key1');
+
+        // Assert
+        self::assertInstanceOf(FakeClassExtendsNoConstructor::class, $instance);
+        self::assertInstanceOf(FakeClassExtendsNoConstructor::class, $newInstance);
+        self::assertNotSame($instance, $newInstance);
+    }
+
+    public function testAddKeyedTransient_WithFactory_GetReturnsValueFromFactory(): void
+    {
+        // Arrange
+        $container = $this->createContainer()
+            ->addKeyedTransient(
+                FakeClassNoConstructor::class,
+                'key1',
+                fn () => new FakeClassExtendsNoConstructor()
+            );
+
+        // Act
+        $instance = $container->get(FakeClassNoConstructor::class, 'key1');
+        $newInstance = $container->get(FakeClassNoConstructor::class, 'key1');
+
+        // Assert
+        self::assertInstanceOf(FakeClassExtendsNoConstructor::class, $instance);
+        self::assertInstanceOf(FakeClassExtendsNoConstructor::class, $newInstance);
+        self::assertNotSame($instance, $newInstance);
     }
 }

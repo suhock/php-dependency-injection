@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2022-2023 Matthew Suhocki. All rights reserved.
+ * Copyright (c) 2022-2026 Matthew Suhocki. All rights reserved.
  *
  * This software is licensed under the terms of the MIT License <https://opensource.org/licenses/MIT>.
  * The above copyright notice and this notice shall be included in all copies or substantial portions of this software.
@@ -16,7 +16,6 @@ use ReflectionParameter;
 use Suhock\DependencyInjection\AbstractContainerParameterResolver;
 use Suhock\DependencyInjection\ContainerInterface;
 use UnitEnum;
-
 use function count;
 
 /**
@@ -33,7 +32,7 @@ class ContextContainerParameterResolver extends AbstractContainerParameterResolv
         parent::__construct($container);
     }
 
-    protected function tryResolveParameter(ReflectionParameter $rParam, mixed &$result): bool
+    protected function tryResolveParameter(ReflectionParameter $rParam, ?object &$result): bool
     {
         $contextCount = 0;
 

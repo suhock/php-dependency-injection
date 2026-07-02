@@ -16,9 +16,10 @@ Out of the box, this library provides [singleton](#singleton) and
 [provisioning instances](#adding-dependencies-to-the-container) of specific
 types, as well as specifying factories for all classes in a particular
 [namespace](#namespace-container) or implementing a specific
-[interface](#interface-container). You can easily extend the default `Container`
-implementation with your own custom lifetime strategies, instance providers, or
-nested containers to fit your needs.
+[interface](#interface-container). You can also register more than one
+implementation of the same type as [keyed services](#keyed-services). You can
+easily extend the default `Container` implementation with your own custom
+lifetime strategies, instance providers, or nested containers to fit your needs.
 
 The library also provides a [`ContextContainer` class](#context-container) for
 cascading dependency resolution down a nested context hierarchy and an
@@ -45,6 +46,7 @@ parameters into a specific function or constructor.
   - [Custom lifetime strategies](#custom-lifetime-strategies)
   - [Custom instance providers](#custom-instance-providers)
   - [Custom nested containers](#custom-nested-containers)
+- [Keyed services](#keyed-services)
 - [Context Container](#context-container)
 - [Dependency Injector](#dependency-injector)
 - [Specifying dependencies](#specifying-dependencies)
@@ -670,6 +672,106 @@ class Container
     public function addTransientContainer(
         ContainerInterface $container
     ): static;
+}
+```
+
+## Keyed services
+
+An application sometimes needs more than one registration for the same type. For
+example, you might want a separate `Settings` object for different areas of your
+application. Keyed services let you register multiple factories for a class under
+distinct keys and then retrieve or inject a specific one. Keys can be strings or
+enum values. To help ease analysis and future refactorings, enums or string-typed
+constants are recommended.
+
+A keyed registration is resolved only by its exact key. If the container has no
+registration for the requested key, it will throw a `ClassNotFoundException`
+rather than falling back to the unkeyed registration. A class may have both an
+unkeyed registration and any number of keyed registrations; they are independent
+of one another.
+
+```php
+class Container
+{
+    function addKeyedSingleton<TClass, TImpl of TClass>(
+        string<TClass> $className,
+        string|UnitEnum $key,
+        string<TImpl>|TClass|FactoryMethod<TClass>|null $source = null
+    ): static;
+
+    function addKeyedTransient<TClass, TImpl of TClass>(
+        string<TClass> $className,
+        string|UnitEnum $key,
+        string<TImpl>|FactoryMethod<TClass>|null $source = null
+    ): static;
+
+    function get<TClass>(
+        string<TClass> $className,
+        string|UnitEnum|null $key = null
+    ): TClass;
+
+    function has(
+        string $className,
+        string|UnitEnum|null $key = null
+    ): bool;
+}
+```
+
+The `$source` parameter determines how the container provides the instance:
+
+ - If `null`, the container autowires the class's constructor.
+ - If a class name, the container maps the class to that implementation, which
+   must also be added to the container.
+ - If a closure, the container calls it as a factory, autowiring its parameters.
+ - If any other object, the container provides that object directly.
+
+### Examples
+
+#### Registering and retrieving keyed services
+
+```php
+$container
+    ->addSingletonFactory(
+        Settings::class,
+        fn () => JsonSettings::fromFile('default.json')
+    )
+    ->addKeyedSingleton(
+        Settings::class,
+        'admin',
+        fn () => JsonSettings::fromFile('admin.json')
+    );
+
+// Resolves the unkeyed Settings registration.
+$settings = $container->get(Settings::class);
+
+// Resolves the Settings registration under the 'admin' key.
+$adminSettings = $container->get(Settings::class, 'admin');
+```
+
+#### Injecting a keyed service
+
+Apply the `Key` attribute to a constructor parameter to inject the registration
+under a specific key. As with `get()`, the lookup is absolute: if the container
+has no registration for the key, it will throw a `ParameterResolutionException`.
+
+```php
+use Suhock\DependencyInjection\Keyed\Key;
+
+class AdminController
+{
+    public function __construct(
+        /*
+         * Resolved from the unkeyed Settings registration.
+         */
+        private readonly Settings $settings,
+
+        /*
+         * Resolved from the Settings registration under the 'admin' key.
+         */
+        #[Key('admin')]
+        private readonly Settings $adminSettings
+    ) {
+    }
 }
 ```
 

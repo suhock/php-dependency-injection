@@ -58,7 +58,7 @@ class ClosureInstanceProviderTest extends DependencyInjectionTestCase
             ->willReturnCallback(fn () => $factoryMethod());
 
         // Act
-        $fn = static fn () => self::assertNull($factory->get());
+        $fn = static fn () => $factory->get();
 
         // Assert
         self::assertThrowsInstanceTypeException(

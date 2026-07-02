@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2022-2023 Matthew Suhocki. All rights reserved.
+ * Copyright (c) 2022-2026 Matthew Suhocki. All rights reserved.
  *
  * This software is licensed under the terms of the MIT License <https://opensource.org/licenses/MIT>.
  * The above copyright notice and this notice shall be included in all copies or substantial portions of this software.
@@ -15,14 +15,14 @@ use Suhock\DependencyInjection\ClassNotFoundException;
 use Suhock\DependencyInjection\ContainerException;
 use Suhock\DependencyInjection\ContainerInterface;
 use Suhock\DependencyInjection\InjectorInterface;
-
+use UnitEnum;
 use function count;
 
 /**
  * Manages a collection of named {@see ContainerInterface} instances and resolves objects from them based on a context
  * stack
  *
- * @template TContainer of ContainerInterface
+ * @template-covariant TContainer of ContainerInterface
  */
 class ContextContainer implements ContainerInterface
 {
@@ -123,7 +123,7 @@ class ContextContainer implements ContainerInterface
      * @return TClass An instance of {@see $className}
      * @throws ClassNotFoundException If a value could not be resolved for the class
      */
-    public function get(string $className): object
+    public function get(string $className, string|UnitEnum|null $key = null): object
     {
         return $this->getFromContext(
             $className,
@@ -147,7 +147,7 @@ class ContextContainer implements ContainerInterface
     /**
      * @inheritDoc
      */
-    public function has(string $className): bool
+    public function has(string $className, string|UnitEnum|null $key = null): bool
     {
         return $this->findContext($className) !== null;
     }

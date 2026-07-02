@@ -11,6 +11,9 @@ declare(strict_types=1);
 namespace Suhock\DependencyInjection\Context;
 
 use PHPUnit\Framework\TestCase;
+use Suhock\DependencyInjection\Fakes\FakeIntBackedEnum;
+use Suhock\DependencyInjection\Fakes\FakeStringBackedEnum;
+use Suhock\DependencyInjection\Fakes\FakeUnitEnum;
 
 /**
  * Test suite for {@see Context} class.

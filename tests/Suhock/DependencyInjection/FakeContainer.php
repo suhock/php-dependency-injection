@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2022-2023 Matthew Suhocki. All rights reserved.
+ * Copyright (c) 2022-2026 Matthew Suhocki. All rights reserved.
  *
  * This software is licensed under the terms of the MIT License <https://opensource.org/licenses/MIT>.
  * The above copyright notice and this notice shall be included in all copies or substantial portions of this software.
@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 namespace Suhock\DependencyInjection;
 
+use UnitEnum;
 use function array_key_exists;
 
 /**
@@ -26,7 +27,7 @@ class FakeContainer implements ContainerInterface
     ) {
     }
 
-    public function get(string $className): object
+    public function get(string $className, string|UnitEnum|null $key = null): object
     {
         /**
          * @phpstan-ignore-next-line PHPStan does not support array class mappings
@@ -40,7 +41,7 @@ class FakeContainer implements ContainerInterface
      * @template TClass of object
      * @param class-string<TClass> $className The name of the class to test
      */
-    public function has(string $className): bool
+    public function has(string $className, string|UnitEnum|null $key = null): bool
     {
         return array_key_exists($className, $this->classMapping);
     }

@@ -23,10 +23,6 @@ class SingletonStrategyTest extends TestCase
      */
     protected function createStrategy(): SingletonStrategy
     {
-        /**
-         * @phpstan-ignore-next-line PHPStan does not support generics on inherited constructors without repeating the
-         * constructor {@link https://github.com/phpstan/phpstan/issues/3537#issuecomment-710038367}
-         */
         return new SingletonStrategy(FakeClassNoConstructor::class);
     }
 

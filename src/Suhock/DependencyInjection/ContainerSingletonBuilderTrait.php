@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2022-2023 Matthew Suhocki. All rights reserved.
+ * Copyright (c) 2022-2026 Matthew Suhocki. All rights reserved.
  *
  * This software is licensed under the terms of the MIT License <https://opensource.org/licenses/MIT>.
  * The above copyright notice and this notice shall be included in all copies or substantial portions of this software.
@@ -14,6 +14,7 @@ use Closure;
 use Suhock\DependencyInjection\Lifetime\SingletonStrategy;
 use Suhock\DependencyInjection\Provision\InstanceProviderFactory;
 use Suhock\DependencyInjection\Provision\InstanceProviderInterface;
+use UnitEnum;
 
 /**
  * Default implementation for {@see ContainerSingletonBuilderInterface}. Classes using this trait must implement
@@ -38,6 +39,22 @@ trait ContainerSingletonBuilderTrait
         );
 
         return $this;
+    }
+
+    /**
+     * @template TClass of object
+     *
+     * @param class-string<TClass> $className
+     * @param class-string<TClass>|TClass|Closure|null $source
+     */
+    public function addKeyedSingleton(string $className, string|UnitEnum $key, string|object|null $source = null): static
+    {
+        return $this->addKeyed(
+            $className,
+            $key,
+            new SingletonStrategy($className),
+            InstanceProviderFactory::createInstanceProvider($this->getInjector(), $this, $className, $source)
+        );
     }
 
     /**

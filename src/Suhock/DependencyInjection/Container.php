@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2022-2023 Matthew Suhocki. All rights reserved.
+ * Copyright (c) 2022-2026 Matthew Suhocki. All rights reserved.
  *
  * This software is licensed under the terms of the MIT License <https://opensource.org/licenses/MIT>.
  * The above copyright notice and this notice shall be included in all copies or substantial portions of this software.
@@ -10,10 +10,11 @@ declare(strict_types=1);
 
 namespace Suhock\DependencyInjection;
 
+use BackedEnum;
 use Suhock\DependencyInjection\Lifetime\LifetimeStrategy;
 use Suhock\DependencyInjection\Provision\ClosureInstanceProvider;
-
-use function array_key_exists;
+use UnitEnum;
+use function is_string;
 
 /**
  * A default implementation for the {@see ContainerInterface}.
@@ -28,7 +29,7 @@ class Container implements
     use ContainerSingletonBuilderTrait;
     use ContainerTransientBuilderTrait;
 
-    /** @var array<class-string, Descriptor<object>> */
+    /** @var array<string, Descriptor<object>> */
     protected array $descriptors = [];
 
     /** @var array<ContainerDescriptor> */
@@ -54,13 +55,51 @@ class Container implements
      */
     protected function addDescriptor(Descriptor $descriptor): static
     {
-        if ($this->hasDescriptor($descriptor->className)) {
-            throw new ContainerException('Class already in container: ' . $descriptor->className);
+        return $this->store($descriptor, null);
+    }
+
+    /**
+     * @template TClass of object
+     *
+     * @param Descriptor<TClass> $descriptor
+     *
+     * @return $this
+     */
+    protected function addKeyedDescriptor(Descriptor $descriptor, string|UnitEnum $key): static
+    {
+        return $this->store($descriptor, $key);
+    }
+
+    /**
+     * @template TClass of object
+     *
+     * @param Descriptor<TClass> $descriptor
+     *
+     * @return $this
+     */
+    private function store(Descriptor $descriptor, string|  UnitEnum|null $key): static
+    {
+        $id = $this->descriptorId($descriptor->className, $key);
+
+        if (isset($this->descriptors[$id])) {
+            throw new ContainerException($key === null ?
+                'Class already in container: ' . $descriptor->className :
+                "Class already in container for key '" . self::getKeyFromStringOrEnum($key) . "': " .
+                    $descriptor->className);
         }
 
-        $this->descriptors[$descriptor->className] = $descriptor;
+        $this->descriptors[$id] = $descriptor;
 
         return $this;
+    }
+
+    private static function getKeyFromStringOrEnum(string|UnitEnum $key): string
+    {
+        return match (true) {
+            $key instanceof BackedEnum && is_string($key->value) => $key->value,
+            $key instanceof UnitEnum => $key->name,
+            default => $key
+        };
     }
 
     protected function addContainerDescriptor(ContainerDescriptor $descriptor): static
@@ -73,6 +112,24 @@ class Container implements
     protected function getInjector(): InjectorInterface
     {
         return $this->injector;
+    }
+
+    /**
+     * Computes the internal storage id for a registration. Unkeyed registrations use the bare class name; keyed
+     * registrations use the class name and key joined by a NUL byte, which cannot occur in a class name, so a keyed id
+     * can never collide with an unkeyed one or with a different (class, key) pair.
+     *
+     * @param class-string $className
+     */
+    private function descriptorId(string $className, string|UnitEnum|null $key): string
+    {
+        if ($key === null) {
+            return $className;
+        }
+
+        $stringKey = self::getKeyFromStringOrEnum($key);
+
+        return $className . "\0" . $stringKey;
     }
 
     /**
@@ -96,8 +153,17 @@ class Container implements
      * @throws CircularDependencyException
      * @throws ClassNotFoundException
      */
-    public function get(string $className): object
+    public function get(string $className, string|UnitEnum|null $key = null): object
     {
+        if ($key !== null) {
+            if ($this->tryGetFromDescriptor($this->descriptorId($className, $key), $instance)) {
+                /** @var TClass $instance */
+                return $instance;
+            }
+
+            throw new ClassNotFoundException($className);
+        }
+
         if ($this->tryGetFromDescriptor($className, $instance) ||
             $this->tryGetFromContainer($className, $instance)) {
             /** @var TClass $instance */
@@ -110,25 +176,40 @@ class Container implements
     /**
      * @inheritDoc
      */
-    public function has(string $className): bool
+    public function has(string $className, string|UnitEnum|null $key = null): bool
     {
-        return $this->hasDescriptor($className) || $this->hasContainerDescriptor($className);
+        if ($key !== null) {
+            return isset($this->descriptors[$this->descriptorId($className, $key)]);
+        }
+
+        return isset($this->descriptors[$className]) || $this->hasContainerDescriptor($className);
+    }
+
+    /**
+     * @param string $id The service id, as produced by {@see descriptorId()}
+     * @throws CircularDependencyException
+     */
+    private function tryGetFromDescriptor(string $id, ?object &$instance): bool
+    {
+        if (!isset($this->descriptors[$id])) {
+            return false;
+        }
+
+        $instance = $this->resolveDescriptor($this->descriptors[$id]);
+
+        return true;
     }
 
     /**
      * @template TClass of object
-     * @param class-string<TClass> $className
-     * @param-out TClass|null $instance
+     *
+     * @param Descriptor<TClass> $descriptor
+     *
+     * @return TClass
      * @throws CircularDependencyException
      */
-    private function tryGetFromDescriptor(string $className, mixed &$instance): bool
+    private function resolveDescriptor(Descriptor $descriptor): object
     {
-        if (!$this->hasDescriptor($className)) {
-            return false;
-        }
-
-        $descriptor = $this->getDescriptor($className);
-
         if ($descriptor->isResolving) {
             throw new CircularDependencyException($descriptor->className);
         }
@@ -137,38 +218,13 @@ class Container implements
 
         try {
             $instanceFactory = $descriptor->instanceProvider->get(...);
-            $instance = $descriptor->lifetimeStrategy->get($instanceFactory);
+
+            return $descriptor->lifetimeStrategy->get($instanceFactory);
         } catch (DependencyInjectionException $e) {
             throw new ClassResolutionException($descriptor->className, previous: $e);
         } finally {
             $descriptor->isResolving = false;
         }
-
-        return true;
-    }
-
-    /**
-     * @template TClass of object
-     *
-     * @param class-string<TClass> $className
-     *
-     * @return Descriptor<TClass>
-     */
-    protected function getDescriptor(string $className): Descriptor
-    {
-        /**
-         * @phpstan-ignore-next-line PHPStan does not support class-mapped arrays
-         */
-        return $this->descriptors[$className];
-    }
-
-    /**
-     * @template TClass of object
-     * @param class-string<TClass> $className
-     */
-    private function hasDescriptor(string $className): bool
-    {
-        return array_key_exists($className, $this->descriptors);
     }
 
     /**
@@ -187,15 +243,11 @@ class Container implements
     }
 
     /**
-     * @template TClass as object
-     *
-     * @param class-string<TClass> $className
-     * @param mixed $instance
-     * @param-out TClass|null $instance
+     * @param class-string $className
      *
      * @return bool
      */
-    private function tryGetFromContainer(string $className, mixed &$instance): bool
+    private function tryGetFromContainer(string $className, ?object &$instance): bool
     {
         return $this->tryAddFromFirstMatchingContainer($className) &&
             $this->tryGetFromDescriptor($className, $instance);

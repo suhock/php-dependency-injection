@@ -40,7 +40,6 @@ class ContainerTest extends DependencyInjectionTestCase
         $instanceProvider = new ObjectInstanceProvider(FakeClassNoConstructor::class, new FakeClassNoConstructor());
 
         // Act
-        /** @phpstan-ignore-next-line PHPStan fails to resolve correct types */
         $container->add(FakeClassNoConstructor::class, $lifetimeStrategy, $instanceProvider);
 
         // Assert
@@ -53,13 +52,54 @@ class ContainerTest extends DependencyInjectionTestCase
         $container = $this->createContainer();
         $lifetimeStrategy = new SingletonStrategy(FakeClassNoConstructor::class);
         $instanceProvider = new ObjectInstanceProvider(FakeClassNoConstructor::class, new FakeClassNoConstructor());
-        /** @phpstan-ignore-next-line PHPStan fails to resolve correct types */
         $container->add(FakeClassNoConstructor::class, $lifetimeStrategy, $instanceProvider);
 
         // Act & Assert
         $this->expectException(ContainerException::class);
-        /** @phpstan-ignore-next-line PHPStan fails to resolve correct types */
         $container->add(FakeClassNoConstructor::class, $lifetimeStrategy, $instanceProvider);
+    }
+
+    public function testAddKeyed_WithValidClass_AddsKeyedDescriptor(): void
+    {
+        // Arrange
+        $container = $this->createContainer();
+        $lifetimeStrategy = new SingletonStrategy(FakeClassNoConstructor::class);
+        $instanceProvider = new ObjectInstanceProvider(FakeClassNoConstructor::class, new FakeClassNoConstructor());
+
+        // Act
+        $container->addKeyed(FakeClassNoConstructor::class, 'key1', $lifetimeStrategy, $instanceProvider);
+
+        // Assert
+        self::assertTrue($container->has(FakeClassNoConstructor::class, 'key1'));
+    }
+
+    public function testAddKeyed_WithDuplicateKey_ThrowsContainerException(): void
+    {
+        // Arrange
+        $container = $this->createContainer();
+        $lifetimeStrategy = new SingletonStrategy(FakeClassNoConstructor::class);
+        $instanceProvider = new ObjectInstanceProvider(FakeClassNoConstructor::class, new FakeClassNoConstructor());
+        $container->addKeyed(FakeClassNoConstructor::class, 'key1', $lifetimeStrategy, $instanceProvider);
+
+        // Act & Assert
+        $this->expectException(ContainerException::class);
+        $container->addKeyed(FakeClassNoConstructor::class, 'key1', $lifetimeStrategy, $instanceProvider);
+    }
+
+    public function testAddKeyed_WhenUnkeyedRegistrationExists_AddsIndependentKeyedDescriptor(): void
+    {
+        // Arrange
+        $container = $this->createContainer()
+            ->addSingletonInstance(FakeClassNoConstructor::class, new FakeClassNoConstructor());
+        $lifetimeStrategy = new SingletonStrategy(FakeClassNoConstructor::class);
+        $instanceProvider = new ObjectInstanceProvider(FakeClassNoConstructor::class, new FakeClassNoConstructor());
+
+        // Act
+        $container->addKeyed(FakeClassNoConstructor::class, 'key1', $lifetimeStrategy, $instanceProvider);
+
+        // Assert
+        self::assertTrue($container->has(FakeClassNoConstructor::class));
+        self::assertTrue($container->has(FakeClassNoConstructor::class, 'key1'));
     }
 
     public function testBuild_WithCallback_InvokesCallbackWithSelf(): void
@@ -167,6 +207,46 @@ class ContainerTest extends DependencyInjectionTestCase
         );
     }
 
+    public function testGet_WithRegisteredKey_ReturnsKeyedInstance(): void
+    {
+        // Arrange
+        $expectedInstance = new FakeClassNoConstructor();
+        $container = $this->createContainer()
+            ->addKeyedSingleton(FakeClassNoConstructor::class, 'key1', $expectedInstance);
+
+        // Act
+        $result = $container->get(FakeClassNoConstructor::class, 'key1');
+
+        // Assert
+        self::assertSame($expectedInstance, $result);
+    }
+
+    public function testGet_WithUnregisteredKey_ThrowsClassNotFoundException(): void
+    {
+        // Arrange
+        $container = $this->createContainer()
+            ->addSingletonInstance(FakeClassNoConstructor::class, new FakeClassNoConstructor());
+
+        // Act
+        $fn = static fn () => $container->get(FakeClassNoConstructor::class, 'key1');
+
+        // Assert
+        self::assertThrowsClassNotFoundException(FakeClassNoConstructor::class, $fn);
+    }
+
+    public function testGet_WithoutKeyWhenOnlyKeyedRegistrationExists_ThrowsClassNotFoundException(): void
+    {
+        // Arrange
+        $container = $this->createContainer()
+            ->addKeyedSingleton(FakeClassNoConstructor::class, 'key1', new FakeClassNoConstructor());
+
+        // Act
+        $fn = static fn () => $container->get(FakeClassNoConstructor::class);
+
+        // Assert
+        self::assertThrowsClassNotFoundException(FakeClassNoConstructor::class, $fn);
+    }
+
     public function testHas_WhenClassNotInContainer_ReturnsFalse(): void
     {
         // Arrange
@@ -253,5 +333,44 @@ class ContainerTest extends DependencyInjectionTestCase
 
         // Assert
         self::assertTrue($result);
+    }
+
+    public function testHas_WithRegisteredKey_ReturnsTrue(): void
+    {
+        // Arrange
+        $container = $this->createContainer()
+            ->addKeyedSingleton(FakeClassNoConstructor::class, 'key1', new FakeClassNoConstructor());
+
+        // Act
+        $result = $container->has(FakeClassNoConstructor::class, 'key1');
+
+        // Assert
+        self::assertTrue($result);
+    }
+
+    public function testHas_WithUnregisteredKeyWhenUnkeyedRegistrationExists_ReturnsFalse(): void
+    {
+        // Arrange
+        $container = $this->createContainer()
+            ->addSingletonInstance(FakeClassNoConstructor::class, new FakeClassNoConstructor());
+
+        // Act
+        $result = $container->has(FakeClassNoConstructor::class, 'key1');
+
+        // Assert
+        self::assertFalse($result);
+    }
+
+    public function testHas_WithoutKeyWhenOnlyKeyedRegistrationExists_ReturnsFalse(): void
+    {
+        // Arrange
+        $container = $this->createContainer()
+            ->addKeyedSingleton(FakeClassNoConstructor::class, 'key1', new FakeClassNoConstructor());
+
+        // Act
+        $result = $container->has(FakeClassNoConstructor::class);
+
+        // Assert
+        self::assertFalse($result);
     }
 }
