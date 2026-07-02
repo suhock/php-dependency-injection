@@ -49,8 +49,11 @@ trait ContainerSingletonBuilderTrait
      * @param class-string<TClass> $className
      * @param class-string<TClass>|TClass|Closure|null $source
      */
-    public function addKeyedSingleton(string $className, string|UnitEnum $key, string|object|null $source = null): static
-    {
+    public function addKeyedSingleton(
+        string $className,
+        string|UnitEnum $key,
+        string|object|null $source = null
+    ): static {
         return $this->addKeyed(
             $className,
             $key,
@@ -143,8 +146,9 @@ trait ContainerSingletonBuilderTrait
     public function addSingletonContainer(ContainerInterface $container): static
     {
         $this->addContainer(
-            $container, /** @param class-string $className */
-            fn (string $className) => new SingletonStrategy($className)
+            $container,
+            /** @param class-string $className */
+            fn(string $className) => new SingletonStrategy($className)
         );
 
         return $this;

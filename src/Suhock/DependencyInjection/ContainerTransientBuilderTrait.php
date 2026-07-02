@@ -48,8 +48,11 @@ trait ContainerTransientBuilderTrait
      * @param class-string<TClass> $className
      * @param class-string<TClass>|Closure|null $source
      */
-    public function addKeyedTransient(string $className, string|UnitEnum $key, string|Closure|null $source = null): static
-    {
+    public function addKeyedTransient(
+        string $className,
+        string|UnitEnum $key,
+        string|Closure|null $source = null
+    ): static {
         return $this->addKeyed(
             $className,
             $key,
@@ -123,7 +126,7 @@ trait ContainerTransientBuilderTrait
         $this->addContainer(
             $container,
             /** @param class-string $className */
-            fn (string $className) => new TransientStrategy($className)
+            fn(string $className) => new TransientStrategy($className)
         );
 
         return $this;

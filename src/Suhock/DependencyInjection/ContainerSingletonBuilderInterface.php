@@ -63,7 +63,11 @@ interface ContainerSingletonBuilderInterface
      *
      * @return $this
      */
-    public function addKeyedSingleton(string $className, string|UnitEnum $key, string|object|null $source = null): static;
+    public function addKeyedSingleton(
+        string $className,
+        string|UnitEnum $key,
+        string|object|null $source = null
+    ): static;
 
     /**
      * @template TClass of object

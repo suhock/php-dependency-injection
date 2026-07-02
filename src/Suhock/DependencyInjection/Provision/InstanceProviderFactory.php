@@ -25,6 +25,9 @@ final class InstanceProviderFactory
     /**
      * @template TClass of object
      *
+     * @param class-string<TClass> $className
+     * @param class-string<TClass>|TClass|Closure|null $source
+     *
      * @return InstanceProviderInterface<TClass>
      */
     public static function createInstanceProvider(
@@ -64,7 +67,7 @@ final class InstanceProviderFactory
         string $className,
         ?callable $mutator = null
     ): ClassInstanceProvider {
-        return new ClassInstanceProvider($className, $injector, $mutator);
+        return new ClassInstanceProvider($className, $injector, $mutator !== null ? $mutator(...) : null);
     }
 
     /**

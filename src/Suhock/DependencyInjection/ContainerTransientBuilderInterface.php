@@ -61,7 +61,11 @@ interface ContainerTransientBuilderInterface
      *
      * @return $this
      */
-    public function addKeyedTransient(string $className, string|UnitEnum $key, string|Closure|null $source = null): static;
+    public function addKeyedTransient(
+        string $className,
+        string|UnitEnum $key,
+        string|Closure|null $source = null
+    ): static;
 
     /**
      * @template TClass of object

@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2022-2023 Matthew Suhocki. All rights reserved.
+ * Copyright (c) 2022-2026 Matthew Suhocki. All rights reserved.
  *
  * This software is licensed under the terms of the MIT License <https://opensource.org/licenses/MIT>.
  * The above copyright notice and this notice shall be included in all copies or substantial portions of this software.
@@ -13,13 +13,13 @@ namespace Suhock\DependencyInjection\Provision;
 use Suhock\DependencyInjection\DependencyInjectionException;
 use Suhock\DependencyInjection\InjectorException;
 use Throwable;
-
 use function get_class;
 use function gettype;
 use function is_object;
 
 /**
- * Exception that indicates the type returned by an {@see InstanceProviderInterface} is different from the expected type.
+ * Exception that indicates the type returned by an {@see InstanceProviderInterface} is different from the expected
+ * type.
  *
  * @template TExpected of object
  */
@@ -41,9 +41,11 @@ class InstanceTypeException extends InjectorException
     ) {
         parent::__construct(
             "Expected object of type $this->expectedClassName, got " . (
-                is_object($actualValue) ?
-                    'object of type ' . get_class($actualValue) :
-                    gettype($this->actualValue)
+            is_object($actualValue)
+                ?
+                'object of type ' . get_class($actualValue)
+                :
+                gettype($this->actualValue)
             ),
             $previous
         );

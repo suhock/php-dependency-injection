@@ -62,8 +62,11 @@ abstract class AbstractContainerParameterResolver implements ParameterResolverIn
         throw new ParameterResolutionException($rParam, $deferredException);
     }
 
-    protected function tryGetInstanceFromParameter(ReflectionParameter $rParam, ?object &$result, string|UnitEnum|null $key = null): bool
-    {
+    protected function tryGetInstanceFromParameter(
+        ReflectionParameter $rParam,
+        ?object &$result,
+        string|UnitEnum|null $key = null
+    ): bool {
         return $rParam->getType() !== null && $this->tryGetInstanceFromType($rParam->getType(), $result, $key);
     }
 
@@ -77,8 +80,11 @@ abstract class AbstractContainerParameterResolver implements ParameterResolverIn
         };
     }
 
-    protected function tryGetFromNamedType(ReflectionNamedType $rType, ?object &$result, string|UnitEnum|null $key = null): bool
-    {
+    protected function tryGetFromNamedType(
+        ReflectionNamedType $rType,
+        ?object &$result,
+        string|UnitEnum|null $key = null
+    ): bool {
         /** @phpstan-ignore-next-line PHPStan is not able to figure out that getName() will return a class name */
         if ($rType->isBuiltin() || !$this->container->has($rType->getName(), $key)) {
             return false;
