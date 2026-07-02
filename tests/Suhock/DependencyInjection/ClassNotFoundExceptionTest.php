@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2022-2023 Matthew Suhocki. All rights reserved.
+ * Copyright (c) 2022-2026 Matthew Suhocki. All rights reserved.
  *
  * This software is licensed under the terms of the MIT License <https://opensource.org/licenses/MIT>.
  * The above copyright notice and this notice shall be included in all copies or substantial portions of this software.
@@ -19,15 +19,25 @@ class ClassNotFoundExceptionTest extends TestCase
 {
     public function testGetMessage_HasClassName_ContainsClassName(): void
     {
+        // Arrange
         $exception = new ClassNotFoundException(FakeClassNoConstructor::class);
 
-        self::assertStringContainsString(FakeClassNoConstructor::class, $exception->getMessage());
+        // Act
+        $message = $exception->getMessage();
+
+        // Assert
+        self::assertStringContainsString(FakeClassNoConstructor::class, $message);
     }
 
     public function testGetClassName_HasClassName_ReturnsClassName(): void
     {
+        // Arrange
         $exception =  new ClassNotFoundException(FakeClassNoConstructor::class);
 
-        self::assertSame(FakeClassNoConstructor::class, $exception->getClassName());
+        // Act
+        $className = $exception->getClassName();
+
+        // Assert
+        self::assertSame(FakeClassNoConstructor::class, $className);
     }
 }

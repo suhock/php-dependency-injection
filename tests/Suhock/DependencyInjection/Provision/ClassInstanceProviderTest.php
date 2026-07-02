@@ -23,6 +23,7 @@ class ClassInstanceProviderTest extends DependencyInjectionTestCase
 {
     public function testGet_WithClassName_ReturnsValueInstantiatedByInjector(): void
     {
+        // Arrange
         $factory = new ClassInstanceProvider(
             FakeClassNoConstructor::class,
             $injector = $this->createMock(InjectorInterface::class)
@@ -32,11 +33,16 @@ class ClassInstanceProviderTest extends DependencyInjectionTestCase
             ->method('instantiate')
             ->willReturn(new FakeClassNoConstructor());
 
-        self::assertInstanceOf(FakeClassNoConstructor::class, $factory->get());
+        // Act
+        $instance = $factory->get();
+
+        // Assert
+        self::assertInstanceOf(FakeClassNoConstructor::class, $instance);
     }
 
     public function testGet_WithMutatorFunction_ReturnsValueMutatedByFunction(): void
     {
+        // Arrange
         $factory = new ClassInstanceProvider(
             FakeClassNoConstructor::class,
             new ContainerInjector($this->createStub(ContainerInterface::class)),
@@ -45,6 +51,10 @@ class ClassInstanceProviderTest extends DependencyInjectionTestCase
             }
         );
 
-        self::assertSame('test', $factory->get()->string);
+        // Act
+        $instance = $factory->get();
+
+        // Assert
+        self::assertSame('test', $instance->string);
     }
 }

@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2022-2023 Matthew Suhocki. All rights reserved.
+ * Copyright (c) 2022-2026 Matthew Suhocki. All rights reserved.
  *
  * This software is licensed under the terms of the MIT License <https://opensource.org/licenses/MIT>.
  * The above copyright notice and this notice shall be included in all copies or substantial portions of this software.
@@ -50,15 +50,21 @@ class ContextInjectorTest extends TestCase
 
     public function testCall_FunctionWithNoContextAttributes_ValueInjectedFromPushedContext(): void
     {
+        // Arrange
         $container = $this->createContainerWithDefaultContext();
         $expectedInstance = $container->context('default')->get(FakeClassNoConstructor::class);
         $injector = new ContextContainerInjector($container);
 
-        self::assertSame($expectedInstance, $injector->call(fn (FakeClassNoConstructor $obj) => $obj));
+        // Act
+        $result = $injector->call(fn (FakeClassNoConstructor $obj) => $obj);
+
+        // Assert
+        self::assertSame($expectedInstance, $result);
     }
 
     public function testCall_FunctionHasContext_ValueInjectedFromFunctionContext(): void
     {
+        // Arrange
         $container = $this->createContainerWithDefaultContext();
         $expectedInstance = new FakeClassNoConstructor();
 
@@ -67,14 +73,16 @@ class ContextInjectorTest extends TestCase
 
         $injector = new ContextContainerInjector($container);
 
-        self::assertSame(
-            $expectedInstance,
-            $injector->call(#[Context('context1')] fn (FakeClassNoConstructor $obj) => $obj)
-        );
+        // Act
+        $result = $injector->call(#[Context('context1')] fn (FakeClassNoConstructor $obj) => $obj);
+
+        // Assert
+        self::assertSame($expectedInstance, $result);
     }
 
     public function testCall_ParameterHasContext_ValueInjectedFromParameterContext(): void
     {
+        // Arrange
         $container = $this->createContainerWithDefaultContext();
 
         $expectedInstance = new FakeClassNoConstructor();
@@ -83,14 +91,16 @@ class ContextInjectorTest extends TestCase
 
         $injector = new ContextContainerInjector($container);
 
-        self::assertSame(
-            $expectedInstance,
-            $injector->call(fn (#[Context('context1')] FakeClassNoConstructor $obj) => $obj)
-        );
+        // Act
+        $result = $injector->call(fn (#[Context('context1')] FakeClassNoConstructor $obj) => $obj);
+
+        // Assert
+        self::assertSame($expectedInstance, $result);
     }
 
     public function testCall_ValueInFunctionAndParameterContexts_ValueInjectedFromParameterContext(): void
     {
+        // Arrange
         $container = $this->createContainerWithDefaultContext();
 
         $container->context('context1')
@@ -102,14 +112,16 @@ class ContextInjectorTest extends TestCase
 
         $injector = new ContextContainerInjector($container);
 
-        self::assertSame(
-            $expectedInstance,
-            $injector->call(#[Context('context1')] fn (#[Context('context2')] FakeClassNoConstructor $obj) => $obj)
-        );
+        // Act
+        $result = $injector->call(#[Context('context1')] fn (#[Context('context2')] FakeClassNoConstructor $obj) => $obj);
+
+        // Assert
+        self::assertSame($expectedInstance, $result);
     }
 
     public function testCall_ValueInFunctionContextOnly_ValueInjectedFromFunctionContext(): void
     {
+        // Arrange
         $container = $this->createContainerWithDefaultContext();
 
         $expectedInstance = new FakeClassNoConstructor();
@@ -120,14 +132,16 @@ class ContextInjectorTest extends TestCase
 
         $injector = new ContextContainerInjector($container);
 
-        self::assertSame(
-            $expectedInstance,
-            $injector->call(#[Context('context1')] fn (#[Context('context2')] FakeClassNoConstructor $obj) => $obj)
-        );
+        // Act
+        $result = $injector->call(#[Context('context1')] fn (#[Context('context2')] FakeClassNoConstructor $obj) => $obj);
+
+        // Assert
+        self::assertSame($expectedInstance, $result);
     }
 
     public function testCall_UnionType_First(): void
     {
+        // Arrange
         $container = $this->createContainer();
 
         $expectedInstance = new FakeClassImplementsInterfaces();
@@ -137,14 +151,16 @@ class ContextInjectorTest extends TestCase
 
         $injector = new ContextContainerInjector($container);
 
-        self::assertSame(
-            $expectedInstance,
-            $injector->call(fn (FakeInterfaceOne|string|FakeInterfaceTwo $obj) => $obj)
-        );
+        // Act
+        $result = $injector->call(fn (FakeInterfaceOne|string|FakeInterfaceTwo $obj) => $obj);
+
+        // Assert
+        self::assertSame($expectedInstance, $result);
     }
 
     public function testCall_IntersectionType_First(): void
     {
+        // Arrange
         $container = $this->createContainer();
 
         $expectedInstance = new FakeClassImplementsInterfaces();
@@ -154,25 +170,32 @@ class ContextInjectorTest extends TestCase
 
         $injector = new ContextContainerInjector($container);
 
-        self::assertSame(
-            $expectedInstance,
-            $injector->call(fn (FakeInterfaceOne&FakeInterfaceTwo $obj) => $obj)
-        );
+        // Act
+        $result = $injector->call(fn (FakeInterfaceOne&FakeInterfaceTwo $obj) => $obj);
+
+        // Assert
+        self::assertSame($expectedInstance, $result);
     }
 
     public function testInstantiate_ClassWithNoContextAttributes_ValueInjectedFromPushedContext(): void
     {
+        // Arrange
         $container = $this->createContainerWithDefaultContext();
         $container->context('default')->addSingletonClass(FakeClassWithConstructor::class);
         $expectedInstance = $container->context('default')->get(FakeClassNoConstructor::class);
 
         $injector = new ContextContainerInjector($container);
 
-        self::assertSame($expectedInstance, $injector->instantiate(FakeClassWithConstructor::class)->obj);
+        // Act
+        $result = $injector->instantiate(FakeClassWithConstructor::class);
+
+        // Assert
+        self::assertSame($expectedInstance, $result->obj);
     }
 
     public function testInstantiate_ClassWithContexts_ValuesInjectedFromCorrectContexts(): void
     {
+        // Arrange
         $container = $this->createContainer();
 
         $container->context('default')
@@ -193,7 +216,12 @@ class ContextInjectorTest extends TestCase
 
         $injector = new ContextContainerInjector($container);
 
-        self::assertSame($throwable3, $injector->instantiate(FakeClassWithContexts::class)->throwable);
-        self::assertSame($runtime1, $injector->instantiate(FakeClassWithContexts::class)->runtimeException);
+        // Act
+        $throwableResult = $injector->instantiate(FakeClassWithContexts::class);
+        $runtimeResult = $injector->instantiate(FakeClassWithContexts::class);
+
+        // Assert
+        self::assertSame($throwable3, $throwableResult->throwable);
+        self::assertSame($runtime1, $runtimeResult->runtimeException);
     }
 }

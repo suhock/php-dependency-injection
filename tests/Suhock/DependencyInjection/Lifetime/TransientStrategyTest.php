@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2022-2023 Matthew Suhocki. All rights reserved.
+ * Copyright (c) 2022-2026 Matthew Suhocki. All rights reserved.
  *
  * This software is licensed under the terms of the MIT License <https://opensource.org/licenses/MIT>.
  * The above copyright notice and this notice shall be included in all copies or substantial portions of this software.
@@ -32,18 +32,26 @@ class TransientStrategyTest extends TestCase
 
     public function testGet_WithFactoryFunction_ReturnsValueFromFactoryFunction(): void
     {
+        // Arrange
         $strategy = $this->createStrategy();
 
-        self::assertInstanceOf(FakeClassNoConstructor::class, $strategy->get(fn () => new FakeClassNoConstructor()));
+        // Act
+        $instance = $strategy->get(fn () => new FakeClassNoConstructor());
+
+        // Assert
+        self::assertInstanceOf(FakeClassNoConstructor::class, $instance);
     }
 
     public function testGet_WhenCalledMultipleTimes_ReturnsDistinctInstances(): void
     {
+        // Arrange
         $strategy = $this->createStrategy();
 
-        self::assertNotSame(
-            $strategy->get(fn () => new FakeClassNoConstructor()),
-            $strategy->get(fn () => new FakeClassNoConstructor())
-        );
+        // Act
+        $firstInstance = $strategy->get(fn () => new FakeClassNoConstructor());
+        $secondInstance = $strategy->get(fn () => new FakeClassNoConstructor());
+
+        // Assert
+        self::assertNotSame($firstInstance, $secondInstance);
     }
 }

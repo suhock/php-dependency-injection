@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2022-2023 Matthew Suhocki. All rights reserved.
+ * Copyright (c) 2022-2026 Matthew Suhocki. All rights reserved.
  *
  * This software is licensed under the terms of the MIT License <https://opensource.org/licenses/MIT>.
  * The above copyright notice and this notice shall be included in all copies or substantial portions of this software.
@@ -48,13 +48,16 @@ class ContainerSingletonBuilderTraitTest extends DependencyInjectionTestCase
 
     public function testAddSingletonClass_WithValidClassName_GetReturnsInstanceOfClass(): void
     {
+        // Arrange
         $container = $this->createContainer()->addSingletonClass(FakeClassNoConstructor::class);
 
+        // Act & Assert
         $this->assertSingleton($container, FakeClassNoConstructor::class);
     }
 
     public function testAddSingletonClass_WithMutator_GetReturnsMutatedInstance(): void
     {
+        // Arrange
         $container = $this->createContainer()
             ->addSingletonClass(
                 FakeClassNoConstructor::class,
@@ -63,15 +66,21 @@ class ContainerSingletonBuilderTraitTest extends DependencyInjectionTestCase
                 }
             );
 
-        self::assertSame('test', $container->get(FakeClassNoConstructor::class)->string);
+        // Act
+        $result = $container->get(FakeClassNoConstructor::class);
+
+        // Assert
+        self::assertSame('test', $result->string);
     }
 
     public function testAddSingletonImplementation_WithSubclass_GetReturnsInstanceOfSubclass(): void
     {
+        // Arrange
         $container = $this->createContainer()
             ->addSingletonClass(FakeClassExtendsNoConstructor::class)
             ->addSingletonImplementation(FakeClassNoConstructor::class, FakeClassExtendsNoConstructor::class);
 
+        // Act & Assert
         $this->assertSingleton(
             $container,
             FakeClassNoConstructor::class,
@@ -81,40 +90,52 @@ class ContainerSingletonBuilderTraitTest extends DependencyInjectionTestCase
 
     public function testAddSingletonImplementation_WithImplementationSameAsClass_ThrowsImplementationException(): void
     {
+        // Arrange
         $container = $this->createContainer();
 
+        // Act
+        $fn = static fn () => $container->addSingletonImplementation(
+            FakeClassNoConstructor::class,
+            FakeClassNoConstructor::class
+        );
+
+        // Assert
         self::assertThrowsImplementationException(
             FakeClassNoConstructor::class,
             FakeClassNoConstructor::class,
-            static fn () => $container->addSingletonImplementation(
-                FakeClassNoConstructor::class,
-                FakeClassNoConstructor::class
-            )
+            $fn
         );
     }
 
     public function testAddSingletonImplementation_WithImplementationNotSubclass_ThrowsImplementationException(): void
     {
+        // Arrange
         $container = $this->createContainer();
 
+        // Act
+        $fn = static fn () => $container->addSingletonImplementation(
+            FakeClassExtendsNoConstructor::class,
+            FakeClassNoConstructor::class
+        );
+
+        // Assert
         self::assertThrowsImplementationException(
             FakeClassExtendsNoConstructor::class,
             FakeClassNoConstructor::class,
-            static fn () => $container->addSingletonImplementation(
-                FakeClassExtendsNoConstructor::class,
-                FakeClassNoConstructor::class
-            )
+            $fn
         );
     }
 
     public function testAddSingletonFactory_WithFactory_GetReturnsValueFromFactory(): void
     {
+        // Arrange
         $container = $this->createContainer()
             ->addSingletonFactory(
                 FakeClassNoConstructor::class,
                 fn () => new FakeClassExtendsNoConstructor()
             );
 
+        // Act & Assert
         $this->assertSingleton(
             $container,
             FakeClassNoConstructor::class,
@@ -124,9 +145,14 @@ class ContainerSingletonBuilderTraitTest extends DependencyInjectionTestCase
 
     public function testAddSingletonFactory_WhenFactoryReturnsNull_GetThrowsInstanceTypeException(): void
     {
+        // Arrange
         $container = $this->createContainer()
             ->addSingletonFactory(FakeClassNoConstructor::class, fn () => null);
 
+        // Act
+        $fn = static fn () => $container->get(FakeClassNoConstructor::class);
+
+        // Assert
         self::assertThrowsClassResolutionException(
             FakeClassNoConstructor::class,
             static fn (InstanceTypeException $exception) => self::assertInstanceTypeException(
@@ -134,18 +160,23 @@ class ContainerSingletonBuilderTraitTest extends DependencyInjectionTestCase
                 null,
                 $exception
             ),
-            static fn () => $container->get(FakeClassNoConstructor::class)
+            $fn
         );
     }
 
     public function testAddSingletonFactory_WhenReturnTypeIsWrong_GetThrowsInstanceTypeException(): void
     {
+        // Arrange
         $container = $this->createContainer()
             ->addSingletonFactory(
                 FakeClassNoConstructor::class,
                 fn () => new LogicException()
             );
 
+        // Act
+        $fn = static fn () => $container->get(FakeClassNoConstructor::class);
+
+        // Assert
         self::assertThrowsClassResolutionException(
             FakeClassNoConstructor::class,
             static fn (InstanceTypeException $exception) => self::assertInstanceTypeException(
@@ -153,15 +184,17 @@ class ContainerSingletonBuilderTraitTest extends DependencyInjectionTestCase
                 LogicException::class,
                 $exception
             ),
-            static fn () => $container->get(FakeClassNoConstructor::class)
+            $fn
         );
     }
 
     public function testAddSingletonInstance_WithValidInstance_GetReturnsInstance(): void
     {
+        // Arrange
         $container = $this->createContainer()
             ->addSingletonInstance(FakeClassNoConstructor::class, new FakeClassNoConstructor());
 
+        // Act & Assert
         $this->assertSingleton(
             $container,
             FakeClassNoConstructor::class,
@@ -171,30 +204,38 @@ class ContainerSingletonBuilderTraitTest extends DependencyInjectionTestCase
 
     public function testAddSingletonInstance_WhenInstanceIsWrongType_ThrowsInstanceTypeException(): void
     {
+        // Arrange
         $container = $this->createContainer();
 
+        // Act
+        $fn = static fn () => $container->addSingletonInstance(
+            FakeClassExtendsNoConstructor::class,
+            new FakeClassNoConstructor()
+        );
+
+        // Assert
         self::assertThrowsInstanceTypeException(
             FakeClassExtendsNoConstructor::class,
             FakeClassNoConstructor::class,
-            static fn () => $container->addSingletonInstance(
-                FakeClassExtendsNoConstructor::class,
-                new FakeClassNoConstructor()
-            )
+            $fn
         );
     }
 
     public function testAddSingletonContainer_WithContainer_GetReturnsValueFromContainer(): void
     {
+        // Arrange
         $container = $this->createContainer()
             ->addSingletonContainer(
                 new FakeContainer([FakeClassNoConstructor::class => fn () => new FakeClassNoConstructor()])
             );
 
+        // Act & Assert
         $this->assertSingleton($container, FakeClassNoConstructor::class);
     }
 
     public function testAddSingletonContainer_WhenClassNotInContainer_GetThrowsClassNotFoundException(): void
     {
+        // Arrange
         $container = $this->createContainer()
             ->addSingletonContainer(
                 new FakeContainer([
@@ -202,16 +243,19 @@ class ContainerSingletonBuilderTraitTest extends DependencyInjectionTestCase
                 ])
             );
 
-        self::assertThrowsClassNotFoundException(
-            FakeClassNoConstructor::class,
-            static fn () => $container->get(FakeClassNoConstructor::class)
-        );
+        // Act
+        $fn = static fn () => $container->get(FakeClassNoConstructor::class);
+
+        // Assert
+        self::assertThrowsClassNotFoundException(FakeClassNoConstructor::class, $fn);
     }
 
     public function testAddSingletonNamespace_WithValidNamespace_GetReturnsInstance(): void
     {
+        // Arrange
         $container = $this->createContainer()->addSingletonNamespace(__NAMESPACE__);
 
+        // Act & Assert
         $this->assertSingleton(
             $container,
             FakeClassNoConstructor::class,
@@ -221,18 +265,22 @@ class ContainerSingletonBuilderTraitTest extends DependencyInjectionTestCase
 
     public function testAddSingletonNamespace_WithClassNotInNamespace_GetThrowsClassNotFoundException(): void
     {
+        // Arrange
         $container = $this->createContainer()->addSingletonNamespace(__NAMESPACE__);
 
-        self::assertThrowsClassNotFoundException(
-            DateTime::class,
-            static fn () => $container->get(DateTime::class)
-        );
+        // Act
+        $fn = static fn () => $container->get(DateTime::class);
+
+        // Assert
+        self::assertThrowsClassNotFoundException(DateTime::class, $fn);
     }
 
     public function testAddSingletonInterface_WithValidImplementation_GetReturnsInstance(): void
     {
+        // Arrange
         $container = $this->createContainer()->addSingletonInterface(FakeClassNoConstructor::class);
 
+        // Act & Assert
         $this->assertSingleton(
             $container,
             FakeClassExtendsNoConstructor::class,
@@ -242,22 +290,34 @@ class ContainerSingletonBuilderTraitTest extends DependencyInjectionTestCase
 
     public function testAddSingletonInterface_WhenImplementationNotSubclass_GetThrowsClassNotFoundException(): void
     {
+        // Arrange
         $container = $this->createContainer()->addSingletonInterface(FakeClassNoConstructor::class);
 
-        self::assertThrowsClassNotFoundException(DateTime::class, static fn () => $container->get(DateTime::class));
+        // Act
+        $fn = static fn () => $container->get(DateTime::class);
+
+        // Assert
+        self::assertThrowsClassNotFoundException(DateTime::class, $fn);
     }
 
     public function testAddSingletonAttribute_WhenClassHasAttribute_GetReturnsInstance(): void
     {
+        // Arrange
         $container = $this->createContainer()->addSingletonAttribute(FakeAttribute::class);
 
+        // Act & Assert
         $this->assertSingleton($container, FakeClassWithAttribute::class);
     }
 
     public function testAddSingletonAttribute_WhenClassDoesNotHaveAttribute_GetThrowsClassNotFoundException(): void
     {
+        // Arrange
         $container = $this->createContainer()->addSingletonAttribute(FakeAttribute::class);
 
-        self::assertThrowsClassNotFoundException(DateTime::class, static fn () => $container->get(DateTime::class));
+        // Act
+        $fn = static fn () => $container->get(DateTime::class);
+
+        // Assert
+        self::assertThrowsClassNotFoundException(DateTime::class, $fn);
     }
 }

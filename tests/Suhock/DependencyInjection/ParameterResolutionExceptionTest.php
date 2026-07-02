@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2022-2023 Matthew Suhocki. All rights reserved.
+ * Copyright (c) 2022-2026 Matthew Suhocki. All rights reserved.
  *
  * This software is licensed under the terms of the MIT License <https://opensource.org/licenses/MIT>.
  * The above copyright notice and this notice shall be included in all copies or substantial portions of this software.
@@ -30,29 +30,49 @@ class ParameterResolutionExceptionTest extends TestCase
 
     public function testGetMessage_HasFunctionName_ContainsFunctionName(): void
     {
+        // Arrange
         $exception = $this->createException();
 
-        self::assertStringContainsString('fakeFunction', $exception->getMessage());
+        // Act
+        $message = $exception->getMessage();
+
+        // Assert
+        self::assertStringContainsString('fakeFunction', $message);
     }
 
     public function testGetMessage_HasParameterName_ContainsParameterName(): void
     {
+        // Arrange
         $exception = $this->createException();
 
-        self::assertStringContainsString('fakeParameter', $exception->getMessage());
+        // Act
+        $message = $exception->getMessage();
+
+        // Assert
+        self::assertStringContainsString('fakeParameter', $message);
     }
 
     public function testGetMessage_HasParameterType_ContainsParameterType(): void
     {
+        // Arrange
         $exception = $this->createException();
 
-        self::assertStringContainsString('string', $exception->getMessage());
+        // Act
+        $message = $exception->getMessage();
+
+        // Assert
+        self::assertStringContainsString('string', $message);
     }
 
     public function testGetReflectionParameter_ReturnsReflectionParameter(): void
     {
+        // Arrange
         $exception = $this->createException();
 
-        self::assertInstanceOf(ReflectionParameter::class, $exception->getReflectionParameter());
+        // Act
+        $reflectionParameter = $exception->getReflectionParameter();
+
+        // Assert
+        self::assertInstanceOf(ReflectionParameter::class, $reflectionParameter);
     }
 }

@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2022-2023 Matthew Suhocki. All rights reserved.
+ * Copyright (c) 2022-2026 Matthew Suhocki. All rights reserved.
  *
  * This software is licensed under the terms of the MIT License <https://opensource.org/licenses/MIT>.
  * The above copyright notice and this notice shall be included in all copies or substantial portions of this software.
@@ -22,6 +22,7 @@ class ImplementationInstanceProviderTest extends DependencyInjectionTestCase
 {
     public function testGet_WithValidSubclass_ReturnsInstanceOfSubclass(): void
     {
+        // Arrange
         $container = $this->createMock(ContainerInterface::class);
         $container->method('has')->willReturn(true);
         $container->expects(self::once())
@@ -35,32 +36,44 @@ class ImplementationInstanceProviderTest extends DependencyInjectionTestCase
             $container
         );
 
-        self::assertInstanceOf(FakeClassExtendsNoConstructor::class, $factory->get());
+        // Act
+        $instance = $factory->get();
+
+        // Assert
+        self::assertInstanceOf(FakeClassExtendsNoConstructor::class, $instance);
     }
 
     public function testGet_WhenImplementationSameAsInterface_ThrowsImplementationException(): void
     {
+        // Arrange & Act
+        $fn = fn () => new ImplementationInstanceProvider(
+            FakeClassNoConstructor::class,
+            FakeClassNoConstructor::class,
+            $this->createStub(ContainerInterface::class)
+        );
+
+        // Assert
         self::assertThrowsImplementationException(
             FakeClassNoConstructor::class,
             FakeClassNoConstructor::class,
-            fn () => new ImplementationInstanceProvider(
-                FakeClassNoConstructor::class,
-                FakeClassNoConstructor::class,
-                $this->createStub(ContainerInterface::class)
-            )
+            $fn
         );
     }
 
     public function testGet_WhenImplementationNotSubclassOfInterface_ThrowsImplementationException(): void
     {
+        // Arrange & Act
+        $fn = fn () => new ImplementationInstanceProvider(
+            FakeClassExtendsNoConstructor::class,
+            FakeClassNoConstructor::class,
+            $this->createStub(ContainerInterface::class)
+        );
+
+        // Assert
         self::assertThrowsImplementationException(
             FakeClassExtendsNoConstructor::class,
             FakeClassNoConstructor::class,
-            fn () => new ImplementationInstanceProvider(
-                FakeClassExtendsNoConstructor::class,
-                FakeClassNoConstructor::class,
-                $this->createStub(ContainerInterface::class)
-            )
+            $fn
         );
     }
 }

@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2022-2023 Matthew Suhocki. All rights reserved.
+ * Copyright (c) 2022-2026 Matthew Suhocki. All rights reserved.
  *
  * This software is licensed under the terms of the MIT License <https://opensource.org/licenses/MIT>.
  * The above copyright notice and this notice shall be included in all copies or substantial portions of this software.
@@ -17,69 +17,97 @@ class AttributeContainerTest extends DependencyInjectionTestCase
 {
     public function testGet_WithDefaultInjectorDefaultFactory_ReturnsAutowiredInstance(): void
     {
+        // Arrange
         $container = new AttributeContainer(FakeAttribute::class);
 
-        self::assertInstanceOf(
-            FakeClassWithAttribute::class,
-            $container->get(FakeClassWithAttribute::class)
-        );
+        // Act
+        $instance = $container->get(FakeClassWithAttribute::class);
+
+        // Assert
+        self::assertInstanceOf(FakeClassWithAttribute::class, $instance);
     }
 
     public function testGet_WithExplicitInjectorExplicitFactory_ReturnsInstanceFromFactory(): void
     {
+        // Arrange
         $container = new AttributeContainer(
             FakeAttribute::class,
             factory: fn (string $className, FakeAttribute $attr) => new FakeClassWithAttribute($attr->value)
         );
 
+        // Act
         $result = $container->get(FakeClassWithAttribute::class);
+
+        // Assert
         self::assertInstanceOf(FakeClassWithAttribute::class, $result);
         self::assertSame('test', $result->value);
     }
 
     public function testGet_WhenClassDoesNotHaveAttribute_ThrowsClassNotFoundException(): void
     {
+        // Arrange
         $container = new AttributeContainer(FakeAttribute::class);
 
-        self::assertThrowsClassNotFoundException(
-            FakeClassWithContexts::class,
-            static fn () => $container->get(FakeClassWithContexts::class)
-        );
+        // Act
+        $fn = static fn () => $container->get(FakeClassWithContexts::class);
+
+        // Assert
+        self::assertThrowsClassNotFoundException(FakeClassWithContexts::class, $fn);
     }
 
     public function testGet_WhenClassDoesNotExist_ThrowsClassNotFoundException(): void
     {
+        // Arrange
         $container = new AttributeContainer(FakeAttribute::class);
 
+        // Act
+        /** @phpstan-ignore-next-line */
+        $fn = static fn () => $container->get('NonExistentClass');
+
+        // Assert
         self::assertThrowsClassNotFoundException(
             /** @phpstan-ignore-next-line */
             'NonExistentClass',
-            /** @phpstan-ignore-next-line */
-            static fn () => $container->get('NonExistentClass')
+            $fn
         );
     }
 
     public function testHas_WhenClassHasAttribute_ReturnsTrue(): void
     {
+        // Arrange
         $container = new AttributeContainer(FakeAttribute::class);
 
-        self::assertTrue($container->has(FakeClassWithAttribute::class));
+        // Act
+        $result = $container->has(FakeClassWithAttribute::class);
+
+        // Assert
+        self::assertTrue($result);
     }
 
     public function testHas_WhenClassDoesNotHaveAttribute_ReturnsFalse(): void
     {
+        // Arrange
         $container = new AttributeContainer(FakeAttribute::class);
 
-        self::assertFalse($container->has(FakeClassWithContexts::class));
+        // Act
+        $result = $container->has(FakeClassWithContexts::class);
+
+        // Assert
+        self::assertFalse($result);
     }
 
     public function testHas_WhenClassDoesNotExist_ReturnsFalse(): void
     {
+        // Arrange
         $container = new AttributeContainer(FakeAttribute::class);
 
+        // Act
         /**
          * @phpstan-ignore-next-line
          */
-        self::assertFalse($container->has('NonExistentClass'));
+        $result = $container->has('NonExistentClass');
+
+        // Assert
+        self::assertFalse($result);
     }
 }

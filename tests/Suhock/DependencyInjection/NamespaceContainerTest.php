@@ -22,16 +22,19 @@ class NamespaceContainerTest extends DependencyInjectionTestCase
 {
     public function testGet_WithDefaultInjectorAndDefaultFactory_ReturnsInstance(): void
     {
+        // Arrange
         $container = new NamespaceContainer(__NAMESPACE__);
 
-        self::assertInstanceOf(
-            FakeClassNoConstructor::class,
-            $container->get(FakeClassNoConstructor::class)
-        );
+        // Act
+        $instance = $container->get(FakeClassNoConstructor::class);
+
+        // Assert
+        self::assertInstanceOf(FakeClassNoConstructor::class, $instance);
     }
 
     public function testGet_WithExplicitInjectorAndExplicitFactory_UsesInjectorAndFactory(): void
     {
+        // Arrange
         $container = $this->createStub(ContainerInterface::class);
         $container->method('get')
             ->willReturnCallback(fn (string $className) => match ($className) {
@@ -49,8 +52,10 @@ class NamespaceContainerTest extends DependencyInjectionTestCase
                 new FakeClassWithContexts($throwable, $runtimeException)
         );
 
+        // Act
         $result = $namespaceContainer->get(FakeClassWithContexts::class);
 
+        // Assert
         self::assertInstanceOf(FakeClassWithContexts::class, $result);
         self::assertSame('test1', $result->throwable->getMessage());
         self::assertSame('test2', $result->runtimeException->getMessage());
@@ -58,43 +63,65 @@ class NamespaceContainerTest extends DependencyInjectionTestCase
 
     public function testGet_WithClassNotInNamespace_ThrowsClassNotFoundException(): void
     {
+        // Arrange
         $container = new NamespaceContainer(
             __NAMESPACE__,
             $this->createStub(InjectorInterface::class),
             fn () => null
         );
 
-        self::assertThrowsClassNotFoundException(
-            DateTime::class,
-            static fn () => $container->get(DateTime::class)
-        );
+        // Act
+        $fn = static fn () => $container->get(DateTime::class);
+
+        // Assert
+        self::assertThrowsClassNotFoundException(DateTime::class, $fn);
     }
 
     public function testHas_WithClassInNamespace_ReturnsTrue(): void
     {
+        // Arrange
         $container = new NamespaceContainer(__NAMESPACE__);
 
-        self::assertTrue($container->has(FakeClassNoConstructor::class));
+        // Act
+        $result = $container->has(FakeClassNoConstructor::class);
+
+        // Assert
+        self::assertTrue($result);
     }
 
     public function testHas_WithClassNotInNamespace_ReturnsFalse(): void
     {
+        // Arrange
         $container = new NamespaceContainer(__NAMESPACE__);
 
-        self::assertFalse($container->has(DateTime::class));
+        // Act
+        $result = $container->has(DateTime::class);
+
+        // Assert
+        self::assertFalse($result);
     }
 
     public function testHas_WithRootNamespaceAndClassInRootNamespace_ReturnsTrue(): void
     {
+        // Arrange
         $container = new NamespaceContainer('');
 
-        self::assertTrue($container->has(DateTime::class));
+        // Act
+        $result = $container->has(DateTime::class);
+
+        // Assert
+        self::assertTrue($result);
     }
 
     public function testHas_WithRootNamespaceAndClassInOtherNamespace_ReturnsTrue(): void
     {
+        // Arrange
         $container = new NamespaceContainer('');
 
-        self::assertTrue($container->has(FakeClassNoConstructor::class));
+        // Act
+        $result = $container->has(FakeClassNoConstructor::class);
+
+        // Assert
+        self::assertTrue($result);
     }
 }

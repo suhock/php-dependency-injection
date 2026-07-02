@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2022-2023 Matthew Suhocki. All rights reserved.
+ * Copyright (c) 2022-2026 Matthew Suhocki. All rights reserved.
  *
  * This software is licensed under the terms of the MIT License <https://opensource.org/licenses/MIT>.
  * The above copyright notice and this notice shall be included in all copies or substantial portions of this software.
@@ -24,6 +24,7 @@ class ClosureInstanceProviderTest extends DependencyInjectionTestCase
 {
     public function testGet_WithFactoryFunction_ReturnsValueFromFactoryFunction(): void
     {
+        // Arrange
         $factory = new ClosureInstanceProvider(
             FakeClassNoConstructor::class,
             $factoryMethod = static fn () => new FakeClassNoConstructor(),
@@ -35,11 +36,16 @@ class ClosureInstanceProviderTest extends DependencyInjectionTestCase
             ->with($factoryMethod)
             ->willReturnCallback(fn () => $factoryMethod());
 
-        self::assertInstanceOf(FakeClassNoConstructor::class, $factory->get());
+        // Act
+        $instance = $factory->get();
+
+        // Assert
+        self::assertInstanceOf(FakeClassNoConstructor::class, $instance);
     }
 
     public function testGet_WhenFactoryReturnsNull_ThrowsInstanceTypeException(): void
     {
+        // Arrange
         $factory = new ClosureInstanceProvider(
             FakeClassNoConstructor::class,
             $factoryMethod = static fn () => null,
@@ -51,25 +57,34 @@ class ClosureInstanceProviderTest extends DependencyInjectionTestCase
             ->with($factoryMethod)
             ->willReturnCallback(fn () => $factoryMethod());
 
+        // Act
+        $fn = static fn () => self::assertNull($factory->get());
+
+        // Assert
         self::assertThrowsInstanceTypeException(
             FakeClassNoConstructor::class,
             null,
-            static fn () => self::assertNull($factory->get())
+            $fn
         );
     }
 
     public function testGet_WhenFactoryReturnsWrongType_ThrowsInstanceTypeException(): void
     {
+        // Arrange
         $factory = new ClosureInstanceProvider(
             FakeClassExtendsNoConstructor::class,
             fn () => new FakeClassNoConstructor(),
             new ContainerInjector($this->createStub(ContainerInterface::class))
         );
 
+        // Act
+        $fn = static fn () => $factory->get();
+
+        // Assert
         self::assertThrowsInstanceTypeException(
             FakeClassExtendsNoConstructor::class,
             FakeClassNoConstructor::class,
-            static fn () => $factory->get()
+            $fn
         );
     }
 }

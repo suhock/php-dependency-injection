@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2022-2023 Matthew Suhocki. All rights reserved.
+ * Copyright (c) 2022-2026 Matthew Suhocki. All rights reserved.
  *
  * This software is licensed under the terms of the MIT License <https://opensource.org/licenses/MIT>.
  * The above copyright notice and this notice shall be included in all copies or substantial portions of this software.
@@ -29,15 +29,25 @@ class CircularDependencyExceptionTest extends TestCase
 
     public function testGetMessage_HasClassName_ContainsClassName(): void
     {
+        // Arrange
         $exception = $this->createException();
 
-        self::assertStringContainsString(self::TEST_CLASS, $exception->getMessage());
+        // Act
+        $message = $exception->getMessage();
+
+        // Assert
+        self::assertStringContainsString(self::TEST_CLASS, $message);
     }
 
     public function testGetClassName_HasClassName_ReturnsClassName(): void
     {
+        // Arrange
         $exception = $this->createException();
 
-        self::assertSame(self::TEST_CLASS, $exception->getClassName());
+        // Act
+        $className = $exception->getClassName();
+
+        // Assert
+        self::assertSame(self::TEST_CLASS, $className);
     }
 }
