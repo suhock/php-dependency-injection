@@ -18,7 +18,7 @@ use Suhock\DependencyInjection\Fakes\FakeClassImplementsInterfaces;
 use Suhock\DependencyInjection\Fakes\FakeClassNoConstructor;
 use Suhock\DependencyInjection\Fakes\FakeClassWithAutowireFunction;
 use Suhock\DependencyInjection\Fakes\FakeClassWithConstructor;
-use Suhock\DependencyInjection\Fakes\FakeClassWithContexts;
+use Suhock\DependencyInjection\Fakes\FakeClassWithDependencies;
 use Suhock\DependencyInjection\Fakes\FakeContainer;
 use Suhock\DependencyInjection\Fakes\FakeInterfaceOne;
 use Suhock\DependencyInjection\Fakes\FakeInterfaceThree;
@@ -51,10 +51,10 @@ class InjectorTest extends DependencyInjectionTestCase
             Throwable::class => fn () => $logicException,
             LogicException::class => fn () => $logicException,
             RuntimeException::class => fn () => new RuntimeException('test')
-        ])->instantiate(FakeClassWithContexts::class);
+        ])->instantiate(FakeClassWithDependencies::class);
 
         // Assert
-        self::assertInstanceOf(FakeClassWithContexts::class, $instance);
+        self::assertInstanceOf(FakeClassWithDependencies::class, $instance);
         self::assertSame($logicException, $instance->throwable);
         self::assertSame('test', $instance->runtimeException->getMessage());
     }
@@ -102,7 +102,7 @@ class InjectorTest extends DependencyInjectionTestCase
         // Act & Assert
         // missing argument of type RuntimeException
         $this->expectException(InjectorException::class);
-        $injector->instantiate(FakeClassWithContexts::class);
+        $injector->instantiate(FakeClassWithDependencies::class);
     }
 
     public function testInstantiate_WithNamedParametersAlsoResolvableFromContainer_UsesNamedParameters(): void
@@ -115,7 +115,7 @@ class InjectorTest extends DependencyInjectionTestCase
         $override = new RuntimeException();
 
         // Act
-        $result = $injector->instantiate(FakeClassWithContexts::class, [
+        $result = $injector->instantiate(FakeClassWithDependencies::class, [
             'runtimeException' => $override
         ])->runtimeException;
 
@@ -133,7 +133,7 @@ class InjectorTest extends DependencyInjectionTestCase
         $override = new RuntimeException();
 
         // Act
-        $result = $injector->instantiate(FakeClassWithContexts::class, [
+        $result = $injector->instantiate(FakeClassWithDependencies::class, [
             1 => $override
         ])->runtimeException;
 

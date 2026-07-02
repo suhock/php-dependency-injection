@@ -11,6 +11,7 @@ declare(strict_types=1);
 namespace Suhock\DependencyInjection;
 
 use Suhock\DependencyInjection\Fakes\FakeClassNoConstructor;
+use Suhock\DependencyInjection\Fakes\FakeUnitEnum;
 
 /**
  * Test suite for {@see ContainerInjector}.

@@ -11,22 +11,17 @@ declare(strict_types=1);
 namespace Suhock\DependencyInjection\Fakes;
 
 use RuntimeException;
-use Suhock\DependencyInjection\Context\Context;
 use Throwable;
 
 /**
- * Fakes a simple class which specifies contexts at various scopes.
+ * Fakes a simple class with multiple constructor dependencies.
  */
-#[Context('context1')]
-class FakeClassWithContexts
+class FakeClassWithDependencies
 {
     public readonly Throwable $throwable;
 
-    #[Context('context2')]
     public function __construct(
-        #[Context('context3')]
         Throwable $throwable,
-        #[Context('context4')]
         public readonly RuntimeException $runtimeException
     ) {
         $this->throwable = $throwable;

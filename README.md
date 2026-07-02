@@ -21,10 +21,9 @@ implementation of the same type as [keyed services](#keyed-services). You can
 easily extend the default `Container` implementation with your own custom
 lifetime strategies, instance providers, or nested containers to fit your needs.
 
-The library also provides a [`ContextContainer` class](#context-container) for
-cascading dependency resolution down a nested context hierarchy and an
-[`Injector` class](#dependency-injector) for injecting dependencies and explicit
-parameters into a specific function or constructor.
+The library also provides an [`Injector` class](#dependency-injector) for
+injecting dependencies and explicit parameters into a specific function or
+constructor.
 
 ## Table of Contents
 
@@ -47,7 +46,6 @@ parameters into a specific function or constructor.
   - [Custom instance providers](#custom-instance-providers)
   - [Custom nested containers](#custom-nested-containers)
 - [Keyed services](#keyed-services)
-- [Context Container](#context-container)
 - [Dependency Injector](#dependency-injector)
 - [Specifying dependencies](#specifying-dependencies)
   - [Named object types](#named-object-types)
@@ -755,7 +753,7 @@ under a specific key. As with `get()`, the lookup is absolute: if the container
 has no registration for the key, it will throw a `ParameterResolutionException`.
 
 ```php
-use Suhock\DependencyInjection\Keyed\Key;
+use Suhock\DependencyInjection\Key;
 
 class AdminController
 {
@@ -770,113 +768,6 @@ class AdminController
          */
         #[Key('admin')]
         private readonly Settings $adminSettings
-    ) {
-    }
-}
-```
-
-## Context Container
-
-The `ContextContainer` class provides a collection of named containers
-(contexts) that can be used for providing different construction for the same
-class in different parts of your application. Contexts can be named with strings
-or enum values.
-
-The context container utilizes a context stack for resolving dependencies. The
-stack can be managed by the `push()` and `pop()` methods, or using the `Context`
-attribute on class, function, or parameter declarations.
-
-```php
-use Suhock\DependencyInjection\Context\ContextContainerFactory;
-use Suhock\DependencyInjection\Context\Context;
-
-/*
- * Strings or enums can be used as identifiers for contexts. To help ease
- * analysis and future refactorings, enums or string-typed constants are
- * recommended.
- */
-enum MyContexts {
-    case Default;
-    case Admin;
-}
-
-$container = ContextContainerFactory::createForDefaultContainer();
-
-/*
- * Build the Default context's container.
- */
-$container->context(MyContexts::Default)
-    ->addSingletonClass(MyApplication::class)
-    ->addTransientImplementation(HttpClient::class, CurlHttpClient::class)
-    ->addSingletonFactory(
-        Settings::class,
-        fn () => JsonSettings::fromFile('default.json')
-    );
-
-/*
- * Build the Admin context's container.
- */
-$container->context(MyContexts::Admin)
-    ->addSingletonFactory(
-        Settings::class,
-        fn () => JsonSettings::fromFile('admin.json')
-    );
-
-$container
-    /*
-     * Make Default the default, fallback context.
-     * Stack: Default
-     */
-    ->push(MyContexts::Default)
-
-    /*
-     * Fetch the application and run it.
-     */
-    ->get(MyApplication::class)
-    ->run();
-
-/*
- * Stack: Default, Admin
- *
- * The container will search the Admin context then the Default context for
- * each dependency in the following class.
- */
-#[Context(MyContexts::Admin)]
-class AdminEditDefaultSettingsController {
-    /*
-     * Stack: Default, Admin
-     *
-     * Since no context is explicitly specified, the stack is inherited as-is
-     * from the class.
-     */
-    public function __construct(
-        /*
-         * Stack: Default, Admin
-         *
-         * The container will resolve $settings using the Settings factory in
-         * the Admin context, since Admin is at the top of the context stack.
-         */
-        private readonly Settings $settings,
-
-        /*
-         * Stack: Default, Admin, Default
-         *
-         * The container will resolve $defaultSettings using the Settings
-         * factory in the Default context, since the attribute below will
-         * place Default at the top of the context stack for this parameter.
-         */
-        #[Context(MyContexts::Default)]
-        private readonly Settings $defaultSettings,
-
-        /*
-         * Stack: Default, Admin
-         *
-         * The container will first attempt to resolve $httpClient using the
-         * Admin context. However, since HttpClient does not exist in the
-         * the Admin context, the container will resolve it using the factory
-         * in the Default context.
-         */
-        private readonly HttpClient $httpClient
     ) {
     }
 }

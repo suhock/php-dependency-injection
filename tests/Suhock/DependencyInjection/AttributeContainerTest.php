@@ -12,7 +12,7 @@ namespace Suhock\DependencyInjection;
 
 use Suhock\DependencyInjection\Fakes\FakeAttribute;
 use Suhock\DependencyInjection\Fakes\FakeClassWithAttribute;
-use Suhock\DependencyInjection\Fakes\FakeClassWithContexts;
+use Suhock\DependencyInjection\Fakes\FakeClassWithDependencies;
 
 /**
  * Test suite for {@see AttributeContainer}.
@@ -53,10 +53,10 @@ class AttributeContainerTest extends DependencyInjectionTestCase
         $container = new AttributeContainer(FakeAttribute::class);
 
         // Act
-        $fn = static fn () => $container->get(FakeClassWithContexts::class);
+        $fn = static fn () => $container->get(FakeClassWithDependencies::class);
 
         // Assert
-        self::assertThrowsClassNotFoundException(FakeClassWithContexts::class, $fn);
+        self::assertThrowsClassNotFoundException(FakeClassWithDependencies::class, $fn);
     }
 
     public function testGet_WhenClassDoesNotExist_ThrowsClassNotFoundException(): void
@@ -94,7 +94,7 @@ class AttributeContainerTest extends DependencyInjectionTestCase
         $container = new AttributeContainer(FakeAttribute::class);
 
         // Act
-        $result = $container->has(FakeClassWithContexts::class);
+        $result = $container->has(FakeClassWithDependencies::class);
 
         // Assert
         self::assertFalse($result);

@@ -13,7 +13,7 @@ namespace Suhock\DependencyInjection;
 use Suhock\DependencyInjection\Fakes\FakeClassExtendsNoConstructor;
 use Suhock\DependencyInjection\Fakes\FakeClassNoConstructor;
 use Suhock\DependencyInjection\Fakes\FakeClassWithConstructor;
-use Suhock\DependencyInjection\Fakes\FakeClassWithContexts;
+use Suhock\DependencyInjection\Fakes\FakeClassWithDependencies;
 use Suhock\DependencyInjection\Fakes\FakeInterfaceOne;
 
 /**
@@ -75,10 +75,10 @@ class InterfaceContainerTest extends DependencyInjectionTestCase
         $container = new InterfaceContainer(FakeClassNoConstructor::class);
 
         // Act
-        $fn = static fn () => $container->get(FakeClassWithContexts::class);
+        $fn = static fn () => $container->get(FakeClassWithDependencies::class);
 
         // Assert
-        self::assertThrowsClassNotFoundException(FakeClassWithContexts::class, $fn);
+        self::assertThrowsClassNotFoundException(FakeClassWithDependencies::class, $fn);
     }
 
     public function testHas_WithSubclassOfInterface_ReturnsTrue(): void
@@ -111,7 +111,7 @@ class InterfaceContainerTest extends DependencyInjectionTestCase
         $container = new InterfaceContainer(FakeClassNoConstructor::class);
 
         // Act
-        $result = $container->has(FakeClassWithContexts::class);
+        $result = $container->has(FakeClassWithDependencies::class);
 
         // Assert
         self::assertFalse($result);

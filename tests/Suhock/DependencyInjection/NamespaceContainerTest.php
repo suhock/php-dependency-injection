@@ -14,7 +14,7 @@ use DateTime;
 use Exception;
 use RuntimeException;
 use Suhock\DependencyInjection\Fakes\FakeClassNoConstructor;
-use Suhock\DependencyInjection\Fakes\FakeClassWithContexts;
+use Suhock\DependencyInjection\Fakes\FakeClassWithDependencies;
 use Throwable;
 
 /**
@@ -51,14 +51,14 @@ class NamespaceContainerTest extends DependencyInjectionTestCase
             __NAMESPACE__,
             new ContainerInjector($container),
             fn (string $className, Throwable $throwable, RuntimeException $runtimeException) =>
-                new FakeClassWithContexts($throwable, $runtimeException)
+                new FakeClassWithDependencies($throwable, $runtimeException)
         );
 
         // Act
-        $result = $namespaceContainer->get(FakeClassWithContexts::class);
+        $result = $namespaceContainer->get(FakeClassWithDependencies::class);
 
         // Assert
-        self::assertInstanceOf(FakeClassWithContexts::class, $result);
+        self::assertInstanceOf(FakeClassWithDependencies::class, $result);
         self::assertSame('test1', $result->throwable->getMessage());
         self::assertSame('test2', $result->runtimeException->getMessage());
     }

@@ -10,15 +10,12 @@ declare(strict_types=1);
 
 namespace Suhock\DependencyInjection\Fakes;
 
-use Suhock\DependencyInjection\Context\Context;
-
 /**
- * Fakes a simple class which specifies contexts at various scopes.
+ * Fakes a simple class annotated with a fake attribute.
  */
 #[FakeAttribute('test')]
 class FakeClassWithAttribute
 {
-    #[Context('context2')]
     public function __construct(
         public readonly string $value = ''
     ) {
