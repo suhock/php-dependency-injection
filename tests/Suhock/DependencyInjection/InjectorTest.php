@@ -34,7 +34,6 @@ class InjectorTest extends DependencyInjectionTestCase
      * @param array<callable> $classMapping
      *
      * @phpstan-param array<class-string, callable():object> $classMapping
-     * @return Injector
      */
     protected function createInjector(array $classMapping = []): Injector
     {

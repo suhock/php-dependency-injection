@@ -69,7 +69,7 @@ abstract class AbstractFactoryContainer implements ContainerInterface
      *
      * @param class-string<TClass> $className The name of the class to test
      *
-     * @return bool <code>true</code> if the container can provide a value, <code>false</code> otherwise
+     * @return bool <code>true</code> if the container can provide a service, <code>false</code> otherwise
      */
     abstract public function has(string $className, string|UnitEnum|null $key = null): bool;
 }

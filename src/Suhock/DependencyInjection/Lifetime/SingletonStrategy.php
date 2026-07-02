@@ -18,7 +18,7 @@ namespace Suhock\DependencyInjection\Lifetime;
  */
 final class SingletonStrategy extends LifetimeStrategy
 {
-    /** @var TClass */
+    /** @var TClass|null */
     private ?object $instance = null;
 
     /**

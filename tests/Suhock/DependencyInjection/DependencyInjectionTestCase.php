@@ -27,9 +27,6 @@ class DependencyInjectionTestCase extends TestCase
      *
      * @param class-string<TClass> $expectedException
      * @param callable(TClass):void $exceptionTest
-     * @param callable $codeUnderTest
-     *
-     * @return void
      */
     private static function assertThrowsThrowable(
         string $expectedException,
@@ -227,7 +224,6 @@ class DependencyInjectionTestCase extends TestCase
 
     /**
      * @param class-string $expectedClassName
-     * @param callable|null $previousExceptionTest
      * @param ClassResolutionException<object> $actualException
      */
     public static function assertClassResolutionException(

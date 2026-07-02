@@ -120,8 +120,6 @@ interface ContainerTransientBuilderInterface
     public function addTransientFactory(string $className, callable $factory): static;
 
     /**
-     * @param ContainerInterface $container
-     *
      * @return $this
      */
     public function addTransientContainer(ContainerInterface $container): static;

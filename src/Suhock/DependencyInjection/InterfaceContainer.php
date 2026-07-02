@@ -40,7 +40,7 @@ final class InterfaceContainer extends AbstractFactoryContainer
     /**
      * @param class-string $className The name of the class to test
      *
-     * @return bool <code>true</code> if the container can provide a value, <code>false</code> otherwise
+     * @return bool <code>true</code> if the container can provide a service, <code>false</code> otherwise
      */
     public function has(string $className, string|UnitEnum|null $key = null): bool
     {
