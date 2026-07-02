@@ -17,7 +17,7 @@ use Suhock\DependencyInjection\Fakes\FakeClassExtendsNoConstructor;
 use Suhock\DependencyInjection\Fakes\FakeClassNoConstructor;
 use Suhock\DependencyInjection\Fakes\FakeClassWithAttribute;
 use Suhock\DependencyInjection\Fakes\FakeContainer;
-use Suhock\DependencyInjection\Provision\InstanceTypeException;
+use Suhock\DependencyInjection\Provider\InstanceTypeException;
 
 /**
  * Test suite for {@see ContainerTransientBuilderTrait}.

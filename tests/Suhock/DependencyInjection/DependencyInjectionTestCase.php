@@ -13,8 +13,8 @@ namespace Suhock\DependencyInjection;
 use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\AssertionFailedError;
 use PHPUnit\Framework\TestCase;
-use Suhock\DependencyInjection\Provision\ImplementationException;
-use Suhock\DependencyInjection\Provision\InstanceTypeException;
+use Suhock\DependencyInjection\Provider\ImplementationException;
+use Suhock\DependencyInjection\Provider\InstanceTypeException;
 use Throwable;
 
 /**

@@ -8,7 +8,7 @@
 
 declare(strict_types=1);
 
-namespace Suhock\DependencyInjection\Provision;
+namespace Suhock\DependencyInjection\Provider;
 
 use Suhock\DependencyInjection\ClassNotFoundException;
 use Suhock\DependencyInjection\ContainerInterface;

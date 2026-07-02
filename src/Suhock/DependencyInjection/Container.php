@@ -12,7 +12,7 @@ namespace Suhock\DependencyInjection;
 
 use BackedEnum;
 use Suhock\DependencyInjection\Lifetime\LifetimeStrategy;
-use Suhock\DependencyInjection\Provision\ClosureInstanceProvider;
+use Suhock\DependencyInjection\Provider\ClosureInstanceProvider;
 use UnitEnum;
 use function is_string;
 

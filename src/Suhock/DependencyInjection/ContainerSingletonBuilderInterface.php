@@ -10,9 +10,9 @@ declare(strict_types=1);
 
 namespace Suhock\DependencyInjection;
 
-use Suhock\DependencyInjection\Provision\ImplementationException;
-use Suhock\DependencyInjection\Provision\InstanceProviderInterface;
-use Suhock\DependencyInjection\Provision\InstanceTypeException;
+use Suhock\DependencyInjection\Provider\ImplementationException;
+use Suhock\DependencyInjection\Provider\InstanceProviderInterface;
+use Suhock\DependencyInjection\Provider\InstanceTypeException;
 use UnitEnum;
 
 /**

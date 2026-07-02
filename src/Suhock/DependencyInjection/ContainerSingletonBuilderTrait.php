@@ -12,8 +12,8 @@ namespace Suhock\DependencyInjection;
 
 use Closure;
 use Suhock\DependencyInjection\Lifetime\SingletonStrategy;
-use Suhock\DependencyInjection\Provision\InstanceProviderFactory;
-use Suhock\DependencyInjection\Provision\InstanceProviderInterface;
+use Suhock\DependencyInjection\Provider\InstanceProviderFactory;
+use Suhock\DependencyInjection\Provider\InstanceProviderInterface;
 use UnitEnum;
 
 /**

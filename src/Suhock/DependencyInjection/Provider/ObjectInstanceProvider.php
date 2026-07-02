@@ -9,7 +9,7 @@
 
 declare(strict_types=1);
 
-namespace Suhock\DependencyInjection\Provision;
+namespace Suhock\DependencyInjection\Provider;
 
 /**
  * Factory that provides a previously constructed instance of the class.

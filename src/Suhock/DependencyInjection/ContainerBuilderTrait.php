@@ -11,7 +11,7 @@ declare(strict_types=1);
 namespace Suhock\DependencyInjection;
 
 use Suhock\DependencyInjection\Lifetime\LifetimeStrategy;
-use Suhock\DependencyInjection\Provision\InstanceProviderInterface;
+use Suhock\DependencyInjection\Provider\InstanceProviderInterface;
 use UnitEnum;
 
 /**
