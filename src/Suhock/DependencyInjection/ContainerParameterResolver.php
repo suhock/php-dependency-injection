@@ -19,6 +19,8 @@ use function count;
  * Resolves function parameters using a {@see ContainerInterface}, honoring the {@see Key} attribute on a parameter. A
  * keyed parameter is resolved absolutely against that key; an unkeyed parameter is resolved by type. Only the parameter
  * itself is inspected — no scope is tracked and the declaring function and class are not traversed.
+ *
+ * @internal
  */
 final class ContainerParameterResolver extends AbstractContainerParameterResolver
 {

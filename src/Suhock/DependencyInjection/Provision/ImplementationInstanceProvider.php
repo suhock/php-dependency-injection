@@ -19,6 +19,7 @@ use Suhock\DependencyInjection\ContainerInterface;
  *
  * @template TClass of object
  * @template-implements InstanceProviderInterface<TClass>
+ * @internal
  */
 final class ImplementationInstanceProvider implements InstanceProviderInterface
 {

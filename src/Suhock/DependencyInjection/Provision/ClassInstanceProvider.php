@@ -24,6 +24,7 @@ use Suhock\DependencyInjection\InjectorInterface;
  *
  * @template TClass of object
  * @template-implements InstanceProviderInterface<TClass>
+ * @internal
  */
 final class ClassInstanceProvider implements InstanceProviderInterface
 {

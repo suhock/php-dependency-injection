@@ -12,6 +12,8 @@ namespace Suhock\DependencyInjection;
 
 /**
  * Injects dependencies resolved from a container.
+ *
+ * @internal
  */
 final class ContainerInjector extends Injector
 {

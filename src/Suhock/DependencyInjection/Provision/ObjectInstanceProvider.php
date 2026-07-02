@@ -16,6 +16,7 @@ namespace Suhock\DependencyInjection\Provision;
  * @template TClass of object
  *
  * @template-implements InstanceProviderInterface<TClass>
+ * @internal
  */
 final class ObjectInstanceProvider implements InstanceProviderInterface
 {

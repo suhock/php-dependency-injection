@@ -15,6 +15,11 @@ use Suhock\DependencyInjection\ContainerInterface;
 use Suhock\DependencyInjection\InjectorInterface;
 use function is_string;
 
+/**
+ * Creates {@see InstanceProviderInterface} instances for the container's convenience builder methods.
+ *
+ * @internal
+ */
 final class InstanceProviderFactory
 {
     /**
