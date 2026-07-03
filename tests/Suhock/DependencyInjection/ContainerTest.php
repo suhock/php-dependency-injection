@@ -89,7 +89,7 @@ final class ContainerTest extends AbstractDependencyInjectionTestCase
         $container->addKeyed(FakeClassNoConstructor::class, 'key1', $lifetimeStrategy, $instanceProvider);
     }
 
-    public function testAddKeyed_WhenUnkeyedRegistrationExists_AddsIndependentKeyedDescriptor(): void
+    public function testAddKeyed_WhenUnkeyedServiceExists_AddsIndependentKeyedDescriptor(): void
     {
         // Arrange
         $container = $this->createContainer()
@@ -237,7 +237,7 @@ final class ContainerTest extends AbstractDependencyInjectionTestCase
         self::assertThrowsClassNotFoundException(FakeClassNoConstructor::class, $fn);
     }
 
-    public function testGet_WithoutKeyWhenOnlyKeyedRegistrationExists_ThrowsClassNotFoundException(): void
+    public function testGet_WithoutKeyWhenOnlyKeyedServiceExists_ThrowsClassNotFoundException(): void
     {
         // Arrange
         $container = $this->createContainer()
@@ -351,7 +351,7 @@ final class ContainerTest extends AbstractDependencyInjectionTestCase
         self::assertTrue($result);
     }
 
-    public function testHas_WithUnregisteredKeyWhenUnkeyedRegistrationExists_ReturnsFalse(): void
+    public function testHas_WithUnregisteredKeyWhenUnkeyedServiceExists_ReturnsFalse(): void
     {
         // Arrange
         $container = $this->createContainer()
@@ -364,7 +364,7 @@ final class ContainerTest extends AbstractDependencyInjectionTestCase
         self::assertFalse($result);
     }
 
-    public function testHas_WithoutKeyWhenOnlyKeyedRegistrationExists_ReturnsFalse(): void
+    public function testHas_WithoutKeyWhenOnlyKeyedServiceExists_ReturnsFalse(): void
     {
         // Arrange
         $container = $this->createContainer()

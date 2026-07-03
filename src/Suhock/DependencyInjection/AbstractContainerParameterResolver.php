@@ -28,6 +28,16 @@ abstract class AbstractContainerParameterResolver implements ParameterResolverIn
     ) {
     }
 
+    public function hasDependency(ResolvableDependency $dependency): bool
+    {
+        return $this->container->has($dependency->className, $dependency->key);
+    }
+
+    public function resolveDependency(ResolvableDependency $dependency): object
+    {
+        return $this->container->get($dependency->className, $dependency->key);
+    }
+
     /**
      * Should attempt to resolve the parameter to a concrete value using the container.
      *

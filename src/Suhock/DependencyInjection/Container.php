@@ -124,9 +124,9 @@ final class Container implements
     }
 
     /**
-     * Computes the internal storage id for a registration. Unkeyed registrations use the bare class name; keyed
-     * registrations use the class name and key joined by a NUL byte, which cannot occur in a class name, so a keyed id
-     * can never collide with an unkeyed one or with a different (class, key) pair.
+     * Computes the internal storage id for a service. Unkeyed services use the bare class name; keyed services use the
+     * class name and key joined by a NUL byte, which cannot occur in a class name, so a keyed id can never collide with
+     * an unkeyed one or with a different (class, key) pair.
      *
      * @param class-string $className
      */

@@ -37,7 +37,7 @@ final class ContainerParameterResolverTest extends AbstractDependencyInjectionTe
         return [$container, $injector];
     }
 
-    public function testCall_ParameterHasKey_ValueInjectedFromKeyedRegistration(): void
+    public function testCall_ParameterHasKey_ValueInjectedFromKeyedService(): void
     {
         // Arrange
         $expectedInstance = new FakeClassNoConstructor();
@@ -51,7 +51,7 @@ final class ContainerParameterResolverTest extends AbstractDependencyInjectionTe
         self::assertSame($expectedInstance, $result);
     }
 
-    public function testCall_ParameterHasEnumKey_ValueInjectedFromKeyedRegistration(): void
+    public function testCall_ParameterHasEnumKey_ValueInjectedFromKeyedService(): void
     {
         // Arrange
         $expectedInstance = new FakeClassNoConstructor();
@@ -65,7 +65,7 @@ final class ContainerParameterResolverTest extends AbstractDependencyInjectionTe
         self::assertSame($expectedInstance, $result);
     }
 
-    public function testCall_NoKey_ValueInjectedFromUnkeyedRegistration(): void
+    public function testCall_NoKey_ValueInjectedFromUnkeyedService(): void
     {
         // Arrange
         $expectedInstance = new FakeClassNoConstructor();

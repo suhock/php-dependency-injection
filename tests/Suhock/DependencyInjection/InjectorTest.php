@@ -19,6 +19,7 @@ use Suhock\DependencyInjection\Fakes\FakeClassNoConstructor;
 use Suhock\DependencyInjection\Fakes\FakeClassWithAutowireFunction;
 use Suhock\DependencyInjection\Fakes\FakeClassWithConstructor;
 use Suhock\DependencyInjection\Fakes\FakeClassWithDependencies;
+use Suhock\DependencyInjection\Fakes\FakeClassWithKeyedDependency;
 use Suhock\DependencyInjection\Fakes\FakeContainer;
 use Suhock\DependencyInjection\Fakes\FakeInterfaceOne;
 use Suhock\DependencyInjection\Fakes\FakeInterfaceThree;
@@ -163,6 +164,24 @@ final class InjectorTest extends AbstractDependencyInjectionTestCase
 
         // Assert
         self::assertSame($obj, $instance->obj);
+    }
+
+    public function testInstantiate_WithKeyedDependency_ResolvesKeyedServiceOverUnkeyed(): void
+    {
+        // Arrange
+        $unkeyed = new FakeClassNoConstructor();
+        $keyed = new FakeClassNoConstructor();
+        $container = Container::createDefault();
+        $container->addSingletonInstance(FakeClassNoConstructor::class, $unkeyed);
+        $container->addKeyedSingleton(FakeClassNoConstructor::class, 'key1', $keyed);
+        $injector = Injector::createDefault($container);
+
+        // Act
+        $instance = $injector->instantiate(FakeClassWithKeyedDependency::class);
+
+        // Assert
+        self::assertSame($keyed, $instance->dependency);
+        self::assertNotSame($unkeyed, $instance->dependency);
     }
 
     public function testCall_WithFunction_InjectsDependenciesAndReturnsResult(): void

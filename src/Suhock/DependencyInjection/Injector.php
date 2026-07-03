@@ -14,7 +14,6 @@ use ReflectionClass;
 use ReflectionException;
 use ReflectionFunction;
 use ReflectionMethod;
-use ReflectionNamedType;
 use ReflectionParameter;
 use Suhock\DependencyInjection\Cache\CacheInterface;
 use function array_key_exists;
@@ -29,37 +28,36 @@ final class Injector implements InjectorInterface
     /** Cache id prefix for the list of {@see Autowire} method names on a class. */
     private const AUTOWIRE_METHODS_CACHE_PREFIX = 'sdi:autowireMethods:';
 
-    /** Cache id prefix for the flat fast-path constructor dependency list of a class. */
+    /** Cache id prefix for the fast-path constructor dependency list of a class. */
     private const FAST_PATH_DEPS_CACHE_PREFIX = 'sdi:fastPathDeps:';
 
     /**
-     * In-process (L1) metadata cache, living for this injector instance. Each entry is either a class's flat
-     * constructor dependency list (or the <code>false</code> fast-path-ineligible sentinel) or its list of
-     * {@see Autowire} method names — never reflection objects, so lookups are plain array reads with no
-     * unserialization.
+     * In-process (L1) metadata cache, living for this injector instance. Each entry is either a class's constructor
+     * dependency descriptor list (or the <code>false</code> fast-path-ineligible sentinel) or its list of
+     * {@see Autowire} method names — always immutable, reflection-free values, so lookups are plain array reads with no
+     * object-graph unserialization.
      *
-     * @var array<string, list<string>|false>
+     * @var array<string, list<string>|list<ResolvableDependency>|false>
      */
     private array $inProcessCache = [];
 
     /**
-     * @param ParameterResolverInterface $resolver The resolver to use for resolving parameters
+     * @param ParameterResolverInterface $resolver The resolver to use for resolving parameters. When it also implements
+     * {@see TypeParameterResolverInterface}, plain constructor dependencies are resolved through that capability on the
+     * fast path; otherwise every instantiation uses the reflection path.
      * @param CacheInterface|null $sharedCache [optional] Optional shared (L2) metadata cache. The in-process (L1) cache
      * is always active for the life of this injector; supply an {@see Cache\ApcuCache} here to additionally share
      * reflected metadata across requests.
-     * @param ContainerInterface|null $container [optional] The container used to resolve dependencies directly by class
-     * name on the fast path. When omitted, every instantiation uses the reflection path.
      */
     public function __construct(
         private readonly ParameterResolverInterface $resolver,
-        private readonly ?CacheInterface $sharedCache = null,
-        private readonly ?ContainerInterface $container = null
+        private readonly ?CacheInterface $sharedCache = null
     ) {
     }
 
     public static function createDefault(ContainerInterface $container, ?CacheInterface $cache = null): self
     {
-        return new self(new ContainerParameterResolver($container), $cache, $container);
+        return new self(new ContainerParameterResolver($container), $cache);
     }
 
     public function call(callable $function, array $params = []): mixed
@@ -104,20 +102,20 @@ final class Injector implements InjectorInterface
      */
     private function tryInstantiateViaFastPath(string $className, array $params, mixed &$instance): bool
     {
-        if ($params !== [] || $this->container === null) {
+        if ($params !== [] || !$this->resolver instanceof TypeParameterResolverInterface) {
             return false;
         }
 
-        $deps = $this->getFastPathDependencies($className);
+        $deps = $this->getFastPathDependencies($className, $this->resolver);
 
-        if ($deps === false || !$this->areAllResolvable($deps, $this->container)) {
+        if ($deps === false || !$this->areAllResolvable($deps, $this->resolver)) {
             return false;
         }
 
         $args = [];
 
-        foreach ($deps as $dependencyClassName) {
-            $args[] = $this->container->get($dependencyClassName);
+        foreach ($deps as $dependency) {
+            $args[] = $this->resolver->resolveDependency($dependency);
         }
 
         /** @var TClass $instance */
@@ -133,27 +131,28 @@ final class Injector implements InjectorInterface
      *
      * @param class-string $className
      *
-     * @return list<class-string>|false
+     * @return list<ResolvableDependency>|false
      */
-    private function getFastPathDependencies(string $className): array|false
+    private function getFastPathDependencies(string $className, TypeParameterResolverInterface $resolver): array|false
     {
         return $this->getOrAddToCache(
             self::FAST_PATH_DEPS_CACHE_PREFIX . $className,
-            fn () => $this->analyzeConstructor($className) ?? false
+            fn () => $this->analyzeConstructor($className, $resolver) ?? false
         );
     }
 
     /**
      * Reflects the constructor once to decide fast-path eligibility. A class is eligible only if every constructor
-     * parameter is a required service: a single named, non-builtin type, with no default, not nullable, not variadic,
-     * and carrying no {@see Key} attribute. Ineligible or non-reflectable classes return <code>null</code> so the
-     * caller falls back to the full reflection path (which also produces the correct diagnostics).
+     * parameter is a non-variadic dependency the resolver reports as directly resolvable (see
+     * {@see TypeParameterResolverInterface::getResolvableDependency()}). Ineligible or non-reflectable classes return
+     * <code>null</code> so the caller falls back to the full reflection path (which also produces the correct
+     * diagnostics).
      *
      * @param class-string $className
      *
-     * @return list<class-string>|null
+     * @return list<ResolvableDependency>|null
      */
-    private function analyzeConstructor(string $className): ?array
+    private function analyzeConstructor(string $className, TypeParameterResolverInterface $resolver): ?array
     {
         try {
             $rClass = new ReflectionClass($className);
@@ -169,34 +168,31 @@ final class Injector implements InjectorInterface
         $deps = [];
 
         foreach ($rClass->getConstructor()?->getParameters() ?? [] as $rParam) {
-            $rType = $rParam->getType();
-
-            if (
-                !$rType instanceof ReflectionNamedType ||
-                $rType->isBuiltin() ||
-                $rParam->isVariadic() ||
-                $rParam->allowsNull() ||
-                $rParam->isDefaultValueAvailable() ||
-                count($rParam->getAttributes(Key::class)) > 0
-            ) {
+            // Variadic parameters are a structural limit of the fast path (it cannot spread args); everything else about
+            // resolvability -- type shape, nullability, defaults, keying -- is the resolver's decision.
+            if ($rParam->isVariadic()) {
                 return null;
             }
 
-            /** @var class-string $dependencyClassName a named, non-builtin type is a class name */
-            $dependencyClassName = $rType->getName();
-            $deps[] = $dependencyClassName;
+            $dependency = $resolver->getResolvableDependency($rParam);
+
+            if ($dependency === null) {
+                return null;
+            }
+
+            $deps[] = $dependency;
         }
 
         return $deps;
     }
 
     /**
-     * @param list<class-string> $deps
+     * @param list<ResolvableDependency> $deps
      */
-    private function areAllResolvable(array $deps, ContainerInterface $container): bool
+    private function areAllResolvable(array $deps, TypeParameterResolverInterface $resolver): bool
     {
-        foreach ($deps as $dependencyClassName) {
-            if (!$container->has($dependencyClassName)) {
+        foreach ($deps as $dependency) {
+            if (!$resolver->hasDependency($dependency)) {
                 return false;
             }
         }
@@ -280,9 +276,10 @@ final class Injector implements InjectorInterface
 
     /**
      * Two-tier get-or-compute: request-local L1, then the optional shared L2, then compute and populate both. Only
-     * flat, scalar values are ever stored, so an L2 hit is a cheap fetch rather than an object-graph unserialization.
+     * immutable, reflection-free values are ever stored (method-name lists, dependency descriptors, or the
+     * <code>false</code> sentinel), so an L2 hit is a cheap fetch rather than an object-graph unserialization.
      *
-     * @template T of list<string>|false
+     * @template T of list<string>|list<ResolvableDependency>|false
      *
      * @param callable():T $factory
      *
