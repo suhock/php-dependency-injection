@@ -28,6 +28,9 @@
         "phpstan/phpstan": "^2.2",
         "phpunit/phpunit": "^13.2"
     },
+    "suggest": {
+        "ext-apcu": "To cache resolved dependencies with ApcuCache"
+    },
     "autoload": {
         "psr-4": {
             "Suhock\\DependencyInjection\\": "src/Suhock/DependencyInjection/"

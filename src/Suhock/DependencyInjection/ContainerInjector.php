@@ -10,6 +10,8 @@ declare(strict_types=1);
 
 namespace Suhock\DependencyInjection;
 
+use Suhock\DependencyInjection\Cache\CacheInterface;
+
 /**
  * Injects dependencies resolved from a container.
  *
@@ -17,8 +19,8 @@ namespace Suhock\DependencyInjection;
  */
 final class ContainerInjector extends Injector
 {
-    public function __construct(ContainerInterface $container)
+    public function __construct(ContainerInterface $container, ?CacheInterface $cache = null)
     {
-        parent::__construct(new ContainerParameterResolver($container));
+        parent::__construct(new ContainerParameterResolver($container), $cache, $container);
     }
 }

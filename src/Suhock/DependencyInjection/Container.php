@@ -11,6 +11,7 @@ declare(strict_types=1);
 namespace Suhock\DependencyInjection;
 
 use BackedEnum;
+use Suhock\DependencyInjection\Cache\CacheInterface;
 use Suhock\DependencyInjection\Lifetime\LifetimeStrategy;
 use Suhock\DependencyInjection\Provider\ClosureInstanceProvider;
 use UnitEnum;
@@ -40,10 +41,12 @@ class Container implements
     /**
      * @param InjectorInterface|null $injector [optional] An existing injector to use for injecting dependencies into
      * factories
+     * @param CacheInterface|null $cache [optional] Cache used to memoize reflected metadata. Only applied when no
+     * $injector is supplied; pass an {@see Cache\ApcuCache} to share reflection metadata across requests.
      */
-    public function __construct(?InjectorInterface $injector = null)
+    public function __construct(?InjectorInterface $injector = null, ?CacheInterface $cache = null)
     {
-        $this->injector = $injector ?? new ContainerInjector($this);
+        $this->injector = $injector ?? new ContainerInjector($this, $cache);
     }
 
     /**
