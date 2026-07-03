@@ -12,6 +12,7 @@ namespace Suhock\DependencyInjection;
 
 use Exception;
 use LogicException;
+use ReflectionParameter;
 use RuntimeException;
 use Suhock\DependencyInjection\Fakes\FakeAbstractClass;
 use Suhock\DependencyInjection\Fakes\FakeClassImplementsInterfaces;
@@ -24,6 +25,9 @@ use Suhock\DependencyInjection\Fakes\FakeContainer;
 use Suhock\DependencyInjection\Fakes\FakeInterfaceOne;
 use Suhock\DependencyInjection\Fakes\FakeInterfaceThree;
 use Suhock\DependencyInjection\Fakes\FakeInterfaceTwo;
+use Suhock\DependencyInjection\Instantiation\ChainedInstantiationStrategy;
+use Suhock\DependencyInjection\Instantiation\InstantiationStrategyInterface;
+use Suhock\DependencyInjection\Instantiation\ReflectionInstantiationStrategy;
 use Throwable;
 
 /**
@@ -164,6 +168,114 @@ final class InjectorTest extends AbstractDependencyInjectionTestCase
 
         // Assert
         self::assertSame($obj, $instance->obj);
+    }
+
+    public function testInstantiate_WithResolverLackingFastPathCapability_UsesReflection(): void
+    {
+        // Arrange: a plain resolver (no TypeParameterResolverInterface) leaves only the reflection strategy.
+        $dependency = new FakeClassNoConstructor();
+        $resolver = new class ($dependency) implements ParameterResolverInterface {
+            public function __construct(private readonly FakeClassNoConstructor $dependency)
+            {
+            }
+
+            public function resolveParameter(ReflectionParameter $rParam): mixed
+            {
+                return $this->dependency;
+            }
+        };
+        $injector = new Injector($resolver, new ReflectionInstantiationStrategy($resolver));
+
+        // Act
+        $instance = $injector->instantiate(FakeClassWithConstructor::class);
+
+        // Assert
+        self::assertSame($dependency, $instance->obj);
+    }
+
+    public function testInstantiate_ConsultsInjectedStrategiesInOrderThenFallsThrough(): void
+    {
+        // Arrange: a spy strategy that records what it was asked for and declines, ordered ahead of reflection.
+        $resolver = new ContainerParameterResolver(new FakeContainer());
+        $spy = new class () implements InstantiationStrategyInterface {
+            /** @var list<string> */
+            public array $seen = [];
+
+            public function tryInstantiate(string $className, array $params): ?object
+            {
+                $this->seen[] = $className;
+
+                return null;
+            }
+        };
+        $injector = new Injector($resolver, new ChainedInstantiationStrategy(
+            [$spy, new ReflectionInstantiationStrategy($resolver)]
+        ));
+
+        // Act
+        $instance = $injector->instantiate(FakeClassNoConstructor::class);
+
+        // Assert
+        self::assertInstanceOf(FakeClassNoConstructor::class, $instance);
+        self::assertSame([FakeClassNoConstructor::class], $spy->seen);
+    }
+
+    public function testInstantiate_WithCustomProducingStrategy_UsesItsInstance(): void
+    {
+        // Arrange: a lone custom strategy that produces the instance itself.
+        $strategy = new class () implements InstantiationStrategyInterface {
+            public int $calls = 0;
+
+            public function tryInstantiate(string $className, array $params): object
+            {
+                $this->calls++;
+
+                return new $className();
+            }
+        };
+        $injector = new Injector(new ContainerParameterResolver(new FakeContainer()), $strategy);
+
+        // Act
+        $instance = $injector->instantiate(FakeClassNoConstructor::class);
+
+        // Assert
+        self::assertInstanceOf(FakeClassNoConstructor::class, $instance);
+        self::assertSame(1, $strategy->calls);
+    }
+
+    public function testInstantiate_WithNoApplicableStrategy_ThrowsInjectorException(): void
+    {
+        // Arrange: a lone strategy that declines everything.
+        $declining = new class () implements InstantiationStrategyInterface {
+            public function tryInstantiate(string $className, array $params): ?object
+            {
+                return null;
+            }
+        };
+        $injector = new Injector(new ContainerParameterResolver(new FakeContainer()), $declining);
+
+        // Act & Assert
+        $this->expectException(InjectorException::class);
+        $injector->instantiate(FakeClassNoConstructor::class);
+    }
+
+    public function testInstantiate_WithOverrideForUnregisteredDependency_UsesOverride(): void
+    {
+        // Arrange: throwable is resolvable from the container; runtimeException is not registered, only supplied here.
+        $throwable = new LogicException();
+        $override = new RuntimeException();
+        $injector = $this->createInjector([
+            Throwable::class => fn () => $throwable
+        ]);
+
+        // Act
+        $instance = $injector->instantiate(FakeClassWithDependencies::class, [
+            'runtimeException' => $override
+        ]);
+
+        // Assert
+        self::assertSame($throwable, $instance->throwable);
+        self::assertSame($override, $instance->runtimeException);
     }
 
     public function testInstantiate_WithKeyedDependency_ResolvesKeyedServiceOverUnkeyed(): void

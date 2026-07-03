@@ -12,6 +12,7 @@ namespace Suhock\DependencyInjection;
 
 use Suhock\DependencyInjection\Fakes\FakeClassNoConstructor;
 use Suhock\DependencyInjection\Fakes\FakeUnitEnum;
+use Suhock\DependencyInjection\Instantiation\ReflectionInstantiationStrategy;
 
 /**
  * Test suite for {@see ContainerParameterResolver}.
@@ -29,7 +30,9 @@ final class ContainerParameterResolverTest extends AbstractDependencyInjectionTe
         $injector = null;
         $container = new Container(
             function (ContainerInterface $container) use (&$injector): Injector {
-                return $injector = new Injector(new ContainerParameterResolver($container));
+                $resolver = new ContainerParameterResolver($container);
+
+                return $injector = new Injector($resolver, new ReflectionInstantiationStrategy($resolver));
             }
         );
 
@@ -85,7 +88,7 @@ final class ContainerParameterResolverTest extends AbstractDependencyInjectionTe
         [, $injector] = $this->createContainerAndInjector();
 
         // Act
-        $fn = static fn() => $injector->call(fn (#[Key('key1')] FakeClassNoConstructor $obj) => $obj);
+        $fn = static fn () => $injector->call(fn (#[Key('key1')] FakeClassNoConstructor $obj) => $obj);
 
         // Assert
         self::assertThrowsParameterResolutionException('{closure}', 'obj', null, $fn);

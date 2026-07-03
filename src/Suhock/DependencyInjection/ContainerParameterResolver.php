@@ -57,7 +57,11 @@ final class ContainerParameterResolver extends AbstractContainerParameterResolve
         /** @var class-string $className a named, non-builtin type is a class name */
         $className = $rType->getName();
 
-        return new ResolvableDependency($className, $this->keyFromAttributes($rParam->getAttributes(Key::class)));
+        return new ResolvableDependency(
+            $rParam->getName(),
+            $className,
+            $this->keyFromAttributes($rParam->getAttributes(Key::class))
+        );
     }
 
     /**

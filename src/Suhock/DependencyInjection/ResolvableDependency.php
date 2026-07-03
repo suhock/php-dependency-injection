@@ -13,17 +13,21 @@ namespace Suhock\DependencyInjection;
 use UnitEnum;
 
 /**
- * A directly resolvable service reference — a class name and optional key — produced by
- * {@see TypeParameterResolverInterface::getResolvableDependency()} for a constructor parameter the {@see Injector} may
- * satisfy on its fast path. Immutable and free of reflection objects, so a list of these is cheap to cache and pass
- * back to the resolver opaquely.
+ * A directly resolvable constructor dependency — the parameter's name plus the class name and optional key that satisfy
+ * it — produced by {@see TypeParameterResolverInterface::getResolvableDependency()} for a constructor parameter the
+ * {@see Injector} may satisfy on its fast path. The name lets the injector match caller-supplied override arguments
+ * without reflecting. Immutable and free of reflection objects, so a list of these is cheap to cache and pass back to
+ * the resolver opaquely.
  */
 final class ResolvableDependency
 {
     /**
-     * @param class-string $className
+     * @param string $name The constructor parameter name, used to match named override arguments
+     * @param class-string $className The class name of the service that satisfies the parameter
+     * @param string|UnitEnum|null $key The key the service is registered under, if any
      */
     public function __construct(
+        public readonly string $name,
         public readonly string $className,
         public readonly string|UnitEnum|null $key = null
     ) {
