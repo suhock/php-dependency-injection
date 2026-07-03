@@ -19,7 +19,7 @@ use Throwable;
 /**
  * Base class for test cases in the Dependency Injection Test Suite
  */
-class DependencyInjectionTestCase extends TestCase
+abstract class AbstractDependencyInjectionTestCase extends TestCase
 {
     /**
      * @template TClass of Throwable

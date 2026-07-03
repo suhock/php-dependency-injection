@@ -16,7 +16,7 @@ use Throwable;
 /**
  * Fakes a simple class with multiple constructor dependencies.
  */
-class FakeClassWithDependencies
+final class FakeClassWithDependencies
 {
     public readonly Throwable $throwable;
 

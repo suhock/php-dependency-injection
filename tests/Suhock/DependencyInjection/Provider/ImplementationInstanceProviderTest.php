@@ -10,15 +10,15 @@ declare(strict_types=1);
 
 namespace Suhock\DependencyInjection\Provider;
 
+use Suhock\DependencyInjection\AbstractDependencyInjectionTestCase;
 use Suhock\DependencyInjection\ContainerInterface;
-use Suhock\DependencyInjection\DependencyInjectionTestCase;
 use Suhock\DependencyInjection\Fakes\FakeClassExtendsNoConstructor;
 use Suhock\DependencyInjection\Fakes\FakeClassNoConstructor;
 
 /**
  * Test suite for {@see ImplementationInstanceProvider}.
  */
-class ImplementationInstanceProviderTest extends DependencyInjectionTestCase
+final class ImplementationInstanceProviderTest extends AbstractDependencyInjectionTestCase
 {
     public function testGet_WithValidSubclass_ReturnsInstanceOfSubclass(): void
     {

@@ -17,7 +17,7 @@ use Throwable;
  *
  * @template TClass of object
  */
-class CircularDependencyException extends ContainerException
+final class CircularDependencyException extends ContainerException
 {
     /**
      * @inheritDoc

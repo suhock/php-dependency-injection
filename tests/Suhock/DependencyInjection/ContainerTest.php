@@ -19,7 +19,7 @@ use Suhock\DependencyInjection\Provider\ObjectInstanceProvider;
 /**
  * Test suite for {@see Container}.
  */
-class ContainerTest extends DependencyInjectionTestCase
+final class ContainerTest extends AbstractDependencyInjectionTestCase
 {
     protected function createContainer(): Container
     {

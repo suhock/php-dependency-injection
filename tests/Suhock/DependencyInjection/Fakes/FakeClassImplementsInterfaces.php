@@ -13,7 +13,7 @@ namespace Suhock\DependencyInjection\Fakes;
 /**
  * Fakes a class implementing multiple interfaces.
  */
-class FakeClassImplementsInterfaces implements FakeInterfaceOne, FakeInterfaceTwo
+final class FakeClassImplementsInterfaces implements FakeInterfaceOne, FakeInterfaceTwo
 {
     public string $string = '';
 }

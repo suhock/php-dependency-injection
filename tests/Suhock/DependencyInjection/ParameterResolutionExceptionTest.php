@@ -16,7 +16,7 @@ use ReflectionParameter;
 /**
  * Test suite for {@see ParameterResolutionException}.
  */
-class ParameterResolutionExceptionTest extends TestCase
+final class ParameterResolutionExceptionTest extends TestCase
 {
     private function fakeFunction(string $fakeParameter): void
     {

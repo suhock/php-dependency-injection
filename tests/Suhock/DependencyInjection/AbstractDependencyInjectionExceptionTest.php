@@ -16,7 +16,7 @@ use PHPUnit\Framework\TestCase;
 /**
  * Test suite for {@see DependencyInjectionException}.
  */
-class AbstractDependencyInjectionExceptionTest extends TestCase
+final class AbstractDependencyInjectionExceptionTest extends TestCase
 {
     public function testConstruct_WithMessage_ConstructsWithMessage(): void
     {

@@ -10,14 +10,14 @@ declare(strict_types=1);
 
 namespace Suhock\DependencyInjection\Provider;
 
-use Suhock\DependencyInjection\DependencyInjectionTestCase;
+use Suhock\DependencyInjection\AbstractDependencyInjectionTestCase;
 use Suhock\DependencyInjection\Fakes\FakeClassExtendsNoConstructor;
 use Suhock\DependencyInjection\Fakes\FakeClassNoConstructor;
 
 /**
  * Test suite for {@see ObjectInstanceProvider}.
  */
-class ObjectInstanceProviderTest extends DependencyInjectionTestCase
+final class ObjectInstanceProviderTest extends AbstractDependencyInjectionTestCase
 {
     public function testConstruct_WhenInstanceIsNotAnInstanceOfClass_ThrowsInstanceTypeException(): void
     {

@@ -20,7 +20,7 @@ use function is_string;
 /**
  * A default implementation for the {@see ContainerInterface}.
  */
-class Container implements
+final class Container implements
     ContainerInterface,
     ContainerBuilderInterface,
     ContainerSingletonBuilderInterface,

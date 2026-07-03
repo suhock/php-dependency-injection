@@ -16,7 +16,7 @@ use Suhock\DependencyInjection\Fakes\FakeUnitEnum;
 /**
  * Test suite for {@see ContainerInjector}.
  */
-class ContainerInjectorTest extends DependencyInjectionTestCase
+final class ContainerInjectorTest extends AbstractDependencyInjectionTestCase
 {
     private function createContainer(): Container
     {

@@ -19,7 +19,7 @@ use Throwable;
  * @template TExpected of object
  * @template TActual of object
  */
-class ImplementationException extends ContainerException
+final class ImplementationException extends ContainerException
 {
     /**
      * @param class-string<TExpected> $expectedClassName The name of the expected base class

@@ -22,7 +22,7 @@ use Suhock\DependencyInjection\Provider\InstanceTypeException;
 /**
  * Test suite for {@see ContainerTransientBuilderTrait}.
  */
-class ContainerTransientBuilderTraitTest extends DependencyInjectionTestCase
+final class ContainerTransientBuilderTraitTest extends AbstractDependencyInjectionTestCase
 {
     private function createContainer(): Container
     {

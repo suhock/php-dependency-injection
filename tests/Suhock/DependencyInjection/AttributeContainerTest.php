@@ -17,7 +17,7 @@ use Suhock\DependencyInjection\Fakes\FakeClassWithDependencies;
 /**
  * Test suite for {@see AttributeContainer}.
  */
-class AttributeContainerTest extends DependencyInjectionTestCase
+final class AttributeContainerTest extends AbstractDependencyInjectionTestCase
 {
     public function testGet_WithDefaultInjectorDefaultFactory_ReturnsAutowiredInstance(): void
     {

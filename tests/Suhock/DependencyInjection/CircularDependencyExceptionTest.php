@@ -16,7 +16,7 @@ use Suhock\DependencyInjection\Fakes\FakeClassNoConstructor;
 /**
  * Test suite for {@see CircularDependencyException}.
  */
-class CircularDependencyExceptionTest extends TestCase
+final class CircularDependencyExceptionTest extends TestCase
 {
     private const TEST_CLASS = FakeClassNoConstructor::class;
 

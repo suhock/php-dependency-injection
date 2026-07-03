@@ -18,7 +18,7 @@ use Suhock\DependencyInjection\Fakes\FakeUnitEnum;
 /**
  * Test suite for {@see Key} class.
  */
-class KeyTest extends TestCase
+final class KeyTest extends TestCase
 {
     public function testGetKey_WithString_ReturnsStringValue(): void
     {

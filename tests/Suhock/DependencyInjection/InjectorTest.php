@@ -28,7 +28,7 @@ use Throwable;
 /**
  * Test suite for {@see Injector}.
  */
-class InjectorTest extends DependencyInjectionTestCase
+final class InjectorTest extends AbstractDependencyInjectionTestCase
 {
     /**
      * @param array<callable> $classMapping

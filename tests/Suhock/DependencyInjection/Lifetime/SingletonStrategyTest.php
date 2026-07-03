@@ -16,7 +16,7 @@ use Suhock\DependencyInjection\Fakes\FakeClassNoConstructor;
 /**
  * Test suite for {@see SingletonStrategy}.
  */
-class SingletonStrategyTest extends TestCase
+final class SingletonStrategyTest extends TestCase
 {
     /**
      * @return SingletonStrategy<FakeClassNoConstructor>

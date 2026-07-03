@@ -14,7 +14,7 @@ namespace Suhock\DependencyInjection\Fakes;
  * Fakes a simple class annotated with a fake attribute.
  */
 #[FakeAttribute('test')]
-class FakeClassWithAttribute
+final class FakeClassWithAttribute
 {
     public function __construct(
         public readonly string $value = ''

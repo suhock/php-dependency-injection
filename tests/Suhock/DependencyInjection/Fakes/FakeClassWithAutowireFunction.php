@@ -15,7 +15,7 @@ use Suhock\DependencyInjection\Autowire;
 /**
  * Fake class with an autowired method.
  */
-class FakeClassWithAutowireFunction
+final class FakeClassWithAutowireFunction
 {
     public ?FakeClassNoConstructor $obj = null;
 

@@ -16,7 +16,7 @@ use Attribute;
  * A fake attribute
  */
 #[Attribute]
-class FakeAttribute
+final class FakeAttribute
 {
     public function __construct(
         public readonly string $value

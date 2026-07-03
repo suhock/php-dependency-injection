@@ -21,7 +21,7 @@ use function extension_loaded;
  * across requests served by the same PHP worker pool. Requires the <code>apcu</code> extension to be loaded and enabled
  * — including on the CLI, where <code>apc.enable_cli</code> must be set.
  */
-class ApcuCache implements CacheInterface
+final class ApcuCache implements CacheInterface
 {
     /**
      * @throws RuntimeException If the APCu extension is not loaded and enabled in the current environment

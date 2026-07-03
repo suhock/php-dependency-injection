@@ -18,7 +18,7 @@ use function array_key_exists;
 /**
  * Fakes a simple container.
  */
-class FakeContainer implements ContainerInterface
+final class FakeContainer implements ContainerInterface
 {
     /**
      * @param array<callable> $classMapping

@@ -16,7 +16,7 @@ use Suhock\DependencyInjection\Fakes\FakeClassNoConstructor;
 /**
  * Test suite for {@see ClassNotFoundException}.
  */
-class ClassNotFoundExceptionTest extends TestCase
+final class ClassNotFoundExceptionTest extends TestCase
 {
     public function testGetMessage_HasClassName_ContainsClassName(): void
     {

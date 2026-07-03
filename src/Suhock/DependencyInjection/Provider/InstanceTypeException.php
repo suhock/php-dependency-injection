@@ -23,7 +23,7 @@ use function is_object;
  *
  * @template TExpected of object
  */
-class InstanceTypeException extends InjectorException
+final class InstanceTypeException extends InjectorException
 {
     /**
      * @inheritDoc

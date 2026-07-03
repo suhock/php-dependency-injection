@@ -20,7 +20,7 @@ use Throwable;
 /**
  * Test suite for {@see NamespaceContainer}.
  */
-class NamespaceContainerTest extends DependencyInjectionTestCase
+final class NamespaceContainerTest extends AbstractDependencyInjectionTestCase
 {
     public function testGet_WithDefaultInjectorAndDefaultFactory_ReturnsInstance(): void
     {

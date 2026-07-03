@@ -19,7 +19,7 @@ use Suhock\DependencyInjection\Fakes\FakeInterfaceOne;
 /**
  * Test suite for {@see InterfaceContainer}.
  */
-class InterfaceContainerTest extends DependencyInjectionTestCase
+final class InterfaceContainerTest extends AbstractDependencyInjectionTestCase
 {
     public function testGet_WithDefaultInjectorAndDefaultFactory_ReturnsInstance(): void
     {

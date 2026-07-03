@@ -16,7 +16,7 @@ use Suhock\DependencyInjection\Fakes\FakeClassNoConstructor;
 /**
  * Test suite for {@see TransientStrategy}.
  */
-class TransientStrategyTest extends TestCase
+final class TransientStrategyTest extends TestCase
 {
     /**
      * @return TransientStrategy<FakeClassNoConstructor>
