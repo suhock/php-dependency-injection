@@ -11,8 +11,6 @@ declare(strict_types=1);
 namespace Suhock\DependencyInjection\Provider;
 
 use Closure;
-use DomainException;
-use ReflectionException;
 use ReflectionFunction;
 use ReflectionNamedType;
 use ReflectionUnionType;
@@ -69,11 +67,8 @@ final class ClassInstanceProvider implements InstanceProviderInterface
      */
     public static function isMutator(callable $function, string $className): bool
     {
-        try {
-            $closureReflection = new ReflectionFunction($function);
-        } catch (ReflectionException $e) {
-            throw new DomainException('Function cannot be reflected', previous: $e);
-        }
+        // A valid callable always names an existing function, so this cannot throw ReflectionException.
+        $closureReflection = new ReflectionFunction($function);
 
         $firstParam = $closureReflection->getParameters()[0] ?? null;
 

@@ -19,7 +19,6 @@ use ReflectionParameter;
 use Suhock\DependencyInjection\Cache\CacheInterface;
 use function array_key_exists;
 use function count;
-use function is_callable;
 
 /**
  * Default implementation for {@see InjectorInterface} that resolves missing parameter values using a
@@ -60,15 +59,8 @@ class Injector implements InjectorInterface
 
     public function call(callable $function, array $params = []): mixed
     {
-        try {
-            $rFunction = new ReflectionFunction($function(...));
-        } catch (ReflectionException $e) {
-            // The callable parameter type constraint should make this unreachable
-            // Use is_callable to extract $function's underlying function name.
-            /** @phpstan-ignore function.alreadyNarrowedType (called only for the by-ref $functionName capture) */
-            is_callable($function, false, $functionName);
-            throw new InjectorException("Function $functionName() does not exist", $e);
-        }
+        // A callable normalized to a closure is always reflectable, so this cannot throw ReflectionException.
+        $rFunction = new ReflectionFunction($function(...));
 
         return $rFunction->invokeArgs(
             $this->resolveParameterList($rFunction->getParameters(), $params)
