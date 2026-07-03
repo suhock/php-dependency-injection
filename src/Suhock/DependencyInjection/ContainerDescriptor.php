@@ -21,9 +21,8 @@ use Suhock\DependencyInjection\Lifetime\LifetimeStrategy;
 final class ContainerDescriptor
 {
     /**
-     * @param Closure(class-string):LifetimeStrategy $lifetimeStrategyFactory
+     * @param Closure(class-string):LifetimeStrategy<object> $lifetimeStrategyFactory
      */
-    // @phpstan-ignore missingType.generics (callable-level generics unsupported by PHPStan)
     public function __construct(
         public readonly ContainerInterface $container,
         public readonly InjectorInterface $injector,

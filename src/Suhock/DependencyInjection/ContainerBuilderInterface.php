@@ -60,12 +60,11 @@ interface ContainerBuilderInterface
      * container. Nested containers are searched sequentially in the order they are added.
      *
      * @param ContainerInterface $container The nested container to add
-     * @param callable(class-string):LifetimeStrategy $lifetimeStrategyFactory A factory method for generating lifetime
-     * strategies to manage instances within the container being built
+     * @param callable(class-string):LifetimeStrategy<object> $lifetimeStrategyFactory A factory method for generating
+     * lifetime strategies to manage instances within the container being built
      *
      * @return $this
      */
-    // @phpstan-ignore missingType.generics (callable-level generics unsupported by PHPStan)
     public function addContainer(ContainerInterface $container, callable $lifetimeStrategyFactory): static;
 
     /**

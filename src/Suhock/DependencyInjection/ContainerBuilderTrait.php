@@ -83,10 +83,9 @@ trait ContainerBuilderTrait
 
     /**
      * @param ContainerInterface $container The nested container to add
-     * @param callable(class-string):LifetimeStrategy $lifetimeStrategyFactory A factory method for generating lifetime
-     * strategies to manage instances within the container being built
+     * @param callable(class-string):LifetimeStrategy<object> $lifetimeStrategyFactory A factory method for generating
+     * lifetime strategies to manage instances within the container being built
      */
-    // @phpstan-ignore missingType.generics (callable-level generics unsupported by PHPStan)
     public function addContainer(ContainerInterface $container, callable $lifetimeStrategyFactory): static
     {
         $this->addContainerDescriptor(
