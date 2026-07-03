@@ -37,7 +37,7 @@ class NamespaceContainerTest extends DependencyInjectionTestCase
     public function testGet_WithExplicitInjectorAndExplicitFactory_UsesInjectorAndFactory(): void
     {
         // Arrange
-        $container = $this->createStub(ContainerInterface::class);
+        $container = self::createStub(ContainerInterface::class);
         $container->method('get')
             ->willReturnCallback(fn (string $className) => match ($className) {
                 Throwable::class => new Exception('test1'),
@@ -68,7 +68,7 @@ class NamespaceContainerTest extends DependencyInjectionTestCase
         // Arrange
         $container = new NamespaceContainer(
             __NAMESPACE__,
-            $this->createStub(InjectorInterface::class),
+            self::createStub(InjectorInterface::class),
             fn () => null
         );
 

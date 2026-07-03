@@ -11,7 +11,6 @@ declare(strict_types=1);
 namespace Suhock\DependencyInjection;
 
 use PHPUnit\Framework\Assert;
-use PHPUnit\Framework\AssertionFailedError;
 use PHPUnit\Framework\TestCase;
 use Suhock\DependencyInjection\Provider\ImplementationException;
 use Suhock\DependencyInjection\Provider\InstanceTypeException;
@@ -35,14 +34,15 @@ class DependencyInjectionTestCase extends TestCase
     ): void {
         try {
             $codeUnderTest();
-            Assert::fail('Exception was not thrown');
-        } catch (AssertionFailedError $e) {
-            throw $e;
         } catch (Throwable $exception) {
             self::assertInstanceOf($expectedException, $exception, $exception->getMessage());
             /** @var TClass $exception */
             $exceptionTest($exception);
+
+            return;
         }
+
+        Assert::fail('Exception was not thrown');
     }
 
     /**
@@ -237,7 +237,7 @@ class DependencyInjectionTestCase extends TestCase
             'Failed asserting that class name is identical'
         );
 
-        if ($previousExceptionTest) {
+        if ($previousExceptionTest !== null) {
             $previousExceptionTest($actualException->getConsolidatedException());
         }
     }

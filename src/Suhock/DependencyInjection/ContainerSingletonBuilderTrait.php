@@ -33,6 +33,7 @@ trait ContainerSingletonBuilderTrait
      *
      * @return $this
      */
+    // @phpstan-ignore method.childParameterType (false positive on templated builder generics)
     public function addSingleton(string $className, string|object|null $source = null): static
     {
         $this->addSingletonInstanceProvider(
@@ -85,6 +86,7 @@ trait ContainerSingletonBuilderTrait
      * @param class-string<TClass> $className
      * @param Closure|callable-string|null $mutator
      */
+    // @phpstan-ignore method.childParameterType (false positive on templated builder generics)
     public function addSingletonClass(string $className, ?callable $mutator = null): static
     {
         $this->addSingletonInstanceProvider(
@@ -133,6 +135,7 @@ trait ContainerSingletonBuilderTrait
      *
      * @return $this
      */
+    // @phpstan-ignore method.childParameterType (false positive on templated builder generics)
     public function addSingletonInstance(string $className, object $instance): static
     {
         $this->addSingletonInstanceProvider(

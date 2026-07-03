@@ -85,12 +85,12 @@ abstract class AbstractContainerParameterResolver implements ParameterResolverIn
         ?object &$result,
         string|UnitEnum|null $key = null
     ): bool {
-        /** @phpstan-ignore-next-line PHPStan is not able to figure out that getName() will return a class name */
+        /** @phpstan-ignore argument.type (getName() yields a class-string once isBuiltin() is false) */
         if ($rType->isBuiltin() || !$this->container->has($rType->getName(), $key)) {
             return false;
         }
 
-        /** @phpstan-ignore-next-line PHPStan is not able to figure out that getName() will return a class name */
+        /** @phpstan-ignore argument.type, argument.templateType (getName() yields a class-string once isBuiltin() is false) */
         $result = $this->container->get($rType->getName(), $key);
 
         return true;

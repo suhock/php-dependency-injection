@@ -29,7 +29,7 @@ class ClassInstanceProviderTest extends DependencyInjectionTestCase
             $injector = $this->createMock(InjectorInterface::class)
         );
 
-        $injector->expects(self::once())
+        $injector->expects($this->once())
             ->method('instantiate')
             ->willReturn(new FakeClassNoConstructor());
 
@@ -45,7 +45,7 @@ class ClassInstanceProviderTest extends DependencyInjectionTestCase
         // Arrange
         $factory = new ClassInstanceProvider(
             FakeClassNoConstructor::class,
-            new ContainerInjector($this->createStub(ContainerInterface::class)),
+            new ContainerInjector(self::createStub(ContainerInterface::class)),
             function (FakeClassNoConstructor $obj) {
                 $obj->string = 'test';
             }

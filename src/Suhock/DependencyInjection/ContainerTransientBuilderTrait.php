@@ -82,6 +82,7 @@ trait ContainerTransientBuilderTrait
      * @param class-string $className
      * @param Closure|callable-string|null $mutator
      */
+    // @phpstan-ignore method.childParameterType (false positive on templated builder generics)
     public function addTransientClass(string $className, ?callable $mutator = null): static
     {
         $this->addTransientInstanceProvider(
@@ -98,6 +99,7 @@ trait ContainerTransientBuilderTrait
      * @param class-string<TClass> $className
      * @param class-string<TImplementation> $implementationClassName
      */
+    // @phpstan-ignore method.childParameterType (false positive on templated builder generics)
     public function addTransientImplementation(string $className, string $implementationClassName): static
     {
         $this->addTransientInstanceProvider(

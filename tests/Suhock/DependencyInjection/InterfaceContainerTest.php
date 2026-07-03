@@ -37,7 +37,7 @@ class InterfaceContainerTest extends DependencyInjectionTestCase
     {
         // Arrange
         $container = $this->createMock(ContainerInterface::class);
-        $container->expects(self::once())
+        $container->expects($this->once())
             ->method('get')
             ->with(FakeClassNoConstructor::class)
             ->willReturn(new FakeClassNoConstructor());

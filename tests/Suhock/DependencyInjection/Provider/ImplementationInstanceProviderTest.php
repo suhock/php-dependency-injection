@@ -25,7 +25,7 @@ class ImplementationInstanceProviderTest extends DependencyInjectionTestCase
         // Arrange
         $container = $this->createMock(ContainerInterface::class);
         $container->method('has')->willReturn(true);
-        $container->expects(self::once())
+        $container->expects($this->once())
             ->method('get')
             ->with(FakeClassExtendsNoConstructor::class)
             ->willReturn(new FakeClassExtendsNoConstructor());
@@ -49,7 +49,7 @@ class ImplementationInstanceProviderTest extends DependencyInjectionTestCase
         $fn = fn () => new ImplementationInstanceProvider(
             FakeClassNoConstructor::class,
             FakeClassNoConstructor::class,
-            $this->createStub(ContainerInterface::class)
+            self::createStub(ContainerInterface::class)
         );
 
         // Assert
@@ -66,7 +66,7 @@ class ImplementationInstanceProviderTest extends DependencyInjectionTestCase
         $fn = fn () => new ImplementationInstanceProvider(
             FakeClassExtendsNoConstructor::class,
             FakeClassNoConstructor::class,
-            $this->createStub(ContainerInterface::class)
+            self::createStub(ContainerInterface::class)
         );
 
         // Assert

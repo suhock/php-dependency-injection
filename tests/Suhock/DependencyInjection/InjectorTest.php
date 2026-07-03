@@ -77,9 +77,7 @@ class InjectorTest extends DependencyInjectionTestCase
 
         // Act & Assert
         $this->expectException(InjectorException::class);
-        /**
-         * @phpstan-ignore-next-line warns about issue currently under test
-         */
+        /** @phpstan-ignore argument.type (intentionally passing a non-existent class under test) */
         $injector->instantiate('NonExistentClass');
     }
 

@@ -28,7 +28,7 @@ class ContainerTest extends DependencyInjectionTestCase
 
     private function getNestedContainer(): ContainerInterface
     {
-        $container = $this->createStub(ContainerInterface::class);
+        $container = self::createStub(ContainerInterface::class);
         $container->method('get')->willReturn($container);
         $container->method('has')->willReturn(true);
 
@@ -110,7 +110,7 @@ class ContainerTest extends DependencyInjectionTestCase
         // Arrange
         $container = $this->createContainer();
         $builder = $this->createMock(FakeBuilder::class);
-        $builder->expects(self::once())
+        $builder->expects($this->once())
             ->method('build')
             ->with($container);
 

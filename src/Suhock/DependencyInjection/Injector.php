@@ -60,14 +60,13 @@ class Injector implements InjectorInterface
 
     public function call(callable $function, array $params = []): mixed
     {
-        // $function is always callable; is_callable is invoked only to capture $functionName for the error message.
-        /** @phpstan-ignore-next-line function.alreadyNarrowedType */
-        is_callable($function, false, $functionName);
-
         try {
             $rFunction = new ReflectionFunction($function(...));
         } catch (ReflectionException $e) {
             // The callable parameter type constraint should make this unreachable
+            // Use is_callable to extract $function's underlying function name.
+            /** @phpstan-ignore function.alreadyNarrowedType (called only for the by-ref $functionName capture) */
+            is_callable($function, false, $functionName);
             throw new InjectorException("Function $functionName() does not exist", $e);
         }
 
@@ -159,8 +158,7 @@ class Injector implements InjectorInterface
     {
         try {
             $rClass = new ReflectionClass($className);
-            /** @phpstan-ignore-next-line PHPStan infers $className is always a valid class-string; a class that cannot
-             * be reflected is deferred to the reflection path, which reports it. */
+            /** @phpstan-ignore catch.neverThrown (a class-string may reference an unloadable class at runtime) */
         } catch (ReflectionException) {
             return null;
         }
@@ -219,8 +217,7 @@ class Injector implements InjectorInterface
     {
         try {
             $rClass = new ReflectionClass($className);
-            /** @phpstan-ignore-next-line PHPStan assumes an exception can never be thrown because it infers that
-             * $className will always be valid from the PHPDoc. */
+            /** @phpstan-ignore catch.neverThrown (a class-string may reference an unloadable class at runtime) */
         } catch (ReflectionException $e) {
             throw new InjectorException("Class $className does not exist", $e);
         }

@@ -75,11 +75,13 @@ final class ClassInstanceProvider implements InstanceProviderInterface
             throw new DomainException('Function cannot be reflected', previous: $e);
         }
 
-        if ($closureReflection->getNumberOfParameters() < 1) {
+        $firstParam = $closureReflection->getParameters()[0] ?? null;
+
+        if ($firstParam === null) {
             return false;
         }
 
-        $firstParamType = $closureReflection->getParameters()[0]->getType();
+        $firstParamType = $firstParam->getType();
 
         $paramTypes = match (true) {
             $firstParamType instanceof ReflectionNamedType => [$firstParamType],

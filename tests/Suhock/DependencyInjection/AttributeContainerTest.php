@@ -65,12 +65,12 @@ class AttributeContainerTest extends DependencyInjectionTestCase
         $container = new AttributeContainer(FakeAttribute::class);
 
         // Act
-        /** @phpstan-ignore-next-line */
+        /** @phpstan-ignore argument.type (intentionally passing a non-existent class) */
         $fn = static fn () => $container->get('NonExistentClass');
 
         // Assert
         self::assertThrowsClassNotFoundException(
-            /** @phpstan-ignore-next-line */
+            /** @phpstan-ignore argument.type (intentionally passing a non-existent class) */
             'NonExistentClass',
             $fn
         );
@@ -106,9 +106,7 @@ class AttributeContainerTest extends DependencyInjectionTestCase
         $container = new AttributeContainer(FakeAttribute::class);
 
         // Act
-        /**
-         * @phpstan-ignore-next-line
-         */
+        /** @phpstan-ignore argument.type (intentionally passing a non-existent class) */
         $result = $container->has('NonExistentClass');
 
         // Assert

@@ -31,7 +31,7 @@ class ClosureInstanceProviderTest extends DependencyInjectionTestCase
             $injector = $this->createMock(InjectorInterface::class)
         );
 
-        $injector->expects(self::once())
+        $injector->expects($this->once())
             ->method('call')
             ->with($factoryMethod)
             ->willReturnCallback(fn () => $factoryMethod());
@@ -52,7 +52,7 @@ class ClosureInstanceProviderTest extends DependencyInjectionTestCase
             $injector = $this->createMock(InjectorInterface::class)
         );
 
-        $injector->expects(self::once())
+        $injector->expects($this->once())
             ->method('call')
             ->with($factoryMethod)
             ->willReturnCallback(fn () => $factoryMethod());
@@ -74,7 +74,7 @@ class ClosureInstanceProviderTest extends DependencyInjectionTestCase
         $factory = new ClosureInstanceProvider(
             FakeClassExtendsNoConstructor::class,
             fn () => new FakeClassNoConstructor(),
-            new ContainerInjector($this->createStub(ContainerInterface::class))
+            new ContainerInjector(self::createStub(ContainerInterface::class))
         );
 
         // Act

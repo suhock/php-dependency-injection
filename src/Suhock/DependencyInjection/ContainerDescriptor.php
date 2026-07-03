@@ -22,10 +22,8 @@ final class ContainerDescriptor
 {
     /**
      * @param Closure(class-string):LifetimeStrategy $lifetimeStrategyFactory
-     *
-     * @phpstan-ignore-next-line PHPStan does not support callable-level generics but complains that LifetimeStrategy
-     * does not have its generic type specified
      */
+    // @phpstan-ignore missingType.generics (callable-level generics unsupported by PHPStan)
     public function __construct(
         public readonly ContainerInterface $container,
         public readonly InjectorInterface $injector,
