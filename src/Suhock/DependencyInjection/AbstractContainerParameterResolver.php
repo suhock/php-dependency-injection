@@ -10,16 +10,14 @@ declare(strict_types=1);
 
 namespace Suhock\DependencyInjection;
 
-use ReflectionIntersectionType;
-use ReflectionNamedType;
 use ReflectionParameter;
-use ReflectionType;
-use ReflectionUnionType;
 use UnitEnum;
 
 /**
  * Abstract base class for {@see ParameterResolverInterface} implementations that resolve dependencies from an
- * implementation of {@see ContainerInterface}.
+ * implementation of {@see ContainerInterface}. Both the fast path ({@see resolveDependency()}) and the reflection path
+ * ({@see resolveParameter()}) resolve through a single {@see ResolvableDependency} plan, so the resolution algorithm
+ * lives in one place.
  */
 abstract class AbstractContainerParameterResolver implements ParameterResolverInterface
 {
@@ -30,32 +28,100 @@ abstract class AbstractContainerParameterResolver implements ParameterResolverIn
 
     public function hasDependency(ResolvableDependency $dependency): bool
     {
-        return $this->container->has($dependency->className, $dependency->key);
+        foreach ($dependency->alternatives as $alternative) {
+            foreach ($alternative as $className) {
+                if ($this->container->has($className, $dependency->key)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     public function resolveDependency(ResolvableDependency $dependency): object
     {
-        return $this->container->get($dependency->className, $dependency->key);
+        return $this->tryResolveDependency($dependency)
+            ?? throw new ClassNotFoundException($dependency->alternatives[0][0]);
     }
 
     /**
-     * Should attempt to resolve the parameter to a concrete value using the container.
-     *
-     * @param ReflectionParameter $rParam The parameter for which to attempt to resolve a value
-     * @param object|null $result Reference parameter that will receive a concrete value for the parameter if one can be
-     * resolved
-     *
-     * @return bool <code>true</code> if a value could be resolved, <code>false</code> otherwise
+     * The single resolution algorithm shared by both paths: tries each alternative in priority order and returns the
+     * first that resolves, or <code>null</code> if none do (so the reflection path can apply its fallbacks).
      */
-    abstract protected function tryResolveParameter(ReflectionParameter $rParam, ?object &$result): bool;
+    protected function tryResolveDependency(ResolvableDependency $dependency): ?object
+    {
+        foreach ($dependency->alternatives as $alternative) {
+            $instance = $this->resolveAlternative($alternative, $dependency->key);
+
+            if ($instance !== null) {
+                return $instance;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Resolves a single conjunction: the first available member whose instance satisfies every member type. For a
+     * lone class that is simply "resolve it if registered"; for an intersection it enforces the is-a-all check.
+     *
+     * @param non-empty-list<class-string> $alternative
+     */
+    private function resolveAlternative(array $alternative, string|UnitEnum|null $key): ?object
+    {
+        foreach ($alternative as $className) {
+            if (!$this->container->has($className, $key)) {
+                continue;
+            }
+
+            $instance = $this->container->get($className, $key);
+
+            if ($this->instanceSatisfiesAll($instance, $alternative)) {
+                return $instance;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @param non-empty-list<class-string> $classNames
+     */
+    private function instanceSatisfiesAll(object $instance, array $classNames): bool
+    {
+        foreach ($classNames as $className) {
+            if (!$instance instanceof $className) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Should build the resolution plan for the parameter, or <code>null</code> if it has no container-resolvable type.
+     *
+     * @param ReflectionParameter $rParam The parameter to describe
+     *
+     * @return ResolvableDependency|null The plan to resolve, or <code>null</code> if the parameter cannot be resolved
+     * from the container by type
+     */
+    abstract protected function describeDependency(ReflectionParameter $rParam): ?ResolvableDependency;
 
     public function resolveParameter(ReflectionParameter $rParam): mixed
     {
         $deferredException = null;
 
         try {
-            if ($this->tryResolveParameter($rParam, $paramValue)) {
-                return $paramValue;
+            $dependency = $this->describeDependency($rParam);
+
+            if ($dependency !== null) {
+                $instance = $this->tryResolveDependency($dependency);
+
+                if ($instance !== null) {
+                    return $instance;
+                }
             }
         } catch (ClassResolutionException $e) {
             $deferredException = $e;
@@ -70,105 +136,5 @@ abstract class AbstractContainerParameterResolver implements ParameterResolverIn
         }
 
         throw new ParameterResolutionException($rParam, $deferredException);
-    }
-
-    protected function tryGetInstanceFromParameter(
-        ReflectionParameter $rParam,
-        ?object &$result,
-        string|UnitEnum|null $key = null
-    ): bool {
-        return $rParam->getType() !== null && $this->tryGetInstanceFromType($rParam->getType(), $result, $key);
-    }
-
-    private function tryGetInstanceFromType(ReflectionType $rType, ?object &$result, string|UnitEnum|null $key): bool
-    {
-        return match (true) {
-            $rType instanceof ReflectionNamedType => $this->tryGetFromNamedType($rType, $result, $key),
-            $rType instanceof ReflectionUnionType => $this->tryGetFromUnionType($rType, $result, $key),
-            $rType instanceof ReflectionIntersectionType => $this->tryGetFromIntersectionType($rType, $result, $key),
-            default => false // encountered an unknown ReflectionType
-        };
-    }
-
-    protected function tryGetFromNamedType(
-        ReflectionNamedType $rType,
-        ?object &$result,
-        string|UnitEnum|null $key = null
-    ): bool {
-        if ($rType->isBuiltin()) {
-            return false;
-        }
-
-        /** @var class-string $className */
-        $className = $rType->getName();
-
-        if (!$this->container->has($className, $key)) {
-            return false;
-        }
-
-        $result = $this->container->get($className, $key);
-
-        return true;
-    }
-
-    private function tryGetFromUnionType(ReflectionUnionType $rType, ?object &$result, string|UnitEnum|null $key): bool
-    {
-        foreach ($rType->getTypes() as $rInnerType) {
-            if ($this->tryGetInstanceFromType($rInnerType, $result, $key)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private function tryGetFromIntersectionType(
-        ReflectionIntersectionType $rType,
-        ?object &$result,
-        string|UnitEnum|null $key
-    ): bool {
-        foreach ($rType->getTypes() as $rInnerType) {
-            if (!$rInnerType instanceof ReflectionNamedType) {
-                // Future-proofing. As of PHP 8.1, only named types are supported in intersection types.
-                return false;
-            }
-
-            /** @var class-string $className */
-            $className = $rInnerType->getName();
-
-            if (!$this->container->has($className, $key)) {
-                continue;
-            }
-
-            // only way to tell if it's a match is to get an instance and check
-            $instance = $this->container->get($className, $key);
-
-            if ($this->isIntersectionMatch($rType, $instance)) {
-                $result = $instance;
-
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private function isIntersectionMatch(ReflectionIntersectionType $rType, object $instance): bool
-    {
-        foreach ($rType->getTypes() as $rInnerType) {
-            if (!$rInnerType instanceof ReflectionNamedType) {
-                // Future-proofing. As of PHP 8.1, only named types are supported in intersection types.
-                return false;
-            }
-
-            /** @var class-string $testClassName */
-            $testClassName = $rInnerType->getName();
-
-            if (!$instance instanceof $testClassName) {
-                return false;
-            }
-        }
-
-        return true;
     }
 }

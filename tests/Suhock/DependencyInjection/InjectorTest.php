@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Copyright (c) 2022-2026 Matthew Suhocki. All rights reserved.
  *
@@ -12,6 +13,7 @@ namespace Suhock\DependencyInjection;
 
 use Exception;
 use LogicException;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 use ReflectionParameter;
 use RuntimeException;
 use Suhock\DependencyInjection\Fakes\FakeAbstractClass;
@@ -20,7 +22,10 @@ use Suhock\DependencyInjection\Fakes\FakeClassNoConstructor;
 use Suhock\DependencyInjection\Fakes\FakeClassWithAutowireFunction;
 use Suhock\DependencyInjection\Fakes\FakeClassWithConstructor;
 use Suhock\DependencyInjection\Fakes\FakeClassWithDependencies;
+use Suhock\DependencyInjection\Fakes\FakeClassWithDnfDependency;
+use Suhock\DependencyInjection\Fakes\FakeClassWithIntersectionDependency;
 use Suhock\DependencyInjection\Fakes\FakeClassWithKeyedDependency;
+use Suhock\DependencyInjection\Fakes\FakeClassWithUnionDependency;
 use Suhock\DependencyInjection\Fakes\FakeContainer;
 use Suhock\DependencyInjection\Fakes\FakeInterfaceOne;
 use Suhock\DependencyInjection\Fakes\FakeInterfaceThree;
@@ -257,6 +262,53 @@ final class InjectorTest extends AbstractDependencyInjectionTestCase
         // Act & Assert
         $this->expectException(InjectorException::class);
         $injector->instantiate(FakeClassNoConstructor::class);
+    }
+
+    public function testInstantiate_WithUnionDependency_ResolvesFirstAvailableAlternative(): void
+    {
+        // Arrange: only the second alternative of the union is registered.
+        $instance = new FakeClassImplementsInterfaces();
+        $injector = $this->createInjector([
+            FakeInterfaceTwo::class => fn () => $instance
+        ]);
+
+        // Act
+        $result = $injector->instantiate(FakeClassWithUnionDependency::class);
+
+        // Assert
+        self::assertSame($instance, $result->obj);
+    }
+
+    public function testInstantiate_WithIntersectionDependency_ResolvesServiceSatisfyingAllTypes(): void
+    {
+        // Arrange: a service implementing both interfaces, registered under the first.
+        $instance = new FakeClassImplementsInterfaces();
+        $injector = $this->createInjector([
+            FakeInterfaceOne::class => fn () => $instance
+        ]);
+
+        // Act
+        $result = $injector->instantiate(FakeClassWithIntersectionDependency::class);
+
+        // Assert
+        self::assertSame($instance, $result->obj);
+    }
+
+    #[RequiresPhp('>= 8.2.0')]
+    public function testInstantiate_WithDnfDependency_ResolvesViaIntersectionAlternative(): void
+    {
+        // Arrange: for (FakeInterfaceOne&FakeInterfaceTwo)|FakeInterfaceThree, register a service satisfying the
+        // intersection alternative under its first member.
+        $instance = new FakeClassImplementsInterfaces();
+        $injector = $this->createInjector([
+            FakeInterfaceOne::class => fn () => $instance
+        ]);
+
+        // Act
+        $result = $injector->instantiate(FakeClassWithDnfDependency::class);
+
+        // Assert
+        self::assertSame($instance, $result->obj);
     }
 
     public function testInstantiate_WithOverrideForUnregisteredDependency_UsesOverride(): void

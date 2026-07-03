@@ -4,7 +4,7 @@ The PHP Dependency Injection library provides a customizable dependency
 injection framework for projects running on PHP 8.1 or later.
 
 ```php
-$container = new Suhock\DependencyInjection\Container();
+$container = Suhock\DependencyInjection\Container::createDefault();
 $container->addSingletonClass(MyApplication::class)
     // Add the rest of your services...
     ->get(MyApplication::class)
@@ -84,7 +84,7 @@ retrieving instances. Start by constructing an instance.
 ```php
 use Suhock\DependencyInjection\Container;
 
-$container = new Container();
+$container = Container::createDefault();
 ```
 
 Next, build your container, i.e., tell the container how it should resolve
@@ -804,14 +804,14 @@ function in a controller instead of the constructor.
 
 ```php
 use Suhock\DependencyInjection\Container;
-use Suhock\DependencyInjection\ContainerInjector;
+use Suhock\DependencyInjection\Injector;
 
 // Create the container and build it
-$container = new Container();
+$container = Container::createDefault();
 // ... build the container ...
 
 // Create an injector backed by the container
-$injector = new ContainerInjector($container);
+$injector = Injector::createDefault($container);
 
 // Fetch the application router from the container
 $router = $container->get(Router::class);
@@ -962,7 +962,11 @@ class MyApplication
 ```
 
 In the example above, the container will first attempt to resolve an instance of
-`HttpClient`. If it succeeds, it will check see 
+`HttpClient`. If it succeeds, it will check whether that instance is also
+`Serializable` and, if so, provide it. Otherwise, it will attempt to resolve
+`Serializable` and check whether that instance is also an `HttpClient`. If
+neither candidate satisfies both types, it will throw a
+`ParameterResolutionException`.
 
 ## Appendix
 
@@ -1056,7 +1060,7 @@ public function myFragileBloatedFunction(...$args)
 function getAppContainer(): Container
 {
     static $container;
-    return $container ??= new Container();
+    return $container ??= Container::createDefault();
 }
 
 /*
