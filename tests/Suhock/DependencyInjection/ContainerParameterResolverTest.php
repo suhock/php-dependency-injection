@@ -14,22 +14,35 @@ use Suhock\DependencyInjection\Fakes\FakeClassNoConstructor;
 use Suhock\DependencyInjection\Fakes\FakeUnitEnum;
 
 /**
- * Test suite for {@see ContainerInjector}.
+ * Test suite for {@see ContainerParameterResolver}.
  */
-final class ContainerInjectorTest extends AbstractDependencyInjectionTestCase
+final class ContainerParameterResolverTest extends AbstractDependencyInjectionTestCase
 {
-    private function createContainer(): Container
+    /**
+     * Builds a container whose own injector resolves parameters via the {@see ContainerParameterResolver} under test,
+     * wiring it through the container constructor callback exactly as production code would.
+     *
+     * @return array{Container, Injector}
+     */
+    private function createContainerAndInjector(): array
     {
-        return new Container();
+        $injector = null;
+        $container = new Container(
+            function (ContainerInterface $container) use (&$injector): Injector {
+                return $injector = new Injector(new ContainerParameterResolver($container));
+            }
+        );
+
+        /** @var Injector $injector populated synchronously by the constructor callback */
+        return [$container, $injector];
     }
 
     public function testCall_ParameterHasKey_ValueInjectedFromKeyedRegistration(): void
     {
         // Arrange
         $expectedInstance = new FakeClassNoConstructor();
-        $container = $this->createContainer()
-            ->addKeyedSingleton(FakeClassNoConstructor::class, 'key1', $expectedInstance);
-        $injector = new ContainerInjector($container);
+        [$container, $injector] = $this->createContainerAndInjector();
+        $container->addKeyedSingleton(FakeClassNoConstructor::class, 'key1', $expectedInstance);
 
         // Act
         $result = $injector->call(fn (#[Key('key1')] FakeClassNoConstructor $obj) => $obj);
@@ -42,9 +55,8 @@ final class ContainerInjectorTest extends AbstractDependencyInjectionTestCase
     {
         // Arrange
         $expectedInstance = new FakeClassNoConstructor();
-        $container = $this->createContainer()
-            ->addKeyedSingleton(FakeClassNoConstructor::class, FakeUnitEnum::Test, $expectedInstance);
-        $injector = new ContainerInjector($container);
+        [$container, $injector] = $this->createContainerAndInjector();
+        $container->addKeyedSingleton(FakeClassNoConstructor::class, FakeUnitEnum::Test, $expectedInstance);
 
         // Act
         $result = $injector->call(fn (#[Key(FakeUnitEnum::Test)] FakeClassNoConstructor $obj) => $obj);
@@ -57,9 +69,8 @@ final class ContainerInjectorTest extends AbstractDependencyInjectionTestCase
     {
         // Arrange
         $expectedInstance = new FakeClassNoConstructor();
-        $container = $this->createContainer()
-            ->addSingletonInstance(FakeClassNoConstructor::class, $expectedInstance);
-        $injector = new ContainerInjector($container);
+        [$container, $injector] = $this->createContainerAndInjector();
+        $container->addSingletonInstance(FakeClassNoConstructor::class, $expectedInstance);
 
         // Act
         $result = $injector->call(fn (FakeClassNoConstructor $obj) => $obj);
@@ -71,11 +82,10 @@ final class ContainerInjectorTest extends AbstractDependencyInjectionTestCase
     public function testCall_ParameterKeyNotRegistered_ThrowsParameterResolutionException(): void
     {
         // Arrange
-        $container = $this->createContainer();
-        $injector = new ContainerInjector($container);
+        [, $injector] = $this->createContainerAndInjector();
 
         // Act
-        $fn = static fn () => $injector->call(fn (#[Key('key1')] FakeClassNoConstructor $obj) => $obj);
+        $fn = static fn() => $injector->call(fn (#[Key('key1')] FakeClassNoConstructor $obj) => $obj);
 
         // Assert
         self::assertThrowsParameterResolutionException('{closure}', 'obj', null, $fn);

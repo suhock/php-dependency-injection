@@ -37,7 +37,7 @@ final class InjectorTest extends AbstractDependencyInjectionTestCase
      */
     protected function createInjector(array $classMapping = []): Injector
     {
-        return new ContainerInjector(new FakeContainer($classMapping));
+        return Injector::createDefault(new FakeContainer($classMapping));
     }
 
     public function testInstantiate_WithDependenciesInContainer_ReturnsInstanceWithValuesFromContainer(): void
@@ -228,9 +228,9 @@ final class InjectorTest extends AbstractDependencyInjectionTestCase
     public function testCall_WithDependencyWithUnresolvableDependency_ThrowsInjectorException(): void
     {
         // Arrange
-        $container = new Container();
+        $container = Container::createDefault();
         $container->addSingletonClass(FakeClassWithConstructor::class);
-        $injector = new ContainerInjector($container);
+        $injector = Injector::createDefault($container);
 
         // Act & Assert
         $this->expectException(InjectorException::class);
@@ -373,13 +373,13 @@ final class InjectorTest extends AbstractDependencyInjectionTestCase
     public function testCall_WithParameterHavingCircularDependency_ThrowsParameterResolutionException(): void
     {
         // Arrange
-        $container = new Container();
+        $container = Container::createDefault();
         $container->addSingletonFactory(
             FakeClassNoConstructor::class,
             fn (FakeClassNoConstructor $obj) => $obj
         );
 
-        $injector = new ContainerInjector($container);
+        $injector = Injector::createDefault($container);
 
         // Act
         $fn = static fn () => $injector->call(fn (FakeClassNoConstructor $obj) => $obj);

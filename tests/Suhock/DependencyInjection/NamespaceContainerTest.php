@@ -49,7 +49,7 @@ final class NamespaceContainerTest extends AbstractDependencyInjectionTestCase
 
         $namespaceContainer = new NamespaceContainer(
             __NAMESPACE__,
-            new ContainerInjector($container),
+            Injector::createDefault($container),
             fn (string $className, Throwable $throwable, RuntimeException $runtimeException) =>
                 new FakeClassWithDependencies($throwable, $runtimeException)
         );

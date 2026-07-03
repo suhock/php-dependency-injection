@@ -47,7 +47,7 @@ final class InterfaceContainerTest extends AbstractDependencyInjectionTestCase
 
         $implContainer = new InterfaceContainer(
             FakeInterfaceOne::class,
-            new ContainerInjector($container),
+            Injector::createDefault($container),
             fn (string $className, FakeClassNoConstructor $obj) => new FakeClassWithConstructor($obj)
         );
 

@@ -11,10 +11,10 @@ declare(strict_types=1);
 namespace Suhock\DependencyInjection\Provider;
 
 use Suhock\DependencyInjection\AbstractDependencyInjectionTestCase;
-use Suhock\DependencyInjection\ContainerInjector;
 use Suhock\DependencyInjection\ContainerInterface;
 use Suhock\DependencyInjection\Fakes\FakeClassExtendsBaseClass;
 use Suhock\DependencyInjection\Fakes\FakeClassNoConstructor;
+use Suhock\DependencyInjection\Injector;
 use Suhock\DependencyInjection\InjectorInterface;
 
 /**
@@ -74,7 +74,7 @@ final class ClosureInstanceProviderTest extends AbstractDependencyInjectionTestC
         $factory = new ClosureInstanceProvider(
             FakeClassExtendsBaseClass::class,
             fn () => new FakeClassNoConstructor(),
-            new ContainerInjector(self::createStub(ContainerInterface::class))
+            Injector::createDefault(self::createStub(ContainerInterface::class))
         );
 
         // Act

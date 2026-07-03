@@ -11,9 +11,9 @@ declare(strict_types=1);
 namespace Suhock\DependencyInjection\Provider;
 
 use Suhock\DependencyInjection\AbstractDependencyInjectionTestCase;
-use Suhock\DependencyInjection\ContainerInjector;
 use Suhock\DependencyInjection\ContainerInterface;
 use Suhock\DependencyInjection\Fakes\FakeClassNoConstructor;
+use Suhock\DependencyInjection\Injector;
 use Suhock\DependencyInjection\InjectorInterface;
 
 /**
@@ -45,7 +45,7 @@ final class ClassInstanceProviderTest extends AbstractDependencyInjectionTestCas
         // Arrange
         $factory = new ClassInstanceProvider(
             FakeClassNoConstructor::class,
-            new ContainerInjector(self::createStub(ContainerInterface::class)),
+            Injector::createDefault(self::createStub(ContainerInterface::class)),
             function (FakeClassNoConstructor $obj) {
                 $obj->string = 'test';
             }

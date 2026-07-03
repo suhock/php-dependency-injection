@@ -24,7 +24,7 @@ use function count;
  * Default implementation for {@see InjectorInterface} that resolves missing parameter values using a
  * {@see ParameterResolverInterface}.
  */
-class Injector implements InjectorInterface
+final class Injector implements InjectorInterface
 {
     /** Cache id prefix for the list of {@see Autowire} method names on a class. */
     private const AUTOWIRE_METHODS_CACHE_PREFIX = 'sdi:autowireMethods:';
@@ -55,6 +55,11 @@ class Injector implements InjectorInterface
         private readonly ?CacheInterface $sharedCache = null,
         private readonly ?ContainerInterface $container = null
     ) {
+    }
+
+    public static function createDefault(ContainerInterface $container, ?CacheInterface $cache = null): self
+    {
+        return new self(new ContainerParameterResolver($container), $cache, $container);
     }
 
     public function call(callable $function, array $params = []): mixed
@@ -99,25 +104,27 @@ class Injector implements InjectorInterface
      */
     private function tryInstantiateViaFastPath(string $className, array $params, mixed &$instance): bool
     {
-        if ($params === [] && $this->container !== null) {
-            $deps = $this->getFastPathDependencies($className);
-
-            if ($deps !== false && $this->areAllResolvable($deps, $this->container)) {
-                $args = [];
-
-                foreach ($deps as $dependencyClassName) {
-                    $args[] = $this->container->get($dependencyClassName);
-                }
-
-                /** @var TClass $instance */
-                $instance = new $className(...$args);
-                $this->injectAutowireFunctions($instance);
-
-                return true;
-            }
+        if ($params !== [] || $this->container === null) {
+            return false;
         }
 
-        return false;
+        $deps = $this->getFastPathDependencies($className);
+
+        if ($deps === false || !$this->areAllResolvable($deps, $this->container)) {
+            return false;
+        }
+
+        $args = [];
+
+        foreach ($deps as $dependencyClassName) {
+            $args[] = $this->container->get($dependencyClassName);
+        }
+
+        /** @var TClass $instance */
+        $instance = new $className(...$args);
+        $this->injectAutowireFunctions($instance);
+
+        return true;
     }
 
     /**

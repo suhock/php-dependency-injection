@@ -39,14 +39,20 @@ final class Container implements
     private InjectorInterface $injector;
 
     /**
-     * @param InjectorInterface|null $injector [optional] An existing injector to use for injecting dependencies into
-     * factories
-     * @param CacheInterface|null $cache [optional] Cache used to memoize reflected metadata. Only applied when no
-     * $injector is supplied; pass an {@see Cache\ApcuCache} to share reflection metadata across requests.
+     * @param callable(ContainerInterface):InjectorInterface $injectorFactory Provides the injector to be used in
+     * conjunction with the container.
      */
-    public function __construct(?InjectorInterface $injector = null, ?CacheInterface $cache = null)
+    public function __construct(callable $injectorFactory)
     {
-        $this->injector = $injector ?? new ContainerInjector($this, $cache);
+        $this->injector = $injectorFactory($this);
+    }
+
+    /**
+     * @param CacheInterface|null $cache [optional] Cache used to memoize reflected metadata.
+     */
+    public static function createDefault(?CacheInterface $cache = null): self
+    {
+        return new self(fn ($container) => Injector::createDefault($container, $cache));
     }
 
     /**

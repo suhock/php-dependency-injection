@@ -27,7 +27,7 @@ final class ContainerTransientBuilderTraitTest extends AbstractDependencyInjecti
 {
     private function createContainer(): Container
     {
-        return new Container();
+        return Container::createDefault();
     }
 
     public function testAddTransientClass_WithValidClassName_GetReturnsInstanceOfClass(): void

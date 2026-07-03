@@ -23,7 +23,7 @@ final class ContainerTest extends AbstractDependencyInjectionTestCase
 {
     protected function createContainer(): Container
     {
-        return new Container();
+        return Container::createDefault();
     }
 
     private function getNestedContainer(): ContainerInterface
