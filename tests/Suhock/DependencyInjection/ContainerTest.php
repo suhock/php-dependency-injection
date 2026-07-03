@@ -11,7 +11,7 @@ declare(strict_types=1);
 namespace Suhock\DependencyInjection;
 
 use Suhock\DependencyInjection\Fakes\FakeBuilder;
-use Suhock\DependencyInjection\Fakes\FakeClassExtendsNoConstructor;
+use Suhock\DependencyInjection\Fakes\FakeClassExtendsBaseClass;
 use Suhock\DependencyInjection\Fakes\FakeClassNoConstructor;
 use Suhock\DependencyInjection\Lifetime\SingletonStrategy;
 use Suhock\DependencyInjection\Provider\ObjectInstanceProvider;
@@ -140,17 +140,17 @@ final class ContainerTest extends AbstractDependencyInjectionTestCase
             'Namespace mismatch. Test would be invalid.'
         );
 
-        $expectedInstance = new FakeClassExtendsNoConstructor();
+        $expectedInstance = new FakeClassExtendsBaseClass();
 
         $container = $this->createContainer()
             ->addSingletonContainer($this->getNestedContainer())
             ->addSingletonFactory(
-                FakeClassExtendsNoConstructor::class,
+                FakeClassExtendsBaseClass::class,
                 fn () => $expectedInstance
             );
 
         // Act
-        $result = $container->get(FakeClassExtendsNoConstructor::class);
+        $result = $container->get(FakeClassExtendsBaseClass::class);
 
         // Assert
         self::assertSame($expectedInstance, $result);
@@ -165,14 +165,14 @@ final class ContainerTest extends AbstractDependencyInjectionTestCase
             'Namespace mismatch. Test would be invalid.'
         );
 
-        $expectedInstance = new FakeClassExtendsNoConstructor();
+        $expectedInstance = new FakeClassExtendsBaseClass();
 
         $container = $this->createContainer()
             ->addSingletonNamespace(__NAMESPACE__, fn (string $className) => $expectedInstance)
             ->addSingletonContainer($this->getNestedContainer());
 
         // Act
-        $result = $container->get(FakeClassExtendsNoConstructor::class);
+        $result = $container->get(FakeClassExtendsBaseClass::class);
 
         // Assert
         self::assertSame($expectedInstance, $result);
@@ -294,7 +294,7 @@ final class ContainerTest extends AbstractDependencyInjectionTestCase
         $container = $this->createContainer()->addSingletonContainer($this->getNestedContainer());
 
         // Act
-        $result = $container->has(FakeClassExtendsNoConstructor::class);
+        $result = $container->has(FakeClassExtendsBaseClass::class);
 
         // Assert
         self::assertTrue($result);
@@ -306,7 +306,7 @@ final class ContainerTest extends AbstractDependencyInjectionTestCase
         $container = $this->createContainer()->addTransientContainer($this->getNestedContainer());
 
         // Act
-        $result = $container->has(FakeClassExtendsNoConstructor::class);
+        $result = $container->has(FakeClassExtendsBaseClass::class);
 
         // Assert
         self::assertTrue($result);

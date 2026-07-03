@@ -13,6 +13,6 @@ namespace Suhock\DependencyInjection\Fakes;
 /**
  * Fakes a subclass of another class.
  */
-final class FakeClassExtendsNoConstructor extends FakeClassNoConstructor
+final class FakeClassExtendsBaseClass extends FakeBaseClass
 {
 }

@@ -12,7 +12,8 @@ namespace Suhock\DependencyInjection\Provider;
 
 use Suhock\DependencyInjection\AbstractDependencyInjectionTestCase;
 use Suhock\DependencyInjection\ContainerInterface;
-use Suhock\DependencyInjection\Fakes\FakeClassExtendsNoConstructor;
+use Suhock\DependencyInjection\Fakes\FakeBaseClass;
+use Suhock\DependencyInjection\Fakes\FakeClassExtendsBaseClass;
 use Suhock\DependencyInjection\Fakes\FakeClassNoConstructor;
 
 /**
@@ -27,12 +28,12 @@ final class ImplementationInstanceProviderTest extends AbstractDependencyInjecti
         $container->method('has')->willReturn(true);
         $container->expects($this->once())
             ->method('get')
-            ->with(FakeClassExtendsNoConstructor::class)
-            ->willReturn(new FakeClassExtendsNoConstructor());
+            ->with(FakeClassExtendsBaseClass::class)
+            ->willReturn(new FakeClassExtendsBaseClass());
 
         $factory = new ImplementationInstanceProvider(
-            FakeClassNoConstructor::class,
-            FakeClassExtendsNoConstructor::class,
+            FakeBaseClass::class,
+            FakeClassExtendsBaseClass::class,
             $container
         );
 
@@ -40,7 +41,7 @@ final class ImplementationInstanceProviderTest extends AbstractDependencyInjecti
         $instance = $factory->get();
 
         // Assert
-        self::assertInstanceOf(FakeClassExtendsNoConstructor::class, $instance);
+        self::assertInstanceOf(FakeClassExtendsBaseClass::class, $instance);
     }
 
     public function testGet_WhenImplementationSameAsInterface_ThrowsImplementationException(): void
@@ -64,14 +65,14 @@ final class ImplementationInstanceProviderTest extends AbstractDependencyInjecti
     {
         // Arrange & Act
         $fn = fn () => new ImplementationInstanceProvider(
-            FakeClassExtendsNoConstructor::class,
+            FakeClassExtendsBaseClass::class,
             FakeClassNoConstructor::class,
             self::createStub(ContainerInterface::class)
         );
 
         // Assert
         self::assertThrowsImplementationException(
-            FakeClassExtendsNoConstructor::class,
+            FakeClassExtendsBaseClass::class,
             FakeClassNoConstructor::class,
             $fn
         );

@@ -10,7 +10,8 @@ declare(strict_types=1);
 
 namespace Suhock\DependencyInjection;
 
-use Suhock\DependencyInjection\Fakes\FakeClassExtendsNoConstructor;
+use Suhock\DependencyInjection\Fakes\FakeBaseClass;
+use Suhock\DependencyInjection\Fakes\FakeClassExtendsBaseClass;
 use Suhock\DependencyInjection\Fakes\FakeClassNoConstructor;
 use Suhock\DependencyInjection\Fakes\FakeClassWithConstructor;
 use Suhock\DependencyInjection\Fakes\FakeClassWithDependencies;
@@ -24,13 +25,13 @@ final class InterfaceContainerTest extends AbstractDependencyInjectionTestCase
     public function testGet_WithDefaultInjectorAndDefaultFactory_ReturnsInstance(): void
     {
         // Arrange
-        $container = new InterfaceContainer(FakeClassNoConstructor::class);
+        $container = new InterfaceContainer(FakeBaseClass::class);
 
         // Act
-        $instance = $container->get(FakeClassExtendsNoConstructor::class);
+        $instance = $container->get(FakeClassExtendsBaseClass::class);
 
         // Assert
-        self::assertInstanceOf(FakeClassExtendsNoConstructor::class, $instance);
+        self::assertInstanceOf(FakeClassExtendsBaseClass::class, $instance);
     }
 
     public function testGet_WithExplicitInjectorAndExplicitFactory_UsesInjectorAndFactory(): void
@@ -84,10 +85,10 @@ final class InterfaceContainerTest extends AbstractDependencyInjectionTestCase
     public function testHas_WithSubclassOfInterface_ReturnsTrue(): void
     {
         // Arrange
-        $container = new InterfaceContainer(FakeClassNoConstructor::class);
+        $container = new InterfaceContainer(FakeBaseClass::class);
 
         // Act
-        $result = $container->has(FakeClassExtendsNoConstructor::class);
+        $result = $container->has(FakeClassExtendsBaseClass::class);
 
         // Assert
         self::assertTrue($result);

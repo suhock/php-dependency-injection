@@ -11,7 +11,8 @@ declare(strict_types=1);
 namespace Suhock\DependencyInjection\Provider;
 
 use Suhock\DependencyInjection\AbstractDependencyInjectionTestCase;
-use Suhock\DependencyInjection\Fakes\FakeClassExtendsNoConstructor;
+use Suhock\DependencyInjection\Fakes\FakeBaseClass;
+use Suhock\DependencyInjection\Fakes\FakeClassExtendsBaseClass;
 use Suhock\DependencyInjection\Fakes\FakeClassNoConstructor;
 
 /**
@@ -23,13 +24,13 @@ final class ObjectInstanceProviderTest extends AbstractDependencyInjectionTestCa
     {
         // Arrange & Act
         $fn = static fn () => new ObjectInstanceProvider(
-            FakeClassExtendsNoConstructor::class,
+            FakeClassExtendsBaseClass::class,
             new FakeClassNoConstructor()
         );
 
         // Assert
         self::assertThrowsInstanceTypeException(
-            FakeClassExtendsNoConstructor::class,
+            FakeClassExtendsBaseClass::class,
             FakeClassNoConstructor::class,
             $fn
         );
@@ -51,8 +52,8 @@ final class ObjectInstanceProviderTest extends AbstractDependencyInjectionTestCa
     public function testGet_WithInstanceOfSubclass_ReturnsSameInstance(): void
     {
         // Arrange
-        $expectedInstance = new FakeClassExtendsNoConstructor();
-        $factory = new ObjectInstanceProvider(FakeClassNoConstructor::class, $expectedInstance);
+        $expectedInstance = new FakeClassExtendsBaseClass();
+        $factory = new ObjectInstanceProvider(FakeBaseClass::class, $expectedInstance);
 
         // Act
         $instance = $factory->get();
