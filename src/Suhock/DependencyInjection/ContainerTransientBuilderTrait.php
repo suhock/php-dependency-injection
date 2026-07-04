@@ -136,7 +136,7 @@ trait ContainerTransientBuilderTrait
 
     public function addTransientNamespace(string $namespace, ?callable $factory = null): static
     {
-        $this->addTransientContainer(new NamespaceContainer($namespace, $this->getInjector(), $factory));
+        $this->addTransientContainer(new NamespaceContainer($namespace, fn () => $this->getInjector(), $factory));
 
         return $this;
     }
@@ -146,7 +146,7 @@ trait ContainerTransientBuilderTrait
      */
     public function addTransientInterface(string $interfaceName, ?callable $factory = null): static
     {
-        $this->addTransientContainer(new InterfaceContainer($interfaceName, $this->getInjector(), $factory));
+        $this->addTransientContainer(new InterfaceContainer($interfaceName, fn () => $this->getInjector(), $factory));
 
         return $this;
     }
@@ -156,7 +156,7 @@ trait ContainerTransientBuilderTrait
      */
     public function addTransientAttribute(string $attributeName, ?callable $factory = null): static
     {
-        $this->addTransientContainer(new AttributeContainer($attributeName, $this->getInjector(), $factory));
+        $this->addTransientContainer(new AttributeContainer($attributeName, fn () => $this->getInjector(), $factory));
 
         return $this;
     }

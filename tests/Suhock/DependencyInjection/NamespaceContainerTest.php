@@ -25,7 +25,7 @@ final class NamespaceContainerTest extends AbstractDependencyInjectionTestCase
     public function testGet_WithDefaultInjectorAndDefaultFactory_ReturnsInstance(): void
     {
         // Arrange
-        $container = new NamespaceContainer(__NAMESPACE__);
+        $container = NamespaceContainer::createDefault(__NAMESPACE__);
 
         // Act
         $instance = $container->get(FakeClassNoConstructor::class);
@@ -49,7 +49,7 @@ final class NamespaceContainerTest extends AbstractDependencyInjectionTestCase
 
         $namespaceContainer = new NamespaceContainer(
             __NAMESPACE__,
-            Injector::createDefault($container),
+            static fn () => Injector::createDefault($container),
             fn (string $className, Throwable $throwable, RuntimeException $runtimeException) =>
                 new FakeClassWithDependencies($throwable, $runtimeException)
         );
@@ -68,7 +68,7 @@ final class NamespaceContainerTest extends AbstractDependencyInjectionTestCase
         // Arrange
         $container = new NamespaceContainer(
             __NAMESPACE__,
-            self::createStub(InjectorInterface::class),
+            static fn () => self::createStub(InjectorInterface::class),
             fn () => null
         );
 
@@ -82,7 +82,7 @@ final class NamespaceContainerTest extends AbstractDependencyInjectionTestCase
     public function testHas_WithClassInNamespace_ReturnsTrue(): void
     {
         // Arrange
-        $container = new NamespaceContainer(__NAMESPACE__);
+        $container = NamespaceContainer::createDefault(__NAMESPACE__);
 
         // Act
         $result = $container->has(FakeClassNoConstructor::class);
@@ -94,7 +94,7 @@ final class NamespaceContainerTest extends AbstractDependencyInjectionTestCase
     public function testHas_WithClassNotInNamespace_ReturnsFalse(): void
     {
         // Arrange
-        $container = new NamespaceContainer(__NAMESPACE__);
+        $container = NamespaceContainer::createDefault(__NAMESPACE__);
 
         // Act
         $result = $container->has(DateTime::class);
@@ -106,7 +106,7 @@ final class NamespaceContainerTest extends AbstractDependencyInjectionTestCase
     public function testHas_WithRootNamespaceAndClassInRootNamespace_ReturnsTrue(): void
     {
         // Arrange
-        $container = new NamespaceContainer('');
+        $container = NamespaceContainer::createDefault('');
 
         // Act
         $result = $container->has(DateTime::class);
@@ -118,7 +118,7 @@ final class NamespaceContainerTest extends AbstractDependencyInjectionTestCase
     public function testHas_WithRootNamespaceAndClassInOtherNamespace_ReturnsTrue(): void
     {
         // Arrange
-        $container = new NamespaceContainer('');
+        $container = NamespaceContainer::createDefault('');
 
         // Act
         $result = $container->has(FakeClassNoConstructor::class);

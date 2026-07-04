@@ -22,7 +22,8 @@ final class NamespaceContainer extends AbstractFactoryContainer
     /**
      * @param string $namespace The namespace from which to provide class instances. An empty string indicates this
      * container should resolve classes from any namespace.
-     * @param InjectorInterface|null $injector [optional] The injector to use for calling the factory method
+     * @param callable(ContainerInterface):InjectorInterface $injectorFactory Provides the injector to be used for
+     * calling the factory method
      * @param callable|null $factory [optional] A factory to use for acquiring instances of classes. The first argument
      * will be the name of the class. Additional arguments can be provided from this container's {@see Injector}. If no
      * factory is provided, a default factory that directly instantiates the class will be used.
@@ -32,11 +33,28 @@ final class NamespaceContainer extends AbstractFactoryContainer
      */
     public function __construct(
         string $namespace,
-        ?InjectorInterface $injector = null,
+        callable $injectorFactory,
         ?callable $factory = null
     ) {
-        parent::__construct($injector, $factory);
+        parent::__construct($injectorFactory, $factory);
         $this->namespace = trim($namespace, '\\');
+    }
+
+    /**
+     * Creates a namespace container whose injector resolves dependencies from the container itself. To resolve
+     * dependencies from an outer container instead, use the constructor and provide an injector backed by that
+     * container.
+     *
+     * @param string $namespace The namespace from which to provide class instances
+     * @param callable|null $factory [optional] A factory to use for acquiring instances of classes
+     */
+    public static function createDefault(string $namespace, ?callable $factory = null): self
+    {
+        return new self(
+            $namespace,
+            static fn (ContainerInterface $container) => Injector::createDefault($container),
+            $factory
+        );
     }
 
     public function has(string $className, string|UnitEnum|null $key = null): bool

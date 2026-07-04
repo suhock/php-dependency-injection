@@ -22,7 +22,7 @@ final class AttributeContainerTest extends AbstractDependencyInjectionTestCase
     public function testGet_WithDefaultInjectorDefaultFactory_ReturnsAutowiredInstance(): void
     {
         // Arrange
-        $container = new AttributeContainer(FakeAttribute::class);
+        $container = AttributeContainer::createDefault(FakeAttribute::class);
 
         // Act
         $instance = $container->get(FakeClassWithAttribute::class);
@@ -31,12 +31,12 @@ final class AttributeContainerTest extends AbstractDependencyInjectionTestCase
         self::assertInstanceOf(FakeClassWithAttribute::class, $instance);
     }
 
-    public function testGet_WithExplicitInjectorExplicitFactory_ReturnsInstanceFromFactory(): void
+    public function testGet_WithDefaultInjectorExplicitFactory_ReturnsInstanceFromFactory(): void
     {
         // Arrange
-        $container = new AttributeContainer(
+        $container = AttributeContainer::createDefault(
             FakeAttribute::class,
-            factory: fn (string $className, FakeAttribute $attr) => new FakeClassWithAttribute($attr->value)
+            fn (string $className, FakeAttribute $attr) => new FakeClassWithAttribute($attr->value)
         );
 
         // Act
@@ -50,7 +50,7 @@ final class AttributeContainerTest extends AbstractDependencyInjectionTestCase
     public function testGet_WhenClassDoesNotHaveAttribute_ThrowsClassNotFoundException(): void
     {
         // Arrange
-        $container = new AttributeContainer(FakeAttribute::class);
+        $container = AttributeContainer::createDefault(FakeAttribute::class);
 
         // Act
         $fn = static fn () => $container->get(FakeClassWithDependencies::class);
@@ -62,7 +62,7 @@ final class AttributeContainerTest extends AbstractDependencyInjectionTestCase
     public function testGet_WhenClassDoesNotExist_ThrowsClassNotFoundException(): void
     {
         // Arrange
-        $container = new AttributeContainer(FakeAttribute::class);
+        $container = AttributeContainer::createDefault(FakeAttribute::class);
 
         // Act
         /** @phpstan-ignore argument.type (intentionally passing a non-existent class) */
@@ -79,7 +79,7 @@ final class AttributeContainerTest extends AbstractDependencyInjectionTestCase
     public function testHas_WhenClassHasAttribute_ReturnsTrue(): void
     {
         // Arrange
-        $container = new AttributeContainer(FakeAttribute::class);
+        $container = AttributeContainer::createDefault(FakeAttribute::class);
 
         // Act
         $result = $container->has(FakeClassWithAttribute::class);
@@ -91,7 +91,7 @@ final class AttributeContainerTest extends AbstractDependencyInjectionTestCase
     public function testHas_WhenClassDoesNotHaveAttribute_ReturnsFalse(): void
     {
         // Arrange
-        $container = new AttributeContainer(FakeAttribute::class);
+        $container = AttributeContainer::createDefault(FakeAttribute::class);
 
         // Act
         $result = $container->has(FakeClassWithDependencies::class);
@@ -103,7 +103,7 @@ final class AttributeContainerTest extends AbstractDependencyInjectionTestCase
     public function testHas_WhenClassDoesNotExist_ReturnsFalse(): void
     {
         // Arrange
-        $container = new AttributeContainer(FakeAttribute::class);
+        $container = AttributeContainer::createDefault(FakeAttribute::class);
 
         // Act
         /** @phpstan-ignore argument.type (intentionally passing a non-existent class) */

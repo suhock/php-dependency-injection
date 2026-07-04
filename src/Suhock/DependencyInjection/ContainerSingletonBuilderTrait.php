@@ -159,7 +159,7 @@ trait ContainerSingletonBuilderTrait
 
     public function addSingletonNamespace(string $namespace, ?callable $factory = null): static
     {
-        $this->addSingletonContainer(new NamespaceContainer($namespace, $this->getInjector(), $factory));
+        $this->addSingletonContainer(new NamespaceContainer($namespace, fn () => $this->getInjector(), $factory));
 
         return $this;
     }
@@ -169,7 +169,7 @@ trait ContainerSingletonBuilderTrait
      */
     public function addSingletonInterface(string $interfaceName, ?callable $factory = null): static
     {
-        $this->addSingletonContainer(new InterfaceContainer($interfaceName, $this->getInjector(), $factory));
+        $this->addSingletonContainer(new InterfaceContainer($interfaceName, fn () => $this->getInjector(), $factory));
 
         return $this;
     }
@@ -179,7 +179,7 @@ trait ContainerSingletonBuilderTrait
      */
     public function addSingletonAttribute(string $attributeName, ?callable $factory = null): static
     {
-        $this->addSingletonContainer(new AttributeContainer($attributeName, $this->getInjector(), $factory));
+        $this->addSingletonContainer(new AttributeContainer($attributeName, fn () => $this->getInjector(), $factory));
 
         return $this;
     }

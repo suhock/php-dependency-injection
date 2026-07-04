@@ -30,7 +30,8 @@ final class AttributeContainer implements ContainerInterface
     /**
      * @param class-string<TAttr> $attributeName The name of the attribute that must be present to enable this container
      * for a class
-     * @param InjectorInterface|null $injector [optional] The injector to use for calling the factory method
+     * @param callable(ContainerInterface):InjectorInterface $injectorFactory Provides the injector to be used for
+     * calling the factory method
      * @param callable|null $factory [optional] The factory to use for acquiring instances of classes. The first
      * argument will be the name of the class. The second argument will be an instance of the attribute attached to the
      * class. Additional arguments can be provided from this container's {@see Injector}. If no factory is provided, a
@@ -41,11 +42,33 @@ final class AttributeContainer implements ContainerInterface
      */
     public function __construct(
         private readonly string $attributeName,
-        ?InjectorInterface $injector = null,
+        callable $injectorFactory,
         ?callable $factory = null
     ) {
-        $this->injector = $injector ?? Injector::createDefault($this);
+        $this->injector = $injectorFactory($this);
         $this->factory = $factory !== null ? $factory(...) : $this->instantiate(...);
+    }
+
+    /**
+     * Creates an attribute container whose injector resolves dependencies from the container itself. To resolve
+     * dependencies from an outer container instead, use the constructor and provide an injector backed by that
+     * container.
+     *
+     * @template TDefault of object
+     *
+     * @param class-string<TDefault> $attributeName The name of the attribute that must be present to enable this
+     * container for a class
+     * @param callable|null $factory [optional] The factory to use for acquiring instances of classes
+     *
+     * @return self<TDefault>
+     */
+    public static function createDefault(string $attributeName, ?callable $factory = null): self
+    {
+        return new self(
+            $attributeName,
+            static fn (ContainerInterface $container) => Injector::createDefault($container),
+            $factory
+        );
     }
 
     /**

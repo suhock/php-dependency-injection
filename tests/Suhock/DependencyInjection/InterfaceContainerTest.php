@@ -25,7 +25,7 @@ final class InterfaceContainerTest extends AbstractDependencyInjectionTestCase
     public function testGet_WithDefaultInjectorAndDefaultFactory_ReturnsInstance(): void
     {
         // Arrange
-        $container = new InterfaceContainer(FakeBaseClass::class);
+        $container = InterfaceContainer::createDefault(FakeBaseClass::class);
 
         // Act
         $instance = $container->get(FakeClassExtendsBaseClass::class);
@@ -47,7 +47,7 @@ final class InterfaceContainerTest extends AbstractDependencyInjectionTestCase
 
         $implContainer = new InterfaceContainer(
             FakeInterfaceOne::class,
-            Injector::createDefault($container),
+            static fn () => Injector::createDefault($container),
             fn (string $className, FakeClassNoConstructor $obj) => new FakeClassWithConstructor($obj)
         );
 
@@ -61,7 +61,7 @@ final class InterfaceContainerTest extends AbstractDependencyInjectionTestCase
     public function testGet_WithImplementationClassSameAsInterface_ThrowsClassNotFoundException(): void
     {
         // Arrange
-        $container = new InterfaceContainer(FakeClassNoConstructor::class);
+        $container = InterfaceContainer::createDefault(FakeClassNoConstructor::class);
 
         // Act
         $fn = static fn () => $container->get(FakeClassNoConstructor::class);
@@ -73,7 +73,7 @@ final class InterfaceContainerTest extends AbstractDependencyInjectionTestCase
     public function testGet_WithImplementationClassNotInstanceOfInterface_ThrowsClassNotFoundException(): void
     {
         // Arrange
-        $container = new InterfaceContainer(FakeClassNoConstructor::class);
+        $container = InterfaceContainer::createDefault(FakeClassNoConstructor::class);
 
         // Act
         $fn = static fn () => $container->get(FakeClassWithDependencies::class);
@@ -85,7 +85,7 @@ final class InterfaceContainerTest extends AbstractDependencyInjectionTestCase
     public function testHas_WithSubclassOfInterface_ReturnsTrue(): void
     {
         // Arrange
-        $container = new InterfaceContainer(FakeBaseClass::class);
+        $container = InterfaceContainer::createDefault(FakeBaseClass::class);
 
         // Act
         $result = $container->has(FakeClassExtendsBaseClass::class);
@@ -97,7 +97,7 @@ final class InterfaceContainerTest extends AbstractDependencyInjectionTestCase
     public function testHas_WithSameClassAsInterface_ReturnsFalse(): void
     {
         // Arrange
-        $container = new InterfaceContainer(FakeClassNoConstructor::class);
+        $container = InterfaceContainer::createDefault(FakeClassNoConstructor::class);
 
         // Act
         $result = $container->has(FakeClassNoConstructor::class);
@@ -109,7 +109,7 @@ final class InterfaceContainerTest extends AbstractDependencyInjectionTestCase
     public function testHas_WithImplementationNotSubclassOfInterface_ReturnsFalse(): void
     {
         // Arrange
-        $container = new InterfaceContainer(FakeClassNoConstructor::class);
+        $container = InterfaceContainer::createDefault(FakeClassNoConstructor::class);
 
         // Act
         $result = $container->has(FakeClassWithDependencies::class);
