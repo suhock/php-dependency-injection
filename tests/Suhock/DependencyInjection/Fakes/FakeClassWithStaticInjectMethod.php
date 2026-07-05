@@ -10,18 +10,18 @@ declare(strict_types=1);
 
 namespace Suhock\DependencyInjection\Fakes;
 
-use Suhock\DependencyInjection\Autowire;
+use Suhock\DependencyInjection\Inject;
 
 /**
- * Fake class with an autowired method.
+ * Fakes a misconfigured class with an Inject attribute on a static method.
  */
-final class FakeClassWithAutowireFunction
+final class FakeClassWithStaticInjectMethod
 {
-    public ?FakeClassNoConstructor $obj = null;
+    public static ?FakeClassNoConstructor $obj = null;
 
-    #[Autowire]
-    public function setObj(FakeClassNoConstructor $obj): void
+    #[Inject]
+    public static function setObj(FakeClassNoConstructor $obj): void
     {
-        $this->obj = $obj;
+        self::$obj = $obj;
     }
 }

@@ -11,11 +11,7 @@ declare(strict_types=1);
 namespace Suhock\DependencyInjection;
 
 use ReflectionAttribute;
-use ReflectionIntersectionType;
-use ReflectionNamedType;
 use ReflectionParameter;
-use ReflectionType;
-use ReflectionUnionType;
 use UnitEnum;
 use function count;
 
@@ -44,117 +40,15 @@ final class ContainerParameterResolver extends AbstractContainerParameterResolve
     }
 
     /**
-     * Builds the resolution plan from the parameter's type, honoring any {@see Key} attribute. Named, union,
-     * intersection, and DNF types all map to the disjunction-of-conjunctions in {@see ResolvableDependency}. Returns
-     * <code>null</code> for an untyped or otherwise non-resolvable type.
+     * Builds the resolution plan from the parameter's type, honoring any {@see Key} attribute.
      */
     protected function describeDependency(ReflectionParameter $rParam): ?ResolvableDependency
     {
-        $rType = $rParam->getType();
-
-        if ($rType === null) {
-            return null;
-        }
-
-        $alternatives = $this->alternativesFromType($rType);
-
-        return $alternatives === null ? null : new ResolvableDependency(
+        return $this->describeFromType(
             $rParam->getName(),
-            $alternatives,
+            $rParam->getType(),
             $this->keyFromAttributes($rParam->getAttributes(Key::class))
         );
-    }
-
-    /**
-     * @return non-empty-list<non-empty-list<class-string>>|null
-     */
-    private function alternativesFromType(ReflectionType $rType): ?array
-    {
-        if ($rType instanceof ReflectionNamedType) {
-            $className = $this->classNameFromNamedType($rType);
-
-            return $className === null ? null : [[$className]];
-        }
-
-        if ($rType instanceof ReflectionIntersectionType) {
-            $members = $this->intersectionMembers($rType);
-
-            return $members === null ? null : [$members];
-        }
-
-        if ($rType instanceof ReflectionUnionType) {
-            return $this->unionAlternatives($rType);
-        }
-
-        return null;
-    }
-
-    /**
-     * @return non-empty-list<non-empty-list<class-string>>|null
-     */
-    private function unionAlternatives(ReflectionUnionType $rType): ?array
-    {
-        $alternatives = [];
-
-        foreach ($rType->getTypes() as $rInnerType) {
-            // A union's members are named types or, in DNF, intersections.
-            if ($rInnerType instanceof ReflectionIntersectionType) {
-                $members = $this->intersectionMembers($rInnerType);
-
-                if ($members === null) {
-                    return null;
-                }
-
-                $alternatives[] = $members;
-
-                continue;
-            }
-
-            $className = $this->classNameFromNamedType($rInnerType);
-
-            if ($className !== null) {
-                // A builtin alternative is skipped, mirroring the by-type resolution of a union.
-                $alternatives[] = [$className];
-            }
-        }
-
-        return $alternatives === [] ? null : $alternatives;
-    }
-
-    /**
-     * @return class-string|null The class name, or <code>null</code> for a builtin type
-     */
-    private function classNameFromNamedType(ReflectionNamedType $rType): ?string
-    {
-        if ($rType->isBuiltin()) {
-            return null;
-        }
-
-        /** @var class-string $className a named, non-builtin type is a class name */
-        $className = $rType->getName();
-
-        return $className;
-    }
-
-    /**
-     * @return non-empty-list<class-string>|null <code>null</code> if any member is not a plain named type
-     */
-    private function intersectionMembers(ReflectionIntersectionType $rType): ?array
-    {
-        $members = [];
-
-        foreach ($rType->getTypes() as $rInnerType) {
-            if (!$rInnerType instanceof ReflectionNamedType) {
-                // Future-proofing. As of PHP 8.1, only named types are supported in intersection types.
-                return null;
-            }
-
-            /** @var class-string $className */
-            $className = $rInnerType->getName();
-            $members[] = $className;
-        }
-
-        return $members === [] ? null : $members;
     }
 
     /**

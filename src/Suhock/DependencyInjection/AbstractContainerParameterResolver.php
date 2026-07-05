@@ -10,7 +10,12 @@ declare(strict_types=1);
 
 namespace Suhock\DependencyInjection;
 
+use ReflectionIntersectionType;
+use ReflectionNamedType;
 use ReflectionParameter;
+use ReflectionProperty;
+use ReflectionType;
+use ReflectionUnionType;
 use UnitEnum;
 
 /**
@@ -136,5 +141,148 @@ abstract class AbstractContainerParameterResolver implements ParameterResolverIn
         }
 
         throw new ParameterResolutionException($rParam, $deferredException);
+    }
+
+    public function resolveProperty(ReflectionProperty $rProperty, string|UnitEnum|null $key): mixed
+    {
+        $deferredException = null;
+        $rType = $rProperty->getType();
+        $dependency = $this->describeFromType($rProperty->getName(), $rType, $key);
+
+        if ($dependency !== null) {
+            try {
+                $instance = $this->tryResolveDependency($dependency);
+
+                if ($instance !== null) {
+                    return $instance;
+                }
+            } catch (ClassResolutionException $e) {
+                $deferredException = $e;
+            }
+        }
+
+        if ($rType !== null && $rType->allowsNull()) {
+            return null;
+        }
+
+        throw new PropertyResolutionException($rProperty, $deferredException);
+    }
+
+    /**
+     * Builds the resolution plan for an injection point from its type, or <code>null</code> if the type is absent or
+     * not resolvable from the container (untyped, builtin, or an unsupported composite such as a DNF whose members are
+     * not plain named types).
+     *
+     * @param string $name The name of the injection point, carried into the descriptor for diagnostics and overrides
+     * @param ReflectionType|null $rType The declared type of the injection point
+     * @param string|UnitEnum|null $key The key to resolve by, if any
+     */
+    protected function describeFromType(
+        string $name,
+        ?ReflectionType $rType,
+        string|UnitEnum|null $key
+    ): ?ResolvableDependency {
+        if ($rType === null) {
+            return null;
+        }
+
+        $alternatives = $this->alternativesFromType($rType);
+
+        return $alternatives === null ? null : new ResolvableDependency($name, $alternatives, $key);
+    }
+
+    /**
+     * Named, union, intersection, and DNF types all map to the disjunction-of-conjunctions in
+     * {@see ResolvableDependency}.
+     *
+     * @return non-empty-list<non-empty-list<class-string>>|null
+     */
+    private function alternativesFromType(ReflectionType $rType): ?array
+    {
+        if ($rType instanceof ReflectionNamedType) {
+            $className = $this->classNameFromNamedType($rType);
+
+            return $className === null ? null : [[$className]];
+        }
+
+        if ($rType instanceof ReflectionIntersectionType) {
+            $members = $this->intersectionMembers($rType);
+
+            return $members === null ? null : [$members];
+        }
+
+        if ($rType instanceof ReflectionUnionType) {
+            return $this->unionAlternatives($rType);
+        }
+
+        return null;
+    }
+
+    /**
+     * @return non-empty-list<non-empty-list<class-string>>|null
+     */
+    private function unionAlternatives(ReflectionUnionType $rType): ?array
+    {
+        $alternatives = [];
+
+        foreach ($rType->getTypes() as $rInnerType) {
+            // A union's members are named types or, in DNF, intersections.
+            if ($rInnerType instanceof ReflectionIntersectionType) {
+                $members = $this->intersectionMembers($rInnerType);
+
+                if ($members === null) {
+                    return null;
+                }
+
+                $alternatives[] = $members;
+
+                continue;
+            }
+
+            $className = $this->classNameFromNamedType($rInnerType);
+
+            if ($className !== null) {
+                // A builtin alternative is skipped, mirroring the by-type resolution of a union.
+                $alternatives[] = [$className];
+            }
+        }
+
+        return $alternatives === [] ? null : $alternatives;
+    }
+
+    /**
+     * @return class-string|null The class name, or <code>null</code> for a builtin type
+     */
+    private function classNameFromNamedType(ReflectionNamedType $rType): ?string
+    {
+        if ($rType->isBuiltin()) {
+            return null;
+        }
+
+        /** @var class-string $className a named, non-builtin type is a class name */
+        $className = $rType->getName();
+
+        return $className;
+    }
+
+    /**
+     * @return non-empty-list<class-string>|null <code>null</code> if any member is not a plain named type
+     */
+    private function intersectionMembers(ReflectionIntersectionType $rType): ?array
+    {
+        $members = [];
+
+        foreach ($rType->getTypes() as $rInnerType) {
+            if (!$rInnerType instanceof ReflectionNamedType) {
+                // Future-proofing. As of PHP 8.1, only named types are supported in intersection types.
+                return null;
+            }
+
+            /** @var class-string $className */
+            $className = $rInnerType->getName();
+            $members[] = $className;
+        }
+
+        return $members === [] ? null : $members;
     }
 }

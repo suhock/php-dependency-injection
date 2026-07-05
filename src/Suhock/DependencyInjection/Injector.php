@@ -10,55 +10,52 @@ declare(strict_types=1);
 
 namespace Suhock\DependencyInjection;
 
-use ReflectionClass;
 use ReflectionFunction;
-use ReflectionMethod;
 use Suhock\DependencyInjection\Cache\CacheInterface;
-use Suhock\DependencyInjection\Cache\MetadataCache;
 use Suhock\DependencyInjection\Instantiation\ArgumentResolver;
 use Suhock\DependencyInjection\Instantiation\ChainedInstantiationStrategy;
 use Suhock\DependencyInjection\Instantiation\FastPathInstantiationStrategy;
 use Suhock\DependencyInjection\Instantiation\InstantiationStrategyInterface;
+use Suhock\DependencyInjection\Instantiation\PostInstantiationHookInterface;
 use Suhock\DependencyInjection\Instantiation\ReflectionInstantiationStrategy;
-use function count;
 
 /**
  * Default implementation for {@see InjectorInterface} that resolves missing parameter values using a
- * {@see ParameterResolverInterface}. Instantiation is delegated to an {@see InstantiationStrategyInterface}. By
- * default
- * this is a {@see ChainedInstantiationStrategy} of a fast path (when the resolver supports
- * {@see TypeParameterResolverInterface}) that avoids per-instantiation reflection, followed by full reflection; a
- * custom strategy may be supplied instead.
+ * {@see ParameterResolverInterface}. Instantiation is delegated to an {@see InstantiationStrategyInterface} — by
+ * default a {@see ChainedInstantiationStrategy} of a fast path (when the resolver supports
+ * {@see TypeParameterResolverInterface}) that avoids per-instantiation reflection, followed by full reflection — and
+ * the new instance is then passed to a {@see PostInstantiationHookInterface} — by default an
+ * {@see InjectAttributeMemberInjector} that fills its {@see Inject} members.
  */
 final class Injector implements InjectorInterface
 {
-    /** Cache id prefix for the list of {@see Autowire} method names on a class. */
-    private const AUTOWIRE_METHODS_CACHE_PREFIX = 'sdi:autowireMethods:';
-    private readonly MetadataCache $cache;
     private readonly ArgumentResolver $argumentResolver;
+
     private readonly InstantiationStrategyInterface $strategy;
+
+    private readonly PostInstantiationHookInterface $postInstantiationHook;
 
     /**
      * @param ParameterResolverInterface $resolver The resolver to use for resolving parameters
-     * @param InstantiationStrategyInterface $strategy The instantiation strategy to use.
-     * @param CacheInterface|null $sharedCache [optional] Optional shared (L2) metadata cache. The in-process (L1) cache
-     *  is always active for the life of this injector; supply an {@see Cache\CacheInterface} here to additionally share
-     *  reflected metadata across requests.
+     * @param InstantiationStrategyInterface $strategy The instantiation strategy to use
+     * @param PostInstantiationHookInterface $postInstantiationHook The hook applied to each new instance after
+     * construction
      */
     public function __construct(
         ParameterResolverInterface $resolver,
         InstantiationStrategyInterface $strategy,
-        ?CacheInterface $sharedCache = null,
+        PostInstantiationHookInterface $postInstantiationHook,
     ) {
         $this->argumentResolver = new ArgumentResolver($resolver);
         $this->strategy = $strategy;
-        $this->cache = new MetadataCache($sharedCache);
+        $this->postInstantiationHook = $postInstantiationHook;
     }
 
     /**
      * Creates an injector that resolves parameters from the given container and instantiates classes using the default
      * strategy: a fast path (when supported) followed by full reflection. This is the standard way to construct an
-     * injector; use the constructor directly only to supply a custom resolver or instantiation strategy.
+     * injector; use the constructor directly only to supply a custom resolver, instantiation strategy, or
+     * post-instantiation hook.
      *
      * @param ContainerInterface $container The container to resolve parameter values from
      * @param CacheInterface|null $cache [optional] Optional shared (L2) metadata cache; supply an
@@ -72,7 +69,7 @@ final class Injector implements InjectorInterface
             new ReflectionInstantiationStrategy($resolver)
         ]);
 
-        return new self($resolver, $strategy, $cache);
+        return new self($resolver, $strategy, new InjectAttributeMemberInjector($resolver, $cache));
     }
 
     public function call(callable $function, array $params = []): mixed
@@ -103,46 +100,8 @@ final class Injector implements InjectorInterface
             throw new InjectorException("No instantiation strategy could instantiate $className");
         }
 
-        $this->injectAutowireFunctions($instance);
+        $this->postInstantiationHook->postInstantiate($instance);
 
         return $instance;
-    }
-
-    private function injectAutowireFunctions(object $instance): void
-    {
-        foreach ($this->getAutowireMethods($instance::class) as $methodName) {
-            $method = new ReflectionMethod($instance, $methodName);
-            $closure = $method->getClosure($instance);
-            $this->call($closure);
-        }
-    }
-
-    /**
-     * Returns the names of the public methods on the given class annotated with {@see Autowire}, computing them via
-     * reflection on the first request and caching the (flat, scalar) result so subsequent instantiations skip the scan.
-     *
-     * @param class-string $className
-     *
-     * @return list<string>
-     */
-    private function getAutowireMethods(string $className): array
-    {
-        return $this->cache->get(
-            self::AUTOWIRE_METHODS_CACHE_PREFIX . $className,
-            /** @return list<string> */
-            static function () use ($className) {
-                $names = [];
-
-                $class = new ReflectionClass($className);
-
-                foreach ($class->getMethods(ReflectionMethod::IS_PUBLIC) as $rMethod) {
-                    if (count($rMethod->getAttributes(Autowire::class)) > 0) {
-                        $names[] = $rMethod->getName();
-                    }
-                }
-
-                return $names;
-            }
-        );
     }
 }

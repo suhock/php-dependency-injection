@@ -32,7 +32,11 @@ final class ContainerParameterResolverTest extends AbstractDependencyInjectionTe
             function (ContainerInterface $container) use (&$injector): Injector {
                 $resolver = new ContainerParameterResolver($container);
 
-                return $injector = new Injector($resolver, new ReflectionInstantiationStrategy($resolver));
+                return $injector = new Injector(
+                    $resolver,
+                    new ReflectionInstantiationStrategy($resolver),
+                    new InjectAttributeMemberInjector($resolver)
+                );
             }
         );
 

@@ -33,7 +33,7 @@ constructor.
     - [Singleton](#singleton)
     - [Transient](#transient)
 - [Adding services to the container](#adding-services-to-the-container)
-    - [Autowire a class](#autowire-a-class)
+    - [Inject a class](#inject-a-class)
     - [Map an interface to an implementation](#map-an-interface-to-an-implementation)
     - [Call a factory method](#call-a-factory-method)
     - [Provide a specific instance](#provide-a-specific-instance)
@@ -92,7 +92,7 @@ specific services in your application.
 
 ```php
 $container
-    // Autowire the constructor
+    // Inject the constructor's dependencies
     ->addSingletonClass(MyApplication::class)
 
     // Manually construct an instance with factory
@@ -101,7 +101,7 @@ $container
     // Alias an interface to an implementing type
     ->addTransientImplementation(HttpClient::class, CurlHttpClient::class)
 
-    // Add optional values with a mutator after autowiring the constructor
+    // Add optional values with a mutator after injecting the constructor's dependencies
     ->addTransientClass(
         CurlHttpClient::class,
         function (CurlHttpClient $client, Logger $logger): void {
@@ -119,7 +119,7 @@ $container
     ->handleRequest();
 ```
 
-The container will autowire the class constructor and provide your application
+The container will inject the constructor's dependencies and provide your application
 the instance.
 
 ```php
@@ -187,7 +187,7 @@ transient factories, all starting with the prefix `addTransient`.
 There are a number of built-in ways to specify how new instances should be
 created.
 
- - [Autowire a class](#autowire-a-class)
+ - [Inject a class](#inject-a-class)
  - [Map an interface to an implementation](#map-an-interface-to-an-implementation)
  - [Call a factory method](#call-a-factory-method)
  - [Provide a specific instance](#provide-a-specific-instance)
@@ -197,18 +197,18 @@ If needed, can also specify your own custom
 
 This document uses a modified PHP syntax for conveying API information.
 
-#### Autowire a class
+#### Inject a class
 
 The container will construct classes by calling the class's constructor,
 automatically resolving any dependencies in the constructor's parameter list.
 
-If the class has any methods with an `Autowire` attribute, the container will
+If the class has any methods with an `Inject` attribute, the container will
 call those methods, resolving and injecting any dependencies listed in the
 parameter list.
 
 The optional `$mutator` callback allows additional configuration of the object
 after the container has initialized it. The callback must take an instance of
-the class as its first parameter. Additional parameters will be autowired.
+the class as its first parameter. Additional parameters will be injected.
 
 ```php
 callable<TClass> Mutator(TClass $instance, [object|null ...]): void;
@@ -229,7 +229,7 @@ class Container
 
 ##### Examples
 
-###### Autowiring a class constructor
+###### Injecting constructor dependencies
 
 In the following example, when the container provides an instance of `MyService`
 it will automatically inject all dependencies into its constructor to create an
@@ -241,8 +241,8 @@ $container->addSingletonClass(MyService::class);
 
 ###### Using mutators to set optional properties
 
-When the container provides instances of `CurlHttpClient`, after autowiring the
-constructor, it will also set its `logger` property.
+When the container provides instances of `CurlHttpClient`, after injecting the
+constructor dependencies, it will also set its `logger` property.
 
 ```php
 $container->addTransientClass(
@@ -256,15 +256,15 @@ $container->addTransientClass(
 ###### Using attributes to set optional properties
 
 When the container provides an instance of `CurlHttpClient`, it will see that
-`setLogger()` has an `Autowire` attribute and call it passing in a `Logger`
+`setLogger()` has an `Inject` attribute and call it passing in a `Logger`
 instance resolved from the container.
 
 ```php
-use Suhock\DependencyInjection\Autowire;
+use Suhock\DependencyInjection\Inject;
 
 class CurlHttpClient
 {
-    #[Autowire]
+    #[Inject]
     public function setLogger(Logger $logger): void {
         $this->logger = $logger;
     }
@@ -306,7 +306,7 @@ $container
 
 When your application requests an instance of `HttpClient`, the container will
 see that it should actually provide an instance of `CurlHttpClient`. It will
-then autowire the `CurlHttpClient` constructor to provide an instance.
+then inject the `CurlHttpClient` constructor's dependencies to provide an instance.
 
 ###### Chaining implementations
 
@@ -321,7 +321,7 @@ When your application requests an instance of `Throwable`, the container will
 see that it should actually provide an instance of `Exception`. Next it will
 see that instances of `Exception` should be created using `LogicException`.
 Finally, it will provide an instance of `LogicException` for `Throwable` by
-autowiring its constructor. If your application instead requests an instance of
+injecting its constructor's dependencies. If your application instead requests an instance of
 `Exception` then the container will also provide an instance of
 `LogicException`.
 
@@ -343,7 +343,7 @@ $container->get(HttpClient::class);
 #### Call a factory method
 
 The container will provide class instances by requesting them from a factory
-method. Any parameters in the factory method will be autowired.
+method. Any parameters in the factory method will be injected.
 
 ```php
 callable<TClass> FactoryMethod([object|null ...]): TClass;
@@ -434,8 +434,8 @@ searched sequentially in the order they are added.
 #### Namespace container
 
 Namespace containers provide an instance of the requested class if it is in the
-configured namespace. By default, the namespace container will autowire the
-constructor for all classes in the namespace.
+configured namespace. By default, the namespace container will inject the
+constructor's dependencies for all classes in the namespace.
 
 The namespace container accepts an optional `$factory` parameter that specifies
 a method which provides instances of classes in the namespace. The factory must
@@ -468,8 +468,8 @@ class Container
 $container->addSingletonNamespace('Http');
 
 /*
- * The container will provide an instance of CurlHttpClient by autowiring the
- * constructor because the class is in the Http namespace.
+ * The container will provide an instance of CurlHttpClient by injecting the
+ * constructor's dependencies because the class is in the Http namespace.
  */
 $curlClient = $container->get(Http\CurlHttpClient::class);
 
@@ -479,7 +479,7 @@ $container->addSingletonImplementation(
 );
 
 /*
- * The container will know to autowire CurlHttpClient for HttpClient because we
+ * The container will know to provide CurlHttpClient for HttpClient because we
  * specified the interface-implementation mapping.
  */
 $httpClient = $container->get(Http\HttpClient::class);
@@ -489,7 +489,7 @@ $httpClient = $container->get(Http\HttpClient::class);
 
 Interface containers provide an instance of the requested class if it is a
 subclass of the specified interface or base class. Instances are acquired from
-the given factory, or by autowiring the constructor if no factory is provided.
+the given factory, or by injecting the constructor's dependencies if no factory is provided.
 The factory must take the class name as the first parameter. The outer container
 will provide any additional dependencies.
 
@@ -548,7 +548,7 @@ class UserRepository extends EntityRepository implements EntityNameProvider
 
 Attribute containers will provide an instance of any class that has the
 specified attribute. Instances are acquired from the given factory, or by
-autowiring the constructor if no factory is provided. The factory must take the
+injecting the constructor's dependencies if no factory is provided. The factory must take the
 class name as the first parameter and an attribute instance as the second.
 The outer container will provide any additional dependencies.
 
@@ -648,7 +648,7 @@ class Container
 #### Custom Nested Containers
 
 Implement `ContainerInterface` and pass into the container using one of the
-methods below. If your custom container needs to be able to autowire objects,
+methods below. If your custom container needs to be able to inject dependencies into objects,
 you can pass in the outer container to its constructor.
 
 ```php
@@ -717,10 +717,10 @@ class Container
 
 The `$source` parameter determines how the container provides the instance:
 
- - If `null`, the container autowires the class's constructor.
+ - If `null`, the container injects the class's constructor dependencies.
  - If a class name, the container maps the class to that implementation, which
    must also be added to the container.
- - If a closure, the container calls it as a factory, autowiring its parameters.
+ - If a closure, the container calls it as a factory, injecting its parameters.
  - If any other object, the container provides that object directly.
 
 ### Examples
@@ -917,7 +917,7 @@ class MyApplication
 ```
 
 In the example above, although the container cannot resolve `string`, `int`, or
-`array` types, it will autowire the constructor with the specified default
+`array` types, it will construct the class using the specified default
 values. If you need to inject non-default values for builtin types, use a
 [factory method](#call-a-factory-method).
 

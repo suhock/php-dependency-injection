@@ -15,16 +15,21 @@ use Exception;
 use LogicException;
 use PHPUnit\Framework\Attributes\RequiresPhp;
 use ReflectionParameter;
+use ReflectionProperty;
 use RuntimeException;
 use Suhock\DependencyInjection\Fakes\FakeAbstractClass;
 use Suhock\DependencyInjection\Fakes\FakeClassImplementsInterfaces;
 use Suhock\DependencyInjection\Fakes\FakeClassNoConstructor;
-use Suhock\DependencyInjection\Fakes\FakeClassWithAutowireFunction;
 use Suhock\DependencyInjection\Fakes\FakeClassWithConstructor;
+use Suhock\DependencyInjection\Fakes\FakeClassWithDanglingKeyProperty;
 use Suhock\DependencyInjection\Fakes\FakeClassWithDependencies;
 use Suhock\DependencyInjection\Fakes\FakeClassWithDnfDependency;
+use Suhock\DependencyInjection\Fakes\FakeClassWithInjectedProperties;
+use Suhock\DependencyInjection\Fakes\FakeClassWithInjectFunction;
 use Suhock\DependencyInjection\Fakes\FakeClassWithIntersectionDependency;
 use Suhock\DependencyInjection\Fakes\FakeClassWithKeyedDependency;
+use Suhock\DependencyInjection\Fakes\FakeClassWithNonPublicInjectMethods;
+use Suhock\DependencyInjection\Fakes\FakeClassWithStaticInjectMethod;
 use Suhock\DependencyInjection\Fakes\FakeClassWithUnionDependency;
 use Suhock\DependencyInjection\Fakes\FakeContainer;
 use Suhock\DependencyInjection\Fakes\FakeInterfaceOne;
@@ -32,8 +37,10 @@ use Suhock\DependencyInjection\Fakes\FakeInterfaceThree;
 use Suhock\DependencyInjection\Fakes\FakeInterfaceTwo;
 use Suhock\DependencyInjection\Instantiation\ChainedInstantiationStrategy;
 use Suhock\DependencyInjection\Instantiation\InstantiationStrategyInterface;
+use Suhock\DependencyInjection\Instantiation\PostInstantiationHookInterface;
 use Suhock\DependencyInjection\Instantiation\ReflectionInstantiationStrategy;
 use Throwable;
+use UnitEnum;
 
 /**
  * Test suite for {@see Injector}.
@@ -169,10 +176,159 @@ final class InjectorTest extends AbstractDependencyInjectionTestCase
         ]);
 
         // Act
-        $instance = $injector->instantiate(FakeClassWithAutowireFunction::class);
+        $instance = $injector->instantiate(FakeClassWithInjectFunction::class);
 
         // Assert
         self::assertSame($obj, $instance->obj);
+    }
+
+    public function testInstantiate_WithPublicInjectedProperty_AssignsProperty(): void
+    {
+        // Arrange
+        $obj = new FakeClassNoConstructor();
+        $injector = $this->createInjector([FakeClassNoConstructor::class => fn () => $obj]);
+
+        // Act
+        $instance = $injector->instantiate(FakeClassWithInjectedProperties::class);
+
+        // Assert
+        self::assertSame($obj, $instance->publicProperty);
+    }
+
+    public function testInstantiate_WithProtectedInjectedProperty_AssignsProperty(): void
+    {
+        // Arrange
+        $obj = new FakeClassNoConstructor();
+        $injector = $this->createInjector([FakeClassNoConstructor::class => fn () => $obj]);
+
+        // Act
+        $instance = $injector->instantiate(FakeClassWithInjectedProperties::class);
+
+        // Assert
+        self::assertSame($obj, $instance->getProtectedProperty());
+    }
+
+    public function testInstantiate_WithPrivateInjectedProperty_AssignsProperty(): void
+    {
+        // Arrange
+        $obj = new FakeClassNoConstructor();
+        $injector = $this->createInjector([FakeClassNoConstructor::class => fn () => $obj]);
+
+        // Act
+        $instance = $injector->instantiate(FakeClassWithInjectedProperties::class);
+
+        // Assert
+        self::assertSame($obj, $instance->getPrivateProperty());
+    }
+
+    public function testInstantiate_WithKeyedInjectedProperty_AssignsKeyedService(): void
+    {
+        // Arrange
+        $keyed = new FakeClassNoConstructor();
+        $container = Container::createDefault();
+        $container->addSingletonInstance(FakeClassNoConstructor::class, new FakeClassNoConstructor());
+        $container->addKeyedSingleton(FakeClassNoConstructor::class, 'key1', $keyed);
+        $injector = Injector::createDefault($container);
+
+        // Act
+        $instance = $injector->instantiate(FakeClassWithInjectedProperties::class);
+
+        // Assert
+        self::assertSame($keyed, $instance->keyedProperty);
+    }
+
+    public function testInstantiate_WithUnresolvableNullableInjectedProperty_AssignsNull(): void
+    {
+        // Arrange: FakeInterfaceOne is not registered, so the nullable property falls back to null.
+        $injector = $this->createInjector([
+            FakeClassNoConstructor::class => fn () => new FakeClassNoConstructor()
+        ]);
+
+        // Act
+        $instance = $injector->instantiate(FakeClassWithInjectedProperties::class);
+
+        // Assert
+        self::assertNull($instance->optionalProperty);
+    }
+
+    public function testInstantiate_WithProtectedInjectMethod_CallsMethod(): void
+    {
+        // Arrange
+        $obj = new FakeClassNoConstructor();
+        $injector = $this->createInjector([FakeClassNoConstructor::class => fn () => $obj]);
+
+        // Act
+        $instance = $injector->instantiate(FakeClassWithNonPublicInjectMethods::class);
+
+        // Assert
+        self::assertSame($obj, $instance->protectedSetterValue);
+    }
+
+    public function testInstantiate_WithPrivateInjectMethod_CallsMethod(): void
+    {
+        // Arrange
+        $obj = new FakeClassNoConstructor();
+        $injector = $this->createInjector([FakeClassNoConstructor::class => fn () => $obj]);
+
+        // Act
+        $instance = $injector->instantiate(FakeClassWithNonPublicInjectMethods::class);
+
+        // Assert
+        self::assertSame($obj, $instance->privateSetterValue);
+    }
+
+    public function testInstantiate_WithCustomPostInstantiationHook_AppliesHookToInstance(): void
+    {
+        // Arrange: a spy hook records the instances it is applied to.
+        $spy = new class implements PostInstantiationHookInterface {
+            /** @var list<object> */
+            public array $injected = [];
+
+            public function postInstantiate(object $instance): void
+            {
+                $this->injected[] = $instance;
+            }
+        };
+        $resolver = new ContainerParameterResolver(new FakeContainer());
+        $injector = new Injector($resolver, new ReflectionInstantiationStrategy($resolver), $spy);
+
+        // Act
+        $instance = $injector->instantiate(FakeClassNoConstructor::class);
+
+        // Assert
+        self::assertSame([$instance], $spy->injected);
+    }
+
+    public function testInstantiate_WithStaticInjectMethod_ThrowsInjectorException(): void
+    {
+        // Arrange: the fake has #[Inject] on a static method, which is always a misconfiguration.
+        $injector = $this->createInjector([
+            FakeClassNoConstructor::class => fn () => new FakeClassNoConstructor()
+        ]);
+
+        // Act & Assert
+        $this->expectException(InjectorException::class);
+        $injector->instantiate(FakeClassWithStaticInjectMethod::class);
+    }
+
+    public function testInstantiate_WithKeyOnPropertyWithoutInject_ThrowsInjectorException(): void
+    {
+        // Arrange: the fake has a #[Key] property that is missing #[Inject], which is always a misconfiguration.
+        $injector = $this->createInjector();
+
+        // Act & Assert
+        $this->expectException(InjectorException::class);
+        $injector->instantiate(FakeClassWithDanglingKeyProperty::class);
+    }
+
+    public function testInstantiate_WithUnresolvableInjectedProperty_ThrowsPropertyResolutionException(): void
+    {
+        // Arrange: nothing is registered, so the first required injected property cannot be resolved.
+        $injector = $this->createInjector();
+
+        // Act & Assert
+        $this->expectException(PropertyResolutionException::class);
+        $injector->instantiate(FakeClassWithInjectedProperties::class);
     }
 
     public function testInstantiate_WithResolverLackingFastPathCapability_UsesReflection(): void
@@ -188,8 +344,17 @@ final class InjectorTest extends AbstractDependencyInjectionTestCase
             {
                 return $this->dependency;
             }
+
+            public function resolveProperty(ReflectionProperty $rProperty, string|UnitEnum|null $key): mixed
+            {
+                return $this->dependency;
+            }
         };
-        $injector = new Injector($resolver, new ReflectionInstantiationStrategy($resolver));
+        $injector = new Injector(
+            $resolver,
+            new ReflectionInstantiationStrategy($resolver),
+            new InjectAttributeMemberInjector($resolver)
+        );
 
         // Act
         $instance = $injector->instantiate(FakeClassWithConstructor::class);
@@ -213,9 +378,11 @@ final class InjectorTest extends AbstractDependencyInjectionTestCase
                 return null;
             }
         };
-        $injector = new Injector($resolver, new ChainedInstantiationStrategy(
-            [$spy, new ReflectionInstantiationStrategy($resolver)]
-        ));
+        $injector = new Injector(
+            $resolver,
+            new ChainedInstantiationStrategy([$spy, new ReflectionInstantiationStrategy($resolver)]),
+            new InjectAttributeMemberInjector($resolver)
+        );
 
         // Act
         $instance = $injector->instantiate(FakeClassNoConstructor::class);
@@ -238,7 +405,8 @@ final class InjectorTest extends AbstractDependencyInjectionTestCase
                 return new $className();
             }
         };
-        $injector = new Injector(new ContainerParameterResolver(new FakeContainer()), $strategy);
+        $resolver = new ContainerParameterResolver(new FakeContainer());
+        $injector = new Injector($resolver, $strategy, new InjectAttributeMemberInjector($resolver));
 
         // Act
         $instance = $injector->instantiate(FakeClassNoConstructor::class);
@@ -257,7 +425,8 @@ final class InjectorTest extends AbstractDependencyInjectionTestCase
                 return null;
             }
         };
-        $injector = new Injector(new ContainerParameterResolver(new FakeContainer()), $declining);
+        $resolver = new ContainerParameterResolver(new FakeContainer());
+        $injector = new Injector($resolver, $declining, new InjectAttributeMemberInjector($resolver));
 
         // Act & Assert
         $this->expectException(InjectorException::class);

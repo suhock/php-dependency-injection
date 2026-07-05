@@ -16,9 +16,11 @@ use UnitEnum;
 use function is_string;
 
 /**
- * Binds the annotated parameter to the service with this key.
+ * Binds the annotated parameter or injected property to the service with this key. On a property it must accompany
+ * {@see Inject}: a key alone does not mark a property for injection, and the injector reports it as an error rather
+ * than silently ignoring it.
  */
-#[Attribute(Attribute::TARGET_PARAMETER)]
+#[Attribute(Attribute::TARGET_PARAMETER | Attribute::TARGET_PROPERTY)]
 final class Key
 {
     private readonly string $key;
