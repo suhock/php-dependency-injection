@@ -1,8 +1,8 @@
 {
-    "name": "suhock/php-dependency-injection",
+    "name": "suhock/dependency-injection",
     "description": "PHP Dependency Injection Library",
     "type": "library",
-    "version": "0.1",
+    "version": "0.2.0",
     "keywords": [
         "dependency injection",
         "dependency",
