@@ -12,8 +12,9 @@ namespace Suhock\DependencyInjection;
 
 use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\TestCase;
-use Suhock\DependencyInjection\Provider\ImplementationException;
-use Suhock\DependencyInjection\Provider\InstanceTypeException;
+use Suhock\DependencyInjection\InstanceProvider\ImplementationException;
+use Suhock\DependencyInjection\InstanceProvider\InstanceTypeException;
+use Suhock\DependencyInjection\Resolver\ParameterResolutionException;
 use Throwable;
 
 /**

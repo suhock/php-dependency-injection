@@ -11,9 +11,17 @@ declare(strict_types=1);
 namespace Suhock\DependencyInjection;
 
 use BackedEnum;
+use Suhock\DependencyInjection\Builder\ContainerBuilderInterface;
+use Suhock\DependencyInjection\Builder\ContainerBuilderTrait;
+use Suhock\DependencyInjection\Builder\ContainerSingletonBuilderInterface;
+use Suhock\DependencyInjection\Builder\ContainerSingletonBuilderTrait;
+use Suhock\DependencyInjection\Builder\ContainerTransientBuilderInterface;
+use Suhock\DependencyInjection\Builder\ContainerTransientBuilderTrait;
 use Suhock\DependencyInjection\Cache\CacheInterface;
+use Suhock\DependencyInjection\Descriptor\ContainerDescriptor;
+use Suhock\DependencyInjection\Descriptor\Descriptor;
 use Suhock\DependencyInjection\Lifetime\LifetimeStrategy;
-use Suhock\DependencyInjection\Provider\ClosureInstanceProvider;
+use Suhock\DependencyInjection\InstanceProvider\ClosureInstanceProvider;
 use UnitEnum;
 use function is_string;
 

@@ -1,0 +1,79 @@
+<?php
+/*
+ * Copyright (c) 2022-2026 Matthew Suhocki. All rights reserved.
+ *
+ * This software is licensed under the terms of the MIT License <https://opensource.org/licenses/MIT>.
+ * The above copyright notice and this notice shall be included in all copies or substantial portions of this software.
+ */
+
+declare(strict_types=1);
+
+namespace Suhock\DependencyInjection\Builder;
+
+use Suhock\DependencyInjection\ContainerInterface;
+use Suhock\DependencyInjection\Lifetime\LifetimeStrategy;
+use Suhock\DependencyInjection\InstanceProvider\InstanceProviderInterface;
+use UnitEnum;
+
+/**
+ * Interface for building a dependency container.
+ */
+interface ContainerBuilderInterface
+{
+    /**
+     * Adds an instance provider with a lifetime strategy to the container for a given class.
+     *
+     * @template TClass of object
+     *
+     * @param class-string<TClass> $className The class name of the service to add
+     * @param LifetimeStrategy<TClass> $lifetimeStrategy The lifetime strategy to use to manage instances
+     * @param InstanceProviderInterface<TClass> $instanceProvider The instance provider to use to create new instances
+     *
+     * @return $this
+     */
+    public function add(
+        string $className,
+        LifetimeStrategy $lifetimeStrategy,
+        InstanceProviderInterface $instanceProvider
+    ): static;
+
+    /**
+     * Adds a keyed instance provider with a lifetime strategy to the container for a given class.
+     *
+     * @template TClass of object
+     *
+     * @param class-string<TClass> $className The class name of the service to add
+     * @param string|UnitEnum $key The key of the service
+     * @param LifetimeStrategy<TClass> $lifetimeStrategy The lifetime strategy to use to manage instances
+     * @param InstanceProviderInterface<TClass> $instanceProvider The instance provider to use to create new instances
+     *
+     * @return $this
+     */
+    public function addKeyed(
+        string $className,
+        string|UnitEnum $key,
+        LifetimeStrategy $lifetimeStrategy,
+        InstanceProviderInterface $instanceProvider
+    ): static;
+
+    /**
+     * Adds a nested container with a factory for generating lifetime strategies to manage instances within the outer
+     * container. Nested containers are searched sequentially in the order they are added.
+     *
+     * @param ContainerInterface $container The nested container to add
+     * @param callable(class-string):LifetimeStrategy<object> $lifetimeStrategyFactory A factory method for generating
+     * lifetime strategies to manage instances within the container being built
+     *
+     * @return $this
+     */
+    public function addContainer(ContainerInterface $container, callable $lifetimeStrategyFactory): static;
+
+    /**
+     * @template TBuilder of self
+     *
+     * @param callable(TBuilder):mixed $builder
+     *
+     * @return $this
+     */
+    public function build(callable $builder): static;
+}

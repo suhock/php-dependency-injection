@@ -17,6 +17,8 @@ use PHPUnit\Framework\Attributes\RequiresPhp;
 use ReflectionParameter;
 use ReflectionProperty;
 use RuntimeException;
+use Suhock\DependencyInjection\Injection\InjectAttributeMemberInjector;
+use Suhock\DependencyInjection\Resolver\ContainerParameterResolver;
 use Suhock\DependencyInjection\Fakes\FakeAbstractClass;
 use Suhock\DependencyInjection\Fakes\FakeClassImplementsInterfaces;
 use Suhock\DependencyInjection\Fakes\FakeClassNoConstructor;
@@ -39,6 +41,8 @@ use Suhock\DependencyInjection\Instantiation\ChainedInstantiationStrategy;
 use Suhock\DependencyInjection\Instantiation\InstantiationStrategyInterface;
 use Suhock\DependencyInjection\Instantiation\PostInstantiationHookInterface;
 use Suhock\DependencyInjection\Instantiation\ReflectionInstantiationStrategy;
+use Suhock\DependencyInjection\Resolver\ParameterResolverInterface;
+use Suhock\DependencyInjection\Resolver\PropertyResolutionException;
 use Throwable;
 use UnitEnum;
 

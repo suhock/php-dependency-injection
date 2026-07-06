@@ -14,7 +14,7 @@ use Suhock\DependencyInjection\Fakes\FakeBuilder;
 use Suhock\DependencyInjection\Fakes\FakeClassExtendsBaseClass;
 use Suhock\DependencyInjection\Fakes\FakeClassNoConstructor;
 use Suhock\DependencyInjection\Lifetime\SingletonStrategy;
-use Suhock\DependencyInjection\Provider\ObjectInstanceProvider;
+use Suhock\DependencyInjection\InstanceProvider\ObjectInstanceProvider;
 
 /**
  * Test suite for {@see Container}.

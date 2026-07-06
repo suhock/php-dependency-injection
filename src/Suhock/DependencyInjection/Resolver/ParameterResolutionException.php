@@ -1,0 +1,106 @@
+<?php
+/*
+ * Copyright (c) 2022-2026 Matthew Suhocki. All rights reserved.
+ *
+ * This software is licensed under the terms of the MIT License <https://opensource.org/licenses/MIT>.
+ * The above copyright notice and this notice shall be included in all copies or substantial portions of this software.
+ */
+
+declare(strict_types=1);
+
+namespace Suhock\DependencyInjection\Resolver;
+
+use ReflectionIntersectionType;
+use ReflectionMethod;
+use ReflectionNamedType;
+use ReflectionParameter;
+use ReflectionType;
+use ReflectionUnionType;
+use Suhock\DependencyInjection\InjectorException;
+use Throwable;
+
+/**
+ * Exception that indicates the injector could not resolve a value for a function parameter.
+ */
+final class ParameterResolutionException extends InjectorException
+{
+    /**
+     * @param ReflectionParameter $reflectionParameter The unresolved parameter
+     * @param Throwable|null $previous [optional] The previous throwable used for exception chaining. If the throwable
+     * is an instance of {@see DependencyInjectionException} then its content will be consolidated into the new
+     * instance.
+     */
+    public function __construct(
+        private readonly ReflectionParameter $reflectionParameter,
+        ?Throwable $previous = null
+    ) {
+        parent::__construct(self::buildMessage($reflectionParameter), $previous);
+    }
+
+    public function getReflectionParameter(): ReflectionParameter
+    {
+        return $this->reflectionParameter;
+    }
+
+    private static function buildMessage(ReflectionParameter $rParam): string
+    {
+        $functionName = self::buildFunctionName($rParam);
+        $paramName = self::buildParameterName($rParam);
+
+        return "Could not provide a value for parameter $paramName in $functionName";
+    }
+
+    private static function buildFunctionName(ReflectionParameter $rParam): string
+    {
+        $rFunction = $rParam->getDeclaringFunction();
+        $functionName = $rFunction->getName();
+
+        if ($rFunction instanceof ReflectionMethod) {
+            $functionName = $rFunction->getDeclaringClass()->getName() . "::$functionName";
+        }
+
+        if (!$rFunction->isClosure()) {
+            $functionName = "function $functionName()";
+        } elseif ($rFunction->getFileName() !== false) {
+            $functionName .= ' defined in \'' .
+                $rFunction->getFileName() . '\':' . $rFunction->getStartLine();
+        }
+
+        return $functionName;
+    }
+
+    private static function buildParameterName(ReflectionParameter $rParam): string
+    {
+        $paramName = '$' . $rParam->getName();
+        $paramType = self::buildParameterTypeName($rParam->getType());
+
+        if ($paramType !== null) {
+            $paramName = "$paramType $paramName";
+        }
+
+        return $paramName;
+    }
+
+    private static function buildParameterTypeName(?ReflectionType $rType): ?string
+    {
+        return match (true) {
+            $rType instanceof ReflectionNamedType => $rType->getName(),
+            $rType instanceof ReflectionUnionType => self::buildCombinedParameterTypeName($rType, '|'),
+            $rType instanceof ReflectionIntersectionType => self::buildCombinedParameterTypeName($rType, '&'),
+            default => null // covers null $rType as well as any new types introduced after PHP 8.1
+        };
+    }
+
+    private static function buildCombinedParameterTypeName(
+        ReflectionUnionType|ReflectionIntersectionType $rType,
+        string $delimiter
+    ): string {
+        $parts = [];
+
+        foreach ($rType->getTypes() as $rNestedType) {
+            $parts[] = self::buildParameterTypeName($rNestedType);
+        }
+
+        return implode($delimiter, $parts);
+    }
+}

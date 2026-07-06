@@ -13,7 +13,8 @@ namespace Suhock\DependencyInjection\Instantiation;
 use ReflectionClass;
 use ReflectionException;
 use Suhock\DependencyInjection\InjectorException;
-use Suhock\DependencyInjection\ParameterResolverInterface;
+use Suhock\DependencyInjection\Resolver\ArgumentResolver;
+use Suhock\DependencyInjection\Resolver\ParameterResolverInterface;
 
 /**
  * Instantiates a class by reflecting its constructor and resolving each parameter through the

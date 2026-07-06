@@ -14,8 +14,8 @@ use ReflectionClass;
 use ReflectionException;
 use Suhock\DependencyInjection\Cache\CacheInterface;
 use Suhock\DependencyInjection\Cache\MetadataCache;
-use Suhock\DependencyInjection\ResolvableDependency;
-use Suhock\DependencyInjection\TypeParameterResolverInterface;
+use Suhock\DependencyInjection\Resolver\TypeParameterResolverInterface;
+use Suhock\DependencyInjection\Resolver\ResolvableDependency;
 use function array_key_exists;
 
 /**
