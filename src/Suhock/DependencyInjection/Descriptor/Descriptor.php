@@ -14,15 +14,14 @@ use Suhock\DependencyInjection\Lifetime\LifetimeStrategy;
 use Suhock\DependencyInjection\InstanceProvider\InstanceProviderInterface;
 
 /**
- * Contains information about how to resolve a service.
+ * Contains information about how to resolve a service. A descriptor must remain immutable so that it can be shared by
+ * multiple resolution roots.
  *
  * @template TClass as object
  * @internal
  */
 final class Descriptor
 {
-    public bool $isResolving = false;
-
     /**
      * @param class-string<TClass> $className
      * @param LifetimeStrategy<TClass> $lifetimeStrategy

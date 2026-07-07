@@ -631,7 +631,9 @@ class EntityName
 #### Custom Lifetime Strategies
 
 Extend `LifetimeStrategy` and optionally extend `Container` with convenience
-methods for your new lifetime strategy.
+methods for your new lifetime strategy. `get()` receives a `ResolutionContext`
+alongside the instance factory; a strategy that persists instances caches them
+in one of the context's `InstanceStore`s, keyed by the strategy itself.
 
 #### Custom Instance Providers
 

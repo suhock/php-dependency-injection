@@ -20,10 +20,13 @@ use Suhock\DependencyInjection\Builder\ContainerTransientBuilderTrait;
 use Suhock\DependencyInjection\Cache\CacheInterface;
 use Suhock\DependencyInjection\Descriptor\ContainerDescriptor;
 use Suhock\DependencyInjection\Descriptor\Descriptor;
+use Suhock\DependencyInjection\Lifetime\InstanceStore;
 use Suhock\DependencyInjection\Lifetime\LifetimeStrategy;
+use Suhock\DependencyInjection\Lifetime\ResolutionContext;
 use Suhock\DependencyInjection\InstanceProvider\ClosureInstanceProvider;
 use UnitEnum;
 use function is_string;
+use function spl_object_id;
 
 /**
  * A default implementation for the {@see ContainerInterface}.
@@ -46,6 +49,18 @@ final class Container implements
 
     private InjectorInterface $injector;
 
+    private readonly InstanceStore $instances;
+
+    private readonly ResolutionContext $resolutionContext;
+
+    /**
+     * Descriptors currently being resolved, keyed by {@see spl_object_id()} of the descriptor. Reentry marks a
+     * circular dependency.
+     *
+     * @var array<int, true>
+     */
+    private array $resolving = [];
+
     /**
      * @param callable(ContainerInterface):InjectorInterface $injectorFactory Provides the injector to be used in
      * conjunction with the container.
@@ -53,6 +68,8 @@ final class Container implements
     public function __construct(callable $injectorFactory)
     {
         $this->injector = $injectorFactory($this);
+        $this->instances = new InstanceStore();
+        $this->resolutionContext = new ResolutionContext($this->instances);
     }
 
     /**
@@ -158,7 +175,10 @@ final class Container implements
      */
     public function remove(string $className): static
     {
-        unset($this->descriptors[$className]);
+        if (isset($this->descriptors[$className])) {
+            $this->instances->remove($this->descriptors[$className]->lifetimeStrategy);
+            unset($this->descriptors[$className]);
+        }
 
         return $this;
     }
@@ -227,20 +247,22 @@ final class Container implements
      */
     private function resolveDescriptor(Descriptor $descriptor): object
     {
-        if ($descriptor->isResolving) {
+        $descriptorId = spl_object_id($descriptor);
+
+        if (isset($this->resolving[$descriptorId])) {
             throw new CircularDependencyException($descriptor->className);
         }
 
-        $descriptor->isResolving = true;
+        $this->resolving[$descriptorId] = true;
 
         try {
             $instanceFactory = $descriptor->instanceProvider->get(...);
 
-            return $descriptor->lifetimeStrategy->get($instanceFactory);
+            return $descriptor->lifetimeStrategy->get($this->resolutionContext, $instanceFactory);
         } catch (DependencyInjectionException $e) {
             throw new ClassResolutionException($descriptor->className, previous: $e);
         } finally {
-            $descriptor->isResolving = false;
+            unset($this->resolving[$descriptorId]);
         }
     }
 

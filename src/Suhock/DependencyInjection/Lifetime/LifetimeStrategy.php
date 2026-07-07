@@ -28,10 +28,12 @@ abstract class LifetimeStrategy
     /**
      * Returns an instance of this strategy's class by invoking the given factory, based on the strategy's rules.
      *
+     * @param ResolutionContext $context The context of the resolution root requesting the instance, carrying the
+     * stores available for caching
      * @param callable $factory A factory function that should be called when an instance of the class is needed
      * @phpstan-param callable():TClass $factory
      *
      * @return TClass An instance of the class
      */
-    abstract public function get(callable $factory): object;
+    abstract public function get(ResolutionContext $context, callable $factory): object;
 }

@@ -30,9 +30,10 @@ final class SingletonStrategyTest extends TestCase
     {
         // Arrange
         $strategy = $this->createStrategy();
+        $context = new ResolutionContext(new InstanceStore());
 
         // Act
-        $instance = $strategy->get(fn () => new FakeClassNoConstructor());
+        $instance = $strategy->get($context, fn () => new FakeClassNoConstructor());
 
         // Assert
         self::assertInstanceOf(FakeClassNoConstructor::class, $instance);
@@ -42,12 +43,44 @@ final class SingletonStrategyTest extends TestCase
     {
         // Arrange
         $strategy = $this->createStrategy();
+        $context = new ResolutionContext(new InstanceStore());
 
         // Act
-        $firstInstance = $strategy->get(fn () => new FakeClassNoConstructor());
-        $secondInstance = $strategy->get(fn () => new FakeClassNoConstructor());
+        $firstInstance = $strategy->get($context, fn () => new FakeClassNoConstructor());
+        $secondInstance = $strategy->get($context, fn () => new FakeClassNoConstructor());
 
         // Assert
         self::assertSame($firstInstance, $secondInstance);
+    }
+
+    public function testGet_WithDistinctRootStores_ReturnsDistinctInstances(): void
+    {
+        // Arrange
+        $strategy = $this->createStrategy();
+        $firstContext = new ResolutionContext(new InstanceStore());
+        $secondContext = new ResolutionContext(new InstanceStore());
+
+        // Act
+        $firstInstance = $strategy->get($firstContext, fn () => new FakeClassNoConstructor());
+        $secondInstance = $strategy->get($secondContext, fn () => new FakeClassNoConstructor());
+
+        // Assert
+        self::assertNotSame($firstInstance, $secondInstance);
+    }
+
+    public function testGet_AfterInstanceRemovedFromStore_ReturnsFreshInstance(): void
+    {
+        // Arrange
+        $strategy = $this->createStrategy();
+        $store = new InstanceStore();
+        $context = new ResolutionContext($store);
+        $firstInstance = $strategy->get($context, fn () => new FakeClassNoConstructor());
+
+        // Act
+        $store->remove($strategy);
+        $secondInstance = $strategy->get($context, fn () => new FakeClassNoConstructor());
+
+        // Assert
+        self::assertNotSame($firstInstance, $secondInstance);
     }
 }

@@ -30,9 +30,10 @@ final class TransientStrategyTest extends TestCase
     {
         // Arrange
         $strategy = $this->createStrategy();
+        $context = new ResolutionContext(new InstanceStore());
 
         // Act
-        $instance = $strategy->get(fn () => new FakeClassNoConstructor());
+        $instance = $strategy->get($context, fn () => new FakeClassNoConstructor());
 
         // Assert
         self::assertInstanceOf(FakeClassNoConstructor::class, $instance);
@@ -42,10 +43,11 @@ final class TransientStrategyTest extends TestCase
     {
         // Arrange
         $strategy = $this->createStrategy();
+        $context = new ResolutionContext(new InstanceStore());
 
         // Act
-        $firstInstance = $strategy->get(fn () => new FakeClassNoConstructor());
-        $secondInstance = $strategy->get(fn () => new FakeClassNoConstructor());
+        $firstInstance = $strategy->get($context, fn () => new FakeClassNoConstructor());
+        $secondInstance = $strategy->get($context, fn () => new FakeClassNoConstructor());
 
         // Assert
         self::assertNotSame($firstInstance, $secondInstance);
