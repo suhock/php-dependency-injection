@@ -60,10 +60,9 @@ trait ContainerSingletonBuilderTrait
         string|UnitEnum $key,
         string|object|null $source = null
     ): static {
-        return $this->addKeyed(
+        return $this->addKeyedSingletonInstanceProvider(
             $className,
             $key,
-            new SingletonStrategy($className),
             InstanceProviderFactory::createInstanceProvider($className, $source)
         );
     }
@@ -81,6 +80,22 @@ trait ContainerSingletonBuilderTrait
         $this->add($className, new SingletonStrategy($className), $instanceProvider);
 
         return $this;
+    }
+
+    /**
+     * @template TClass of object
+     *
+     * @param class-string<TClass> $className
+     * @param InstanceProviderInterface<TClass> $instanceProvider
+     *
+     * @return $this
+     */
+    public function addKeyedSingletonInstanceProvider(
+        string $className,
+        string|UnitEnum $key,
+        InstanceProviderInterface $instanceProvider
+    ): static {
+        return $this->addKeyed($className, $key, new SingletonStrategy($className), $instanceProvider);
     }
 
     /**
@@ -104,6 +119,25 @@ trait ContainerSingletonBuilderTrait
 
     /**
      * @template TClass of object
+     *
+     * @param class-string<TClass> $className
+     * @param Closure|callable-string|null $mutator
+     */
+    // @phpstan-ignore method.childParameterType (false positive on templated builder generics)
+    public function addKeyedSingletonClass(
+        string $className,
+        string|UnitEnum $key,
+        ?callable $mutator = null
+    ): static {
+        return $this->addKeyedSingletonInstanceProvider(
+            $className,
+            $key,
+            InstanceProviderFactory::createClassInstanceProvider($className, $mutator)
+        );
+    }
+
+    /**
+     * @template TClass of object
      * @template TImplementation of TClass
      */
     public function addSingletonImplementation(string $className, string $implementationClassName): static
@@ -114,6 +148,22 @@ trait ContainerSingletonBuilderTrait
         );
 
         return $this;
+    }
+
+    /**
+     * @template TClass of object
+     * @template TImplementation of TClass
+     */
+    public function addKeyedSingletonImplementation(
+        string $className,
+        string|UnitEnum $key,
+        string $implementationClassName
+    ): static {
+        return $this->addKeyedSingletonInstanceProvider(
+            $className,
+            $key,
+            InstanceProviderFactory::createImplementationInstanceProvider($className, $implementationClassName)
+        );
     }
 
     /**
@@ -129,6 +179,20 @@ trait ContainerSingletonBuilderTrait
         );
 
         return $this;
+    }
+
+    /**
+     * @template TClass of object
+     *
+     * @param class-string<TClass> $className
+     */
+    public function addKeyedSingletonFactory(string $className, string|UnitEnum $key, callable $factory): static
+    {
+        return $this->addKeyedSingletonInstanceProvider(
+            $className,
+            $key,
+            InstanceProviderFactory::createClosureInstanceProvider($className, $factory(...))
+        );
     }
 
     /**
@@ -149,6 +213,25 @@ trait ContainerSingletonBuilderTrait
         );
 
         return $this;
+    }
+
+    /**
+     * @template TClass of object
+     * @template TInstance of TClass
+     *
+     * @param class-string<TClass> $className
+     * @param TInstance $instance
+     *
+     * @return $this
+     */
+    // @phpstan-ignore method.childParameterType (false positive on templated builder generics)
+    public function addKeyedSingletonInstance(string $className, string|UnitEnum $key, object $instance): static
+    {
+        return $this->addKeyedSingletonInstanceProvider(
+            $className,
+            $key,
+            InstanceProviderFactory::createObjectInstanceProvider($className, $instance)
+        );
     }
 
     public function addSingletonContainer(ContainerInterface $container): static

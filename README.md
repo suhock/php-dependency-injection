@@ -863,6 +863,11 @@ The `$source` parameter determines how the container provides the instance:
  - If a closure, the container calls it as a factory, injecting its parameters.
  - If any other object, the container provides that object directly.
 
+Each explicit `add*` variant also has a keyed counterpart —
+`addKeyedSingletonFactory()`, `addKeyedTransientClass()`,
+`addKeyedScopedImplementation()`, and so on — and a custom lifetime strategy
+and instance provider can be added under a key with `addKeyed()`.
+
 ### Examples
 
 #### Adding and retrieving keyed services

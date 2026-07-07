@@ -19,7 +19,6 @@ use Suhock\DependencyInjection\ResolutionContext;
  *
  * @template TClass of object
  * @template-implements InstanceProviderInterface<TClass>
- * @internal
  */
 final class ClosureInstanceProvider implements InstanceProviderInterface
 {

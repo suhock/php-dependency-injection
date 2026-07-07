@@ -16,6 +16,7 @@ use Suhock\DependencyInjection\Fakes\FakeBaseClass;
 use Suhock\DependencyInjection\Fakes\FakeClassExtendsBaseClass;
 use Suhock\DependencyInjection\Fakes\FakeClassNoConstructor;
 use Suhock\DependencyInjection\Fakes\FakeClassWithConstructor;
+use Suhock\DependencyInjection\InstanceProvider\ClassInstanceProvider;
 
 /**
  * Test suite for {@see ContainerScopedBuilderTrait}.
@@ -127,5 +128,83 @@ final class ContainerScopedBuilderTraitTest extends AbstractDependencyInjectionT
         // Assert
         self::assertSame($instance, $scope->get(FakeClassNoConstructor::class, 'key1'));
         self::assertFalse($scope->has(FakeClassNoConstructor::class));
+    }
+
+    public function testAddKeyedScopedInstanceProvider_WithProvider_GetByKeyReturnsPerScopeInstance(): void
+    {
+        // Arrange
+        $container = $this->createContainer()
+            ->addKeyedScopedInstanceProvider(
+                FakeClassNoConstructor::class,
+                'key1',
+                new ClassInstanceProvider(FakeClassNoConstructor::class)
+            );
+        $scope = $container->createScope();
+
+        // Act
+        $instance = $scope->get(FakeClassNoConstructor::class, 'key1');
+        $otherScopeInstance = $container->createScope()->get(FakeClassNoConstructor::class, 'key1');
+
+        // Assert
+        self::assertSame($instance, $scope->get(FakeClassNoConstructor::class, 'key1'));
+        self::assertNotSame($instance, $otherScopeInstance);
+    }
+
+    public function testAddKeyedScopedClass_WithMutator_GetByKeyReturnsMutatedPerScopeInstance(): void
+    {
+        // Arrange
+        $container = $this->createContainer()
+            ->addKeyedScopedClass(
+                FakeClassNoConstructor::class,
+                'key1',
+                function (FakeClassNoConstructor $obj) {
+                    $obj->string = 'test';
+                }
+            );
+        $scope = $container->createScope();
+
+        // Act
+        $instance = $scope->get(FakeClassNoConstructor::class, 'key1');
+
+        // Assert
+        self::assertSame('test', $instance->string);
+        self::assertSame($instance, $scope->get(FakeClassNoConstructor::class, 'key1'));
+    }
+
+    public function testAddKeyedScopedImplementation_WithSubclass_GetByKeyReturnsInstanceOfSubclass(): void
+    {
+        // Arrange
+        $container = $this->createContainer()
+            ->addScopedClass(FakeClassExtendsBaseClass::class)
+            ->addKeyedScopedImplementation(FakeBaseClass::class, 'key1', FakeClassExtendsBaseClass::class);
+        $scope = $container->createScope();
+
+        // Act
+        $instance = $scope->get(FakeBaseClass::class, 'key1');
+
+        // Assert
+        self::assertInstanceOf(FakeClassExtendsBaseClass::class, $instance);
+        self::assertSame($scope->get(FakeClassExtendsBaseClass::class), $instance);
+    }
+
+    public function testAddKeyedScopedFactory_WithFactory_GetByKeyReturnsPerScopeInstance(): void
+    {
+        // Arrange
+        $container = $this->createContainer()
+            ->addKeyedScopedFactory(
+                FakeBaseClass::class,
+                'key1',
+                fn () => new FakeClassExtendsBaseClass()
+            );
+        $scope = $container->createScope();
+
+        // Act
+        $instance = $scope->get(FakeBaseClass::class, 'key1');
+        $otherScopeInstance = $container->createScope()->get(FakeBaseClass::class, 'key1');
+
+        // Assert
+        self::assertInstanceOf(FakeClassExtendsBaseClass::class, $instance);
+        self::assertSame($instance, $scope->get(FakeBaseClass::class, 'key1'));
+        self::assertNotSame($instance, $otherScopeInstance);
     }
 }

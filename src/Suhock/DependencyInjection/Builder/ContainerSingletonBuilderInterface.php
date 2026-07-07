@@ -49,7 +49,7 @@ interface ContainerSingletonBuilderInterface
      * @template TImplementation of TClass
      *
      * @param class-string<TClass> $className The fully qualified name of the class to add
-     * @param string|UnitEnum $key The service key to register under
+     * @param string|UnitEnum $key The key to add the service under
      * @param class-string<TImplementation>|object|null $source
      * - If null, indicates that the container should provide an instance of the given class by autowiring its
      *   constructor.
@@ -85,6 +85,21 @@ interface ContainerSingletonBuilderInterface
     ): static;
 
     /**
+     * @template TClass of object
+     *
+     * @param class-string<TClass> $className The fully qualified name of the class to add
+     * @param string|UnitEnum $key The key to add the service under
+     * @param InstanceProviderInterface<TClass> $instanceProvider
+     *
+     * @return $this
+     */
+    public function addKeyedSingletonInstanceProvider(
+        string $className,
+        string|UnitEnum $key,
+        InstanceProviderInterface $instanceProvider
+    ): static;
+
+    /**
      * Indicates that the container should provide a singleton instance of the given class by autowiring its
      * constructor. An optional mutator function can be specified to perform additional initialization on the
      * constructed object.
@@ -99,6 +114,27 @@ interface ContainerSingletonBuilderInterface
      * @throws ImplementationException
      */
     public function addSingletonClass(string $className, ?callable $mutator = null): static;
+
+    /**
+     * Indicates that the container should provide a singleton instance of the given class under the given key by
+     * autowiring its constructor. An optional mutator function can be specified to perform additional initialization
+     * on the constructed object.
+     *
+     * @template TClass of object
+     *
+     * @param class-string<TClass> $className The fully qualified name of the class to add
+     * @param string|UnitEnum $key The key to add the service under
+     * @param callable|null $mutator [optional] This function will be called after an instance of the class has been
+     * created. The class instance will be provided as the first parameter. Any additional parameters will be injected.
+     *
+     * @return $this
+     * @throws ImplementationException
+     */
+    public function addKeyedSingletonClass(
+        string $className,
+        string|UnitEnum $key,
+        ?callable $mutator = null
+    ): static;
 
     /**
      * Indicates that the container should provide a singleton instance of the given class by retrieving an instance of
@@ -118,6 +154,28 @@ interface ContainerSingletonBuilderInterface
     public function addSingletonImplementation(string $className, string $implementationClassName): static;
 
     /**
+     * Indicates that the container should provide a singleton instance of the given class under the given key by
+     * retrieving an instance of the specified implementation class from the container. The container must also
+     * specify how to resolve the implementation class.
+     *
+     * @template TClass of object
+     * @template TImplementation of TClass
+     *
+     * @param class-string<TClass> $className The fully qualified name of the class to add
+     * @param string|UnitEnum $key The key to add the service under
+     * @param class-string<TImplementation> $implementationClassName The fully qualified name of a class that
+     * implements or extends {@see $className}.
+     *
+     * @return $this
+     * @throws ImplementationException If the implementation class is not a subclass of the class being added
+     */
+    public function addKeyedSingletonImplementation(
+        string $className,
+        string|UnitEnum $key,
+        string $implementationClassName
+    ): static;
+
+    /**
      * Indicates that the container should provide a singleton instance of the given class by calling the specified
      * factory method.
      *
@@ -132,6 +190,21 @@ interface ContainerSingletonBuilderInterface
     public function addSingletonFactory(string $className, callable $factory): static;
 
     /**
+     * Indicates that the container should provide a singleton instance of the given class under the given key by
+     * calling the specified factory method.
+     *
+     * @template TClass of object
+     *
+     * @param class-string<TClass> $className The fully qualified name of the class to add
+     * @param string|UnitEnum $key The key to add the service under
+     * @param callable $factory A factory method that returns an instance of the class specified by {@see $className}.
+     * Any method parameters will be injected.
+     *
+     * @return $this
+     */
+    public function addKeyedSingletonFactory(string $className, string|UnitEnum $key, callable $factory): static;
+
+    /**
      * Indicates that the container should provide the given class with the specified instance of that class.
      *
      * @template TClass of object
@@ -144,6 +217,22 @@ interface ContainerSingletonBuilderInterface
      * @throws InstanceTypeException
      */
     public function addSingletonInstance(string $className, object $instance): static;
+
+    /**
+     * Indicates that the container should provide the given class under the given key with the specified instance of
+     * that class.
+     *
+     * @template TClass of object
+     * @template TInstance of TClass
+     *
+     * @param class-string<TClass> $className The fully qualified name of the class to add
+     * @param string|UnitEnum $key The key to add the service under
+     * @param TInstance $instance An instance of the class
+     *
+     * @return $this
+     * @throws InstanceTypeException
+     */
+    public function addKeyedSingletonInstance(string $className, string|UnitEnum $key, object $instance): static;
 
     /**
      * @return $this

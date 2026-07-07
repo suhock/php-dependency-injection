@@ -21,6 +21,7 @@ use Suhock\DependencyInjection\Fakes\FakeClassExtendsBaseClass;
 use Suhock\DependencyInjection\Fakes\FakeClassNoConstructor;
 use Suhock\DependencyInjection\Fakes\FakeClassWithAttribute;
 use Suhock\DependencyInjection\Fakes\FakeContainer;
+use Suhock\DependencyInjection\InstanceProvider\ClosureInstanceProvider;
 use Suhock\DependencyInjection\InstanceProvider\InstanceTypeException;
 
 /**
@@ -352,6 +353,82 @@ final class ContainerTransientBuilderTraitTest extends AbstractDependencyInjecti
         // Assert
         self::assertInstanceOf(FakeClassExtendsBaseClass::class, $instance);
         self::assertInstanceOf(FakeClassExtendsBaseClass::class, $newInstance);
+        self::assertNotSame($instance, $newInstance);
+    }
+
+    public function testAddKeyedTransientInstanceProvider_WithProvider_GetByKeyReturnsInstanceFromProvider(): void
+    {
+        // Arrange
+        $container = $this->createContainer()
+            ->addKeyedTransientInstanceProvider(
+                FakeClassNoConstructor::class,
+                'key1',
+                new ClosureInstanceProvider(FakeClassNoConstructor::class, fn () => new FakeClassNoConstructor())
+            );
+
+        // Act
+        $instance = $container->get(FakeClassNoConstructor::class, 'key1');
+        $newInstance = $container->get(FakeClassNoConstructor::class, 'key1');
+
+        // Assert
+        self::assertInstanceOf(FakeClassNoConstructor::class, $instance);
+        self::assertNotSame($instance, $newInstance);
+        self::assertFalse($container->has(FakeClassNoConstructor::class));
+    }
+
+    public function testAddKeyedTransientClass_WithMutator_GetByKeyReturnsMutatedInstance(): void
+    {
+        // Arrange
+        $container = $this->createContainer()
+            ->addKeyedTransientClass(
+                FakeClassNoConstructor::class,
+                'key1',
+                function (FakeClassNoConstructor $obj) {
+                    $obj->string = 'test';
+                }
+            );
+
+        // Act
+        $instance = $container->get(FakeClassNoConstructor::class, 'key1');
+        $newInstance = $container->get(FakeClassNoConstructor::class, 'key1');
+
+        // Assert
+        self::assertSame('test', $instance->string);
+        self::assertNotSame($instance, $newInstance);
+    }
+
+    public function testAddKeyedTransientImplementation_WithSubclass_GetByKeyReturnsInstanceOfSubclass(): void
+    {
+        // Arrange
+        $container = $this->createContainer()
+            ->addTransientClass(FakeClassExtendsBaseClass::class)
+            ->addKeyedTransientImplementation(FakeBaseClass::class, 'key1', FakeClassExtendsBaseClass::class);
+
+        // Act
+        $instance = $container->get(FakeBaseClass::class, 'key1');
+        $newInstance = $container->get(FakeBaseClass::class, 'key1');
+
+        // Assert
+        self::assertInstanceOf(FakeClassExtendsBaseClass::class, $instance);
+        self::assertNotSame($instance, $newInstance);
+    }
+
+    public function testAddKeyedTransientFactory_WithFactory_GetByKeyReturnsNewValueFromFactory(): void
+    {
+        // Arrange
+        $container = $this->createContainer()
+            ->addKeyedTransientFactory(
+                FakeBaseClass::class,
+                'key1',
+                fn () => new FakeClassExtendsBaseClass()
+            );
+
+        // Act
+        $instance = $container->get(FakeBaseClass::class, 'key1');
+        $newInstance = $container->get(FakeBaseClass::class, 'key1');
+
+        // Assert
+        self::assertInstanceOf(FakeClassExtendsBaseClass::class, $instance);
         self::assertNotSame($instance, $newInstance);
     }
 }

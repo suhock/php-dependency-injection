@@ -15,10 +15,9 @@ use Suhock\DependencyInjection\ResolutionContext;
 
 /**
  * Factory that provides a previously constructed instance of the class.
- * @template TClass of object
  *
+ * @template TClass of object
  * @template-implements InstanceProviderInterface<TClass>
- * @internal
  */
 final class ObjectInstanceProvider implements InstanceProviderInterface
 {

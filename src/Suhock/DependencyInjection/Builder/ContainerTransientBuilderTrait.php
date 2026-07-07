@@ -58,10 +58,9 @@ trait ContainerTransientBuilderTrait
         string|UnitEnum $key,
         string|Closure|null $source = null
     ): static {
-        return $this->addKeyed(
+        return $this->addKeyedTransientInstanceProvider(
             $className,
             $key,
-            new TransientStrategy($className),
             InstanceProviderFactory::createInstanceProvider($className, $source)
         );
     }
@@ -79,6 +78,22 @@ trait ContainerTransientBuilderTrait
         $this->add($className, new TransientStrategy($className), $instanceProvider);
 
         return $this;
+    }
+
+    /**
+     * @template TClass of object
+     *
+     * @param class-string<TClass> $className
+     * @param InstanceProviderInterface<TClass> $instanceProvider
+     *
+     * @return $this
+     */
+    public function addKeyedTransientInstanceProvider(
+        string $className,
+        string|UnitEnum $key,
+        InstanceProviderInterface $instanceProvider
+    ): static {
+        return $this->addKeyed($className, $key, new TransientStrategy($className), $instanceProvider);
     }
 
     /**
@@ -100,6 +115,25 @@ trait ContainerTransientBuilderTrait
 
     /**
      * @template TClass of object
+     *
+     * @param class-string<TClass> $className
+     * @param Closure|callable-string|null $mutator
+     */
+    // @phpstan-ignore method.childParameterType (false positive on templated builder generics)
+    public function addKeyedTransientClass(
+        string $className,
+        string|UnitEnum $key,
+        ?callable $mutator = null
+    ): static {
+        return $this->addKeyedTransientInstanceProvider(
+            $className,
+            $key,
+            InstanceProviderFactory::createClassInstanceProvider($className, $mutator)
+        );
+    }
+
+    /**
+     * @template TClass of object
      * @template TImplementation of TClass
      * @param class-string<TClass> $className
      * @param class-string<TImplementation> $implementationClassName
@@ -116,6 +150,22 @@ trait ContainerTransientBuilderTrait
     }
 
     /**
+     * @template TClass of object
+     * @template TImplementation of TClass
+     */
+    public function addKeyedTransientImplementation(
+        string $className,
+        string|UnitEnum $key,
+        string $implementationClassName
+    ): static {
+        return $this->addKeyedTransientInstanceProvider(
+            $className,
+            $key,
+            InstanceProviderFactory::createImplementationInstanceProvider($className, $implementationClassName)
+        );
+    }
+
+    /**
      * @param class-string $className
      */
     public function addTransientFactory(string $className, callable $factory): static
@@ -126,6 +176,18 @@ trait ContainerTransientBuilderTrait
         );
 
         return $this;
+    }
+
+    /**
+     * @param class-string $className
+     */
+    public function addKeyedTransientFactory(string $className, string|UnitEnum $key, callable $factory): static
+    {
+        return $this->addKeyedTransientInstanceProvider(
+            $className,
+            $key,
+            InstanceProviderFactory::createClosureInstanceProvider($className, $factory(...))
+        );
     }
 
     public function addTransientContainer(ContainerInterface $container): static

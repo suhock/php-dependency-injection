@@ -53,10 +53,9 @@ trait ContainerScopedBuilderTrait
         string|UnitEnum $key,
         string|object|null $source = null
     ): static {
-        return $this->addKeyed(
+        return $this->addKeyedScopedInstanceProvider(
             $className,
             $key,
-            new ScopedStrategy($className),
             InstanceProviderFactory::createInstanceProvider($className, $source)
         );
     }
@@ -74,6 +73,22 @@ trait ContainerScopedBuilderTrait
         $this->add($className, new ScopedStrategy($className), $instanceProvider);
 
         return $this;
+    }
+
+    /**
+     * @template TClass of object
+     *
+     * @param class-string<TClass> $className
+     * @param InstanceProviderInterface<TClass> $instanceProvider
+     *
+     * @return $this
+     */
+    public function addKeyedScopedInstanceProvider(
+        string $className,
+        string|UnitEnum $key,
+        InstanceProviderInterface $instanceProvider
+    ): static {
+        return $this->addKeyed($className, $key, new ScopedStrategy($className), $instanceProvider);
     }
 
     /**
@@ -97,6 +112,25 @@ trait ContainerScopedBuilderTrait
 
     /**
      * @template TClass of object
+     *
+     * @param class-string<TClass> $className
+     * @param Closure|callable-string|null $mutator
+     */
+    // @phpstan-ignore method.childParameterType (false positive on templated builder generics)
+    public function addKeyedScopedClass(
+        string $className,
+        string|UnitEnum $key,
+        ?callable $mutator = null
+    ): static {
+        return $this->addKeyedScopedInstanceProvider(
+            $className,
+            $key,
+            InstanceProviderFactory::createClassInstanceProvider($className, $mutator)
+        );
+    }
+
+    /**
+     * @template TClass of object
      * @template TImplementation of TClass
      */
     public function addScopedImplementation(string $className, string $implementationClassName): static
@@ -107,6 +141,22 @@ trait ContainerScopedBuilderTrait
         );
 
         return $this;
+    }
+
+    /**
+     * @template TClass of object
+     * @template TImplementation of TClass
+     */
+    public function addKeyedScopedImplementation(
+        string $className,
+        string|UnitEnum $key,
+        string $implementationClassName
+    ): static {
+        return $this->addKeyedScopedInstanceProvider(
+            $className,
+            $key,
+            InstanceProviderFactory::createImplementationInstanceProvider($className, $implementationClassName)
+        );
     }
 
     /**
@@ -122,5 +172,19 @@ trait ContainerScopedBuilderTrait
         );
 
         return $this;
+    }
+
+    /**
+     * @template TClass of object
+     *
+     * @param class-string<TClass> $className
+     */
+    public function addKeyedScopedFactory(string $className, string|UnitEnum $key, callable $factory): static
+    {
+        return $this->addKeyedScopedInstanceProvider(
+            $className,
+            $key,
+            InstanceProviderFactory::createClosureInstanceProvider($className, $factory(...))
+        );
     }
 }
