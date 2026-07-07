@@ -23,9 +23,9 @@ use Suhock\DependencyInjection\Builder\ContainerTransientBuilderTrait;
 use Suhock\DependencyInjection\Cache\CacheInterface;
 use Suhock\DependencyInjection\Descriptor\ContainerDescriptor;
 use Suhock\DependencyInjection\Descriptor\Descriptor;
+use Suhock\DependencyInjection\InstanceProvider\ClosureInstanceProvider;
 use Suhock\DependencyInjection\Lifetime\InstanceStore;
 use Suhock\DependencyInjection\Lifetime\LifetimeStrategy;
-use Suhock\DependencyInjection\InstanceProvider\ClosureInstanceProvider;
 use UnitEnum;
 use function is_string;
 use function spl_object_id;
@@ -122,7 +122,7 @@ final class Container implements
      *
      * @return $this
      */
-    private function store(Descriptor $descriptor, string|  UnitEnum|null $key): static
+    private function store(Descriptor $descriptor, string|UnitEnum|null $key): static
     {
         $id = $this->descriptorId($descriptor->className, $key);
 
