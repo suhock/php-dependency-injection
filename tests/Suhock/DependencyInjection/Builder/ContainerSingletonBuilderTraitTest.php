@@ -331,6 +331,24 @@ final class ContainerSingletonBuilderTraitTest extends AbstractDependencyInjecti
         self::assertThrowsClassNotFoundException(DateTime::class, $fn);
     }
 
+    public function testAddSingleton_WithClosureAcceptingSupertypeOfClass_UsesClosureAsFactory(): void
+    {
+        // Arrange
+        $expectedInstance = new FakeClassExtendsBaseClass();
+        $container = $this->createContainer()
+            ->addSingletonInstance(FakeBaseClass::class, new FakeClassExtendsBaseClass())
+            ->addSingleton(
+                FakeClassExtendsBaseClass::class,
+                fn (FakeBaseClass $inner) => $expectedInstance
+            );
+
+        // Act
+        $result = $container->get(FakeClassExtendsBaseClass::class);
+
+        // Assert
+        self::assertSame($expectedInstance, $result);
+    }
+
     public function testAddKeyedSingleton_WithClassName_GetReturnsInstanceOfClass(): void
     {
         // Arrange

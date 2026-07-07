@@ -33,11 +33,9 @@ interface ContainerSingletonBuilderInterface
      * - If a string, indicates that the container should provide an instance of the given class by retrieving an
      *   instance of the specified implementation class from the container. The container must also specify how to
      *   resolve the implementation class.
-     * - If a closure that accepts an object of the specified class as the first parameter, indicates that the container
-     *   should provide an instance of the given class by autowiring its constructor and then passing the constructed
-     *   object to the mutator function.
-     * - If any other closure, indicates that the container should provide an instance of the given class by calling the
-     *   closure.
+     * - If a closure, indicates that the container should provide an instance of the given class by calling the
+     *   closure as a factory. Any closure parameters will be injected. To autowire the class and then mutate the
+     *   constructed instance, use {@see addSingletonClass()} or {@see addKeyedSingletonClass()} instead.
      * - If an object, indicates that the container should provide the given object as an instance of the given class.
      *
      * @return $this
@@ -56,11 +54,9 @@ interface ContainerSingletonBuilderInterface
      * - If a string, indicates that the container should provide an instance of the given class by retrieving an
      *   instance of the specified implementation class from the container. The container must also specify how to
      *   resolve the implementation class.
-     * - If a closure that accepts an object of the specified class as the first parameter, indicates that the container
-     *   should provide an instance of the given class by autowiring its constructor and then passing the constructed
-     *   object to the mutator function.
-     * - If any other closure, indicates that the container should provide an instance of the given class by calling the
-     *   closure.
+     * - If a closure, indicates that the container should provide an instance of the given class by calling the
+     *   closure as a factory. Any closure parameters will be injected. To autowire the class and then mutate the
+     *   constructed instance, use {@see addSingletonClass()} or {@see addKeyedSingletonClass()} instead.
      * - If an object, indicates that the container should provide the given object as an instance of the given class.
      *
      * @return $this

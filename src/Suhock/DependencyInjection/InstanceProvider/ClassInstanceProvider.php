@@ -11,9 +11,6 @@ declare(strict_types=1);
 namespace Suhock\DependencyInjection\InstanceProvider;
 
 use Closure;
-use ReflectionFunction;
-use ReflectionNamedType;
-use ReflectionUnionType;
 use Suhock\DependencyInjection\DependencyInjectionException;
 use Suhock\DependencyInjection\ResolutionContext;
 
@@ -55,43 +52,5 @@ final class ClassInstanceProvider implements InstanceProviderInterface
         }
 
         return $instance;
-    }
-
-    /**
-     * @param Closure|callable-string $function The function to test
-     * @param class-string $className The name of the class that the function must be able to mutate
-     *
-     * @return bool true if the function can mutate the specified class; otherwise, false
-     */
-    public static function isMutator(callable $function, string $className): bool
-    {
-        // A valid callable always names an existing function, so this cannot throw ReflectionException.
-        $closureReflection = new ReflectionFunction($function);
-
-        $firstParam = $closureReflection->getParameters()[0] ?? null;
-
-        if ($firstParam === null) {
-            return false;
-        }
-
-        $firstParamType = $firstParam->getType();
-
-        $paramTypes = match (true) {
-            $firstParamType instanceof ReflectionNamedType => [$firstParamType],
-            $firstParamType instanceof ReflectionUnionType => $firstParamType->getTypes(),
-            default => []
-        };
-
-        foreach ($paramTypes as $paramType) {
-            if (!$paramType instanceof ReflectionNamedType || $paramType->isBuiltin()) {
-                continue;
-            }
-
-            if (is_a($className, $paramType->getName(), true)) {
-                return true;
-            }
-        }
-
-        return false;
     }
 }

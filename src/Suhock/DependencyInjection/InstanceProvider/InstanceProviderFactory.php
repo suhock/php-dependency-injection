@@ -40,15 +40,11 @@ final class InstanceProviderFactory
             return self::createImplementationInstanceProvider($className, $source);
         }
 
-        if (!$source instanceof Closure) {
-            return self::createObjectInstanceProvider($className, $source);
+        if ($source instanceof Closure) {
+            return self::createClosureInstanceProvider($className, $source);
         }
 
-        if (ClassInstanceProvider::isMutator($source, $className)) {
-            return self::createClassInstanceProvider($className, $source);
-        }
-
-        return self::createClosureInstanceProvider($className, $source);
+        return self::createObjectInstanceProvider($className, $source);
     }
 
     /**
