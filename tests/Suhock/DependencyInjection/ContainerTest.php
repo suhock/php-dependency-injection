@@ -13,6 +13,7 @@ namespace Suhock\DependencyInjection;
 use Suhock\DependencyInjection\Fakes\FakeBuilder;
 use Suhock\DependencyInjection\Fakes\FakeClassExtendsBaseClass;
 use Suhock\DependencyInjection\Fakes\FakeClassNoConstructor;
+use Suhock\DependencyInjection\Fakes\FakeUnitEnum;
 use Suhock\DependencyInjection\Lifetime\SingletonStrategy;
 use Suhock\DependencyInjection\InstanceProvider\ObjectInstanceProvider;
 
@@ -129,6 +130,67 @@ final class ContainerTest extends AbstractDependencyInjectionTestCase
 
         // Assert
         self::assertFalse($container->has(FakeClassNoConstructor::class));
+    }
+
+    public function testRemove_WithKey_RemovesOnlyKeyedService(): void
+    {
+        // Arrange
+        $container = $this->createContainer()
+            ->addSingletonClass(FakeClassNoConstructor::class)
+            ->addKeyedSingleton(FakeClassNoConstructor::class, 'key1')
+            ->addKeyedSingleton(FakeClassNoConstructor::class, 'key2');
+
+        // Act
+        $container->remove(FakeClassNoConstructor::class, 'key1');
+
+        // Assert
+        self::assertFalse($container->has(FakeClassNoConstructor::class, 'key1'));
+        self::assertTrue($container->has(FakeClassNoConstructor::class));
+        self::assertTrue($container->has(FakeClassNoConstructor::class, 'key2'));
+    }
+
+    public function testRemove_WithoutKey_DoesNotRemoveKeyedService(): void
+    {
+        // Arrange
+        $container = $this->createContainer()
+            ->addSingletonClass(FakeClassNoConstructor::class)
+            ->addKeyedSingleton(FakeClassNoConstructor::class, 'key1');
+
+        // Act
+        $container->remove(FakeClassNoConstructor::class);
+
+        // Assert
+        self::assertFalse($container->has(FakeClassNoConstructor::class));
+        self::assertTrue($container->has(FakeClassNoConstructor::class, 'key1'));
+    }
+
+    public function testRemove_WithEnumKey_RemovesKeyedService(): void
+    {
+        // Arrange
+        $container = $this->createContainer()
+            ->addKeyedSingleton(FakeClassNoConstructor::class, FakeUnitEnum::Test);
+
+        // Act
+        $container->remove(FakeClassNoConstructor::class, FakeUnitEnum::Test);
+
+        // Assert
+        self::assertFalse($container->has(FakeClassNoConstructor::class, FakeUnitEnum::Test));
+    }
+
+    public function testRemove_WithKey_AllowsReAddingUnderSameKey(): void
+    {
+        // Arrange
+        $expectedInstance = new FakeClassNoConstructor();
+        $container = $this->createContainer()
+            ->addKeyedSingleton(FakeClassNoConstructor::class, 'key1');
+        $container->get(FakeClassNoConstructor::class, 'key1');
+
+        // Act
+        $container->remove(FakeClassNoConstructor::class, 'key1')
+            ->addKeyedSingleton(FakeClassNoConstructor::class, 'key1', $expectedInstance);
+
+        // Assert
+        self::assertSame($expectedInstance, $container->get(FakeClassNoConstructor::class, 'key1'));
     }
 
     public function testTryGet_WithValueInFactoryAndContainer_ReturnsValueFromFactory(): void

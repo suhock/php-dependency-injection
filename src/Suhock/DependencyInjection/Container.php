@@ -178,17 +178,25 @@ final class Container implements
     }
 
     /**
-     * Removes the specified factory and/or instance if they exist.
+     * Removes the specified service and any instance cached by this container, if they exist. Services of the same
+     * class added under other keys are unaffected.
      *
-     * @param class-string $className
+     * Note: A service satisfied by a nested container (see {@see addContainer()}) is added back the next time it is
+     * resolved, since the nested container still provides it. Instances already cached by existing scopes are
+     * unaffected.
+     *
+     * @param class-string $className The class name of the service to remove
+     * @param string|UnitEnum|null $key [optional] The key of the service to remove, or null for the unkeyed service
      *
      * @return $this
      */
-    public function remove(string $className): static
+    public function remove(string $className, string|UnitEnum|null $key = null): static
     {
-        if (isset($this->descriptors[$className])) {
-            $this->instances->remove($this->descriptors[$className]->lifetimeStrategy);
-            unset($this->descriptors[$className]);
+        $id = $this->descriptorId($className, $key);
+
+        if (isset($this->descriptors[$id])) {
+            $this->instances->remove($this->descriptors[$id]->lifetimeStrategy);
+            unset($this->descriptors[$id]);
         }
 
         return $this;
