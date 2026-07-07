@@ -13,9 +13,8 @@ namespace Suhock\DependencyInjection\Builder;
 use Suhock\DependencyInjection\ContainerInterface;
 use Suhock\DependencyInjection\Descriptor\ContainerDescriptor;
 use Suhock\DependencyInjection\Descriptor\Descriptor;
-use Suhock\DependencyInjection\InjectorInterface;
-use Suhock\DependencyInjection\Lifetime\LifetimeStrategy;
 use Suhock\DependencyInjection\InstanceProvider\InstanceProviderInterface;
+use Suhock\DependencyInjection\Lifetime\LifetimeStrategy;
 use UnitEnum;
 
 /**
@@ -23,8 +22,6 @@ use UnitEnum;
  */
 trait ContainerBuilderTrait
 {
-    abstract protected function getInjector(): InjectorInterface;
-
     /**
      * @template TClass of object
      *
