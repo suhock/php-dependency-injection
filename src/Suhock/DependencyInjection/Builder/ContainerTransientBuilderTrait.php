@@ -41,7 +41,7 @@ trait ContainerTransientBuilderTrait
     {
         $this->addTransientInstanceProvider(
             $className,
-            InstanceProviderFactory::createInstanceProvider($this->getInjector(), $this, $className, $source)
+            InstanceProviderFactory::createInstanceProvider($className, $source)
         );
 
         return $this;
@@ -62,7 +62,7 @@ trait ContainerTransientBuilderTrait
             $className,
             $key,
             new TransientStrategy($className),
-            InstanceProviderFactory::createInstanceProvider($this->getInjector(), $this, $className, $source)
+            InstanceProviderFactory::createInstanceProvider($className, $source)
         );
     }
 
@@ -92,7 +92,7 @@ trait ContainerTransientBuilderTrait
     {
         $this->addTransientInstanceProvider(
             $className,
-            InstanceProviderFactory::createClassInstanceProvider($this->getInjector(), $className, $mutator)
+            InstanceProviderFactory::createClassInstanceProvider($className, $mutator)
         );
 
         return $this;
@@ -109,7 +109,7 @@ trait ContainerTransientBuilderTrait
     {
         $this->addTransientInstanceProvider(
             $className,
-            InstanceProviderFactory::createImplementationInstanceProvider($this, $className, $implementationClassName)
+            InstanceProviderFactory::createImplementationInstanceProvider($className, $implementationClassName)
         );
 
         return $this;
@@ -122,7 +122,7 @@ trait ContainerTransientBuilderTrait
     {
         $this->addTransientInstanceProvider(
             $className,
-            InstanceProviderFactory::createClosureInstanceProvider($this->getInjector(), $className, $factory(...))
+            InstanceProviderFactory::createClosureInstanceProvider($className, $factory(...))
         );
 
         return $this;

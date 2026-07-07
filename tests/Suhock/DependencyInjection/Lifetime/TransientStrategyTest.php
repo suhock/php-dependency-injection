@@ -10,13 +10,14 @@ declare(strict_types=1);
 
 namespace Suhock\DependencyInjection\Lifetime;
 
-use PHPUnit\Framework\TestCase;
+use Suhock\DependencyInjection\AbstractDependencyInjectionTestCase;
 use Suhock\DependencyInjection\Fakes\FakeClassNoConstructor;
+use Suhock\DependencyInjection\ResolutionContext;
 
 /**
  * Test suite for {@see TransientStrategy}.
  */
-final class TransientStrategyTest extends TestCase
+final class TransientStrategyTest extends AbstractDependencyInjectionTestCase
 {
     /**
      * @return TransientStrategy<FakeClassNoConstructor>
@@ -30,7 +31,7 @@ final class TransientStrategyTest extends TestCase
     {
         // Arrange
         $strategy = $this->createStrategy();
-        $context = new ResolutionContext(new InstanceStore());
+        $context = self::createResolutionContext();
 
         // Act
         $instance = $strategy->get($context, fn () => new FakeClassNoConstructor());
@@ -43,7 +44,7 @@ final class TransientStrategyTest extends TestCase
     {
         // Arrange
         $strategy = $this->createStrategy();
-        $context = new ResolutionContext(new InstanceStore());
+        $context = self::createResolutionContext();
 
         // Act
         $firstInstance = $strategy->get($context, fn () => new FakeClassNoConstructor());
@@ -51,5 +52,20 @@ final class TransientStrategyTest extends TestCase
 
         // Assert
         self::assertNotSame($firstInstance, $secondInstance);
+    }
+
+    public function testGet_WithAnyContext_InvokesFactoryWithSameContext(): void
+    {
+        // Arrange
+        $strategy = $this->createStrategy();
+        $context = self::createResolutionContext();
+
+        // Act
+        $strategy->get($context, function (ResolutionContext $factoryContext) use ($context) {
+            // Assert
+            self::assertSame($context, $factoryContext);
+
+            return new FakeClassNoConstructor();
+        });
     }
 }

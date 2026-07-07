@@ -21,20 +21,18 @@ use Suhock\DependencyInjection\InjectorInterface;
  */
 final class ClassInstanceProviderTest extends AbstractDependencyInjectionTestCase
 {
-    public function testGet_WithClassName_ReturnsValueInstantiatedByInjector(): void
+    public function testGet_WithClassName_ReturnsValueInstantiatedByContextInjector(): void
     {
         // Arrange
-        $factory = new ClassInstanceProvider(
-            FakeClassNoConstructor::class,
-            $injector = $this->createMock(InjectorInterface::class)
-        );
+        $factory = new ClassInstanceProvider(FakeClassNoConstructor::class);
 
+        $injector = $this->createMock(InjectorInterface::class);
         $injector->expects($this->once())
             ->method('instantiate')
             ->willReturn(new FakeClassNoConstructor());
 
         // Act
-        $instance = $factory->get();
+        $instance = $factory->get(self::createResolutionContext(injector: $injector));
 
         // Assert
         self::assertInstanceOf(FakeClassNoConstructor::class, $instance);
@@ -45,14 +43,15 @@ final class ClassInstanceProviderTest extends AbstractDependencyInjectionTestCas
         // Arrange
         $factory = new ClassInstanceProvider(
             FakeClassNoConstructor::class,
-            Injector::createDefault(self::createStub(ContainerInterface::class)),
             function (FakeClassNoConstructor $obj) {
                 $obj->string = 'test';
             }
         );
 
+        $injector = Injector::createDefault(self::createStub(ContainerInterface::class));
+
         // Act
-        $instance = $factory->get();
+        $instance = $factory->get(self::createResolutionContext(injector: $injector));
 
         // Assert
         self::assertSame('test', $instance->string);

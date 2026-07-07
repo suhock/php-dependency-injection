@@ -10,6 +10,8 @@ declare(strict_types=1);
 
 namespace Suhock\DependencyInjection\Lifetime;
 
+use Suhock\DependencyInjection\ResolutionContext;
+
 /**
  * Manages the lifetime of a transient object.
  *
@@ -23,6 +25,6 @@ final class TransientStrategy extends LifetimeStrategy
      */
     public function get(ResolutionContext $context, callable $factory): object
     {
-        return $factory();
+        return $factory($context);
     }
 }

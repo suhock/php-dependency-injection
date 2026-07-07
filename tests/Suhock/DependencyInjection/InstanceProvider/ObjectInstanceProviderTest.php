@@ -43,7 +43,7 @@ final class ObjectInstanceProviderTest extends AbstractDependencyInjectionTestCa
         $factory = new ObjectInstanceProvider(FakeClassNoConstructor::class, $expectedInstance);
 
         // Act
-        $instance = $factory->get();
+        $instance = $factory->get(self::createResolutionContext());
 
         // Assert
         self::assertSame($expectedInstance, $instance);
@@ -56,7 +56,7 @@ final class ObjectInstanceProviderTest extends AbstractDependencyInjectionTestCa
         $factory = new ObjectInstanceProvider(FakeBaseClass::class, $expectedInstance);
 
         // Act
-        $instance = $factory->get();
+        $instance = $factory->get(self::createResolutionContext());
 
         // Assert
         self::assertSame($expectedInstance, $instance);

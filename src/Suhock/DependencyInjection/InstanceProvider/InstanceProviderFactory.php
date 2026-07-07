@@ -11,8 +11,6 @@ declare(strict_types=1);
 namespace Suhock\DependencyInjection\InstanceProvider;
 
 use Closure;
-use Suhock\DependencyInjection\ContainerInterface;
-use Suhock\DependencyInjection\InjectorInterface;
 use function is_string;
 
 /**
@@ -31,17 +29,15 @@ final class InstanceProviderFactory
      * @return InstanceProviderInterface<TClass>
      */
     public static function createInstanceProvider(
-        InjectorInterface $injector,
-        ContainerInterface $container,
         string $className,
         string|object|null $source = null
     ): InstanceProviderInterface {
         if ($source === null) {
-            return self::createClassInstanceProvider($injector, $className);
+            return self::createClassInstanceProvider($className);
         }
 
         if (is_string($source)) {
-            return self::createImplementationInstanceProvider($container, $className, $source);
+            return self::createImplementationInstanceProvider($className, $source);
         }
 
         if (!$source instanceof Closure) {
@@ -49,10 +45,10 @@ final class InstanceProviderFactory
         }
 
         if (ClassInstanceProvider::isMutator($source, $className)) {
-            return self::createClassInstanceProvider($injector, $className, $source);
+            return self::createClassInstanceProvider($className, $source);
         }
 
-        return self::createClosureInstanceProvider($injector, $className, $source);
+        return self::createClosureInstanceProvider($className, $source);
     }
 
     /**
@@ -63,11 +59,10 @@ final class InstanceProviderFactory
      * @return ClassInstanceProvider<TClass>
      */
     public static function createClassInstanceProvider(
-        InjectorInterface $injector,
         string $className,
         ?callable $mutator = null
     ): ClassInstanceProvider {
-        return new ClassInstanceProvider($className, $injector, $mutator !== null ? $mutator(...) : null);
+        return new ClassInstanceProvider($className, $mutator !== null ? $mutator(...) : null);
     }
 
     /**
@@ -79,11 +74,10 @@ final class InstanceProviderFactory
      * @return ImplementationInstanceProvider<TClass>
      */
     public static function createImplementationInstanceProvider(
-        ContainerInterface $container,
         string $className,
         string $implementationClassName
     ): ImplementationInstanceProvider {
-        return new ImplementationInstanceProvider($className, $implementationClassName, $container);
+        return new ImplementationInstanceProvider($className, $implementationClassName);
     }
 
     /**
@@ -109,10 +103,9 @@ final class InstanceProviderFactory
      * @return ClosureInstanceProvider<TClass>
      */
     public static function createClosureInstanceProvider(
-        InjectorInterface $injector,
         string $className,
         callable $closure
     ): ClosureInstanceProvider {
-        return new ClosureInstanceProvider($className, $closure(...), $injector);
+        return new ClosureInstanceProvider($className, $closure(...));
     }
 }

@@ -13,7 +13,6 @@ namespace Suhock\DependencyInjection\Descriptor;
 use Closure;
 use Suhock\DependencyInjection\Container;
 use Suhock\DependencyInjection\ContainerInterface;
-use Suhock\DependencyInjection\InjectorInterface;
 use Suhock\DependencyInjection\Lifetime\LifetimeStrategy;
 
 /**
@@ -28,7 +27,6 @@ final class ContainerDescriptor
      */
     public function __construct(
         public readonly ContainerInterface $container,
-        public readonly InjectorInterface $injector,
         public readonly Closure $lifetimeStrategyFactory
     ) {
     }

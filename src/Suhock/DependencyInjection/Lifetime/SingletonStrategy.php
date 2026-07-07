@@ -10,9 +10,12 @@ declare(strict_types=1);
 
 namespace Suhock\DependencyInjection\Lifetime;
 
+use Suhock\DependencyInjection\ResolutionContext;
+
 /**
- * Manages the lifetime of a singleton object: one instance per root store, created on first request and reused for the
- * store's lifetime.
+ * Manages the lifetime of a singleton object: one instance per root container, created on first request — from the root
+ * or from any of its scopes — and reused for the root's lifetime. The instance is created in the root container's
+ * context, so its dependencies never come from a shorter-lived scope.
  *
  * @template TClass of object
  * @extends LifetimeStrategy<TClass>
@@ -24,6 +27,8 @@ final class SingletonStrategy extends LifetimeStrategy
      */
     public function get(ResolutionContext $context, callable $factory): object
     {
-        return $context->rootStore->getOrCreate($this, $factory);
+        $home = $context->rootContext();
+
+        return $home->store->getOrCreate($this, static fn () => $factory($home));
     }
 }

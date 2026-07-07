@@ -11,8 +11,11 @@ declare(strict_types=1);
 namespace Suhock\DependencyInjection;
 
 use BackedEnum;
+use Closure;
 use Suhock\DependencyInjection\Builder\ContainerBuilderInterface;
 use Suhock\DependencyInjection\Builder\ContainerBuilderTrait;
+use Suhock\DependencyInjection\Builder\ContainerScopedBuilderInterface;
+use Suhock\DependencyInjection\Builder\ContainerScopedBuilderTrait;
 use Suhock\DependencyInjection\Builder\ContainerSingletonBuilderInterface;
 use Suhock\DependencyInjection\Builder\ContainerSingletonBuilderTrait;
 use Suhock\DependencyInjection\Builder\ContainerTransientBuilderInterface;
@@ -22,7 +25,6 @@ use Suhock\DependencyInjection\Descriptor\ContainerDescriptor;
 use Suhock\DependencyInjection\Descriptor\Descriptor;
 use Suhock\DependencyInjection\Lifetime\InstanceStore;
 use Suhock\DependencyInjection\Lifetime\LifetimeStrategy;
-use Suhock\DependencyInjection\Lifetime\ResolutionContext;
 use Suhock\DependencyInjection\InstanceProvider\ClosureInstanceProvider;
 use UnitEnum;
 use function is_string;
@@ -33,11 +35,14 @@ use function spl_object_id;
  */
 final class Container implements
     ContainerInterface,
+    ScopeFactoryInterface,
     ContainerBuilderInterface,
+    ContainerScopedBuilderInterface,
     ContainerSingletonBuilderInterface,
     ContainerTransientBuilderInterface
 {
     use ContainerBuilderTrait;
+    use ContainerScopedBuilderTrait;
     use ContainerSingletonBuilderTrait;
     use ContainerTransientBuilderTrait;
 
@@ -49,13 +54,18 @@ final class Container implements
 
     private InjectorInterface $injector;
 
+    /** @var Closure(ContainerInterface):InjectorInterface */
+    private readonly Closure $injectorFactory;
+
     private readonly InstanceStore $instances;
 
     private readonly ResolutionContext $resolutionContext;
 
     /**
      * Descriptors currently being resolved, keyed by {@see spl_object_id()} of the descriptor. Reentry marks a
-     * circular dependency.
+     * circular dependency. Shared by the container and all of its scopes, since one resolution chain may span several
+     * resolution roots (a singleton's dependency graph always resolves in the root context, even when the singleton is
+     * first requested from a scope).
      *
      * @var array<int, true>
      */
@@ -63,13 +73,14 @@ final class Container implements
 
     /**
      * @param callable(ContainerInterface):InjectorInterface $injectorFactory Provides the injector to be used in
-     * conjunction with the container.
+     * conjunction with each resolution root (the container itself and each scope created from it).
      */
     public function __construct(callable $injectorFactory)
     {
+        $this->injectorFactory = $injectorFactory(...);
         $this->injector = $injectorFactory($this);
         $this->instances = new InstanceStore();
-        $this->resolutionContext = new ResolutionContext($this->instances);
+        $this->resolutionContext = new ResolutionContext($this, $this->injector, $this->instances);
     }
 
     /**
@@ -184,6 +195,14 @@ final class Container implements
     }
 
     /**
+     * @inheritDoc
+     */
+    public function createScope(): ScopeInterface
+    {
+        return new Scope($this, $this->injectorFactory, $this->resolutionContext);
+    }
+
+    /**
      * @template TClass of object
      * @param class-string<TClass> $className
      * @return TClass
@@ -192,8 +211,25 @@ final class Container implements
      */
     public function get(string $className, string|UnitEnum|null $key = null): object
     {
+        return $this->getForContext($className, $key, $this->resolutionContext);
+    }
+
+    /**
+     * Resolves a service on behalf of a resolution root — the container itself or one of its scopes.
+     *
+     * @template TClass of object
+     * @param class-string<TClass> $className
+     * @param ResolutionContext $context The context of the resolution root the service is being resolved for
+     * @return TClass
+     * @throws CircularDependencyException
+     * @throws ClassNotFoundException
+     *
+     * @internal
+     */
+    public function getForContext(string $className, string|UnitEnum|null $key, ResolutionContext $context): object
+    {
         if ($key !== null) {
-            if ($this->tryGetFromDescriptor($this->descriptorId($className, $key), $instance)) {
+            if ($this->tryGetFromDescriptor($this->descriptorId($className, $key), $context, $instance)) {
                 /** @var TClass $instance */
                 return $instance;
             }
@@ -201,8 +237,8 @@ final class Container implements
             throw new ClassNotFoundException($className);
         }
 
-        if ($this->tryGetFromDescriptor($className, $instance) ||
-            $this->tryGetFromContainer($className, $instance)) {
+        if ($this->tryGetFromDescriptor($className, $context, $instance) ||
+            $this->tryGetFromContainer($className, $context, $instance)) {
             /** @var TClass $instance */
             return $instance;
         }
@@ -226,13 +262,13 @@ final class Container implements
      * @param string $id The service id, as produced by {@see descriptorId()}
      * @throws CircularDependencyException
      */
-    private function tryGetFromDescriptor(string $id, ?object &$instance): bool
+    private function tryGetFromDescriptor(string $id, ResolutionContext $context, ?object &$instance): bool
     {
         if (!isset($this->descriptors[$id])) {
             return false;
         }
 
-        $instance = $this->resolveDescriptor($this->descriptors[$id]);
+        $instance = $this->resolveDescriptor($this->descriptors[$id], $context);
 
         return true;
     }
@@ -245,7 +281,7 @@ final class Container implements
      * @return TClass
      * @throws CircularDependencyException
      */
-    private function resolveDescriptor(Descriptor $descriptor): object
+    private function resolveDescriptor(Descriptor $descriptor, ResolutionContext $context): object
     {
         $descriptorId = spl_object_id($descriptor);
 
@@ -256,9 +292,10 @@ final class Container implements
         $this->resolving[$descriptorId] = true;
 
         try {
-            $instanceFactory = $descriptor->instanceProvider->get(...);
-
-            return $descriptor->lifetimeStrategy->get($this->resolutionContext, $instanceFactory);
+            return $descriptor->lifetimeStrategy->get(
+                $context,
+                static fn (ResolutionContext $ctx): object => $descriptor->instanceProvider->get($ctx)
+            );
         } catch (DependencyInjectionException $e) {
             throw new ClassResolutionException($descriptor->className, previous: $e);
         } finally {
@@ -284,10 +321,10 @@ final class Container implements
     /**
      * @param class-string $className
      */
-    private function tryGetFromContainer(string $className, ?object &$instance): bool
+    private function tryGetFromContainer(string $className, ResolutionContext $context, ?object &$instance): bool
     {
         return $this->tryAddFromFirstMatchingContainer($className) &&
-            $this->tryGetFromDescriptor($className, $instance);
+            $this->tryGetFromDescriptor($className, $context, $instance);
     }
 
     /**
@@ -323,8 +360,7 @@ final class Container implements
             $lifetimeStrategy,
             new ClosureInstanceProvider(
                 $className,
-                fn () => $descriptor->container->get($className),
-                $this->injector
+                fn () => $descriptor->container->get($className)
             )
         );
 

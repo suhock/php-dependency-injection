@@ -11,8 +11,9 @@ $container->addSingletonClass(MyApplication::class)
     ->run();
 ```
 
-Out of the box, this library provides [singleton](#singleton) and
-[transient](#transient) lifetime strategies and a variety ways of
+Out of the box, this library provides [singleton](#singleton),
+[scoped](#scoped), and [transient](#transient) lifetime strategies and a
+variety ways of
 [registering services](#adding-services-to-the-container) of specific
 types, as well as specifying factories for all classes in a particular
 [namespace](#namespace-container) or implementing a specific
@@ -31,7 +32,9 @@ constructor.
 - [Basic usage](#basic-usage)
 - [Instance lifetime](#instance-lifetime)
     - [Singleton](#singleton)
+    - [Scoped](#scoped)
     - [Transient](#transient)
+- [Scopes](#scopes)
 - [Adding services to the container](#adding-services-to-the-container)
     - [Inject a class](#inject-a-class)
     - [Map an interface to an implementation](#map-an-interface-to-an-implementation)
@@ -160,8 +163,8 @@ class MyRouter
 ### Instance lifetime
 
 The lifetime of an instance determines when the container should request a fresh
-instance of a class. There are two builtin lifetime strategies for classes:
-singleton and transient. You can also add your own custom
+instance of a class. There are three builtin lifetime strategies for classes:
+singleton, scoped, and transient. You can also add your own custom
 [lifetime strategies](#custom-lifetime-strategies).
 
 #### Singleton
@@ -170,9 +173,20 @@ Singleton instances are persisted for the lifetime of the container. When the
 container receives a request for a singleton instance for the first time, it
 will call the factory that you specified for that class, store the result, and
 then return it. Any time the container receives a subsequent request for that
-class, it will return that same instance. The default `Container` provides
-convenience methods for adding singleton factories, all starting with the prefix
-`addSingleton`.
+class — directly or through any [scope](#scopes) — it will return that same
+instance. The default `Container` provides convenience methods for adding
+singleton factories, all starting with the prefix `addSingleton`.
+
+#### Scoped
+
+Scoped instances are persisted for the lifetime of a [scope](#scopes) created
+by `Container::createScope()`. Each scope receives its own instance the first
+time it requests the class, and that instance's dependencies are resolved from
+the scope, so scoped services can depend on other scoped services. Requesting a
+scoped instance with no scope active — directly from the root container, or
+from a singleton's dependency graph, which always resolves against the root —
+throws a `ScopeException`. The default `Container` provides convenience methods
+for adding scoped factories, all starting with the prefix `addScoped`.
 
 #### Transient
 
@@ -181,6 +195,76 @@ value each time an instance is requested. Each time the container receives a
 request for a transient instance, it will call the factory you specified for
 that class. The default `Container` provides convenience methods for adding
 transient factories, all starting with the prefix `addTransient`.
+
+### Scopes
+
+A scope represents a bounded unit of work — an HTTP request in a long-running
+application server, a message pulled off a queue, a job in a worker. Create one
+with `Container::createScope()`, resolve services from it as you would from the
+container, and dispose it when the unit of work ends:
+
+```php
+$container = Container::createDefault()
+    ->addSingleton(LoggerInterface::class, FileLogger::class)
+    ->addSingletonClass(FileLogger::class)
+    ->addScopedClass(RequestContext::class)
+    ->addTransientClass(RequestHandler::class);
+
+$scope = $container->createScope();
+
+try {
+    // Both handlers share one RequestContext; the logger is the container-wide
+    // singleton.
+    $scope->get(RequestHandler::class)->handle();
+    $scope->get(RequestHandler::class)->handle();
+} finally {
+    $scope->dispose();
+}
+```
+
+Within a scope, services registered with `addScoped*` methods resolve to one
+instance per scope, and every dependency in their graph is resolved from the
+scope, so transient services requested from a scope also receive the scope's
+scoped instances. Singleton services resolve to the same instance no matter
+which scope requests them, and their dependencies always resolve against the
+root container — so a singleton that depends on a scoped service fails with a
+`ScopeException` instead of silently capturing one scope's instance.
+
+`dispose()` releases the scope's cached instances; any further request to the
+scope throws a `ScopeException`. Disposing a scope more than once has no
+effect.
+
+A service that needs to open scopes of its own should depend on
+`ScopeFactoryInterface` rather than on the container. The default `Container`
+implements this interface, so it can register itself:
+
+```php
+$container->addSingletonInstance(ScopeFactoryInterface::class, $container);
+
+final class QueueWorker
+{
+    public function __construct(private readonly ScopeFactoryInterface $scopes)
+    {
+    }
+
+    public function process(Message $message): void
+    {
+        $scope = $this->scopes->createScope();
+
+        try {
+            $scope->get(MessageHandler::class)->handle($message);
+        } finally {
+            $scope->dispose();
+        }
+    }
+}
+```
+
+Note that [nested containers](#nested-containers) added with
+`addSingletonContainer`/`addTransientContainer` (including namespace,
+interface, and attribute containers) construct instances with their own
+injector bound to the root container, so there are no `addScoped` variants of
+these methods: classes they provide cannot have per-scope dependencies.
 
 ### Adding services to the container
 
@@ -631,9 +715,14 @@ class EntityName
 #### Custom Lifetime Strategies
 
 Extend `LifetimeStrategy` and optionally extend `Container` with convenience
-methods for your new lifetime strategy. `get()` receives a `ResolutionContext`
-alongside the instance factory; a strategy that persists instances caches them
-in one of the context's `InstanceStore`s, keyed by the strategy itself.
+methods for your new lifetime strategy. `get()` receives the `ResolutionContext`
+of the resolution root (the root container or a scope) alongside the instance
+factory. A strategy that persists instances picks the context whose lifetime
+matches — the given context, or `rootContext()` for container-wide caching —
+then caches in that context's `InstanceStore`, keyed by the strategy itself, and
+invokes the factory with that same context so the instance's dependencies come
+from the root its lifetime is bound to. See `SingletonStrategy` and
+`ScopedStrategy` for the two built-in examples of this pattern.
 
 #### Custom Instance Providers
 

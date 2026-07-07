@@ -10,6 +10,8 @@ declare(strict_types=1);
 
 namespace Suhock\DependencyInjection\Lifetime;
 
+use Suhock\DependencyInjection\ResolutionContext;
+
 /**
  * Interface for classes that manage the lifetime of an object instance.
  *
@@ -28,10 +30,13 @@ abstract class LifetimeStrategy
     /**
      * Returns an instance of this strategy's class by invoking the given factory, based on the strategy's rules.
      *
-     * @param ResolutionContext $context The context of the resolution root requesting the instance, carrying the
-     * stores available for caching
-     * @param callable $factory A factory function that should be called when an instance of the class is needed
-     * @phpstan-param callable():TClass $factory
+     * A strategy that caches instances must invoke the factory with the same context whose store it caches in, so that
+     * the instance's dependencies are resolved from the root the instance's lifetime is bound to.
+     *
+     * @param ResolutionContext $context The context of the resolution root requesting the instance
+     * @param callable $factory A factory function that should be called when an instance of the class is needed,
+     * resolving the instance's dependencies from the context it is given
+     * @phpstan-param callable(ResolutionContext):TClass $factory
      *
      * @return TClass An instance of the class
      */

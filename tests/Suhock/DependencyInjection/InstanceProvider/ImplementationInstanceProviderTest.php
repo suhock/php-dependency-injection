@@ -21,7 +21,7 @@ use Suhock\DependencyInjection\Fakes\FakeClassNoConstructor;
  */
 final class ImplementationInstanceProviderTest extends AbstractDependencyInjectionTestCase
 {
-    public function testGet_WithValidSubclass_ReturnsInstanceOfSubclass(): void
+    public function testGet_WithValidSubclass_ReturnsInstanceFromContextContainer(): void
     {
         // Arrange
         $container = $this->createMock(ContainerInterface::class);
@@ -33,12 +33,11 @@ final class ImplementationInstanceProviderTest extends AbstractDependencyInjecti
 
         $factory = new ImplementationInstanceProvider(
             FakeBaseClass::class,
-            FakeClassExtendsBaseClass::class,
-            $container
+            FakeClassExtendsBaseClass::class
         );
 
         // Act
-        $instance = $factory->get();
+        $instance = $factory->get(self::createResolutionContext(container: $container));
 
         // Assert
         self::assertInstanceOf(FakeClassExtendsBaseClass::class, $instance);
@@ -49,8 +48,7 @@ final class ImplementationInstanceProviderTest extends AbstractDependencyInjecti
         // Arrange & Act
         $fn = fn () => new ImplementationInstanceProvider(
             FakeClassNoConstructor::class,
-            FakeClassNoConstructor::class,
-            self::createStub(ContainerInterface::class)
+            FakeClassNoConstructor::class
         );
 
         // Assert
@@ -66,8 +64,7 @@ final class ImplementationInstanceProviderTest extends AbstractDependencyInjecti
         // Arrange & Act
         $fn = fn () => new ImplementationInstanceProvider(
             FakeClassExtendsBaseClass::class,
-            FakeClassNoConstructor::class,
-            self::createStub(ContainerInterface::class)
+            FakeClassNoConstructor::class
         );
 
         // Assert

@@ -10,13 +10,14 @@ declare(strict_types=1);
 
 namespace Suhock\DependencyInjection\Lifetime;
 
-use PHPUnit\Framework\TestCase;
+use Suhock\DependencyInjection\AbstractDependencyInjectionTestCase;
 use Suhock\DependencyInjection\Fakes\FakeClassNoConstructor;
+use Suhock\DependencyInjection\ResolutionContext;
 
 /**
  * Test suite for {@see SingletonStrategy}.
  */
-final class SingletonStrategyTest extends TestCase
+final class SingletonStrategyTest extends AbstractDependencyInjectionTestCase
 {
     /**
      * @return SingletonStrategy<FakeClassNoConstructor>
@@ -30,7 +31,7 @@ final class SingletonStrategyTest extends TestCase
     {
         // Arrange
         $strategy = $this->createStrategy();
-        $context = new ResolutionContext(new InstanceStore());
+        $context = self::createResolutionContext();
 
         // Act
         $instance = $strategy->get($context, fn () => new FakeClassNoConstructor());
@@ -43,7 +44,7 @@ final class SingletonStrategyTest extends TestCase
     {
         // Arrange
         $strategy = $this->createStrategy();
-        $context = new ResolutionContext(new InstanceStore());
+        $context = self::createResolutionContext();
 
         // Act
         $firstInstance = $strategy->get($context, fn () => new FakeClassNoConstructor());
@@ -53,12 +54,12 @@ final class SingletonStrategyTest extends TestCase
         self::assertSame($firstInstance, $secondInstance);
     }
 
-    public function testGet_WithDistinctRootStores_ReturnsDistinctInstances(): void
+    public function testGet_WithDistinctRootContexts_ReturnsDistinctInstances(): void
     {
         // Arrange
         $strategy = $this->createStrategy();
-        $firstContext = new ResolutionContext(new InstanceStore());
-        $secondContext = new ResolutionContext(new InstanceStore());
+        $firstContext = self::createResolutionContext();
+        $secondContext = self::createResolutionContext();
 
         // Act
         $firstInstance = $strategy->get($firstContext, fn () => new FakeClassNoConstructor());
@@ -68,16 +69,46 @@ final class SingletonStrategyTest extends TestCase
         self::assertNotSame($firstInstance, $secondInstance);
     }
 
+    public function testGet_WithScopeContext_SharesInstanceWithRootContext(): void
+    {
+        // Arrange
+        $strategy = $this->createStrategy();
+        $rootContext = self::createResolutionContext();
+        $scopeContext = self::createScopeResolutionContext($rootContext);
+
+        // Act
+        $scopeInstance = $strategy->get($scopeContext, fn () => new FakeClassNoConstructor());
+        $rootInstance = $strategy->get($rootContext, fn () => new FakeClassNoConstructor());
+
+        // Assert
+        self::assertSame($scopeInstance, $rootInstance);
+    }
+
+    public function testGet_WithScopeContext_InvokesFactoryWithRootContext(): void
+    {
+        // Arrange
+        $strategy = $this->createStrategy();
+        $rootContext = self::createResolutionContext();
+        $scopeContext = self::createScopeResolutionContext($rootContext);
+
+        // Act
+        $strategy->get($scopeContext, function (ResolutionContext $factoryContext) use ($rootContext) {
+            // Assert
+            self::assertSame($rootContext, $factoryContext);
+
+            return new FakeClassNoConstructor();
+        });
+    }
+
     public function testGet_AfterInstanceRemovedFromStore_ReturnsFreshInstance(): void
     {
         // Arrange
         $strategy = $this->createStrategy();
-        $store = new InstanceStore();
-        $context = new ResolutionContext($store);
+        $context = self::createResolutionContext();
         $firstInstance = $strategy->get($context, fn () => new FakeClassNoConstructor());
 
         // Act
-        $store->remove($strategy);
+        $context->store->remove($strategy);
         $secondInstance = $strategy->get($context, fn () => new FakeClassNoConstructor());
 
         // Assert

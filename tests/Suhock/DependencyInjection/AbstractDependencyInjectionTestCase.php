@@ -14,6 +14,7 @@ use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\TestCase;
 use Suhock\DependencyInjection\InstanceProvider\ImplementationException;
 use Suhock\DependencyInjection\InstanceProvider\InstanceTypeException;
+use Suhock\DependencyInjection\Lifetime\InstanceStore;
 use Suhock\DependencyInjection\Resolver\ParameterResolutionException;
 use Throwable;
 
@@ -22,6 +23,33 @@ use Throwable;
  */
 abstract class AbstractDependencyInjectionTestCase extends TestCase
 {
+    /**
+     * Creates a root resolution context for exercising lifetime strategies and instance providers directly.
+     */
+    protected static function createResolutionContext(
+        ?ContainerInterface $container = null,
+        ?InjectorInterface $injector = null
+    ): ResolutionContext {
+        return new ResolutionContext(
+            $container ?? self::createStub(ContainerInterface::class),
+            $injector ?? self::createStub(InjectorInterface::class),
+            new InstanceStore()
+        );
+    }
+
+    /**
+     * Creates a scope resolution context whose root is the given context, for exercising lifetime strategies directly.
+     */
+    protected static function createScopeResolutionContext(ResolutionContext $rootContext): ResolutionContext
+    {
+        return new ResolutionContext(
+            self::createStub(ContainerInterface::class),
+            self::createStub(InjectorInterface::class),
+            new InstanceStore(),
+            $rootContext
+        );
+    }
+
     /**
      * @template TClass of Throwable
      *

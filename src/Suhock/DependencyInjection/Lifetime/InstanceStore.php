@@ -13,8 +13,7 @@ namespace Suhock\DependencyInjection\Lifetime;
 use function spl_object_id;
 
 /**
- * Holds the instances cached by lifetime strategies on behalf of a resolution root (a container or, eventually, a
- * scope). Slots are keyed by strategy instance identity, so a strategy shared across multiple registrations shares one
+ * Holds the instances cached by lifetime strategies on behalf of a resolution root (a container or a scope). Slots are keyed by strategy instance identity, so a strategy shared across multiple registrations shares one
  * slot. Identity-keying is safe because the registration owning a live slot also owns the strategy, keeping it from
  * being collected and its id from being reused; a resolution root evicting a registration must therefore also call
  * {@see remove()}.
@@ -50,5 +49,13 @@ final class InstanceStore
     public function remove(LifetimeStrategy $strategy): void
     {
         unset($this->instances[spl_object_id($strategy)]);
+    }
+
+    /**
+     * Discards all cached instances.
+     */
+    public function clear(): void
+    {
+        $this->instances = [];
     }
 }

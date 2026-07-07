@@ -27,17 +27,17 @@ final class ClosureInstanceProviderTest extends AbstractDependencyInjectionTestC
         // Arrange
         $factory = new ClosureInstanceProvider(
             FakeClassNoConstructor::class,
-            $factoryMethod = static fn () => new FakeClassNoConstructor(),
-            $injector = $this->createMock(InjectorInterface::class)
+            $factoryMethod = static fn () => new FakeClassNoConstructor()
         );
 
+        $injector = $this->createMock(InjectorInterface::class);
         $injector->expects($this->once())
             ->method('call')
             ->with($factoryMethod)
             ->willReturnCallback(fn () => $factoryMethod());
 
         // Act
-        $instance = $factory->get();
+        $instance = $factory->get(self::createResolutionContext(injector: $injector));
 
         // Assert
         self::assertInstanceOf(FakeClassNoConstructor::class, $instance);
@@ -48,17 +48,19 @@ final class ClosureInstanceProviderTest extends AbstractDependencyInjectionTestC
         // Arrange
         $factory = new ClosureInstanceProvider(
             FakeClassNoConstructor::class,
-            $factoryMethod = static fn () => null,
-            $injector = $this->createMock(InjectorInterface::class)
+            $factoryMethod = static fn () => null
         );
 
+        $injector = $this->createMock(InjectorInterface::class);
         $injector->expects($this->once())
             ->method('call')
             ->with($factoryMethod)
             ->willReturnCallback(fn () => $factoryMethod());
 
+        $context = self::createResolutionContext(injector: $injector);
+
         // Act
-        $fn = static fn () => $factory->get();
+        $fn = static fn () => $factory->get($context);
 
         // Assert
         self::assertThrowsInstanceTypeException(
@@ -73,12 +75,15 @@ final class ClosureInstanceProviderTest extends AbstractDependencyInjectionTestC
         // Arrange
         $factory = new ClosureInstanceProvider(
             FakeClassExtendsBaseClass::class,
-            fn () => new FakeClassNoConstructor(),
-            Injector::createDefault(self::createStub(ContainerInterface::class))
+            fn () => new FakeClassNoConstructor()
+        );
+
+        $context = self::createResolutionContext(
+            injector: Injector::createDefault(self::createStub(ContainerInterface::class))
         );
 
         // Act
-        $fn = static fn () => $factory->get();
+        $fn = static fn () => $factory->get($context);
 
         // Assert
         self::assertThrowsInstanceTypeException(

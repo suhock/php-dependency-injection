@@ -11,11 +11,11 @@ declare(strict_types=1);
 namespace Suhock\DependencyInjection\InstanceProvider;
 
 use Suhock\DependencyInjection\ClassNotFoundException;
-use Suhock\DependencyInjection\ContainerInterface;
+use Suhock\DependencyInjection\ResolutionContext;
 
 /**
  * Factory that provides instances of a class by requesting an instance of a concrete implementation of that class from
- * the container.
+ * the resolution root's container.
  *
  * @template TClass of object
  * @template-implements InstanceProviderInterface<TClass>
@@ -32,8 +32,7 @@ final class ImplementationInstanceProvider implements InstanceProviderInterface
      */
     public function __construct(
         string $className,
-        private readonly string $implementationClassName,
-        private readonly ContainerInterface $container
+        private readonly string $implementationClassName
     ) {
         if (!is_subclass_of($implementationClassName, $className)) {
             throw new ImplementationException($className, $this->implementationClassName);
@@ -45,8 +44,8 @@ final class ImplementationInstanceProvider implements InstanceProviderInterface
      * @return TClass An instance of the class
      * @throws ClassNotFoundException If the container could not resolve a value for the specified class
      */
-    public function get(): object
+    public function get(ResolutionContext $context): object
     {
-        return $this->container->get($this->implementationClassName);
+        return $context->container->get($this->implementationClassName);
     }
 }

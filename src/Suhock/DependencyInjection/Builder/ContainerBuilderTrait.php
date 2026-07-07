@@ -93,7 +93,7 @@ trait ContainerBuilderTrait
     public function addContainer(ContainerInterface $container, callable $lifetimeStrategyFactory): static
     {
         $this->addContainerDescriptor(
-            new ContainerDescriptor($container, $this->getInjector(), $lifetimeStrategyFactory(...))
+            new ContainerDescriptor($container, $lifetimeStrategyFactory(...))
         );
 
         return $this;

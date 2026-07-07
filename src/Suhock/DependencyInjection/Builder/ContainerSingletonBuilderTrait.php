@@ -43,7 +43,7 @@ trait ContainerSingletonBuilderTrait
     {
         $this->addSingletonInstanceProvider(
             $className,
-            InstanceProviderFactory::createInstanceProvider($this->getInjector(), $this, $className, $source)
+            InstanceProviderFactory::createInstanceProvider($className, $source)
         );
 
         return $this;
@@ -64,7 +64,7 @@ trait ContainerSingletonBuilderTrait
             $className,
             $key,
             new SingletonStrategy($className),
-            InstanceProviderFactory::createInstanceProvider($this->getInjector(), $this, $className, $source)
+            InstanceProviderFactory::createInstanceProvider($className, $source)
         );
     }
 
@@ -96,7 +96,7 @@ trait ContainerSingletonBuilderTrait
     {
         $this->addSingletonInstanceProvider(
             $className,
-            InstanceProviderFactory::createClassInstanceProvider($this->getInjector(), $className, $mutator)
+            InstanceProviderFactory::createClassInstanceProvider($className, $mutator)
         );
 
         return $this;
@@ -110,7 +110,7 @@ trait ContainerSingletonBuilderTrait
     {
         $this->addSingletonInstanceProvider(
             $className,
-            InstanceProviderFactory::createImplementationInstanceProvider($this, $className, $implementationClassName)
+            InstanceProviderFactory::createImplementationInstanceProvider($className, $implementationClassName)
         );
 
         return $this;
@@ -125,7 +125,7 @@ trait ContainerSingletonBuilderTrait
     {
         $this->addSingletonInstanceProvider(
             $className,
-            InstanceProviderFactory::createClosureInstanceProvider($this->getInjector(), $className, $factory(...))
+            InstanceProviderFactory::createClosureInstanceProvider($className, $factory(...))
         );
 
         return $this;

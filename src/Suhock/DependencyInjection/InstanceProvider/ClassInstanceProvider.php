@@ -15,7 +15,7 @@ use ReflectionFunction;
 use ReflectionNamedType;
 use ReflectionUnionType;
 use Suhock\DependencyInjection\DependencyInjectionException;
-use Suhock\DependencyInjection\InjectorInterface;
+use Suhock\DependencyInjection\ResolutionContext;
 
 /**
  * Factory that provides instances of a class by directly instantiating the class.
@@ -30,30 +30,29 @@ final class ClassInstanceProvider implements InstanceProviderInterface
 
     /**
      * @param class-string<TClass> $className The name of the class this factory will instantiate
-     * @param InjectorInterface $injector The injector that will be used for instantiation
      * @param Closure|callable-string|null $mutator [optional] Mutator function that allows additional changes to the
      * instantiated instance. The first parameter will be the new object instance. Any other parameters will be
      * injected.
      */
     public function __construct(
         private readonly string $className,
-        private readonly InjectorInterface $injector,
         ?callable $mutator = null
     ) {
         $this->mutator = $mutator !== null ? $mutator(...) : null;
     }
 
     /**
+     * @inheritDoc
      * @return TClass A new instance of {@see $className}
      * @throws DependencyInjectionException If there was an error resolving values for the constructor parameters or
      * invoking the constructor
      */
-    public function get(): object
+    public function get(ResolutionContext $context): object
     {
-        $instance = $this->injector->instantiate($this->className);
+        $instance = $context->injector->instantiate($this->className);
 
         if ($this->mutator !== null) {
-            $this->injector->call($this->mutator, [$instance]);
+            $context->injector->call($this->mutator, [$instance]);
         }
 
         return $instance;
