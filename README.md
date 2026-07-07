@@ -195,8 +195,6 @@ created.
 If needed, can also specify your own custom
 [instance providers](#custom-instance-providers).
 
-This document uses a modified PHP syntax for conveying API information.
-
 #### Inject a class
 
 The container will construct classes by calling the class's constructor,
@@ -211,19 +209,23 @@ after the container has initialized it. The callback must take an instance of
 the class as its first parameter. Additional parameters will be injected.
 
 ```php
-callable<TClass> Mutator(TClass $instance, [object|null ...]): void;
-
 class Container
 {
-    function addSingletonClass<TClass>(
-        string<TClass> $className,
-        Mutator<TClass>|null $mutator = null
-    ): static;
+    /**
+     * @template TClass of object
+     * @param class-string<TClass> $className
+     * @param (callable(TClass, mixed...): void)|null $mutator
+     * @return $this
+     */
+    public function addSingletonClass(string $className, ?callable $mutator = null): static;
 
-    function addTransientClass<TClass>(
-        string<TClass> $className,
-        Mutator<TClass>|null $mutator = null
-    ): static;
+    /**
+     * @template TClass of object
+     * @param class-string<TClass> $className
+     * @param (callable(TClass, mixed...): void)|null $mutator
+     * @return $this
+     */
+    public function addTransientClass(string $className, ?callable $mutator = null): static;
 }
 ```
 
@@ -282,15 +284,23 @@ class to the container.
 ```php
 class Container
 {
-    function addSingletonImplementation<TClass, TImpl of TClass>(
-        string<TClass> $className,
-        string<TImpl> $implementationClassName
-    ): static;
+    /**
+     * @template TClass of object
+     * @template TImplementation of TClass
+     * @param class-string<TClass> $className
+     * @param class-string<TImplementation> $implementationClassName
+     * @return $this
+     */
+    public function addSingletonImplementation(string $className, string $implementationClassName): static;
 
-    function addTransientImplementation<TClass, TImpl of TClass>(
-        string<TClass> $className,
-        string<IImpl> $implementationClassName
-    ): static;
+    /**
+     * @template TClass of object
+     * @template TImplementation of TClass
+     * @param class-string<TClass> $className
+     * @param class-string<TImplementation> $implementationClassName
+     * @return $this
+     */
+    public function addTransientImplementation(string $className, string $implementationClassName): static;
 }
 ```
 
@@ -346,19 +356,23 @@ The container will provide class instances by requesting them from a factory
 method. Any parameters in the factory method will be injected.
 
 ```php
-callable<TClass> FactoryMethod([object|null ...]): TClass;
-
 class Container
 {
-    function addSingletonFactory<TClass>(
-        string<TClass> $className,
-        FactoryMethod<TClass> $factory
-    ): static;
+    /**
+     * @template TClass of object
+     * @param class-string<TClass> $className
+     * @param callable(mixed...): TClass $factory
+     * @return $this
+     */
+    public function addSingletonFactory(string $className, callable $factory): static;
 
-    function addTransientFactory<TClass>(
-        string<TClass> $className,
-        FactoryMethod<TClass> $factory
-    ): static;
+    /**
+     * @template TClass of object
+     * @param class-string<TClass> $className
+     * @param callable(mixed...): TClass $factory
+     * @return $this
+     */
+    public function addTransientFactory(string $className, callable $factory): static;
 }
 ```
 
@@ -403,10 +417,13 @@ The container will provide a pre-constructed instance of a class.
 ```php
 class Container
 {
-    function addSingletonInstance<TClass>(
-        string<TClass> $className,
-        TClass $instance
-    ): static;
+    /**
+     * @template TClass of object
+     * @param class-string<TClass> $className
+     * @param TClass $instance
+     * @return $this
+     */
+    public function addSingletonInstance(string $className, object $instance): static;
 }
 ```
 
@@ -443,22 +460,19 @@ take the name of the class being instantiated as the first parameter. The outer
 container will provide any additional dependencies.
 
 ```php
-callable ClassFactory<TClass>(
-    string<TClass> $className,
-    object|null ...$dependencies
-): TClass;
-
 class Container
 {
-    function addSingletonNamespace(
-        string $namespace,
-        ClassFactory|null $factory = null
-    ): static;
+    /**
+     * @param (callable(class-string, mixed...): object)|null $factory
+     * @return $this
+     */
+    public function addSingletonNamespace(string $namespace, ?callable $factory = null): static;
 
-    function addTransientNamespace(
-        string $namespace,
-        ClassFactory|null $factory = null
-    ): static;
+    /**
+     * @param (callable(class-string, mixed...): object)|null $factory
+     * @return $this
+     */
+    public function addTransientNamespace(string $namespace, ?callable $factory = null): static;
 }
 ```
 
@@ -494,22 +508,23 @@ The factory must take the class name as the first parameter. The outer container
 will provide any additional dependencies.
 
 ```php
-callable<TClass> ImplementationFactory<TImpl of TClass>(
-    string<TImpl> $className,
-    [object|null ...]
-): TImpl;
-
 class Container
 {
-    function addSingletonInterface<TInterface>(
-        string<TInterface> $className,
-        ImplementationFactory<TClass>|null $factory = null
-    ): static;
+    /**
+     * @template TInterface of object
+     * @param class-string<TInterface> $interfaceName
+     * @param (callable(class-string<TInterface>, mixed...): TInterface)|null $factory
+     * @return $this
+     */
+    public function addSingletonInterface(string $interfaceName, ?callable $factory = null): static;
 
-    function addTransientInterface<TInterface>(
-        string<TInterface> $className,
-        ImplementationFactory<TClass>|null $factory = null
-    ): static;
+    /**
+     * @template TInterface of object
+     * @param class-string<TInterface> $interfaceName
+     * @param (callable(class-string<TInterface>, mixed...): TInterface)|null $factory
+     * @return $this
+     */
+    public function addTransientInterface(string $interfaceName, ?callable $factory = null): static;
 }
 ```
 
@@ -553,23 +568,23 @@ class name as the first parameter and an attribute instance as the second.
 The outer container will provide any additional dependencies.
 
 ```php
-callable<TAttr> AttributeClassFactory<TClass>(
-    string<TClass> $className,
-    TAttr $attributeInstance,
-    [object|null ...]
-): TClass;
-
 class Container
 {
-    function addSingletonAttribute<TAttr>(
-        string<TAttr> $attributeName,
-        AttributeClassFactory<TAttr>|null $factory = null
-    ): static;
+    /**
+     * @template TAttribute of object
+     * @param class-string<TAttribute> $attributeName
+     * @param (callable(class-string, TAttribute, mixed...): object)|null $factory
+     * @return $this
+     */
+    public function addSingletonAttribute(string $attributeName, ?callable $factory = null): static;
 
-    function addTransientAttribute<TAttr>(
-        string<TAttr> $attributeName,
-        AttributeClassFactory<TAttr>|null $factory = null
-    ): static;
+    /**
+     * @template TAttribute of object
+     * @param class-string<TAttribute> $attributeName
+     * @param (callable(class-string, TAttribute, mixed...): object)|null $factory
+     * @return $this
+     */
+    public function addTransientAttribute(string $attributeName, ?callable $factory = null): static;
 }
 ```
 
@@ -615,32 +630,51 @@ class EntityName
 
 #### Custom Lifetime Strategies
 
-Implement `LifetimeStrategy` and optionally extend `Container` with convenience
+Extend `LifetimeStrategy` and optionally extend `Container` with convenience
 methods for your new lifetime strategy.
 
 #### Custom Instance Providers
 
-Implement `InstanceProvider` and add it to your container using one of the basic
-add methods. You can also extend `Container` to add convenience methods for
-using your new instance provider.
+Implement `InstanceProviderInterface` and add it to your container using one of
+the basic add methods. You can also extend `Container` to add convenience
+methods for using your new instance provider.
 
 ```php
 class Container
 {
-    public function add<TClass>(
-        string<TClass> $className,
-        LifetimeStrategy<TClass> $lifetimeStrategy,
-        InstanceProvider $instanceProvider
+    /**
+     * @template TClass of object
+     * @param class-string<TClass> $className
+     * @param LifetimeStrategy<TClass> $lifetimeStrategy
+     * @param InstanceProviderInterface<TClass> $instanceProvider
+     * @return $this
+     */
+    public function add(
+        string $className,
+        LifetimeStrategy $lifetimeStrategy,
+        InstanceProviderInterface $instanceProvider
     ): static;
 
-    public function addSingleton<TClass>(
-        string<TClass> $className,
-        InstanceProvider $instanceProvider
+    /**
+     * @template TClass of object
+     * @param class-string<TClass> $className
+     * @param InstanceProviderInterface<TClass> $instanceProvider
+     * @return $this
+     */
+    public function addSingletonInstanceProvider(
+        string $className,
+        InstanceProviderInterface $instanceProvider
     ): static;
 
-    public function addTransient<TClass>(
-        string<TClass> $className,
-        InstanceProvider $instanceProvider
+    /**
+     * @template TClass of object
+     * @param class-string<TClass> $className
+     * @param InstanceProviderInterface<TClass> $instanceProvider
+     * @return $this
+     */
+    public function addTransientInstanceProvider(
+        string $className,
+        InstanceProviderInterface $instanceProvider
     ): static;
 }
 ```
@@ -652,24 +686,26 @@ methods below. If your custom container needs to be able to inject dependencies 
 you can pass in the outer container to its constructor.
 
 ```php
-callable LifetimeStrategyFactory<TClass>(
-    string<TClass> $className
-): LifetimeStrategy<TClass>;
-
 class Container
 {
+    /**
+     * @param callable(class-string): LifetimeStrategy<object> $lifetimeStrategyFactory
+     * @return $this
+     */
     public function addContainer(
         ContainerInterface $container,
-        LifetimeStrategyFactory $lifetimeStrategyFactory
+        callable $lifetimeStrategyFactory
     ): static;
 
-    public function addSingletonContainer(
-        ContainerInterface $container
-    ): static;
+    /**
+     * @return $this
+     */
+    public function addSingletonContainer(ContainerInterface $container): static;
 
-    public function addTransientContainer(
-        ContainerInterface $container
-    ): static;
+    /**
+     * @return $this
+     */
+    public function addTransientContainer(ContainerInterface $container): static;
 }
 ```
 
@@ -691,27 +727,40 @@ of one another.
 ```php
 class Container
 {
-    function addKeyedSingleton<TClass, TImpl of TClass>(
-        string<TClass> $className,
-        string|UnitEnum $key,
-        string<TImpl>|TClass|FactoryMethod<TClass>|null $source = null
-    ): static;
-
-    function addKeyedTransient<TClass, TImpl of TClass>(
-        string<TClass> $className,
-        string|UnitEnum $key,
-        string<TImpl>|FactoryMethod<TClass>|null $source = null
-    ): static;
-
-    function get<TClass>(
-        string<TClass> $className,
-        string|UnitEnum|null $key = null
-    ): TClass;
-
-    function has(
+    /**
+     * @template TClass of object
+     * @template TImplementation of TClass
+     * @param class-string<TClass> $className
+     * @param class-string<TImplementation>|(Closure(mixed...): TClass)|TClass|null $source
+     * @return $this
+     */
+    public function addKeyedSingleton(
         string $className,
-        string|UnitEnum|null $key = null
-    ): bool;
+        string|UnitEnum $key,
+        string|object|null $source = null
+    ): static;
+
+    /**
+     * @template TClass of object
+     * @template TImplementation of TClass
+     * @param class-string<TClass> $className
+     * @param class-string<TImplementation>|(Closure(mixed...): TClass)|null $source
+     * @return $this
+     */
+    public function addKeyedTransient(
+        string $className,
+        string|UnitEnum $key,
+        string|Closure|null $source = null
+    ): static;
+
+    /**
+     * @template TClass of object
+     * @param class-string<TClass> $className
+     * @return TClass
+     */
+    public function get(string $className, string|UnitEnum|null $key = null): object;
+
+    public function has(string $className, string|UnitEnum|null $key = null): bool;
 }
 ```
 
@@ -781,19 +830,23 @@ container. The injector also lets you directly inject specific values for named
 or indexed parameters.
 
 ```php
-callable<TResult of mixed> InjectableFunction([... mixed]): TResult;
-
 class Injector
 {
-    public function call<TResult>(
-        InjectableFunction<TResult> $function,
-        array<int|string, mixed> $params = []
-    ): TResult;
-    
-    public function instantiate<TClass>(
-        string<TClass> $className,
-        array<int|string, mixed> $params = []
-    ): TClass;
+    /**
+     * @template TResult
+     * @param callable(mixed...): TResult $function
+     * @param array<int|string, mixed> $params
+     * @return TResult
+     */
+    public function call(callable $function, array $params = []): mixed;
+
+    /**
+     * @template TClass of object
+     * @param class-string<TClass> $className
+     * @param array<int|string, mixed> $params
+     * @return TClass
+     */
+    public function instantiate(string $className, array $params = []): object;
 }
 ```
 
