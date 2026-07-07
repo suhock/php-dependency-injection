@@ -14,7 +14,7 @@ use Suhock\DependencyInjection\Lifetime\InstanceStore;
 use UnitEnum;
 
 /**
- * A scope created by {@see Container::createScope()}. The scope shares the root container's service registrations but
+ * A scope created by {@see Container::createScope()}. The scope shares the root container's service descriptors but
  * owns its own instance store and injector, so scoped services are instantiated once per scope and their dependencies
  * resolve from the scope. Singleton services continue to resolve from the root container regardless of which scope
  * requests them.

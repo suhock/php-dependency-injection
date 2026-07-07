@@ -12,7 +12,7 @@ namespace Suhock\DependencyInjection;
 
 /**
  * Interface for a scope: a resolution root with a bounded lifetime, created by a {@see ScopeFactoryInterface}. A scope
- * resolves the same services as the container that created it, but services registered with a scoped lifetime are
+ * resolves the same services as the container that created it, but services added with a scoped lifetime are
  * instantiated once per scope, and their dependencies are resolved from the scope rather than the root container.
  */
 interface ScopeInterface extends ContainerInterface

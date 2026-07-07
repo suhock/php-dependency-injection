@@ -14,10 +14,10 @@ $container->addSingletonClass(MyApplication::class)
 Out of the box, this library provides [singleton](#singleton),
 [scoped](#scoped), and [transient](#transient) lifetime strategies and a
 variety ways of
-[registering services](#adding-services-to-the-container) of specific
+[adding services](#adding-services-to-the-container) of specific
 types, as well as specifying factories for all classes in a particular
 [namespace](#namespace-container) or implementing a specific
-[interface](#interface-container). You can also register more than one
+[interface](#interface-container). You can also add more than one
 implementation of the same type as [keyed services](#keyed-services). You can
 easily extend the default `Container` implementation with your own custom
 lifetime strategies, instance providers, or nested containers to fit your needs.
@@ -222,7 +222,7 @@ try {
 }
 ```
 
-Within a scope, services registered with `addScoped*` methods resolve to one
+Within a scope, services added with `addScoped*` methods resolve to one
 instance per scope, and every dependency in their graph is resolved from the
 scope, so transient services requested from a scope also receive the scope's
 scoped instances. Singleton services resolve to the same instance no matter
@@ -236,7 +236,7 @@ effect.
 
 A service that needs to open scopes of its own should depend on
 `ScopeFactoryInterface` rather than on the container. The default `Container`
-implements this interface, so it can register itself:
+implements this interface, so it can add itself:
 
 ```php
 $container->addSingletonInstance(ScopeFactoryInterface::class, $container);
@@ -802,17 +802,17 @@ class Container
 
 ## Keyed services
 
-An application sometimes needs more than one registration for the same type. For
-example, you might want a separate `Settings` object for different areas of your
-application. Keyed services let you register multiple factories for a class under
-distinct keys and then retrieve or inject a specific one. Keys can be strings or
-enum values. To help ease analysis and future refactorings, enums or string-typed
-constants are recommended.
+An application sometimes needs to provide the same type in more than one
+configuration. For example, you might want a separate `Settings` object for
+different areas of your application. Keyed services let you add multiple
+factories for a class under distinct keys and then retrieve or inject a specific
+one. Keys can be strings or enum values. To help ease analysis and future
+refactorings, enums or string-typed constants are recommended.
 
-A keyed registration is resolved only by its exact key. If the container has no
-registration for the requested key, it will throw a `ClassNotFoundException`
-rather than falling back to the unkeyed registration. A class may have both an
-unkeyed registration and any number of keyed registrations; they are independent
+A keyed service is resolved only by its exact key. If the container has no
+service under the requested key, it will throw a `ClassNotFoundException`
+rather than falling back to the unkeyed service. A class may have both an
+unkeyed service and any number of keyed services; they are independent
 of one another.
 
 ```php
@@ -865,7 +865,7 @@ The `$source` parameter determines how the container provides the instance:
 
 ### Examples
 
-#### Registering and retrieving keyed services
+#### Adding and retrieving keyed services
 
 ```php
 $container
@@ -879,18 +879,18 @@ $container
         fn () => JsonSettings::fromFile('admin.json')
     );
 
-// Resolves the unkeyed Settings registration.
+// Resolves the unkeyed Settings service.
 $settings = $container->get(Settings::class);
 
-// Resolves the Settings registration under the 'admin' key.
+// Resolves the Settings service under the 'admin' key.
 $adminSettings = $container->get(Settings::class, 'admin');
 ```
 
 #### Injecting a keyed service
 
-Apply the `Key` attribute to a constructor parameter to inject the registration
+Apply the `Key` attribute to a constructor parameter to inject the service added
 under a specific key. As with `get()`, the lookup is absolute: if the container
-has no registration for the key, it will throw a `ParameterResolutionException`.
+has no service under the key, it will throw a `ParameterResolutionException`.
 
 ```php
 use Suhock\DependencyInjection\Key;
@@ -899,12 +899,12 @@ class AdminController
 {
     public function __construct(
         /*
-         * Resolved from the unkeyed Settings registration.
+         * Resolved from the unkeyed Settings service.
          */
         private readonly Settings $settings,
 
         /*
-         * Resolved from the Settings registration under the 'admin' key.
+         * Resolved from the Settings service under the 'admin' key.
          */
         #[Key('admin')]
         private readonly Settings $adminSettings

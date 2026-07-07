@@ -72,7 +72,8 @@ abstract class AbstractContainerParameterResolver implements ParameterResolverIn
 
     /**
      * Resolves a single conjunction: the first available member whose instance satisfies every member type. For a
-     * lone class that is simply "resolve it if registered"; for an intersection it enforces the is-a-all check.
+     * lone class that is simply "resolve it if the container has it"; for an intersection it enforces the is-a-all
+     * check.
      *
      * @param non-empty-list<class-string> $alternative
      */
