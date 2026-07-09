@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Copyright (c) 2022-2026 Matthew Suhocki. All rights reserved.
  *
@@ -13,12 +14,12 @@ namespace Suhock\DependencyInjection\Resolver;
 use Suhock\DependencyInjection\AbstractDependencyInjectionTestCase;
 use Suhock\DependencyInjection\Container;
 use Suhock\DependencyInjection\ContainerInterface;
-use Suhock\DependencyInjection\Injector;
-use Suhock\DependencyInjection\Injection\InjectAttributeMemberInjector;
-use Suhock\DependencyInjection\Key;
 use Suhock\DependencyInjection\Fakes\FakeClassNoConstructor;
 use Suhock\DependencyInjection\Fakes\FakeUnitEnum;
+use Suhock\DependencyInjection\Injection\InjectAttributeMemberInjector;
+use Suhock\DependencyInjection\Injector;
 use Suhock\DependencyInjection\Instantiation\ReflectionInstantiationStrategy;
+use Suhock\DependencyInjection\Key;
 
 /**
  * Test suite for {@see ContainerParameterResolver}.

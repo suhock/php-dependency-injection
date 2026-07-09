@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Copyright (c) 2022-2026 Matthew Suhocki. All rights reserved.
  *
@@ -14,8 +15,9 @@ use ReflectionClass;
 use ReflectionException;
 use Suhock\DependencyInjection\Cache\CacheInterface;
 use Suhock\DependencyInjection\Cache\MetadataCache;
-use Suhock\DependencyInjection\Resolver\TypeParameterResolverInterface;
 use Suhock\DependencyInjection\Resolver\ResolvableDependency;
+use Suhock\DependencyInjection\Resolver\TypeParameterResolverInterface;
+
 use function array_key_exists;
 
 /**

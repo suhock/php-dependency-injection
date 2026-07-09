@@ -17,8 +17,6 @@ use PHPUnit\Framework\Attributes\RequiresPhp;
 use ReflectionParameter;
 use ReflectionProperty;
 use RuntimeException;
-use Suhock\DependencyInjection\Injection\InjectAttributeMemberInjector;
-use Suhock\DependencyInjection\Resolver\ContainerParameterResolver;
 use Suhock\DependencyInjection\Fakes\FakeAbstractClass;
 use Suhock\DependencyInjection\Fakes\FakeClassImplementsInterfaces;
 use Suhock\DependencyInjection\Fakes\FakeClassNoConstructor;
@@ -37,10 +35,12 @@ use Suhock\DependencyInjection\Fakes\FakeContainer;
 use Suhock\DependencyInjection\Fakes\FakeInterfaceOne;
 use Suhock\DependencyInjection\Fakes\FakeInterfaceThree;
 use Suhock\DependencyInjection\Fakes\FakeInterfaceTwo;
+use Suhock\DependencyInjection\Injection\InjectAttributeMemberInjector;
 use Suhock\DependencyInjection\Instantiation\ChainedInstantiationStrategy;
 use Suhock\DependencyInjection\Instantiation\InstantiationStrategyInterface;
 use Suhock\DependencyInjection\Instantiation\PostInstantiationHookInterface;
 use Suhock\DependencyInjection\Instantiation\ReflectionInstantiationStrategy;
+use Suhock\DependencyInjection\Resolver\ContainerParameterResolver;
 use Suhock\DependencyInjection\Resolver\ParameterResolverInterface;
 use Suhock\DependencyInjection\Resolver\PropertyResolutionException;
 use Throwable;
@@ -284,7 +284,7 @@ final class InjectorTest extends AbstractDependencyInjectionTestCase
     public function testInstantiate_WithCustomPostInstantiationHook_AppliesHookToInstance(): void
     {
         // Arrange: a spy hook records the instances it is applied to.
-        $spy = new class implements PostInstantiationHookInterface {
+        $spy = new class () implements PostInstantiationHookInterface {
             /** @var list<object> */
             public array $injected = [];
 

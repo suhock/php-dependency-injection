@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Copyright (c) 2022-2026 Matthew Suhocki. All rights reserved.
  *
@@ -11,6 +12,7 @@ declare(strict_types=1);
 namespace Suhock\DependencyInjection\Cache;
 
 use RuntimeException;
+
 use function apcu_enabled;
 use function apcu_fetch;
 use function apcu_store;

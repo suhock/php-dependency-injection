@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Copyright (c) 2022-2023 Matthew Suhocki. All rights reserved.
  *

@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Copyright (c) 2022-2026 Matthew Suhocki. All rights reserved.
  *
@@ -10,8 +11,8 @@ declare(strict_types=1);
 
 namespace Suhock\DependencyInjection\Descriptor;
 
-use Suhock\DependencyInjection\Lifetime\LifetimeStrategy;
 use Suhock\DependencyInjection\InstanceProvider\InstanceProviderInterface;
+use Suhock\DependencyInjection\Lifetime\LifetimeStrategy;
 
 /**
  * Contains information about how to resolve a service. A descriptor must remain immutable so that it can be shared by

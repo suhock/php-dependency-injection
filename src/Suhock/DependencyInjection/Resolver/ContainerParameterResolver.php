@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Copyright (c) 2022-2026 Matthew Suhocki. All rights reserved.
  *
@@ -15,6 +16,7 @@ use ReflectionParameter;
 use Suhock\DependencyInjection\ContainerInterface;
 use Suhock\DependencyInjection\Key;
 use UnitEnum;
+
 use function count;
 
 /**

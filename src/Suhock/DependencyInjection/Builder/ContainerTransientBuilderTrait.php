@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Copyright (c) 2022-2026 Matthew Suhocki. All rights reserved.
  *
@@ -14,11 +15,11 @@ use Closure;
 use Suhock\DependencyInjection\AttributeContainer;
 use Suhock\DependencyInjection\ContainerInterface;
 use Suhock\DependencyInjection\InjectorInterface;
-use Suhock\DependencyInjection\InterfaceContainer;
-use Suhock\DependencyInjection\NamespaceContainer;
-use Suhock\DependencyInjection\Lifetime\TransientStrategy;
 use Suhock\DependencyInjection\InstanceProvider\InstanceProviderFactory;
 use Suhock\DependencyInjection\InstanceProvider\InstanceProviderInterface;
+use Suhock\DependencyInjection\InterfaceContainer;
+use Suhock\DependencyInjection\Lifetime\TransientStrategy;
+use Suhock\DependencyInjection\NamespaceContainer;
 use UnitEnum;
 
 /**
@@ -195,7 +196,7 @@ trait ContainerTransientBuilderTrait
         $this->addContainer(
             $container,
             /** @param class-string $className */
-            fn(string $className) => new TransientStrategy($className)
+            fn (string $className) => new TransientStrategy($className)
         );
 
         return $this;

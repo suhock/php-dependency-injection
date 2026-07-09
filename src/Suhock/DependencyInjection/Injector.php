@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Copyright (c) 2022-2026 Matthew Suhocki. All rights reserved.
  *
@@ -12,13 +13,13 @@ namespace Suhock\DependencyInjection;
 
 use ReflectionFunction;
 use Suhock\DependencyInjection\Cache\CacheInterface;
-use Suhock\DependencyInjection\Resolver\ArgumentResolver;
+use Suhock\DependencyInjection\Injection\InjectAttributeMemberInjector;
 use Suhock\DependencyInjection\Instantiation\ChainedInstantiationStrategy;
 use Suhock\DependencyInjection\Instantiation\FastPathInstantiationStrategy;
-use Suhock\DependencyInjection\Injection\InjectAttributeMemberInjector;
 use Suhock\DependencyInjection\Instantiation\InstantiationStrategyInterface;
 use Suhock\DependencyInjection\Instantiation\PostInstantiationHookInterface;
 use Suhock\DependencyInjection\Instantiation\ReflectionInstantiationStrategy;
+use Suhock\DependencyInjection\Resolver\ArgumentResolver;
 use Suhock\DependencyInjection\Resolver\ContainerParameterResolver;
 use Suhock\DependencyInjection\Resolver\ParameterResolverInterface;
 use Suhock\DependencyInjection\Resolver\TypeParameterResolverInterface;

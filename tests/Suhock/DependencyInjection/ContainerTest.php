@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Copyright (c) 2022-2026 Matthew Suhocki. All rights reserved.
  *
@@ -14,8 +15,8 @@ use Suhock\DependencyInjection\Fakes\FakeBuilder;
 use Suhock\DependencyInjection\Fakes\FakeClassExtendsBaseClass;
 use Suhock\DependencyInjection\Fakes\FakeClassNoConstructor;
 use Suhock\DependencyInjection\Fakes\FakeUnitEnum;
-use Suhock\DependencyInjection\Lifetime\SingletonStrategy;
 use Suhock\DependencyInjection\InstanceProvider\ObjectInstanceProvider;
+use Suhock\DependencyInjection\Lifetime\SingletonStrategy;
 
 /**
  * Test suite for {@see Container}.

@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Copyright (c) 2022-2026 Matthew Suhocki. All rights reserved.
  *
@@ -11,8 +12,8 @@ declare(strict_types=1);
 namespace Suhock\DependencyInjection\Builder;
 
 use Suhock\DependencyInjection\ContainerInterface;
-use Suhock\DependencyInjection\Lifetime\LifetimeStrategy;
 use Suhock\DependencyInjection\InstanceProvider\InstanceProviderInterface;
+use Suhock\DependencyInjection\Lifetime\LifetimeStrategy;
 use UnitEnum;
 
 /**

@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Copyright (c) 2023-2026 Matthew Suhocki. All rights reserved.
  *
@@ -11,6 +12,7 @@ declare(strict_types=1);
 namespace Suhock\DependencyInjection\InstanceProvider;
 
 use Closure;
+
 use function is_string;
 
 /**

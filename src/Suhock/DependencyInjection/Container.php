@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Copyright (c) 2022-2026 Matthew Suhocki. All rights reserved.
  *
@@ -28,6 +29,7 @@ use Suhock\DependencyInjection\Lifetime\InstanceStore;
 use Suhock\DependencyInjection\Lifetime\LifetimeStrategy;
 use Throwable;
 use UnitEnum;
+
 use function is_string;
 use function spl_object_id;
 

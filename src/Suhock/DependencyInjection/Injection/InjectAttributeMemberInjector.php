@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Copyright (c) 2022-2026 Matthew Suhocki. All rights reserved.
  *
@@ -21,6 +22,7 @@ use Suhock\DependencyInjection\Instantiation\PostInstantiationHookInterface;
 use Suhock\DependencyInjection\Key;
 use Suhock\DependencyInjection\Resolver\ArgumentResolver;
 use Suhock\DependencyInjection\Resolver\ParameterResolverInterface;
+
 use function count;
 
 /**
