@@ -46,15 +46,18 @@ trait ContainerBuilderTrait
      * @param class-string<TClass> $className The class name of the service to add
      * @param LifetimeStrategy<TClass> $lifetimeStrategy The lifetime strategy to use to manage instances
      * @param InstanceProviderInterface<TClass> $instanceProvider The instance provider to use to create new instances
+     * @param bool $shouldDispose Whether the container should dispose the disposable instances it creates for this
+     * service; pass false when their disposal is the responsibility of something outside the container
      *
      * @return $this
      */
     public function add(
         string $className,
         LifetimeStrategy $lifetimeStrategy,
-        InstanceProviderInterface $instanceProvider
+        InstanceProviderInterface $instanceProvider,
+        bool $shouldDispose = true
     ): static {
-        $this->addDescriptor(new Descriptor($className, $lifetimeStrategy, $instanceProvider));
+        $this->addDescriptor(new Descriptor($className, $lifetimeStrategy, $instanceProvider, $shouldDispose));
 
         return $this;
     }
@@ -68,6 +71,8 @@ trait ContainerBuilderTrait
      * @param string|UnitEnum $key The key of the service
      * @param LifetimeStrategy<TClass> $lifetimeStrategy The lifetime strategy to use to manage instances
      * @param InstanceProviderInterface<TClass> $instanceProvider The instance provider to use to create new instances
+     * @param bool $shouldDispose Whether the container should dispose the disposable instances it creates for this
+     * service; pass false when their disposal is the responsibility of something outside the container
      *
      * @return $this
      */
@@ -75,9 +80,13 @@ trait ContainerBuilderTrait
         string $className,
         string|UnitEnum $key,
         LifetimeStrategy $lifetimeStrategy,
-        InstanceProviderInterface $instanceProvider
+        InstanceProviderInterface $instanceProvider,
+        bool $shouldDispose = true
     ): static {
-        $this->addKeyedDescriptor(new Descriptor($className, $lifetimeStrategy, $instanceProvider), $key);
+        $this->addKeyedDescriptor(
+            new Descriptor($className, $lifetimeStrategy, $instanceProvider, $shouldDispose),
+            $key
+        );
 
         return $this;
     }

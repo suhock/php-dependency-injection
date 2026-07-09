@@ -72,12 +72,15 @@ interface ContainerSingletonBuilderInterface
      *
      * @param class-string<TClass> $className The fully qualified name of the class to add
      * @param InstanceProviderInterface<TClass> $instanceProvider
+     * @param bool $shouldDispose Whether the container should dispose the disposable instances it creates for this
+     * service
      *
      * @return $this
      */
     public function addSingletonInstanceProvider(
         string $className,
-        InstanceProviderInterface $instanceProvider
+        InstanceProviderInterface $instanceProvider,
+        bool $shouldDispose = true
     ): static;
 
     /**
@@ -86,13 +89,16 @@ interface ContainerSingletonBuilderInterface
      * @param class-string<TClass> $className The fully qualified name of the class to add
      * @param string|UnitEnum $key The key to add the service under
      * @param InstanceProviderInterface<TClass> $instanceProvider
+     * @param bool $shouldDispose Whether the container should dispose the disposable instances it creates for this
+     * service
      *
      * @return $this
      */
     public function addKeyedSingletonInstanceProvider(
         string $className,
         string|UnitEnum $key,
-        InstanceProviderInterface $instanceProvider
+        InstanceProviderInterface $instanceProvider,
+        bool $shouldDispose = true
     ): static;
 
     /**
@@ -208,11 +214,14 @@ interface ContainerSingletonBuilderInterface
      *
      * @param class-string<TClass> $className The fully qualified name of the class to add
      * @param TInstance $instance An instance of the class
+     * @param bool $shouldDispose Whether the container should dispose the instance, if it implements
+     * {@see \Suhock\DependencyInjection\DisposableInterface}, when the container is disposed. Pass false to retain
+     * disposal responsibility yourself, e.g. when the instance is shared with code outside the container.
      *
      * @return $this
      * @throws InstanceTypeException
      */
-    public function addSingletonInstance(string $className, object $instance): static;
+    public function addSingletonInstance(string $className, object $instance, bool $shouldDispose = true): static;
 
     /**
      * Indicates that the container should provide the given class under the given key with the specified instance of
@@ -224,11 +233,19 @@ interface ContainerSingletonBuilderInterface
      * @param class-string<TClass> $className The fully qualified name of the class to add
      * @param string|UnitEnum $key The key to add the service under
      * @param TInstance $instance An instance of the class
+     * @param bool $shouldDispose Whether the container should dispose the instance, if it implements
+     * {@see \Suhock\DependencyInjection\DisposableInterface}, when the container is disposed. Pass false to retain
+     * disposal responsibility yourself, e.g. when the instance is shared with code outside the container.
      *
      * @return $this
      * @throws InstanceTypeException
      */
-    public function addKeyedSingletonInstance(string $className, string|UnitEnum $key, object $instance): static;
+    public function addKeyedSingletonInstance(
+        string $className,
+        string|UnitEnum $key,
+        object $instance,
+        bool $shouldDispose = true
+    ): static;
 
     /**
      * @return $this

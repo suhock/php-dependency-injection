@@ -26,6 +26,7 @@ use Suhock\DependencyInjection\Descriptor\Descriptor;
 use Suhock\DependencyInjection\InstanceProvider\ClosureInstanceProvider;
 use Suhock\DependencyInjection\Lifetime\InstanceStore;
 use Suhock\DependencyInjection\Lifetime\LifetimeStrategy;
+use Throwable;
 use UnitEnum;
 use function is_string;
 use function spl_object_id;
@@ -35,6 +36,7 @@ use function spl_object_id;
  */
 final class Container implements
     ContainerInterface,
+    DisposableInterface,
     ScopeFactoryInterface,
     ContainerBuilderInterface,
     ContainerScopedBuilderInterface,
@@ -70,6 +72,8 @@ final class Container implements
      * @var array<int, true>
      */
     private array $resolving = [];
+
+    private bool $disposed = false;
 
     /**
      * @param callable(ContainerInterface):InjectorInterface $injectorFactory Provides the injector to be used in
@@ -185,6 +189,9 @@ final class Container implements
      * resolved, since the nested container still provides it. Instances already cached by existing scopes are
      * unaffected.
      *
+     * Removal releases the container's cached instance without disposing it; an instance still referenced elsewhere
+     * remains eligible for disposal when the container is disposed (see {@see dispose()}).
+     *
      * @param class-string $className The class name of the service to remove
      * @param string|UnitEnum|null $key [optional] The key of the service to remove, or null for the unkeyed service
      *
@@ -204,10 +211,47 @@ final class Container implements
 
     /**
      * @inheritDoc
+     * @throws ContainerException If the container has been disposed
      */
     public function createScope(): ScopeInterface
     {
+        $this->ensureNotDisposed();
+
         return new Scope($this, $this->injectorFactory, $this->resolutionContext);
+    }
+
+    /**
+     * Disposes the container. Container-owned disposable singletons — and any container-owned disposable transients
+     * still referenced that were resolved directly from the container — are disposed in reverse creation order
+     * (dependents before their dependencies). Any subsequent request to the container ({@see get()}, {@see has()},
+     * {@see createScope()}) throws a {@see ContainerException}. Disposing an already disposed container has no effect.
+     *
+     * Scopes created by this container are managed by their own caller and are not disposed here; dispose them before
+     * disposing the container, otherwise their scoped instances are not swept. If a disposed instance throws, disposal
+     * of the remaining instances still proceeds and the first exception is rethrown once the sweep completes.
+     *
+     * @throws Throwable The first exception thrown by any disposed instance
+     */
+    public function dispose(): void
+    {
+        if ($this->disposed) {
+            return;
+        }
+
+        // Mark disposed before sweeping so that a disposer requesting a service fails fast rather than resurrecting
+        // instances from a store that is being torn down.
+        $this->disposed = true;
+        $this->instances->dispose();
+    }
+
+    /**
+     * @throws ContainerException If the container has been disposed
+     */
+    private function ensureNotDisposed(): void
+    {
+        if ($this->disposed) {
+            throw new ContainerException('Container has been disposed');
+        }
     }
 
     /**
@@ -231,11 +275,14 @@ final class Container implements
      * @return TClass
      * @throws CircularDependencyException
      * @throws ClassNotFoundException
+     * @throws ContainerException If the container has been disposed
      *
      * @internal
      */
     public function getForContext(string $className, string|UnitEnum|null $key, ResolutionContext $context): object
     {
+        $this->ensureNotDisposed();
+
         if ($key !== null) {
             if ($this->tryGetFromDescriptor($this->descriptorId($className, $key), $context, $instance)) {
                 /** @var TClass $instance */
@@ -256,9 +303,12 @@ final class Container implements
 
     /**
      * @inheritDoc
+     * @throws ContainerException If the container has been disposed
      */
     public function has(string $className, string|UnitEnum|null $key = null): bool
     {
+        $this->ensureNotDisposed();
+
         if ($key !== null) {
             return isset($this->descriptors[$this->descriptorId($className, $key)]);
         }
@@ -302,7 +352,18 @@ final class Container implements
         try {
             return $descriptor->lifetimeStrategy->get(
                 $context,
-                static fn (ResolutionContext $ctx): object => $descriptor->instanceProvider->get($ctx)
+                static function (ResolutionContext $ctx) use ($descriptor): object {
+                    $instance = $descriptor->instanceProvider->get($ctx);
+
+                    // The strategy invokes this factory with the context whose store bounds the instance's lifetime
+                    // (root store for singletons, scope store for scoped, requesting root's store for transients), so
+                    // recording there disposes the instance exactly when that lifetime ends.
+                    if ($descriptor->shouldDispose && $instance instanceof DisposableInterface) {
+                        $ctx->store->addDisposable($instance);
+                    }
+
+                    return $instance;
+                }
             );
         } catch (DependencyInjectionException $e) {
             throw new ClassResolutionException($descriptor->className, previous: $e);

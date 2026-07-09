@@ -35,6 +35,8 @@ constructor.
     - [Scoped](#scoped)
     - [Transient](#transient)
 - [Scopes](#scopes)
+    - [Example: FrankenPHP worker mode](#example-frankenphp-worker-mode)
+- [Disposing services](#disposing-services)
 - [Adding services to the container](#adding-services-to-the-container)
     - [Inject a class](#inject-a-class)
     - [Map an interface to an implementation](#map-an-interface-to-an-implementation)
@@ -265,6 +267,173 @@ Note that [nested containers](#nested-containers) added with
 interface, and attribute containers) construct instances with their own
 injector bound to the root container, so there are no `addScoped` variants of
 these methods: classes they provide cannot have per-scope dependencies.
+
+#### Example: FrankenPHP worker mode
+
+Application servers such as [FrankenPHP](https://frankenphp.dev/docs/worker/)
+keep the PHP process alive across many requests: the application — including
+the container and its singletons — boots once, and each incoming request is
+handled by a callback. Without the per-request teardown that PHP-FPM provided,
+any request-specific state held by a long-lived service silently leaks into
+subsequent requests. Creating a scope per request restores that isolation:
+scoped services live exactly as long as the request, and a singleton that
+tries to depend on one fails with a `ScopeException` instead of capturing the
+first request's instance.
+
+```php
+<?php
+// public/worker.php
+
+use Suhock\DependencyInjection\Container;
+
+require dirname(__DIR__) . '/vendor/autoload.php';
+
+// Built once, reused for every request this worker handles.
+$container = Container::createDefault()
+    ->addSingletonClass(FileLogger::class)
+    ->addSingletonImplementation(Logger::class, FileLogger::class)
+    // FrankenPHP refreshes the superglobals before each request.
+    ->addScopedFactory(RequestContext::class, fn () => RequestContext::fromGlobals())
+    ->addTransientClass(RequestHandler::class);
+
+$handler = static function () use ($container): void {
+    $scope = $container->createScope();
+
+    try {
+        $scope->get(RequestHandler::class)->handle();
+    } finally {
+        $scope->dispose();
+    }
+};
+
+while (frankenphp_handle_request($handler)) {
+    gc_collect_cycles();
+}
+```
+
+Run it with:
+
+```shell
+frankenphp php-server --worker public/worker.php
+```
+
+Every `RequestHandler` and any service in its dependency graph receives the
+current request's `RequestContext`; when `dispose()` runs, the scope's cached
+instances are released — and any that implement
+[`DisposableInterface`](#disposing-services) have their `dispose()` method
+called — so nothing carries over into the next iteration of the loop. The same
+pattern applies to any long-running runtime — a RoadRunner or Swoole worker, a
+queue consumer, or a daemon — with the runtime's own receive loop in place of
+`frankenphp_handle_request()`.
+
+### Disposing services
+
+A service that holds a resource — a database transaction, an open file, a
+socket — often needs to release it deterministically when its lifetime ends,
+rather than waiting for garbage collection. A service can implement
+`DisposableInterface` to be notified:
+
+```php
+use Suhock\DependencyInjection\DisposableInterface;
+
+final class UnitOfWork implements DisposableInterface
+{
+    public function __construct(private readonly Connection $connection)
+    {
+    }
+
+    public function dispose(): void
+    {
+        $this->connection->rollBackIfActive();
+    }
+}
+```
+
+When a resolution root — the container or a scope — is disposed, it calls
+`dispose()` on the disposable services **it created**, in reverse creation
+order so that dependents are disposed before their dependencies:
+
+```php
+$container = Container::createDefault()
+    ->addScopedClass(Connection::class)
+    ->addScopedClass(UnitOfWork::class);
+
+$scope = $container->createScope();
+
+try {
+    $scope->get(UnitOfWork::class)->commit();
+} finally {
+    // Disposes UnitOfWork, then Connection.
+    $scope->dispose();
+}
+```
+
+The container disposes its own singletons (and any surviving transients it
+created) when the container itself is disposed:
+
+```php
+$container = Container::createDefault()
+    ->addSingletonClass(ConnectionPool::class); // implements DisposableInterface
+
+// ... run the application ...
+
+$container->dispose();
+```
+
+After a container is disposed, any further `get()`, `has()`, or `createScope()`
+call throws a `ContainerException`. Disposing a container or scope more than
+once has no effect.
+
+#### Opting out of disposal
+
+By default the container disposes every disposable instance it holds, including
+one you supply yourself with `addSingletonInstance()` — registering an instance
+hands its disposal to the container along with the rest of its lifecycle. When
+an instance's disposal is the responsibility of something outside the container
+— for example a resource shared with code beyond it, or borrowed from an
+external registry — pass `shouldDispose: false`:
+
+```php
+// The pool is closed elsewhere; the container must not dispose it.
+$container->addSingletonInstance(ConnectionPool::class, $pool, shouldDispose: false);
+
+// Same idea for a service built by a factory or provider:
+$container->add(
+    Connection::class,
+    new SingletonStrategy(Connection::class),
+    new ClosureInstanceProvider(Connection::class, fn () => $registry->connection()),
+    shouldDispose: false
+);
+```
+
+`shouldDispose` is available on `addSingletonInstance()`/`addKeyedSingletonInstance()`
+and on the low-level `add()`/`addKeyed()` methods, and defaults to `true`
+everywhere.
+
+#### Lifetime and ordering guarantees
+
+ - **Scoped and singleton** disposables are always disposed when their scope or
+   container is disposed.
+ - **Transient** disposables are disposed only if they are still referenced
+   when their resolution root is disposed; a transient the application has
+   already discarded is left to normal garbage collection (implement
+   `__destruct()` if it must always clean up). This tracking uses a `WeakMap`,
+   so discarded transients never accumulate.
+ - Disposal proceeds in **reverse creation order**. This relies on
+   dependencies being constructed before their dependents, which holds for
+   constructor, `Inject`-attribute, and mutator injection. A service that
+   resolves further dependencies lazily — for example by holding the container
+   or a `ScopeFactoryInterface` and calling `get()` after construction — can
+   invert that order for the pair involved.
+ - If a `dispose()` call throws, the remaining instances are still disposed and
+   the first exception is rethrown once the sweep completes.
+
+Scopes created from a container are managed by their own caller; dispose them
+before disposing the container so that their scoped instances are swept.
+Disposal is not currently applied to instances provided by
+[nested containers](#nested-containers) beyond those the outer container caches,
+and disposal via a custom callback for classes that cannot implement
+`DisposableInterface` is not yet supported.
 
 ### Adding services to the container
 

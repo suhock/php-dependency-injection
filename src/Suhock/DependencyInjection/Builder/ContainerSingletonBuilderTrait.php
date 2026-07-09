@@ -72,12 +72,17 @@ trait ContainerSingletonBuilderTrait
      *
      * @param class-string<TClass> $className
      * @param InstanceProviderInterface<TClass> $instanceProvider
+     * @param bool $shouldDispose Whether the container should dispose the disposable instances it creates for this
+     * service
      *
      * @return $this
      */
-    public function addSingletonInstanceProvider(string $className, InstanceProviderInterface $instanceProvider): static
-    {
-        $this->add($className, new SingletonStrategy($className), $instanceProvider);
+    public function addSingletonInstanceProvider(
+        string $className,
+        InstanceProviderInterface $instanceProvider,
+        bool $shouldDispose = true
+    ): static {
+        $this->add($className, new SingletonStrategy($className), $instanceProvider, $shouldDispose);
 
         return $this;
     }
@@ -87,15 +92,18 @@ trait ContainerSingletonBuilderTrait
      *
      * @param class-string<TClass> $className
      * @param InstanceProviderInterface<TClass> $instanceProvider
+     * @param bool $shouldDispose Whether the container should dispose the disposable instances it creates for this
+     * service
      *
      * @return $this
      */
     public function addKeyedSingletonInstanceProvider(
         string $className,
         string|UnitEnum $key,
-        InstanceProviderInterface $instanceProvider
+        InstanceProviderInterface $instanceProvider,
+        bool $shouldDispose = true
     ): static {
-        return $this->addKeyed($className, $key, new SingletonStrategy($className), $instanceProvider);
+        return $this->addKeyed($className, $key, new SingletonStrategy($className), $instanceProvider, $shouldDispose);
     }
 
     /**
@@ -201,18 +209,20 @@ trait ContainerSingletonBuilderTrait
      *
      * @param class-string<TClass> $className
      * @param TInstance $instance
+     * @param bool $shouldDispose Whether the container should dispose the instance, if it implements
+     * {@see \Suhock\DependencyInjection\DisposableInterface}, when the container is disposed. Pass false to retain
+     * disposal responsibility yourself, e.g. when the instance is shared with code outside the container.
      *
      * @return $this
      */
     // @phpstan-ignore method.childParameterType (false positive on templated builder generics)
-    public function addSingletonInstance(string $className, object $instance): static
+    public function addSingletonInstance(string $className, object $instance, bool $shouldDispose = true): static
     {
-        $this->addSingletonInstanceProvider(
+        return $this->addSingletonInstanceProvider(
             $className,
-            InstanceProviderFactory::createObjectInstanceProvider($className, $instance)
+            InstanceProviderFactory::createObjectInstanceProvider($className, $instance),
+            $shouldDispose
         );
-
-        return $this;
     }
 
     /**
@@ -221,16 +231,24 @@ trait ContainerSingletonBuilderTrait
      *
      * @param class-string<TClass> $className
      * @param TInstance $instance
+     * @param bool $shouldDispose Whether the container should dispose the instance, if it implements
+     * {@see \Suhock\DependencyInjection\DisposableInterface}, when the container is disposed. Pass false to retain
+     * disposal responsibility yourself, e.g. when the instance is shared with code outside the container.
      *
      * @return $this
      */
     // @phpstan-ignore method.childParameterType (false positive on templated builder generics)
-    public function addKeyedSingletonInstance(string $className, string|UnitEnum $key, object $instance): static
-    {
+    public function addKeyedSingletonInstance(
+        string $className,
+        string|UnitEnum $key,
+        object $instance,
+        bool $shouldDispose = true
+    ): static {
         return $this->addKeyedSingletonInstanceProvider(
             $className,
             $key,
-            InstanceProviderFactory::createObjectInstanceProvider($className, $instance)
+            InstanceProviderFactory::createObjectInstanceProvider($className, $instance),
+            $shouldDispose
         );
     }
 

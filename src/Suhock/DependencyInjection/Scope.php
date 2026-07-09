@@ -71,8 +71,14 @@ final class Scope implements ScopeInterface
 
     public function dispose(): void
     {
+        if ($this->disposed) {
+            return;
+        }
+
+        // Mark disposed before sweeping so that a disposer resolving from this scope fails fast with a ScopeException
+        // rather than resurrecting instances from a store that is being torn down.
         $this->disposed = true;
-        $this->resolutionContext->store->clear();
+        $this->resolutionContext->store->dispose();
     }
 
     private function ensureNotDisposed(): void

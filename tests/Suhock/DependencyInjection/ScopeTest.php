@@ -10,9 +10,17 @@ declare(strict_types=1);
 
 namespace Suhock\DependencyInjection;
 
+use RuntimeException;
 use Suhock\DependencyInjection\Fakes\FakeClassNoConstructor;
 use Suhock\DependencyInjection\Fakes\FakeClassWithConstructor;
+use Suhock\DependencyInjection\Fakes\FakeDisposableClass;
+use Suhock\DependencyInjection\Fakes\FakeDisposableClassWithDependency;
+use Suhock\DependencyInjection\Fakes\FakeDisposalLog;
+use Suhock\DependencyInjection\InstanceProvider\ClassInstanceProvider;
+use Suhock\DependencyInjection\Lifetime\ScopedStrategy;
 use Throwable;
+
+use function gc_collect_cycles;
 
 /**
  * Test suite for {@see Scope} and scoped-lifetime resolution.
@@ -361,5 +369,148 @@ final class ScopeTest extends AbstractDependencyInjectionTestCase
             ),
             $fn
         );
+    }
+
+    public function testDispose_WithScopedDisposableService_DisposesInstance(): void
+    {
+        // Arrange
+        $container = $this->createContainer()->addScoped(FakeDisposableClass::class);
+        $scope = $container->createScope();
+        $instance = $scope->get(FakeDisposableClass::class);
+
+        // Act
+        $scope->dispose();
+
+        // Assert
+        self::assertSame(1, $instance->disposeCount);
+    }
+
+    public function testDispose_WithDisposableDependencyGraph_DisposesDependentsBeforeDependencies(): void
+    {
+        // Arrange
+        $log = new FakeDisposalLog();
+        $container = $this->createContainer()
+            ->addSingletonInstance(FakeDisposalLog::class, $log)
+            ->addScoped(FakeDisposableClass::class)
+            ->addScoped(FakeDisposableClassWithDependency::class);
+        $scope = $container->createScope();
+        $scope->get(FakeDisposableClassWithDependency::class);
+
+        // Act
+        $scope->dispose();
+
+        // Assert
+        self::assertSame(['dependent', 'dependency'], $log->entries);
+    }
+
+    public function testDispose_WithTransientDisposableStillReferenced_DisposesInstance(): void
+    {
+        // Arrange
+        $container = $this->createContainer()->addTransient(FakeDisposableClass::class);
+        $scope = $container->createScope();
+        $instance = $scope->get(FakeDisposableClass::class);
+
+        // Act
+        $scope->dispose();
+
+        // Assert
+        self::assertSame(1, $instance->disposeCount);
+    }
+
+    public function testDispose_WithTransientDisposableNoLongerReferenced_DoesNotDisposeInstance(): void
+    {
+        // Arrange
+        $log = new FakeDisposalLog();
+        $container = $this->createContainer()
+            ->addSingletonInstance(FakeDisposalLog::class, $log)
+            ->addTransient(FakeDisposableClass::class);
+        $scope = $container->createScope();
+        $instance = $scope->get(FakeDisposableClass::class);
+
+        // Act
+        unset($instance);
+        gc_collect_cycles();
+        $scope->dispose();
+
+        // Assert
+        self::assertSame([], $log->entries);
+    }
+
+    public function testDispose_WithSingletonDisposableResolvedFromScope_DoesNotDisposeInstance(): void
+    {
+        // Arrange
+        $container = $this->createContainer()->addSingleton(FakeDisposableClass::class);
+        $scope = $container->createScope();
+        $instance = $scope->get(FakeDisposableClass::class);
+
+        // Act
+        $scope->dispose();
+
+        // Assert
+        self::assertSame(0, $instance->disposeCount);
+    }
+
+    public function testDispose_WithShouldDisposeFalseScopedService_DoesNotDisposeInstance(): void
+    {
+        // Arrange
+        $container = $this->createContainer()->add(
+            FakeDisposableClass::class,
+            new ScopedStrategy(FakeDisposableClass::class),
+            new ClassInstanceProvider(FakeDisposableClass::class),
+            shouldDispose: false
+        );
+        $scope = $container->createScope();
+        $instance = $scope->get(FakeDisposableClass::class);
+
+        // Act
+        $scope->dispose();
+
+        // Assert
+        self::assertSame(0, $instance->disposeCount);
+    }
+
+    public function testDispose_CalledTwice_DisposesScopedInstanceOnlyOnce(): void
+    {
+        // Arrange
+        $container = $this->createContainer()->addScoped(FakeDisposableClass::class);
+        $scope = $container->createScope();
+        $instance = $scope->get(FakeDisposableClass::class);
+
+        // Act
+        $scope->dispose();
+        $scope->dispose();
+
+        // Assert
+        self::assertSame(1, $instance->disposeCount);
+    }
+
+    public function testDispose_WhenDisposeThrows_MarksScopeDisposedAndRethrows(): void
+    {
+        // Arrange
+        $container = $this->createContainer()->addScopedFactory(
+            DisposableInterface::class,
+            static fn () => new class () implements DisposableInterface {
+                public function dispose(): void
+                {
+                    throw new RuntimeException('dispose failed');
+                }
+            }
+        );
+        $scope = $container->createScope();
+        $scope->get(DisposableInterface::class);
+
+        // Act
+        $exception = null;
+
+        try {
+            $scope->dispose();
+        } catch (RuntimeException $caught) {
+            $exception = $caught;
+        }
+
+        // Assert
+        self::assertInstanceOf(RuntimeException::class, $exception);
+        $this->expectException(ScopeException::class);
+        $scope->get(DisposableInterface::class);
     }
 }

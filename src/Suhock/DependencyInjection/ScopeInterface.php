@@ -15,10 +15,11 @@ namespace Suhock\DependencyInjection;
  * resolves the same services as the container that created it, but services added with a scoped lifetime are
  * instantiated once per scope, and their dependencies are resolved from the scope rather than the root container.
  */
-interface ScopeInterface extends ContainerInterface
+interface ScopeInterface extends ContainerInterface, DisposableInterface
 {
     /**
-     * Ends the scope. Instances cached by the scope are released, and any further request to the scope throws a
+     * Ends the scope. Container-owned disposable instances cached by the scope are disposed — dependents before their
+     * dependencies — and all cached instances are released. Any further request to the scope throws a
      * {@see ScopeException}. Disposing an already disposed scope has no effect.
      */
     public function dispose(): void;
