@@ -11,7 +11,6 @@ declare(strict_types=1);
 
 namespace Suhock\DependencyInjection;
 
-use BackedEnum;
 use Closure;
 use Suhock\DependencyInjection\Builder\ContainerBuilderInterface;
 use Suhock\DependencyInjection\Builder\ContainerBuilderTrait;
@@ -29,7 +28,6 @@ use Suhock\DependencyInjection\Lifetime\InstanceStore;
 use Suhock\DependencyInjection\Lifetime\LifetimeStrategy;
 use Throwable;
 use UnitEnum;
-use function is_string;
 use function spl_object_id;
 
 /**
@@ -134,22 +132,13 @@ final class Container implements
         if (isset($this->descriptors[$id])) {
             throw new ContainerException($key === null ?
                 'Class already in container: ' . $descriptor->className :
-                "Class already in container for key '" . self::getKeyFromStringOrEnum($key) . "': " .
+                "Class already in container for key '" . Key::getKeyFromStringOrEnum($key) . "': " .
                     $descriptor->className);
         }
 
         $this->descriptors[$id] = $descriptor;
 
         return $this;
-    }
-
-    private static function getKeyFromStringOrEnum(string|UnitEnum $key): string
-    {
-        return match (true) {
-            $key instanceof BackedEnum && is_string($key->value) => $key->value,
-            $key instanceof UnitEnum => $key->name,
-            default => $key
-        };
     }
 
     protected function addContainerDescriptor(ContainerDescriptor $descriptor): static
@@ -177,7 +166,7 @@ final class Container implements
             return $className;
         }
 
-        $stringKey = self::getKeyFromStringOrEnum($key);
+        $stringKey = Key::getKeyFromStringOrEnum($key);
 
         return $className . "\0" . $stringKey;
     }
