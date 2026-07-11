@@ -8,6 +8,7 @@
       <directory>./tests/</directory>
     </testsuite>
   </testsuites>
+  <coverage pathCoverage="true"/>
   <source>
     <include>
       <directory>./src/</directory>
