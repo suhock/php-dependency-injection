@@ -27,6 +27,8 @@ jobs:
               uses: shivammathur/setup-php@v2
               with:
                   php-version: ${{ matrix.php }}
+                  extensions: apcu
+                  ini-values: apc.enable_cli=1
                   coverage: pcov
 
             # Not --strict: the composer.json version field is intentionally retained until the 1.0.0 tag, and
