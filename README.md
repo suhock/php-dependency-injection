@@ -70,7 +70,7 @@ Add `suhock/dependency-injection` to the `require` section of your project's
 ```json
 {
     "require": {
-        "suhock/dependency-injection": "^0.1"
+        "suhock/dependency-injection": "^1.0"
     }
 }
 ```
@@ -594,11 +594,11 @@ The container must know how to provide the implementation or an exception will
 be thrown:
 
 ```php
-$container->addSingletonClass(HttpClient::class, CurlHttpClient::class);
+$container->addSingletonImplementation(HttpClient::class, CurlHttpClient::class);
 
 /*
- * The container will throw an UnresolvedDependencyException because it does
- * not know how to provide an instance of CurlHttpClient.
+ * The container will throw a ClassNotFoundException because it does not know
+ * how to provide an instance of CurlHttpClient.
  */
 $container->get(HttpClient::class);
 ```
@@ -696,10 +696,11 @@ the exact same instance that was passed in with the `$request` variable.
 
 If the container cannot find a way to provide an instance of a specific class,
 it will next check to see if there are any nested containers that can provide
-the value. Two built-in nested container implementations are provided: namespace
-and implementation. You can also add custom containers that implement
-`ContainerInterface` using the `addContainer()` method. Nested containers are
-searched sequentially in the order they are added.
+the value. Three built-in nested container implementations are provided:
+[namespace](#namespace-container), [interface](#interface-container), and
+[attribute](#attribute-container). You can also add custom containers that
+implement `ContainerInterface` using the `addContainer()` method. Nested
+containers are searched sequentially in the order they are added.
 
 #### Namespace container
 
@@ -812,7 +813,7 @@ class UserRepository extends EntityRepository implements EntityNameProvider
 }
 ```
 
-### Attribute container
+#### Attribute container
 
 Attribute containers will provide an instance of any class that has the
 specified attribute. Instances are acquired from the given factory, or by
