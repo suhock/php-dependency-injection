@@ -11,25 +11,29 @@ declare(strict_types=1);
 
 namespace Suhock\DependencyInjection;
 
-use LogicException;
+use RuntimeException;
 use Throwable;
 
 /**
- * Exception that indicates an error occurred in the dependency injection library.
+ * Base class for every exception thrown by the dependency injection library. These signal errors in how the container
+ * or injector was configured or used — a missing binding, a circular dependency, a service requested outside a scope,
+ * a factory returning the wrong type — so they extend {@see RuntimeException} rather than {@see \LogicException}, which
+ * is reserved for the library detecting a violation of its own internal invariants. Catch this, or the
+ * {@see DependencyInjectionExceptionInterface} it implements, to handle any dependency injection failure.
  */
-abstract class DependencyInjectionException extends LogicException
+abstract class DependencyInjectionException extends RuntimeException implements DependencyInjectionExceptionInterface
 {
-    protected ?DependencyInjectionException $consolidatedException = null;
+    protected ?DependencyInjectionExceptionInterface $consolidatedException = null;
 
     /**
      * @param string $message [optional] The Exception message to throw.
      * @param Throwable|null $previous [optional] The previous throwable used for exception chaining. If the throwable
-     * is of type {@see DependencyInjectionException} then its message and previous exception will be consolidated into
-     * the new instance.
+     * is a {@see DependencyInjectionExceptionInterface} then its message and previous exception will be consolidated
+     * into the new instance.
      */
     public function __construct(string $message = '', ?Throwable $previous = null)
     {
-        if ($previous instanceof self) {
+        if ($previous instanceof DependencyInjectionExceptionInterface) {
             parent::__construct(
                 ($message !== '' ? "$message\n=> " : '') . $previous->getMessage(),
                 previous: $previous->getPrevious()
@@ -41,10 +45,10 @@ abstract class DependencyInjectionException extends LogicException
     }
 
     /**
-     * @return DependencyInjectionException|null The {@see DependencyInjectionException} that was passed in as previous,
-     * but was consolidated into this instance, or <code>null</code>
+     * @return DependencyInjectionExceptionInterface|null The {@see DependencyInjectionExceptionInterface} that was
+     * passed in as previous, but was consolidated into this instance, or <code>null</code>
      */
-    public function getConsolidatedException(): ?DependencyInjectionException
+    public function getConsolidatedException(): ?DependencyInjectionExceptionInterface
     {
         return $this->consolidatedException;
     }
