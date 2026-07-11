@@ -26,6 +26,10 @@ use function spl_object_id;
  *
  * The store also tracks the container-owned {@see DisposableInterface} instances created within its resolution root so
  * that they can be disposed when the root's lifetime ends. See {@see addDisposable()} and {@see dispose()}.
+ *
+ * Of this class, only {@see getOrCreate()} is part of the supported extension surface — a custom
+ * {@see LifetimeStrategy} caches through it. The remaining methods manage container-owned disposal and eviction and are
+ * {@internal}: they are driven by the container and may change without notice.
  */
 final class InstanceStore
 {
@@ -33,7 +37,7 @@ final class InstanceStore
     private array $instances = [];
 
     /**
-     * Disposable instances awaiting disposal, mapped to their registration sequence number. Held weakly so that an
+     * Disposable instances awaiting disposal, mapped to their recording sequence number. Held weakly so that an
      * instance dropped before disposal (e.g. a transient no longer referenced by the application) is collected
      * normally and simply omitted from the sweep in {@see dispose()}.
      *
@@ -71,6 +75,8 @@ final class InstanceStore
      * so an instance shared by more than one descriptor is disposed at most once per store.
      *
      * @param DisposableInterface $instance The instance to dispose when the store is disposed
+     *
+     * @internal
      */
     public function addDisposable(DisposableInterface $instance): void
     {
@@ -84,6 +90,8 @@ final class InstanceStore
      * @template TClass of object
      *
      * @param LifetimeStrategy<TClass> $strategy
+     *
+     * @internal
      */
     public function remove(LifetimeStrategy $strategy): void
     {
@@ -93,6 +101,8 @@ final class InstanceStore
     /**
      * Discards all cached instances without disposing them. Instances recorded via {@see addDisposable()} remain
      * eligible for disposal when the store is disposed.
+     *
+     * @internal
      */
     public function clear(): void
     {
@@ -107,6 +117,8 @@ final class InstanceStore
      * effect.
      *
      * @throws Throwable The first exception thrown by any disposed instance
+     *
+     * @internal
      */
     public function dispose(): void
     {
