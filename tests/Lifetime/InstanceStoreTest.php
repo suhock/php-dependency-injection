@@ -33,6 +33,21 @@ final class InstanceStoreTest extends TestCase
         return new SingletonStrategy(FakeClassNoConstructor::class);
     }
 
+    public function testClear_DiscardsCachedInstances(): void
+    {
+        // Arrange
+        $store = new InstanceStore();
+        $strategy = $this->createStrategy();
+        $first = $store->getOrCreate($strategy, fn () => new FakeClassNoConstructor());
+
+        // Act
+        $store->clear();
+        $second = $store->getOrCreate($strategy, fn () => new FakeClassNoConstructor());
+
+        // Assert
+        self::assertNotSame($first, $second);
+    }
+
     public function testDispose_WithRegisteredDisposables_DisposesInReverseRegistrationOrder(): void
     {
         // Arrange

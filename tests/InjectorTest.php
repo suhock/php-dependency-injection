@@ -31,6 +31,7 @@ use Suhock\DependencyInjection\Fakes\FakeClassWithKeyedDependency;
 use Suhock\DependencyInjection\Fakes\FakeClassWithNonPublicInjectMethods;
 use Suhock\DependencyInjection\Fakes\FakeClassWithStaticInjectMethod;
 use Suhock\DependencyInjection\Fakes\FakeClassWithUnionDependency;
+use Suhock\DependencyInjection\Fakes\FakeClassWithVariadicConstructor;
 use Suhock\DependencyInjection\Fakes\FakeContainer;
 use Suhock\DependencyInjection\Fakes\FakeInterfaceOne;
 use Suhock\DependencyInjection\Fakes\FakeInterfaceThree;
@@ -100,6 +101,37 @@ final class InjectorTest extends AbstractDependencyInjectionTestCase
         $this->expectException(InjectorException::class);
         /** @phpstan-ignore argument.type (intentionally passing a non-existent class under test) */
         $injector->instantiate('NonExistentClass');
+    }
+
+    public function testInstantiate_WithVariadicConstructor_FallsBackToReflectionPath(): void
+    {
+        // Arrange
+        $obj = new FakeClassNoConstructor();
+        $injector = $this->createInjector([FakeClassNoConstructor::class => fn () => $obj]);
+
+        // Act
+        $instance = $injector->instantiate(FakeClassWithVariadicConstructor::class);
+
+        // Assert
+        self::assertInstanceOf(FakeClassWithVariadicConstructor::class, $instance);
+        self::assertSame([$obj], $instance->items);
+    }
+
+    public function testInstantiate_WhenInjectedPropertyResolutionThrows_ThrowsPropertyResolutionException(): void
+    {
+        // Arrange
+        $injector = $this->createInjector([
+            FakeClassNoConstructor::class => fn () => throw new ClassResolutionException(FakeClassNoConstructor::class)
+        ]);
+
+        // Act & Assert
+        try {
+            $injector->instantiate(FakeClassWithInjectedProperties::class);
+            self::fail('Expected a PropertyResolutionException to be thrown');
+        } catch (PropertyResolutionException $exception) {
+            self::assertSame('publicProperty', $exception->getReflectionProperty()->getName());
+            self::assertInstanceOf(ClassResolutionException::class, $exception->getConsolidatedException());
+        }
     }
 
     public function testInstantiate_WithNonInstantiableClass_ThrowsInjectorException(): void
