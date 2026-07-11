@@ -40,6 +40,11 @@ trait ContainerBuilderTrait
     abstract protected function addContainerDescriptor(ContainerDescriptor $descriptor);
 
     /**
+     * @param class-string $className
+     */
+    abstract protected function removeDescriptor(string $className, string|UnitEnum|null $key): void;
+
+    /**
      * Adds an instance provider with a lifetime strategy to the container for a given class.
      *
      * @template TClass of object
@@ -88,6 +93,19 @@ trait ContainerBuilderTrait
             new Descriptor($className, $lifetimeStrategy, $instanceProvider, $shouldDispose),
             $key
         );
+
+        return $this;
+    }
+
+    /**
+     * @param class-string $className The class name of the service to remove
+     * @param string|UnitEnum|null $key [optional] The key of the service to remove, or null for the unkeyed service
+     *
+     * @return $this
+     */
+    public function remove(string $className, string|UnitEnum|null $key = null): static
+    {
+        $this->removeDescriptor($className, $key);
 
         return $this;
     }

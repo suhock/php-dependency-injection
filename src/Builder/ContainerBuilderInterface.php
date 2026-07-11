@@ -64,6 +64,24 @@ interface ContainerBuilderInterface
     ): static;
 
     /**
+     * Removes the specified service and any instance cached by this container, if they exist. Services of the same
+     * class added under other keys are unaffected.
+     *
+     * Note: A service satisfied by a nested container (see {@see addContainer()}) is added back the next time it is
+     * resolved, since the nested container still provides it. Instances already cached by existing scopes are
+     * unaffected.
+     *
+     * Removal releases the container's cached instance without disposing it; an instance still referenced elsewhere
+     * remains eligible for disposal when the container is disposed.
+     *
+     * @param class-string $className The class name of the service to remove
+     * @param string|UnitEnum|null $key [optional] The key of the service to remove, or null for the unkeyed service
+     *
+     * @return $this
+     */
+    public function remove(string $className, string|UnitEnum|null $key = null): static;
+
+    /**
      * Adds a nested container with a factory for generating lifetime strategies to manage instances within the outer
      * container. Nested containers are searched sequentially in the order they are added.
      *
