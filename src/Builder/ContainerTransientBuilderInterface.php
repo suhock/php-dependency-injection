@@ -38,6 +38,10 @@ interface ContainerTransientBuilderInterface
      *   closure as a factory. Any closure parameters will be injected. To autowire the class and then mutate the
      *   constructed instance, use {@see addTransientClass()} or {@see addKeyedTransientClass()} instead.
      *
+     * Unlike {@see ContainerSingletonBuilderInterface::addSingleton()}, a pre-constructed object instance is not a valid
+     * source: a shared instance cannot have a transient lifetime, so only a closure factory (or an implementation class
+     * name) is accepted here.
+     *
      * @return $this
      */
     public function addTransient(string $className, string|Closure|null $source = null): static;
@@ -57,6 +61,10 @@ interface ContainerTransientBuilderInterface
      * - If a closure, indicates that the container should provide an instance of the given class by calling the
      *   closure as a factory. Any closure parameters will be injected. To autowire the class and then mutate the
      *   constructed instance, use {@see addTransientClass()} or {@see addKeyedTransientClass()} instead.
+     *
+     * Unlike {@see ContainerSingletonBuilderInterface::addKeyedSingleton()}, a pre-constructed object instance is not a
+     * valid source: a shared instance cannot have a transient lifetime, so only a closure factory (or an implementation
+     * class name) is accepted here.
      *
      * @return $this
      */
