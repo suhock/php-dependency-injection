@@ -16,7 +16,6 @@ use Suhock\DependencyInjection\Fakes\FakeDisposableClassWithDependency;
 use Suhock\DependencyInjection\Fakes\FakeDisposalLog;
 use Suhock\DependencyInjection\InstanceProvider\ClassInstanceProvider;
 use Suhock\DependencyInjection\Lifetime\SingletonStrategy;
-
 use function gc_collect_cycles;
 
 /**

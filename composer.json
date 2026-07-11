@@ -34,12 +34,12 @@
     },
     "autoload": {
         "psr-4": {
-            "Suhock\\DependencyInjection\\": "src/Suhock/DependencyInjection/"
+            "Suhock\\DependencyInjection\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Suhock\\DependencyInjection\\": "tests/Suhock/DependencyInjection/"
+            "Suhock\\DependencyInjection\\": "tests/"
         }
     },
     "minimum-stability": "stable",

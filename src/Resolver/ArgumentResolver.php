@@ -13,7 +13,6 @@ namespace Suhock\DependencyInjection\Resolver;
 
 use ReflectionParameter;
 use Suhock\DependencyInjection\Injector;
-
 use function array_key_exists;
 
 /**

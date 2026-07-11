@@ -29,7 +29,6 @@ use Suhock\DependencyInjection\Lifetime\InstanceStore;
 use Suhock\DependencyInjection\Lifetime\LifetimeStrategy;
 use Throwable;
 use UnitEnum;
-
 use function is_string;
 use function spl_object_id;
 

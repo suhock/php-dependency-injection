@@ -22,7 +22,6 @@ use Suhock\DependencyInjection\Instantiation\PostInstantiationHookInterface;
 use Suhock\DependencyInjection\Key;
 use Suhock\DependencyInjection\Resolver\ArgumentResolver;
 use Suhock\DependencyInjection\Resolver\ParameterResolverInterface;
-
 use function count;
 
 /**

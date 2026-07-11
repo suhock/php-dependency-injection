@@ -17,7 +17,6 @@ use Suhock\DependencyInjection\Cache\CacheInterface;
 use Suhock\DependencyInjection\Cache\MetadataCache;
 use Suhock\DependencyInjection\Resolver\ResolvableDependency;
 use Suhock\DependencyInjection\Resolver\TypeParameterResolverInterface;
-
 use function array_key_exists;
 
 /**

@@ -20,7 +20,6 @@ use Suhock\DependencyInjection\Fakes\FakeDisposalLog;
 use Suhock\DependencyInjection\InstanceProvider\ClassInstanceProvider;
 use Suhock\DependencyInjection\Lifetime\ScopedStrategy;
 use Throwable;
-
 use function gc_collect_cycles;
 
 /**

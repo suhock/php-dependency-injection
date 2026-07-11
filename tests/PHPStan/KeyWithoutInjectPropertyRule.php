@@ -19,7 +19,6 @@ use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use Suhock\DependencyInjection\Inject;
 use Suhock\DependencyInjection\Key;
-
 use function strcasecmp;
 
 /**
