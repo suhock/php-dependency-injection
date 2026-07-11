@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Support for PHP 8.5 (added to the CI test matrix).
 - ASP.NET-Core-style scoping support, including scoped builder methods
   `addScopedContainer()`, `addScopedNamespace()`, `addScopedInterface()`, and
   `addScopedAttribute()` for wiring nested, scope-bound containers.

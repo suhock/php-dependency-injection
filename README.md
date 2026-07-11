@@ -87,8 +87,8 @@ composer require "suhock/dependency-injection"
 
 ## Compatibility
 
-The library requires PHP 8.1 or later and is tested on PHP 8.1, 8.2, 8.3, and
-8.4.
+The library requires PHP 8.1 or later and is tested on PHP 8.1, 8.2, 8.3, 8.4,
+and 8.5.
 
 There are no required runtime dependencies. The optional `ext-apcu` extension
 enables persistent caching of reflected metadata; see
