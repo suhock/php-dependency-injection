@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace Suhock\DependencyInjection;
 
+use Closure;
 use Suhock\DependencyInjection\Lifetime\InstanceStore;
 use UnitEnum;
 
@@ -27,6 +28,9 @@ final class Scope implements ScopeInterface
 {
     private readonly ResolutionContext $resolutionContext;
 
+    /** @var Closure(class-string, string|UnitEnum|null, ResolutionContext):object */
+    private readonly Closure $resolve;
+
     private bool $disposed = false;
 
     /**
@@ -34,12 +38,16 @@ final class Scope implements ScopeInterface
      * @param callable(ContainerInterface):InjectorInterface $injectorFactory Provides the injector used to resolve
      * dependencies from the scope
      * @param ResolutionContext $rootContext The resolution context of the root container
+     * @param callable(class-string, string|UnitEnum|null, ResolutionContext):object $resolve Resolves a service from
+     * the root container for this scope's resolution context
      */
     public function __construct(
         private readonly Container $rootContainer,
         callable $injectorFactory,
-        ResolutionContext $rootContext
+        ResolutionContext $rootContext,
+        callable $resolve
     ) {
+        $this->resolve = $resolve(...);
         $this->resolutionContext = new ResolutionContext(
             $this,
             $injectorFactory($this),
@@ -56,7 +64,8 @@ final class Scope implements ScopeInterface
     {
         $this->ensureNotDisposed();
 
-        return $this->rootContainer->getForContext($className, $key, $this->resolutionContext);
+        // @phpstan-ignore return.type (resolver returns the requested TClass, widened to object through the stored closure)
+        return ($this->resolve)($className, $key, $this->resolutionContext);
     }
 
     /**

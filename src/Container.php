@@ -192,7 +192,13 @@ final class Container implements
     {
         $this->ensureNotDisposed();
 
-        return new Scope($this, $this->injectorFactory, $this->resolutionContext);
+        return new Scope(
+            $this,
+            $this->injectorFactory,
+            $this->resolutionContext,
+            fn (string $className, string|UnitEnum|null $key, ResolutionContext $context): object =>
+                $this->getForContext($className, $key, $context)
+        );
     }
 
     /**
@@ -251,10 +257,8 @@ final class Container implements
      * @throws CircularDependencyException
      * @throws ClassNotFoundException
      * @throws ContainerException If the container has been disposed
-     *
-     * @internal
      */
-    public function getForContext(string $className, string|UnitEnum|null $key, ResolutionContext $context): object
+    private function getForContext(string $className, string|UnitEnum|null $key, ResolutionContext $context): object
     {
         $this->ensureNotDisposed();
 
