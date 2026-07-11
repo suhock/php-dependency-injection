@@ -12,17 +12,24 @@ declare(strict_types=1);
 namespace Suhock\DependencyInjection\Builder;
 
 use Closure;
+use Suhock\DependencyInjection\AttributeContainer;
+use Suhock\DependencyInjection\ContainerInterface;
+use Suhock\DependencyInjection\InjectorInterface;
 use Suhock\DependencyInjection\InstanceProvider\InstanceProviderFactory;
 use Suhock\DependencyInjection\InstanceProvider\InstanceProviderInterface;
+use Suhock\DependencyInjection\InterfaceContainer;
 use Suhock\DependencyInjection\Lifetime\ScopedStrategy;
+use Suhock\DependencyInjection\NamespaceContainer;
 use UnitEnum;
 
 /**
  * Default implementation for {@see ContainerScopedBuilderInterface}. Classes using this trait must implement
- * {@see ContainerBuilderInterface}.
+ * {@see ContainerBuilderInterface} and the {@see getInjector()} function.
  */
 trait ContainerScopedBuilderTrait
 {
+    abstract protected function getInjector(): InjectorInterface;
+
     /**
      * @template TClass of object
      * @template TImplementation of TClass
@@ -187,5 +194,43 @@ trait ContainerScopedBuilderTrait
             $key,
             InstanceProviderFactory::createClosureInstanceProvider($className, $factory(...))
         );
+    }
+
+    public function addScopedContainer(ContainerInterface $container): static
+    {
+        $this->addContainer(
+            $container,
+            /** @param class-string $className */
+            fn (string $className) => new ScopedStrategy($className)
+        );
+
+        return $this;
+    }
+
+    public function addScopedNamespace(string $namespace, ?callable $factory = null): static
+    {
+        $this->addScopedContainer(new NamespaceContainer($namespace, fn () => $this->getInjector(), $factory));
+
+        return $this;
+    }
+
+    /**
+     * @param class-string $interfaceName
+     */
+    public function addScopedInterface(string $interfaceName, ?callable $factory = null): static
+    {
+        $this->addScopedContainer(new InterfaceContainer($interfaceName, fn () => $this->getInjector(), $factory));
+
+        return $this;
+    }
+
+    /**
+     * @param class-string $attributeName
+     */
+    public function addScopedAttribute(string $attributeName, ?callable $factory = null): static
+    {
+        $this->addScopedContainer(new AttributeContainer($attributeName, fn () => $this->getInjector(), $factory));
+
+        return $this;
     }
 }
