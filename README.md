@@ -29,6 +29,7 @@ constructor.
 ## Table of Contents
 
 - [Installation](#installation)
+- [Compatibility](#compatibility)
 - [Basic usage](#basic-usage)
 - [Instance lifetime](#instance-lifetime)
     - [Singleton](#singleton)
@@ -58,9 +59,12 @@ constructor.
   - [Builtin types with default values](#builtin-types-with-default-values)
   - [Union types](#union-types)
   - [Intersection types](#intersection-types)
+- [Error handling](#error-handling)
+- [Caching reflected metadata](#caching-reflected-metadata)
 - [Appendix](#appendix)
   - [A note on service locators](#a-note-on-the-service-locator-pattern)
   - [Refactoring toward dependency injection](#refactoring-toward-the-dependency-injection-pattern)
+  - [PSR-11 compatibility](#psr-11-compatibility)
 
 ## Installation
 
@@ -80,6 +84,15 @@ Alternatively, use the command line from your project's root directory.
 ```shell
 composer require "suhock/dependency-injection"
 ```
+
+## Compatibility
+
+The library requires PHP 8.1 or later and is tested on PHP 8.1, 8.2, 8.3, and
+8.4.
+
+There are no required runtime dependencies. The optional `ext-apcu` extension
+enables persistent caching of reflected metadata; see
+[Caching reflected metadata](#caching-reflected-metadata).
 
 ## Basic Usage
 
@@ -188,7 +201,12 @@ the scope, so scoped services can depend on other scoped services. Requesting a
 scoped instance with no scope active — directly from the root container, or
 from a singleton's dependency graph, which always resolves against the root —
 throws a `ScopeException`. The default `Container` provides convenience methods
-for adding scoped factories, all starting with the prefix `addScoped`.
+for adding scoped factories, all starting with the prefix `addScoped`. Scoped
+services can also be bound in bulk from a nested container, namespace,
+interface, or attribute using `addScopedContainer()`, `addScopedNamespace()`,
+`addScopedInterface()`, and `addScopedAttribute()` — the scope-lifetime
+counterparts of the singleton (`addSingletonNamespace()`, etc.) and transient
+bulk-binding methods.
 
 #### Transient
 
@@ -265,8 +283,11 @@ final class QueueWorker
 Note that [nested containers](#nested-containers) added with
 `addSingletonContainer`/`addTransientContainer` (including namespace,
 interface, and attribute containers) construct instances with their own
-injector bound to the root container, so there are no `addScoped` variants of
-these methods: classes they provide cannot have per-scope dependencies.
+injector bound to the root container. Scope-lifetime variants
+(`addScopedContainer()`, `addScopedNamespace()`, `addScopedInterface()`, and
+`addScopedAttribute()`) cache one instance per scope, but because construction
+still runs against the root container, the classes they provide cannot have
+per-scope dependencies.
 
 #### Example: FrankenPHP worker mode
 
@@ -1287,6 +1308,89 @@ In the example above, the container will first attempt to resolve an instance of
 neither candidate satisfies both types, it will throw a
 `ParameterResolutionException`.
 
+## Error handling
+
+Every exception the library throws implements
+`Suhock\DependencyInjection\DependencyInjectionExceptionInterface`, so a single
+`catch` block can handle any failure originating from the container or injector.
+
+```php
+use Suhock\DependencyInjection\DependencyInjectionExceptionInterface;
+
+try {
+    $app = $container->get(MyApplication::class);
+} catch (DependencyInjectionExceptionInterface $e) {
+    // Handle any dependency injection failure.
+}
+```
+
+These exceptions all extend `RuntimeException`: they signal a misconfigured or
+misused container — a consumer error surfaced at run time — rather than a
+violated internal invariant.
+
+The base class is `DependencyInjectionException`. Notable subclasses include:
+
+ - `ClassNotFoundException` — no service is registered for the requested class.
+ - `CircularDependencyException` — a dependency cycle was detected.
+ - `ScopeException` — a scoped service was requested with no active scope, or a
+   disposed scope was used.
+ - `ImplementationException` — a mapped implementation is not a subtype of the
+   class it is mapped to.
+ - `ParameterResolutionException` / `PropertyResolutionException` — the
+   injector could not resolve a parameter or property.
+
+When dependency-injection exceptions are chained through a resolution graph,
+they are consolidated into a single message; the original exception remains
+available via `getConsolidatedException()`.
+
+## Caching reflected metadata
+
+To resolve dependencies, the container and injector reflect over constructor and
+method signatures. This reflected metadata can be memoized so it survives
+between requests instead of being recomputed each time.
+
+`Container::createDefault()` and `Injector::createDefault()` each accept an
+optional cache:
+
+```php
+Container::createDefault(?CacheInterface $cache = null): self
+
+Injector::createDefault(ContainerInterface $container, ?CacheInterface $cache = null): self
+```
+
+`Suhock\DependencyInjection\Cache\CacheInterface` is a minimal key/value store
+with two methods:
+
+```php
+interface CacheInterface
+{
+    public function tryGet(string $id, mixed &$value): bool;
+
+    public function set(string $id, mixed $value): void;
+}
+```
+
+`tryGet()` returns whether the id was present and populates `$value` by
+reference. Reporting presence through the return value means a stored `null` or
+`false` is not mistaken for a miss.
+
+`Suhock\DependencyInjection\Cache\ApcuCache` implements `CacheInterface` using
+the APCu extension. Its entries live in shared memory and persist across
+requests served by the same worker pool. The constructor throws a
+`RuntimeException` if the `apcu` extension is not loaded and enabled — on the
+CLI, `apc.enable_cli` must be set — and it requires the optional `ext-apcu`
+extension.
+
+```php
+use Suhock\DependencyInjection\Cache\ApcuCache;
+use Suhock\DependencyInjection\Container;
+
+$container = Container::createDefault(new ApcuCache());
+```
+
+Consumers can also implement `CacheInterface` themselves to back the cache with
+another store.
+
 ## Appendix
 
 ### A note on the service locator pattern
@@ -1390,3 +1494,21 @@ $container = getAppContainer();
 $container->addSingletonClass(MyApplication::class);
 // ...
 ```
+
+### PSR-11 compatibility
+
+This library defines its own `ContainerInterface` with a typed, optionally keyed
+`get()` method:
+
+```php
+public function get(string $className, string|UnitEnum|null $key = null): object;
+```
+
+This signature is intentionally not compatible with
+`Psr\Container\ContainerInterface::get(string $id)`, so the library does not
+depend on `psr/container`.
+
+For frameworks that expect a PSR-11 container, a thin adapter — one that
+implements `Psr\Container\ContainerInterface` by delegating to this container —
+can be layered on top in a separate package, keeping the core library
+dependency-free.
