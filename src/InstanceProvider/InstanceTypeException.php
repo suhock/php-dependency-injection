@@ -14,6 +14,7 @@ namespace Suhock\DependencyInjection\InstanceProvider;
 use Suhock\DependencyInjection\DependencyInjectionException;
 use Suhock\DependencyInjection\InjectorException;
 use Throwable;
+
 use function get_class;
 use function gettype;
 use function is_object;

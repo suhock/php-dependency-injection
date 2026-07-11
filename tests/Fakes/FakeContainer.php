@@ -14,6 +14,7 @@ namespace Suhock\DependencyInjection\Fakes;
 use Suhock\DependencyInjection\ClassNotFoundException;
 use Suhock\DependencyInjection\ContainerInterface;
 use UnitEnum;
+
 use function array_key_exists;
 
 /**

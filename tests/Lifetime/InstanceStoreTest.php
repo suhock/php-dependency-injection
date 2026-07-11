@@ -17,6 +17,7 @@ use Suhock\DependencyInjection\DisposableInterface;
 use Suhock\DependencyInjection\Fakes\FakeClassNoConstructor;
 use Suhock\DependencyInjection\Fakes\FakeDisposableClass;
 use Suhock\DependencyInjection\Fakes\FakeDisposalLog;
+
 use function gc_collect_cycles;
 
 /**

@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace Suhock\DependencyInjection\InstanceProvider;
 
 use Closure;
+
 use function is_string;
 
 /**
