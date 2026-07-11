@@ -72,7 +72,7 @@ final class InstanceStore
     /**
      * Records a container-owned disposable instance to be disposed when this store is disposed. The registry holds only
      * a weak reference to the instance, so an instance that becomes unreachable before disposal is dropped rather than
-     * kept alive. Recording an already recorded instance has no effect and preserves its original registration order,
+     * kept alive. Recording an already recorded instance has no effect and preserves its original recording order,
      * so an instance shared by more than one descriptor is disposed at most once per store.
      *
      * @param DisposableInterface $instance The instance to dispose when the store is disposed
@@ -111,8 +111,8 @@ final class InstanceStore
     }
 
     /**
-     * Disposes every recorded disposable instance still alive, in reverse registration order so that dependents are
-     * disposed before their dependencies, then discards all cached instances and registrations. If a
+     * Disposes every recorded disposable instance still alive, in reverse recording order so that dependents are
+     * disposed before their dependencies, then discards all cached instances and records. If a
      * {@see DisposableInterface::dispose()} call throws, the sweep continues and the first exception is rethrown once
      * the sweep completes; any later exceptions are suppressed. Disposing an already disposed or empty store has no
      * effect.
@@ -123,7 +123,7 @@ final class InstanceStore
      */
     public function dispose(): void
     {
-        // Snapshot the live registrations, then reset all state before sweeping so that a disposer that calls back into
+        // Snapshot the live records, then reset all state before sweeping so that a disposer that calls back into
         // this store (directly or via a reentrant dispose()) sees an already empty store and does nothing.
         $ordered = [];
 
