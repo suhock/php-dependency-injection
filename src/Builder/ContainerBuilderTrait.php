@@ -125,13 +125,13 @@ trait ContainerBuilderTrait
     }
 
     /**
-     * @param callable(static):mixed $builder
+     * @param callable(static):mixed $configure
      *
      * @return $this
      */
-    public function build(callable $builder): static
+    public function configure(callable $configure): static
     {
-        $builder($this);
+        $configure($this);
 
         return $this;
     }

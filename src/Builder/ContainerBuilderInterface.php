@@ -96,9 +96,9 @@ interface ContainerBuilderInterface
     /**
      * @template TBuilder of self
      *
-     * @param callable(TBuilder):mixed $builder
+     * @param callable(TBuilder):mixed $configure
      *
      * @return $this
      */
-    public function build(callable $builder): static;
+    public function configure(callable $configure): static;
 }

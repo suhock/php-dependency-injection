@@ -14,9 +14,9 @@ namespace Suhock\DependencyInjection\Fakes;
 use Suhock\DependencyInjection\Container;
 
 /**
- * Fakes a container builder callback.
+ * Fakes a container configuration callback.
  */
-interface FakeBuilder
+interface FakeConfigurator
 {
-    public function build(Container $container): static;
+    public function configure(Container $container): static;
 }

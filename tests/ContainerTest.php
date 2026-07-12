@@ -11,9 +11,9 @@ declare(strict_types=1);
 
 namespace Suhock\DependencyInjection;
 
-use Suhock\DependencyInjection\Fakes\FakeBuilder;
 use Suhock\DependencyInjection\Fakes\FakeClassExtendsBaseClass;
 use Suhock\DependencyInjection\Fakes\FakeClassNoConstructor;
+use Suhock\DependencyInjection\Fakes\FakeConfigurator;
 use Suhock\DependencyInjection\Fakes\FakeUnitEnum;
 use Suhock\DependencyInjection\InstanceProvider\ObjectInstanceProvider;
 use Suhock\DependencyInjection\Lifetime\SingletonStrategy;
@@ -107,17 +107,17 @@ final class ContainerTest extends AbstractDependencyInjectionTestCase
         self::assertTrue($container->has(FakeClassNoConstructor::class, 'key1'));
     }
 
-    public function testBuild_WithCallback_InvokesCallbackWithSelf(): void
+    public function testConfigure_WithCallback_InvokesCallbackWithSelf(): void
     {
         // Arrange
         $container = $this->createContainer();
-        $builder = $this->createMock(FakeBuilder::class);
-        $builder->expects($this->once())
-            ->method('build')
+        $configurator = $this->createMock(FakeConfigurator::class);
+        $configurator->expects($this->once())
+            ->method('configure')
             ->with($container);
 
         // Act
-        $container->build($builder->build(...));
+        $container->configure($configurator->configure(...));
     }
 
     public function testRemove_WithExistingClassName_RemovesClassFromContainer(): void
