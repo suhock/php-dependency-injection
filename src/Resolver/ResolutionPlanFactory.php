@@ -50,10 +50,6 @@ final class ResolutionPlanFactory
 
     private readonly MetadataCache $metadataCache;
 
-    private readonly DependencyDescriber $describer;
-
-    private readonly InjectionPlanFactory $injectionPlanFactory;
-
     /**
      * Per-compilation memo of the class-derived parts of autowired plans, keyed by class name, since the same class
      * may back several descriptors (e.g. added under multiple keys).
@@ -69,8 +65,6 @@ final class ResolutionPlanFactory
     public function __construct(?CacheInterface $cache = null)
     {
         $this->metadataCache = new MetadataCache($cache);
-        $this->describer = new DependencyDescriber();
-        $this->injectionPlanFactory = new InjectionPlanFactory();
     }
 
     /**
@@ -213,7 +207,7 @@ final class ResolutionPlanFactory
             /** @var InjectionPlan $injectionPlan */
             $injectionPlan = $this->metadataCache->get(
                 self::INJECTION_PLAN_KEY_PREFIX . $className,
-                fn () => $this->injectionPlanFactory->create($className)
+                static fn () => InjectionPlanFactory::create($className)
             );
         } catch (InjectorException $exception) {
             // The class's #[Inject] members are invalid; resolution throws before member injection, so member
@@ -235,7 +229,7 @@ final class ResolutionPlanFactory
         foreach ($injectionPlan->properties as $propertyName => $key) {
             $rProperty = new ReflectionProperty($className, $propertyName);
             $rType = $rProperty->getType();
-            $dependency = $this->describer->describeType($propertyName, $rType, $key);
+            $dependency = ResolvableDependencyFactory::createFromType($propertyName, $rType, $key);
 
             $edges[] = new ResolutionPlanEdge(
                 sprintf('property $%s', $propertyName),
@@ -250,7 +244,7 @@ final class ResolutionPlanFactory
 
     private function parameterEdge(ReflectionParameter $rParam, string $memberDescription): ResolutionPlanEdge
     {
-        $dependency = $this->describer->describeParameter($rParam);
+        $dependency = ResolvableDependencyFactory::createFromParameter($rParam);
         $rType = $rParam->getType();
 
         return new ResolutionPlanEdge(

@@ -27,12 +27,9 @@ use UnitEnum;
  */
 abstract class AbstractContainerParameterResolver implements ParameterResolverInterface
 {
-    protected readonly DependencyDescriber $describer;
-
     public function __construct(
         private readonly ContainerInterface $container
     ) {
-        $this->describer = new DependencyDescriber();
     }
 
     public function hasDependency(ResolvableDependency $dependency): bool
@@ -187,6 +184,6 @@ abstract class AbstractContainerParameterResolver implements ParameterResolverIn
         ?ReflectionType $rType,
         string|UnitEnum|null $key
     ): ?ResolvableDependency {
-        return $this->describer->describeType($name, $rType, $key);
+        return ResolvableDependencyFactory::createFromType($name, $rType, $key);
     }
 }

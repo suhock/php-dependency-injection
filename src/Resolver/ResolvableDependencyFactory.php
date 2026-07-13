@@ -23,22 +23,22 @@ use UnitEnum;
 use function count;
 
 /**
- * Container-independent description of an injection point's resolvable dependency: maps a parameter's or property's
- * declared type (and any {@see Key} attribute) to a {@see ResolvableDependency} disjunction of alternatives, without
- * consulting a container. Shared by {@see AbstractContainerParameterResolver} and {@see ContainerParameterResolver} so
- * the mapping from reflection to a resolution plan lives in one place.
+ * Creates the {@see ResolvableDependency} for an injection point: maps a parameter's or property's declared type (and
+ * any {@see Key} attribute) to a disjunction of alternatives, without consulting a container. Shared by the parameter
+ * resolvers and {@see ResolutionPlanFactory} so the mapping from reflection to a resolvable dependency lives in one
+ * place. Stateless, so every method is static.
  */
-final class DependencyDescriber
+final class ResolvableDependencyFactory
 {
     /**
      * Builds the resolution plan for a parameter from its type, honoring any {@see Key} attribute.
      */
-    public function describeParameter(ReflectionParameter $rParam): ?ResolvableDependency
+    public static function createFromParameter(ReflectionParameter $rParam): ?ResolvableDependency
     {
-        return $this->describeType(
+        return self::createFromType(
             $rParam->getName(),
             $rParam->getType(),
-            $this->keyFromAttributes($rParam->getAttributes(Key::class))
+            self::keyFromAttributes($rParam->getAttributes(Key::class))
         );
     }
 
@@ -51,7 +51,7 @@ final class DependencyDescriber
      * @param ReflectionType|null $rType The declared type of the injection point
      * @param string|UnitEnum|null $key The key to resolve by, if any
      */
-    public function describeType(
+    public static function createFromType(
         string $name,
         ?ReflectionType $rType,
         string|UnitEnum|null $key
@@ -60,7 +60,7 @@ final class DependencyDescriber
             return null;
         }
 
-        $alternatives = $this->alternativesFromType($rType);
+        $alternatives = self::alternativesFromType($rType);
 
         return $alternatives === null ? null : new ResolvableDependency($name, $alternatives, $key);
     }
@@ -68,7 +68,7 @@ final class DependencyDescriber
     /**
      * @param array<ReflectionAttribute<Key>> $rAttributes
      */
-    private function keyFromAttributes(array $rAttributes): string|UnitEnum|null
+    private static function keyFromAttributes(array $rAttributes): string|UnitEnum|null
     {
         foreach ($rAttributes as $rAttribute) {
             /** @var list<string|UnitEnum> $args */
@@ -88,22 +88,22 @@ final class DependencyDescriber
      *
      * @return non-empty-list<non-empty-list<class-string>>|null
      */
-    private function alternativesFromType(ReflectionType $rType): ?array
+    private static function alternativesFromType(ReflectionType $rType): ?array
     {
         if ($rType instanceof ReflectionNamedType) {
-            $className = $this->classNameFromNamedType($rType);
+            $className = self::classNameFromNamedType($rType);
 
             return $className === null ? null : [[$className]];
         }
 
         if ($rType instanceof ReflectionIntersectionType) {
-            $members = $this->intersectionMembers($rType);
+            $members = self::intersectionMembers($rType);
 
             return $members === null ? null : [$members];
         }
 
         if ($rType instanceof ReflectionUnionType) {
-            return $this->unionAlternatives($rType);
+            return self::unionAlternatives($rType);
         }
 
         return null;
@@ -112,14 +112,14 @@ final class DependencyDescriber
     /**
      * @return non-empty-list<non-empty-list<class-string>>|null
      */
-    private function unionAlternatives(ReflectionUnionType $rType): ?array
+    private static function unionAlternatives(ReflectionUnionType $rType): ?array
     {
         $alternatives = [];
 
         foreach ($rType->getTypes() as $rInnerType) {
             // A union's members are named types or, in DNF, intersections.
             if ($rInnerType instanceof ReflectionIntersectionType) {
-                $members = $this->intersectionMembers($rInnerType);
+                $members = self::intersectionMembers($rInnerType);
 
                 if ($members === null) {
                     return null;
@@ -130,7 +130,7 @@ final class DependencyDescriber
                 continue;
             }
 
-            $className = $this->classNameFromNamedType($rInnerType);
+            $className = self::classNameFromNamedType($rInnerType);
 
             if ($className !== null) {
                 // A builtin alternative is skipped, mirroring the by-type resolution of a union.
@@ -144,7 +144,7 @@ final class DependencyDescriber
     /**
      * @return class-string|null The class name, or <code>null</code> for a builtin type
      */
-    private function classNameFromNamedType(ReflectionNamedType $rType): ?string
+    private static function classNameFromNamedType(ReflectionNamedType $rType): ?string
     {
         if ($rType->isBuiltin()) {
             return null;
@@ -159,7 +159,7 @@ final class DependencyDescriber
     /**
      * @return non-empty-list<class-string>|null <code>null</code> if any member is not a plain named type
      */
-    private function intersectionMembers(ReflectionIntersectionType $rType): ?array
+    private static function intersectionMembers(ReflectionIntersectionType $rType): ?array
     {
         $members = [];
 

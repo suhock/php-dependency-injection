@@ -31,7 +31,7 @@ final class InjectionPlanFactory
      * @throws InjectorException if a method with an {@see Inject} attribute is static, or a property has a
      * {@see Key} attribute but no {@see Inject} attribute
      */
-    public function create(string $className): InjectionPlan
+    public static function create(string $className): InjectionPlan
     {
         $class = new ReflectionClass($className);
         $methods = [];

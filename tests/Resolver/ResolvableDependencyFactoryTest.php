@@ -20,9 +20,9 @@ use Suhock\DependencyInjection\Fakes\FakeInterfaceTwo;
 use Suhock\DependencyInjection\Key;
 
 /**
- * Test suite for {@see DependencyDescriber}.
+ * Test suite for {@see ResolvableDependencyFactory}.
  */
-final class DependencyDescriberTest extends TestCase
+final class ResolvableDependencyFactoryTest extends TestCase
 {
     private function fakeNamedParam(FakeClassNoConstructor $namedParam): void
     {
@@ -57,14 +57,13 @@ final class DependencyDescriberTest extends TestCase
         return new ReflectionParameter($fakeMethod, $parameterName);
     }
 
-    public function testDescribeParameter_NamedParam_ReturnsResolvableDependencyForClass(): void
+    public function testCreateFromParameter_NamedParam_ReturnsResolvableDependencyForClass(): void
     {
         // Arrange
-        $describer = new DependencyDescriber();
         $rParam = $this->createParameter($this->fakeNamedParam(...), 'namedParam');
 
         // Act
-        $dependency = $describer->describeParameter($rParam);
+        $dependency = ResolvableDependencyFactory::createFromParameter($rParam);
 
         // Assert
         self::assertNotNull($dependency);
@@ -73,139 +72,128 @@ final class DependencyDescriberTest extends TestCase
         self::assertNull($dependency->key);
     }
 
-    public function testDescribeParameter_NullableParam_ReturnsResolvableDependencyForClass(): void
+    public function testCreateFromParameter_NullableParam_ReturnsResolvableDependencyForClass(): void
     {
         // Arrange
-        $describer = new DependencyDescriber();
         $rParam = $this->createParameter($this->fakeNullableParam(...), 'nullableParam');
 
         // Act
-        $dependency = $describer->describeParameter($rParam);
+        $dependency = ResolvableDependencyFactory::createFromParameter($rParam);
 
         // Assert: nullability does not change the described alternatives — it is applied by the caller's fallback.
         self::assertNotNull($dependency);
         self::assertSame([[FakeClassNoConstructor::class]], $dependency->alternatives);
     }
 
-    public function testDescribeParameter_DefaultedParam_ReturnsResolvableDependencyForClass(): void
+    public function testCreateFromParameter_DefaultedParam_ReturnsResolvableDependencyForClass(): void
     {
         // Arrange
-        $describer = new DependencyDescriber();
         $rParam = $this->createParameter($this->fakeDefaultedParam(...), 'defaultedParam');
 
         // Act
-        $dependency = $describer->describeParameter($rParam);
+        $dependency = ResolvableDependencyFactory::createFromParameter($rParam);
 
         // Assert: a default value does not change the described alternatives either.
         self::assertNotNull($dependency);
         self::assertSame([[FakeClassNoConstructor::class]], $dependency->alternatives);
     }
 
-    public function testDescribeParameter_BuiltinParam_ReturnsNull(): void
+    public function testCreateFromParameter_BuiltinParam_ReturnsNull(): void
     {
         // Arrange
-        $describer = new DependencyDescriber();
         $rParam = $this->createParameter($this->fakeBuiltinParam(...), 'builtinParam');
 
         // Act
-        $dependency = $describer->describeParameter($rParam);
+        $dependency = ResolvableDependencyFactory::createFromParameter($rParam);
 
         // Assert
         self::assertNull($dependency);
     }
 
-    public function testDescribeParameter_UntypedParam_ReturnsNull(): void
+    public function testCreateFromParameter_UntypedParam_ReturnsNull(): void
     {
         // Arrange: an untyped parameter has no ReflectionType at all, unlike a builtin type.
-        $describer = new DependencyDescriber();
         $fakeFunction = static function ($untypedParam): void {
         };
         $rParam = $this->createParameter($fakeFunction, 'untypedParam');
 
         // Act
-        $dependency = $describer->describeParameter($rParam);
+        $dependency = ResolvableDependencyFactory::createFromParameter($rParam);
 
         // Assert
         self::assertNull($dependency);
     }
 
-    public function testDescribeParameter_UnionParam_ReturnsOneAlternativePerMember(): void
+    public function testCreateFromParameter_UnionParam_ReturnsOneAlternativePerMember(): void
     {
         // Arrange
-        $describer = new DependencyDescriber();
         $rParam = $this->createParameter($this->fakeUnionParam(...), 'unionParam');
 
         // Act
-        $dependency = $describer->describeParameter($rParam);
+        $dependency = ResolvableDependencyFactory::createFromParameter($rParam);
 
         // Assert
         self::assertNotNull($dependency);
         self::assertSame([[FakeInterfaceOne::class], [FakeInterfaceTwo::class]], $dependency->alternatives);
     }
 
-    public function testDescribeParameter_IntersectionParam_ReturnsSingleAlternativeWithAllMembers(): void
+    public function testCreateFromParameter_IntersectionParam_ReturnsSingleAlternativeWithAllMembers(): void
     {
         // Arrange
-        $describer = new DependencyDescriber();
         $rParam = $this->createParameter($this->fakeIntersectionParam(...), 'intersectionParam');
 
         // Act
-        $dependency = $describer->describeParameter($rParam);
+        $dependency = ResolvableDependencyFactory::createFromParameter($rParam);
 
         // Assert
         self::assertNotNull($dependency);
         self::assertSame([[FakeInterfaceOne::class, FakeInterfaceTwo::class]], $dependency->alternatives);
     }
 
-    public function testDescribeParameter_ParamWithKeyAttribute_ReturnsResolvableDependencyWithKey(): void
+    public function testCreateFromParameter_ParamWithKeyAttribute_ReturnsResolvableDependencyWithKey(): void
     {
         // Arrange
-        $describer = new DependencyDescriber();
         $rParam = $this->createParameter($this->fakeKeyedParam(...), 'keyedParam');
 
         // Act
-        $dependency = $describer->describeParameter($rParam);
+        $dependency = ResolvableDependencyFactory::createFromParameter($rParam);
 
         // Assert
         self::assertNotNull($dependency);
         self::assertSame('key1', $dependency->key);
     }
 
-    public function testDescribeParameter_ParamWithoutKeyAttribute_ReturnsResolvableDependencyWithNullKey(): void
+    public function testCreateFromParameter_ParamWithoutKeyAttribute_ReturnsResolvableDependencyWithNullKey(): void
     {
         // Arrange
-        $describer = new DependencyDescriber();
         $rParam = $this->createParameter($this->fakeNamedParam(...), 'namedParam');
 
         // Act
-        $dependency = $describer->describeParameter($rParam);
+        $dependency = ResolvableDependencyFactory::createFromParameter($rParam);
 
         // Assert
         self::assertNotNull($dependency);
         self::assertNull($dependency->key);
     }
 
-    public function testDescribeType_WithNullType_ReturnsNull(): void
+    public function testCreateFromType_WithNullType_ReturnsNull(): void
     {
         // Arrange
-        $describer = new DependencyDescriber();
-
         // Act
-        $dependency = $describer->describeType('name', null, null);
+        $dependency = ResolvableDependencyFactory::createFromType('name', null, null);
 
         // Assert
         self::assertNull($dependency);
     }
 
-    public function testDescribeType_GivenKeyDirectly_UsesGivenKeyRegardlessOfAttributes(): void
+    public function testCreateFromType_GivenKeyDirectly_UsesGivenKeyRegardlessOfAttributes(): void
     {
-        // Arrange: describeType takes the key as a plain argument, independent of any attribute on the reflected
-        // parameter — the attribute-reading behavior belongs to describeParameter alone.
-        $describer = new DependencyDescriber();
+        // Arrange: createFromType() takes the key as a plain argument, independent of any attribute on the reflected
+        // parameter — the attribute-reading behavior belongs to createFromParameter() alone.
         $rParam = $this->createParameter($this->fakeNamedParam(...), 'namedParam');
 
         // Act
-        $dependency = $describer->describeType($rParam->getName(), $rParam->getType(), 'explicitKey');
+        $dependency = ResolvableDependencyFactory::createFromType($rParam->getName(), $rParam->getType(), 'explicitKey');
 
         // Assert
         self::assertNotNull($dependency);

@@ -35,8 +35,6 @@ final class InjectAttributeMemberInjector implements PostInstantiationHookInterf
 
     private readonly ArgumentResolver $argumentResolver;
 
-    private readonly InjectionPlanFactory $planFactory;
-
     /**
      * @param ParameterResolverInterface $resolver The resolver to use for resolving injection point values
      * @param CacheInterface|null $sharedCache [optional] Optional shared (L2) metadata cache for the reflected
@@ -48,7 +46,6 @@ final class InjectAttributeMemberInjector implements PostInstantiationHookInterf
     ) {
         $this->cache = new MetadataCache($sharedCache);
         $this->argumentResolver = new ArgumentResolver($resolver);
-        $this->planFactory = new InjectionPlanFactory();
     }
 
     public function postInstantiate(object $instance): void
@@ -78,7 +75,7 @@ final class InjectAttributeMemberInjector implements PostInstantiationHookInterf
     {
         return $this->cache->get(
             self::INJECTION_PLAN_CACHE_PREFIX . $className,
-            fn () => $this->planFactory->create($className)
+            static fn () => InjectionPlanFactory::create($className)
         );
     }
 }

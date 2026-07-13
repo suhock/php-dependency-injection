@@ -26,10 +26,8 @@ final class InjectionPlanFactoryTest extends TestCase
     public function testCreate_WithInjectMethod_PlanContainsMethodName(): void
     {
         // Arrange
-        $factory = new InjectionPlanFactory();
-
         // Act
-        $plan = $factory->create(FakeClassWithInjectFunction::class);
+        $plan = InjectionPlanFactory::create(FakeClassWithInjectFunction::class);
 
         // Assert
         self::assertSame(['setObj'], $plan->methods);
@@ -39,10 +37,8 @@ final class InjectionPlanFactoryTest extends TestCase
     public function testCreate_WithInjectedProperties_PlanContainsPropertyKeyMap(): void
     {
         // Arrange
-        $factory = new InjectionPlanFactory();
-
         // Act
-        $plan = $factory->create(FakeClassWithInjectedProperties::class);
+        $plan = InjectionPlanFactory::create(FakeClassWithInjectedProperties::class);
 
         // Assert
         self::assertSame([], $plan->methods);
@@ -61,11 +57,9 @@ final class InjectionPlanFactoryTest extends TestCase
     public function testCreate_WithStaticInjectMethod_ThrowsInjectorException(): void
     {
         // Arrange
-        $factory = new InjectionPlanFactory();
-
         // Act & Assert
         try {
-            $factory->create(FakeClassWithStaticInjectMethod::class);
+            InjectionPlanFactory::create(FakeClassWithStaticInjectMethod::class);
             self::fail('Expected ' . InjectorException::class);
         } catch (InjectorException $exception) {
             self::assertStringContainsString('setObj', $exception->getMessage());
@@ -75,11 +69,9 @@ final class InjectionPlanFactoryTest extends TestCase
     public function testCreate_WithKeyOnPropertyWithoutInject_ThrowsInjectorException(): void
     {
         // Arrange
-        $factory = new InjectionPlanFactory();
-
         // Act & Assert
         try {
-            $factory->create(FakeClassWithDanglingKeyProperty::class);
+            InjectionPlanFactory::create(FakeClassWithDanglingKeyProperty::class);
             self::fail('Expected ' . InjectorException::class);
         } catch (InjectorException $exception) {
             self::assertStringContainsString('dependency', $exception->getMessage());

@@ -52,14 +52,14 @@ final class ConfigurationFingerprint
      *
      * @param array<string, Descriptor<object>> $descriptors The service descriptors, keyed by descriptor id
      */
-    public function compute(array $descriptors): ?string
+    public static function compute(array $descriptors): ?string
     {
         ksort($descriptors);
 
         $lines = [(string) self::SCHEMA_VERSION, PHP_VERSION];
 
         foreach ($descriptors as $id => $descriptor) {
-            $shape = $this->providerShape($descriptor->instanceProvider);
+            $shape = self::providerShape($descriptor->instanceProvider);
 
             if ($shape === null) {
                 return null;
@@ -80,7 +80,7 @@ final class ConfigurationFingerprint
     /**
      * @param InstanceProviderInterface<object> $provider
      */
-    private function providerShape(InstanceProviderInterface $provider): ?string
+    private static function providerShape(InstanceProviderInterface $provider): ?string
     {
         if (!$provider instanceof IntrospectableInstanceProviderInterface) {
             // Safe: a non-introspectable provider compiles to an edge-less opaque plan, so its internal state
@@ -88,26 +88,26 @@ final class ConfigurationFingerprint
             return 'opaque:' . get_class($provider);
         }
 
-        return $this->dependencySourceShape($provider->getDependencySource(), $provider);
+        return self::dependencySourceShape($provider->getDependencySource(), $provider);
     }
 
     /**
      * @param InstanceProviderInterface<object> $provider
      */
-    private function dependencySourceShape(DependencySource $source, InstanceProviderInterface $provider): ?string
+    private static function dependencySourceShape(DependencySource $source, InstanceProviderInterface $provider): ?string
     {
         if ($source instanceof AutowireClassSource) {
             if ($source->mutator === null) {
                 return 'autowire:' . $source->className . '-';
             }
 
-            $signature = $this->closureSignature($source->mutator);
+            $signature = self::closureSignature($source->mutator);
 
             return $signature === null ? null : 'autowire:' . $source->className . $signature;
         }
 
         if ($source instanceof CallableSource) {
-            $signature = $this->closureSignature($source->callable);
+            $signature = self::closureSignature($source->callable);
 
             return $signature === null
                 ? null
@@ -135,7 +135,7 @@ final class ConfigurationFingerprint
      * @return string|null <code>null</code> if the closure has no file (an internal function or one defined in
      * eval'd code), and so cannot be fingerprinted
      */
-    private function closureSignature(Closure $closure): ?string
+    private static function closureSignature(Closure $closure): ?string
     {
         $rFunction = new ReflectionFunction($closure);
         $fileName = $rFunction->getFileName();
@@ -147,7 +147,7 @@ final class ConfigurationFingerprint
         $paramEntries = [];
 
         foreach ($rFunction->getParameters() as $rParam) {
-            $paramEntries[] = $this->parameterSignature($rParam);
+            $paramEntries[] = self::parameterSignature($rParam);
         }
 
         $rReturnType = $rFunction->getReturnType();
@@ -158,16 +158,16 @@ final class ConfigurationFingerprint
             . ':' . ($rReturnType === null ? '' : (string) $rReturnType);
     }
 
-    private function parameterSignature(ReflectionParameter $rParam): string
+    private static function parameterSignature(ReflectionParameter $rParam): string
     {
         $rType = $rParam->getType();
 
         return ($rType === null ? '' : (string) $rType)
-            . '#' . $this->keySignature($rParam)
+            . '#' . self::keySignature($rParam)
             . '$' . $rParam->getName();
     }
 
-    private function keySignature(ReflectionParameter $rParam): string
+    private static function keySignature(ReflectionParameter $rParam): string
     {
         foreach ($rParam->getAttributes(Key::class) as $rAttribute) {
             /** @var list<string|UnitEnum> $args */

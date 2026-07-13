@@ -93,8 +93,6 @@ final class ConfigurationFingerprintTest extends TestCase
     public function testCompute_WithClosuresFromSameSiteButDifferentCapturedValues_ProducesIdenticalFingerprints(): void
     {
         // Arrange
-        $fingerprint = new ConfigurationFingerprint();
-
         $descriptorsA = [
             FakeClassNoConstructor::class =>
                 self::transientClosure(FakeClassNoConstructor::class, self::makeCapturingFactory(1)),
@@ -105,8 +103,8 @@ final class ConfigurationFingerprintTest extends TestCase
         ];
 
         // Act
-        $digestA = $fingerprint->compute($descriptorsA);
-        $digestB = $fingerprint->compute($descriptorsB);
+        $digestA = ConfigurationFingerprint::compute($descriptorsA);
+        $digestB = ConfigurationFingerprint::compute($descriptorsB);
 
         // Assert
         self::assertNotNull($digestA);
@@ -116,7 +114,6 @@ final class ConfigurationFingerprintTest extends TestCase
     public function testCompute_WithReversedDescriptorInsertionOrder_ProducesIdenticalFingerprints(): void
     {
         // Arrange
-        $fingerprint = new ConfigurationFingerprint();
         $descriptorOne = self::transientObject(FakeClassNoConstructor::class, new FakeClassNoConstructor());
         $descriptorTwo = self::transientObject(
             FakeInterfaceOne::class,
@@ -133,8 +130,8 @@ final class ConfigurationFingerprintTest extends TestCase
         ];
 
         // Act
-        $digestForward = $fingerprint->compute($forwardOrder);
-        $digestReversed = $fingerprint->compute($reversedOrder);
+        $digestForward = ConfigurationFingerprint::compute($forwardOrder);
+        $digestReversed = ConfigurationFingerprint::compute($reversedOrder);
 
         // Assert
         self::assertNotNull($digestForward);
@@ -144,7 +141,6 @@ final class ConfigurationFingerprintTest extends TestCase
     public function testCompute_WithFactoryClosuresOnDifferentLines_ProducesDifferentFingerprints(): void
     {
         // Arrange
-        $fingerprint = new ConfigurationFingerprint();
         $factoryOne = static fn (): FakeClassNoConstructor => new FakeClassNoConstructor();
         $factoryTwo = static fn (): FakeClassNoConstructor => new FakeClassNoConstructor();
 
@@ -156,8 +152,8 @@ final class ConfigurationFingerprintTest extends TestCase
         ];
 
         // Act
-        $digestA = $fingerprint->compute($descriptorsA);
-        $digestB = $fingerprint->compute($descriptorsB);
+        $digestA = ConfigurationFingerprint::compute($descriptorsA);
+        $digestB = ConfigurationFingerprint::compute($descriptorsB);
 
         // Assert
         self::assertNotNull($digestA);
@@ -168,7 +164,6 @@ final class ConfigurationFingerprintTest extends TestCase
     public function testCompute_WithLifetimeStrategyClassChanged_ProducesDifferentFingerprints(): void
     {
         // Arrange
-        $fingerprint = new ConfigurationFingerprint();
         $instance = new FakeClassNoConstructor();
 
         $transient = [
@@ -179,8 +174,8 @@ final class ConfigurationFingerprintTest extends TestCase
         ];
 
         // Act
-        $digestTransient = $fingerprint->compute($transient);
-        $digestSingleton = $fingerprint->compute($singleton);
+        $digestTransient = ConfigurationFingerprint::compute($transient);
+        $digestSingleton = ConfigurationFingerprint::compute($singleton);
 
         // Assert
         self::assertNotNull($digestTransient);
@@ -190,8 +185,6 @@ final class ConfigurationFingerprintTest extends TestCase
     public function testCompute_WithDifferentInstancesOfSameClass_ProducesIdenticalFingerprints(): void
     {
         // Arrange
-        $fingerprint = new ConfigurationFingerprint();
-
         $descriptorsA = [
             FakeClassNoConstructor::class =>
                 self::transientObject(FakeClassNoConstructor::class, new FakeClassNoConstructor()),
@@ -202,8 +195,8 @@ final class ConfigurationFingerprintTest extends TestCase
         ];
 
         // Act
-        $digestA = $fingerprint->compute($descriptorsA);
-        $digestB = $fingerprint->compute($descriptorsB);
+        $digestA = ConfigurationFingerprint::compute($descriptorsA);
+        $digestB = ConfigurationFingerprint::compute($descriptorsB);
 
         // Assert
         self::assertNotNull($digestA);
@@ -213,7 +206,6 @@ final class ConfigurationFingerprintTest extends TestCase
     public function testCompute_WithDescriptorClassNameChanged_ProducesDifferentFingerprints(): void
     {
         // Arrange
-        $fingerprint = new ConfigurationFingerprint();
         $instance = new FakeClassWithConstructor(new FakeClassNoConstructor());
 
         $descriptorsA = [
@@ -224,8 +216,8 @@ final class ConfigurationFingerprintTest extends TestCase
         ];
 
         // Act
-        $digestA = $fingerprint->compute($descriptorsA);
-        $digestB = $fingerprint->compute($descriptorsB);
+        $digestA = ConfigurationFingerprint::compute($descriptorsA);
+        $digestB = ConfigurationFingerprint::compute($descriptorsB);
 
         // Assert
         self::assertNotNull($digestA);
@@ -235,15 +227,13 @@ final class ConfigurationFingerprintTest extends TestCase
     public function testCompute_WithFactoryFromInternalFunction_ReturnsNull(): void
     {
         // Arrange
-        $fingerprint = new ConfigurationFingerprint();
-
         $descriptors = [
             FakeClassNoConstructor::class =>
                 self::transientClosure(FakeClassNoConstructor::class, strlen(...)),
         ];
 
         // Act
-        $digest = $fingerprint->compute($descriptors);
+        $digest = ConfigurationFingerprint::compute($descriptors);
 
         // Assert
         self::assertNull($digest);
@@ -252,7 +242,6 @@ final class ConfigurationFingerprintTest extends TestCase
     public function testCompute_WithShouldDisposeFlipped_ProducesDifferentFingerprints(): void
     {
         // Arrange
-        $fingerprint = new ConfigurationFingerprint();
         $instance = new FakeClassNoConstructor();
 
         $withDisposal = [
@@ -263,8 +252,8 @@ final class ConfigurationFingerprintTest extends TestCase
         ];
 
         // Act
-        $digestWithDisposal = $fingerprint->compute($withDisposal);
-        $digestWithoutDisposal = $fingerprint->compute($withoutDisposal);
+        $digestWithDisposal = ConfigurationFingerprint::compute($withDisposal);
+        $digestWithoutDisposal = ConfigurationFingerprint::compute($withoutDisposal);
 
         // Assert
         self::assertNotNull($digestWithDisposal);

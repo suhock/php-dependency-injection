@@ -44,6 +44,6 @@ final class ContainerParameterResolver extends AbstractContainerParameterResolve
      */
     protected function describeDependency(ReflectionParameter $rParam): ?ResolvableDependency
     {
-        return $this->describer->describeParameter($rParam);
+        return ResolvableDependencyFactory::createFromParameter($rParam);
     }
 }
