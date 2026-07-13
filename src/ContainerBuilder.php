@@ -22,6 +22,8 @@ use Suhock\DependencyInjection\Builder\ContainerTransientBuilderInterface;
 use Suhock\DependencyInjection\Builder\ContainerTransientBuilderTrait;
 use Suhock\DependencyInjection\Cache\CacheInterface;
 use Suhock\DependencyInjection\Descriptor\Descriptor;
+use Suhock\DependencyInjection\InstanceProvider\ContextInstanceProvider;
+use Suhock\DependencyInjection\Lifetime\TransientStrategy;
 use Suhock\DependencyInjection\Resolver\ResolutionPlanFactory;
 use Suhock\DependencyInjection\Validation\ContainerValidationException;
 use Suhock\DependencyInjection\Validation\ContainerValidator;
@@ -82,10 +84,54 @@ final class ContainerBuilder implements
     public function build(): Container
     {
         $descriptors = $this->descriptors;
+        self::addAutoBindings($descriptors);
         $plans = (new ResolutionPlanFactory($this->cache))->compile($descriptors);
         (new ContainerValidator($descriptors))->validate($plans);
 
         return new Container($descriptors, $plans, $this->injectorFactory);
+    }
+
+    /**
+     * Adds the services the container supplies about itself, unless the configuration already provides them:
+     * {@see ContainerInterface} resolves to the current resolution root — a service resolved from a scope receives
+     * that scope — and {@see ScopeFactoryInterface} resolves to the root container from any depth. Both are transient
+     * so every resolution re-reads its context, and neither is disposed by the container (no self-disposal).
+     *
+     * @param array<string, Descriptor<object>> $descriptors
+     */
+    private static function addAutoBindings(array &$descriptors): void
+    {
+        if (!isset($descriptors[ContainerInterface::class])) {
+            $descriptors[ContainerInterface::class] = self::contextDescriptor(
+                ContainerInterface::class,
+                static fn (ResolutionContext $context): object => $context->container
+            );
+        }
+
+        if (!isset($descriptors[ScopeFactoryInterface::class])) {
+            $descriptors[ScopeFactoryInterface::class] = self::contextDescriptor(
+                ScopeFactoryInterface::class,
+                static fn (ResolutionContext $context): object => $context->rootContext()->container
+            );
+        }
+    }
+
+    /**
+     * A transient, never-disposed descriptor whose instance derives from the current resolution context.
+     *
+     * @param class-string $className
+     * @param Closure(ResolutionContext):object $select
+     *
+     * @return Descriptor<object>
+     */
+    private static function contextDescriptor(string $className, Closure $select): Descriptor
+    {
+        return new Descriptor(
+            $className,
+            new TransientStrategy($className),
+            new ContextInstanceProvider($className, $select),
+            shouldDispose: false
+        );
     }
 
     /**
