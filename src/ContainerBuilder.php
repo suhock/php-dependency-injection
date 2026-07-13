@@ -303,7 +303,7 @@ final class ContainerBuilder implements ContainerBuilderInterface
      */
     private function store(Descriptor $descriptor, string|UnitEnum|null $key): static
     {
-        $id = $this->descriptorId($descriptor->className, $key);
+        $id = DescriptorId::compute($descriptor->className, $key);
 
         if (isset($this->descriptors[$id])) {
             throw new ContainerException($key === null ?
@@ -318,28 +318,10 @@ final class ContainerBuilder implements ContainerBuilderInterface
     }
 
     /**
-     * Computes the internal storage id for a service. Unkeyed services use the bare class name; keyed services use the
-     * class name and key joined by a NUL byte, which cannot occur in a class name, so a keyed id can never collide with
-     * an unkeyed one or with a different (class, key) pair.
-     *
-     * @param class-string $className
-     */
-    private function descriptorId(string $className, string|UnitEnum|null $key): string
-    {
-        if ($key === null) {
-            return $className;
-        }
-
-        $stringKey = Key::getKeyFromStringOrEnum($key);
-
-        return $className . "\0" . $stringKey;
-    }
-
-    /**
      * @param class-string $className
      */
     protected function removeDescriptor(string $className, string|UnitEnum|null $key): void
     {
-        unset($this->descriptors[$this->descriptorId($className, $key)]);
+        unset($this->descriptors[DescriptorId::compute($className, $key)]);
     }
 }

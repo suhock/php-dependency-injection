@@ -13,6 +13,7 @@ namespace Suhock\DependencyInjection\Validation;
 
 use ReflectionClass;
 use Suhock\DependencyInjection\Builder\Descriptor;
+use Suhock\DependencyInjection\DescriptorId;
 use Suhock\DependencyInjection\Key;
 use Suhock\DependencyInjection\Lifetime\ScopedStrategy;
 use Suhock\DependencyInjection\Lifetime\SingletonStrategy;
@@ -20,7 +21,6 @@ use Suhock\DependencyInjection\Lifetime\TransientStrategy;
 use Suhock\DependencyInjection\Resolver\ResolutionPlan;
 use Suhock\DependencyInjection\Resolver\ResolutionPlanEdge;
 use Suhock\DependencyInjection\Resolver\ResolutionPlanKind;
-use UnitEnum;
 
 use function array_map;
 use function array_pop;
@@ -35,10 +35,6 @@ use function interface_exists;
 use function is_a;
 use function min;
 use function sprintf;
-use function str_contains;
-use function strpos;
-use function strtr;
-use function substr;
 
 /**
  * Runs the guaranteed-failure graph checks over a set of compiled {@see ResolutionPlan}s: unresolvable required
@@ -117,7 +113,7 @@ final class ContainerValidator
         $serviceIds = [];
 
         foreach ($this->descriptors as $id => $descriptor) {
-            $serviceIds[] = self::displayId($id);
+            $serviceIds[] = DescriptorId::display($id);
         }
 
         $edges = [];
@@ -127,12 +123,12 @@ final class ContainerValidator
                 continue;
             }
 
-            $sourceId = self::displayId($id);
+            $sourceId = DescriptorId::display($id);
 
             if ($plan->implementationTarget !== null && isset($this->descriptors[$plan->implementationTarget])) {
                 $edges[] = new DependencyGraphEdge(
                     $sourceId,
-                    self::displayId($plan->implementationTarget),
+                    DescriptorId::display($plan->implementationTarget),
                     required: true,
                     injectionPoint: 'the implementation class'
                 );
@@ -144,7 +140,7 @@ final class ContainerValidator
                 if ($target !== null) {
                     $edges[] = new DependencyGraphEdge(
                         $sourceId,
-                        self::displayId($target),
+                        DescriptorId::display($target),
                         required: !$edge->soft,
                         injectionPoint: $description
                     );
@@ -195,7 +191,7 @@ final class ContainerValidator
     private function planIssues(string $id, Descriptor $descriptor, ResolutionPlan $plan): array
     {
         $issues = [];
-        $key = self::keyFromId($id);
+        $key = DescriptorId::keyOf($id);
 
         if ($plan->nonInstantiableMessage !== null) {
             $issues[] = new ValidationIssue(
@@ -369,11 +365,11 @@ final class ContainerValidator
             return null;
         }
 
-        $path = implode(' -> ', [...array_map(self::displayId(...), $canonical), self::displayId($first)]);
+        $path = implode(' -> ', [...array_map(DescriptorId::display(...), $canonical), DescriptorId::display($first)]);
 
         return new ValidationIssue(
             $descriptor->className,
-            self::keyFromId($first),
+            DescriptorId::keyOf($first),
             ValidationIssueKind::CircularDependency,
             "every service on the dependency cycle $path requires the next, so none can ever be constructed"
         );
@@ -453,14 +449,14 @@ final class ContainerValidator
         $path = [];
 
         for ($id = $scopedId; $id !== null; $id = $parents[$id] ?? null) {
-            array_unshift($path, self::displayId($id));
+            array_unshift($path, DescriptorId::display($id));
         }
 
         return new ValidationIssue(
             $descriptor->className,
-            self::keyFromId($singletonId),
+            DescriptorId::keyOf($singletonId),
             ValidationIssueKind::CaptiveDependency,
-            'singleton requires the scoped service ' . self::displayId($scopedId) . ' via ' .
+            'singleton requires the scoped service ' . DescriptorId::display($scopedId) . ' via ' .
                 implode(' -> ', $path) . ', which always resolves outside of a scope'
         );
     }
@@ -499,7 +495,7 @@ final class ContainerValidator
 
         foreach ($edge->dependency->alternatives as $alternative) {
             foreach ($alternative as $className) {
-                $targetId = self::idFor($className, $edge->dependency->key);
+                $targetId = DescriptorId::compute($className, $edge->dependency->key);
 
                 if (isset($this->descriptors[$targetId])) {
                     return $targetId;
@@ -563,20 +559,4 @@ final class ContainerValidator
         return false;
     }
 
-    private static function idFor(string $className, string|UnitEnum|null $key): string
-    {
-        return $key === null ? $className : $className . "\0" . Key::getKeyFromStringOrEnum($key);
-    }
-
-    private static function keyFromId(string $id): ?string
-    {
-        $separator = strpos($id, "\0");
-
-        return $separator === false ? null : substr($id, $separator + 1);
-    }
-
-    private static function displayId(string $id): string
-    {
-        return str_contains($id, "\0") ? strtr($id, ["\0" => '#']) : $id;
-    }
 }

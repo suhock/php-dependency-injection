@@ -187,7 +187,7 @@ final class Container implements ContainerInterface, DisposableInterface, ScopeF
     {
         $this->ensureNotDisposed();
 
-        $id = $this->descriptorId($className, $key);
+        $id = DescriptorId::compute($className, $key);
 
         if (isset($this->descriptors[$id])) {
             /** @var TClass */
@@ -205,25 +205,7 @@ final class Container implements ContainerInterface, DisposableInterface, ScopeF
     {
         $this->ensureNotDisposed();
 
-        return isset($this->descriptors[$this->descriptorId($className, $key)]);
-    }
-
-    /**
-     * Computes the internal storage id for a service. Unkeyed services use the bare class name; keyed services use the
-     * class name and key joined by a NUL byte, which cannot occur in a class name, so a keyed id can never collide with
-     * an unkeyed one or with a different (class, key) pair.
-     *
-     * @param class-string $className
-     */
-    private function descriptorId(string $className, string|UnitEnum|null $key): string
-    {
-        if ($key === null) {
-            return $className;
-        }
-
-        $stringKey = Key::getKeyFromStringOrEnum($key);
-
-        return $className . "\0" . $stringKey;
+        return isset($this->descriptors[DescriptorId::compute($className, $key)]);
     }
 
     /**
@@ -436,7 +418,7 @@ final class Container implements ContainerInterface, DisposableInterface, ScopeF
             try {
                 foreach ($dependency->alternatives as $alternative) {
                     foreach ($alternative as $candidate) {
-                        if (!isset($this->descriptors[$this->descriptorId($candidate, $dependency->key)])) {
+                        if (!isset($this->descriptors[DescriptorId::compute($candidate, $dependency->key)])) {
                             continue;
                         }
 
