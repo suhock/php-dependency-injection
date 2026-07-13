@@ -35,6 +35,7 @@ constructor.
 - [Building the container](#building-the-container)
     - [Honest limits](#honest-limits)
     - [Build performance](#build-performance)
+    - [Graph diagnostics](#graph-diagnostics)
 - [Instance lifetime](#instance-lifetime)
     - [Singleton](#singleton)
     - [Scoped](#scoped)
@@ -278,6 +279,35 @@ validation. A worker-mode runtime that builds once at boot — see
 cost exactly once regardless of caching. See
 [Caching reflected metadata](#caching-reflected-metadata) for the same cache
 also memoizing the reflected metadata used by the injector.
+
+#### Graph diagnostics
+
+`exportDependencyGraph()` exports the dependency graph `build()` would produce
+as plain data for external tooling: every service (including the
+[auto-bound](#auto-binding) ones) and every satisfied dependency edge, with the
+injection point each edge flows through and whether it is required.
+
+```php
+$graph = $builder->exportDependencyGraph();
+
+// The graph roots — services nothing injects — are the ids no edge targets.
+// They are typically the entry points your application resolves itself.
+$targets = array_map(fn ($edge) => $edge->targetId, $graph->edges);
+$roots = array_diff($graph->serviceIds, $targets);
+
+// Or render it:
+foreach ($graph->edges as $edge) {
+    echo "\"$edge->sourceId\" -> \"$edge->targetId\";\n"; // Graphviz
+}
+```
+
+The export mirrors what resolution would actually traverse: unsatisfiable
+injection points produce no edge (they are [validation](#building-the-container)'s
+domain), an added-but-never-chosen union member receives no incoming edge, and
+dependencies hidden inside
+[custom instance providers](#custom-instance-providers) are invisible.
+`exportDependencyGraph()` never throws — a configuration that would fail
+`build()` still exports.
 
 ### Instance lifetime
 

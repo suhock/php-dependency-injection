@@ -105,6 +105,57 @@ final class ContainerValidator
     }
 
     /**
+     * Exports the configuration's dependency graph: every service and every satisfied, chosen edge, with the
+     * injection point each edge flows through. Mirrors exactly what resolution would traverse — unsatisfiable
+     * injection points produce no edge, and opaque custom providers contribute none. Purely informational: a
+     * defective configuration still exports.
+     *
+     * @param array<string, ResolutionPlan> $plans The compiled plans, keyed by descriptor id
+     */
+    public function exportGraph(array $plans): DependencyGraph
+    {
+        $serviceIds = [];
+
+        foreach ($this->descriptors as $id => $descriptor) {
+            $serviceIds[] = self::displayId($id);
+        }
+
+        $edges = [];
+
+        foreach ($plans as $id => $plan) {
+            if (!isset($this->descriptors[$id]) || $plan->kind === ResolutionPlanKind::Opaque) {
+                continue;
+            }
+
+            $sourceId = self::displayId($id);
+
+            if ($plan->implementationTarget !== null && isset($this->descriptors[$plan->implementationTarget])) {
+                $edges[] = new DependencyGraphEdge(
+                    $sourceId,
+                    self::displayId($plan->implementationTarget),
+                    required: true,
+                    injectionPoint: 'the implementation class'
+                );
+            }
+
+            foreach (self::describedEdges($plan) as [$description, $edge]) {
+                $target = $this->chosenTarget($edge);
+
+                if ($target !== null) {
+                    $edges[] = new DependencyGraphEdge(
+                        $sourceId,
+                        self::displayId($target),
+                        required: !$edge->soft,
+                        injectionPoint: $description
+                    );
+                }
+            }
+        }
+
+        return new DependencyGraph($serviceIds, $edges);
+    }
+
+    /**
      * Every edge of a plan paired with a description of its injection point, e.g.
      * <code>["parameter $x of __construct()", $edge]</code>.
      *

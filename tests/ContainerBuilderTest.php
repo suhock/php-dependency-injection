@@ -12,7 +12,13 @@ declare(strict_types=1);
 namespace Suhock\DependencyInjection;
 
 use Suhock\DependencyInjection\Fakes\FakeCache;
+use Suhock\DependencyInjection\Fakes\FakeClassImplementsInterfaces;
 use Suhock\DependencyInjection\Fakes\FakeClassNoConstructor;
+use Suhock\DependencyInjection\Fakes\FakeClassWithConstructor;
+use Suhock\DependencyInjection\Fakes\FakeClassWithKeyedDependency;
+use Suhock\DependencyInjection\Fakes\FakeClassWithUnionDependency;
+use Suhock\DependencyInjection\Fakes\FakeInterfaceOne;
+use Suhock\DependencyInjection\Fakes\FakeInterfaceTwo;
 use Suhock\DependencyInjection\Fakes\FakeClassWithDependencies;
 use Suhock\DependencyInjection\Fakes\FakeClassWithStringDependency;
 use Suhock\DependencyInjection\Fakes\FakeConfigurator;
@@ -20,6 +26,7 @@ use Suhock\DependencyInjection\Fakes\FakeUnitEnum;
 use Suhock\DependencyInjection\InstanceProvider\ObjectInstanceProvider;
 use Suhock\DependencyInjection\Lifetime\SingletonStrategy;
 use Suhock\DependencyInjection\Validation\ContainerValidationException;
+use Suhock\DependencyInjection\Validation\DependencyGraphEdge;
 use Suhock\DependencyInjection\Validation\ValidationIssue;
 use Suhock\DependencyInjection\Validation\ValidationIssueKind;
 use RuntimeException;
@@ -329,5 +336,145 @@ final class ContainerBuilderTest extends AbstractDependencyInjectionTestCase
         // Assert
         self::assertTrue($container->has(FakeClassNoConstructor::class));
         self::assertSame([], $cache->idsWithPrefix('sdi:graph:'));
+    }
+
+    public function testExportDependencyGraph_WithLinearChain_ExportsTheEdge(): void
+    {
+        // Arrange: FakeClassWithConstructor requires FakeClassNoConstructor via parameter $obj.
+        $builder = self::createBuilder()
+            ->addSingletonClass(FakeClassWithConstructor::class)
+            ->addSingletonClass(FakeClassNoConstructor::class);
+
+        // Act
+        $graph = $builder->exportDependencyGraph();
+
+        // Assert
+        self::assertCount(1, $graph->edges);
+        $edge = $graph->edges[0] ?? null;
+        self::assertSame(FakeClassWithConstructor::class, $edge?->sourceId);
+        self::assertSame(FakeClassNoConstructor::class, $edge->targetId);
+        self::assertTrue($edge->required);
+        self::assertSame('parameter $obj of __construct()', $edge->injectionPoint);
+    }
+
+    public function testExportDependencyGraph_ServiceIds_IncludeUserServicesAndAutoBindings(): void
+    {
+        // Arrange
+        $builder = self::createBuilder()->addSingletonClass(FakeClassNoConstructor::class);
+
+        // Act
+        $graph = $builder->exportDependencyGraph();
+
+        // Assert
+        self::assertContains(FakeClassNoConstructor::class, $graph->serviceIds);
+        self::assertContains(ContainerInterface::class, $graph->serviceIds);
+        self::assertContains(ScopeFactoryInterface::class, $graph->serviceIds);
+    }
+
+    public function testExportDependencyGraph_WithKeyedDependency_RendersTheKeyedTargetId(): void
+    {
+        // Arrange: FakeClassWithKeyedDependency injects FakeClassNoConstructor under 'key1'.
+        $builder = self::createBuilder()
+            ->addTransientClass(FakeClassWithKeyedDependency::class)
+            ->addKeyedSingleton(FakeClassNoConstructor::class, 'key1');
+
+        // Act
+        $graph = $builder->exportDependencyGraph();
+
+        // Assert
+        self::assertCount(1, $graph->edges);
+        self::assertSame(FakeClassNoConstructor::class . '#key1', ($graph->edges[0] ?? null)?->targetId);
+        self::assertContains(FakeClassNoConstructor::class . '#key1', $graph->serviceIds);
+    }
+
+    public function testExportDependencyGraph_WithImplementation_ExportsTheImplementationEdge(): void
+    {
+        // Arrange
+        $builder = self::createBuilder()
+            ->addTransientImplementation(FakeInterfaceOne::class, FakeClassImplementsInterfaces::class)
+            ->addTransientClass(FakeClassImplementsInterfaces::class);
+
+        // Act
+        $graph = $builder->exportDependencyGraph();
+
+        // Assert
+        self::assertCount(1, $graph->edges);
+        $edge = $graph->edges[0] ?? null;
+        self::assertSame(FakeInterfaceOne::class, $edge?->sourceId);
+        self::assertSame(FakeClassImplementsInterfaces::class, $edge->targetId);
+        self::assertSame('the implementation class', $edge->injectionPoint);
+    }
+
+    public function testExportDependencyGraph_WithSatisfiedSoftDependency_ExportsANonRequiredEdge(): void
+    {
+        // Arrange: the factory's nullable parameter is soft, but its dependency is added, so the edge exists.
+        $builder = self::createBuilder()
+            ->addSingletonFactory(
+                FakeClassWithConstructor::class,
+                static fn (?FakeClassNoConstructor $obj): FakeClassWithConstructor =>
+                    new FakeClassWithConstructor($obj ?? new FakeClassNoConstructor())
+            )
+            ->addSingletonClass(FakeClassNoConstructor::class);
+
+        // Act
+        $graph = $builder->exportDependencyGraph();
+
+        // Assert
+        self::assertCount(1, $graph->edges);
+        self::assertFalse(($graph->edges[0] ?? null)?->required);
+    }
+
+    public function testExportDependencyGraph_WithUnionDependency_ExportsOnlyTheChosenEdge(): void
+    {
+        // Arrange: the union FakeInterfaceOne|FakeInterfaceTwo always chooses its first resolvable member.
+        $builder = self::createBuilder()
+            ->addTransientClass(FakeClassWithUnionDependency::class)
+            ->addTransientImplementation(FakeInterfaceOne::class, FakeClassImplementsInterfaces::class)
+            ->addTransientImplementation(FakeInterfaceTwo::class, FakeClassImplementsInterfaces::class)
+            ->addTransientClass(FakeClassImplementsInterfaces::class);
+
+        // Act
+        $graph = $builder->exportDependencyGraph();
+
+        $unionTargets = [];
+
+        foreach ($graph->edges as $edge) {
+            if ($edge->sourceId === FakeClassWithUnionDependency::class) {
+                $unionTargets[] = $edge->targetId;
+            }
+        }
+
+        // Assert
+        self::assertSame([FakeInterfaceOne::class], $unionTargets);
+    }
+
+    public function testExportDependencyGraph_WithDefectiveConfiguration_StillExportsWithoutTheBrokenEdge(): void
+    {
+        // Arrange: FakeClassWithDependencies is missing its required dependencies — build() would throw.
+        $builder = self::createBuilder()->addTransientClass(FakeClassWithDependencies::class);
+
+        // Act
+        $graph = $builder->exportDependencyGraph();
+
+        // Assert
+        self::assertContains(FakeClassWithDependencies::class, $graph->serviceIds);
+        self::assertSame([], $graph->edges);
+    }
+
+    public function testExportDependencyGraph_RootsAreDerivable(): void
+    {
+        // Arrange: the roots — services nothing injects — are the ids that appear as no edge's target.
+        $builder = self::createBuilder()
+            ->addSingletonClass(FakeClassWithConstructor::class)
+            ->addSingletonClass(FakeClassNoConstructor::class);
+
+        // Act
+        $graph = $builder->exportDependencyGraph();
+        $targets = array_map(static fn (DependencyGraphEdge $edge) => $edge->targetId, $graph->edges);
+        $roots = array_values(array_diff($graph->serviceIds, $targets));
+
+        // Assert: the auto-bindings surface as roots too; the user's root is the chain head.
+        self::assertContains(FakeClassWithConstructor::class, $roots);
+        self::assertNotContains(FakeClassNoConstructor::class, $roots);
     }
 }

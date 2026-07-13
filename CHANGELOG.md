@@ -26,6 +26,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Compiled-graph reuse: with a shared cache, rebuilding an unchanged
   configuration loads the stored plan set and skips compilation and
   validation entirely.
+- `ContainerBuilder::exportDependencyGraph()`, exporting every service and
+  every satisfied dependency edge as plain data for external tooling (graph
+  roots, renderings, dead-service linting).
 - Support for PHP 8.5 (added to the CI test matrix).
 - ASP.NET-Core-style scoping support, including scoped variants of the
   builder methods.

@@ -28,6 +28,7 @@ use Suhock\DependencyInjection\Resolver\ResolutionPlan;
 use Suhock\DependencyInjection\Resolver\ResolutionPlanFactory;
 use Suhock\DependencyInjection\Validation\ContainerValidationException;
 use Suhock\DependencyInjection\Validation\ConfigurationFingerprint;
+use Suhock\DependencyInjection\Validation\DependencyGraph;
 use Suhock\DependencyInjection\Validation\ContainerValidator;
 use UnitEnum;
 
@@ -144,6 +145,22 @@ final class ContainerBuilder implements
         }
 
         return $plans;
+    }
+
+    /**
+     * Exports the dependency graph {@see build()} would produce — every service (including the automatic
+     * self-bindings) and every satisfied, chosen dependency edge — as plain data for external tooling: computing the
+     * graph roots that nothing injects, rendering the graph, or linting for dead services. Unsatisfiable injection
+     * points produce no edge, and dependencies hidden inside custom instance providers are invisible, exactly as they
+     * are to validation. Never throws: a configuration that would fail {@see build()} still exports.
+     */
+    public function exportDependencyGraph(): DependencyGraph
+    {
+        $descriptors = $this->descriptors;
+        self::addAutoBindings($descriptors);
+        $plans = (new ResolutionPlanFactory($this->cache))->compile($descriptors);
+
+        return (new ContainerValidator($descriptors))->exportGraph($plans);
     }
 
     /**
