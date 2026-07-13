@@ -21,11 +21,8 @@ use Suhock\DependencyInjection\Builder\ContainerSingletonBuilderTrait;
 use Suhock\DependencyInjection\Builder\ContainerTransientBuilderInterface;
 use Suhock\DependencyInjection\Builder\ContainerTransientBuilderTrait;
 use Suhock\DependencyInjection\Cache\CacheInterface;
-use Suhock\DependencyInjection\Descriptor\ContainerDescriptor;
 use Suhock\DependencyInjection\Descriptor\Descriptor;
-use Suhock\DependencyInjection\InstanceProvider\ClosureInstanceProvider;
 use Suhock\DependencyInjection\Lifetime\InstanceStore;
-use Suhock\DependencyInjection\Lifetime\LifetimeStrategy;
 use Throwable;
 use UnitEnum;
 
@@ -50,9 +47,6 @@ final class Container implements
 
     /** @var array<string, Descriptor<object>> */
     protected array $descriptors = [];
-
-    /** @var array<ContainerDescriptor> */
-    protected array $containerDescriptors = [];
 
     private InjectorInterface $injector;
 
@@ -140,18 +134,6 @@ final class Container implements
         $this->descriptors[$id] = $descriptor;
 
         return $this;
-    }
-
-    protected function addContainerDescriptor(ContainerDescriptor $descriptor): static
-    {
-        $this->containerDescriptors[] = $descriptor;
-
-        return $this;
-    }
-
-    protected function getInjector(): InjectorInterface
-    {
-        return $this->injector;
     }
 
     /**
@@ -272,8 +254,7 @@ final class Container implements
             throw new ClassNotFoundException($className);
         }
 
-        if ($this->tryGetFromDescriptor($className, $context, $instance) ||
-            $this->tryGetFromContainer($className, $context, $instance)) {
+        if ($this->tryGetFromDescriptor($className, $context, $instance)) {
             /** @var TClass $instance */
             return $instance;
         }
@@ -293,7 +274,7 @@ final class Container implements
             return isset($this->descriptors[$this->descriptorId($className, $key)]);
         }
 
-        return isset($this->descriptors[$className]) || $this->hasContainerDescriptor($className);
+        return isset($this->descriptors[$className]);
     }
 
     /**
@@ -350,69 +331,5 @@ final class Container implements
         } finally {
             unset($this->resolving[$descriptorId]);
         }
-    }
-
-    /**
-     * @template TClass of object
-     * @param class-string<TClass> $className
-     */
-    private function hasContainerDescriptor(string $className): bool
-    {
-        foreach ($this->containerDescriptors as $descriptor) {
-            if ($descriptor->container->has($className)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * @param class-string $className
-     */
-    private function tryGetFromContainer(string $className, ResolutionContext $context, ?object &$instance): bool
-    {
-        return $this->tryAddFromFirstMatchingContainer($className) &&
-            $this->tryGetFromDescriptor($className, $context, $instance);
-    }
-
-    /**
-     * @template TClass of object
-     * @param class-string<TClass> $className
-     */
-    private function tryAddFromFirstMatchingContainer(string $className): bool
-    {
-        foreach ($this->containerDescriptors as $descriptor) {
-            if ($this->tryAdd($className, $descriptor)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * @template TClass of object
-     * @param class-string<TClass> $className
-     */
-    private function tryAdd(string $className, ContainerDescriptor $descriptor): bool
-    {
-        if (!$descriptor->container->has($className)) {
-            return false;
-        }
-
-        /** @var LifetimeStrategy<TClass> $lifetimeStrategy variable to aid with static analysis */
-        $lifetimeStrategy = ($descriptor->lifetimeStrategyFactory)($className);
-
-        $this->add(
-            $className,
-            $lifetimeStrategy,
-            new ClosureInstanceProvider(
-                $className,
-                fn () => $descriptor->container->get($className)
-            )
-        );
-
-        return true;
     }
 }

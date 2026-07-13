@@ -11,17 +11,12 @@ declare(strict_types=1);
 
 namespace Suhock\DependencyInjection\Builder;
 
-use DateTime;
 use LogicException;
-use ReflectionClass;
 use Suhock\DependencyInjection\AbstractDependencyInjectionTestCase;
 use Suhock\DependencyInjection\Container;
-use Suhock\DependencyInjection\Fakes\FakeAttribute;
 use Suhock\DependencyInjection\Fakes\FakeBaseClass;
 use Suhock\DependencyInjection\Fakes\FakeClassExtendsBaseClass;
 use Suhock\DependencyInjection\Fakes\FakeClassNoConstructor;
-use Suhock\DependencyInjection\Fakes\FakeClassWithAttribute;
-use Suhock\DependencyInjection\Fakes\FakeContainer;
 use Suhock\DependencyInjection\InstanceProvider\ClosureInstanceProvider;
 use Suhock\DependencyInjection\InstanceProvider\InstanceTypeException;
 
@@ -185,124 +180,6 @@ final class ContainerTransientBuilderTraitTest extends AbstractDependencyInjecti
             ),
             $fn
         );
-    }
-
-    public function testAddTransientContainer_WithContainer_GetReturnsValueFromContainer(): void
-    {
-        // Arrange
-        $container = $this->createContainer()
-            ->addTransientContainer(
-                new FakeContainer([FakeClassNoConstructor::class => fn () => new FakeClassNoConstructor()])
-            );
-
-        // Act
-        $instance = $container->get(FakeClassNoConstructor::class);
-        $newInstance = $container->get(FakeClassNoConstructor::class);
-
-        // Assert
-        self::assertInstanceOf(FakeClassNoConstructor::class, $instance);
-        self::assertInstanceOf(FakeClassNoConstructor::class, $newInstance);
-        self::assertNotSame($instance, $newInstance);
-    }
-
-    public function testAdTransientContainer_WhenClassNotInContainer_GetThrowsClassNotFoundException(): void
-    {
-        // Arrange
-        $container = $this->createContainer()
-            ->addTransientContainer(
-                new FakeContainer([
-                    FakeClassExtendsBaseClass::class => fn () => new FakeClassExtendsBaseClass()
-                ])
-            );
-
-        // Act
-        $fn = static fn () => $container->get(FakeClassNoConstructor::class);
-
-        // Assert
-        self::assertThrowsClassNotFoundException(FakeClassNoConstructor::class, $fn);
-    }
-
-    public function testAddTransientNamespace_WithValidNamespace_GetReturnsInstance(): void
-    {
-        // Arrange
-        $namespace = (new ReflectionClass(FakeClassNoConstructor::class))->getNamespaceName();
-        $container = $this->createContainer()->addTransientNamespace($namespace);
-
-        // Act
-        $instance = $container->get(FakeClassNoConstructor::class);
-        $newInstance = $container->get(FakeClassNoConstructor::class);
-
-        // Assert
-        self::assertInstanceOf(FakeClassNoConstructor::class, $instance);
-        self::assertInstanceOf(FakeClassNoConstructor::class, $newInstance);
-        self::assertNotSame($instance, $newInstance);
-    }
-
-    public function testAddTransientNamespace_WithClassNotInNamespace_GetThrowsClassNotFoundException(): void
-    {
-        // Arrange
-        $namespace = (new ReflectionClass(FakeClassNoConstructor::class))->getNamespaceName();
-        $container = $this->createContainer()->addTransientNamespace($namespace);
-
-        // Act
-        $fn = static fn () => $container->get(DateTime::class);
-
-        // Assert
-        self::assertThrowsClassNotFoundException(DateTime::class, $fn);
-    }
-
-    public function testAddTransientInterface_WithValidImplementation_GetReturnsInstance(): void
-    {
-        // Arrange
-        $container = $this->createContainer()->addTransientInterface(FakeBaseClass::class);
-
-        // Act
-        $instance = $container->get(FakeClassExtendsBaseClass::class);
-        $newInstance = $container->get(FakeClassExtendsBaseClass::class);
-
-        // Assert
-        self::assertInstanceOf(FakeClassExtendsBaseClass::class, $instance);
-        self::assertInstanceOf(FakeClassExtendsBaseClass::class, $newInstance);
-        self::assertNotSame($instance, $newInstance);
-    }
-
-    public function testAddTransientInterface_WhenImplementationNotSubclass_GetThrowsClassNotFoundException(): void
-    {
-        // Arrange
-        $container = $this->createContainer()->addTransientInterface(FakeClassNoConstructor::class);
-
-        // Act
-        $fn = static fn () => $container->get(DateTime::class);
-
-        // Assert
-        self::assertThrowsClassNotFoundException(DateTime::class, $fn);
-    }
-
-    public function testAddTransientAttribute_WhenClassHasAttribute_GetReturnsInstance(): void
-    {
-        // Arrange
-        $container = $this->createContainer()->addTransientAttribute(FakeAttribute::class);
-
-        // Act
-        $instance = $container->get(FakeClassWithAttribute::class);
-        $newInstance = $container->get(FakeClassWithAttribute::class);
-
-        // Assert
-        self::assertInstanceOf(FakeClassWithAttribute::class, $instance);
-        self::assertInstanceOf(FakeClassWithAttribute::class, $newInstance);
-        self::assertNotSame($instance, $newInstance);
-    }
-
-    public function testAddTransientAttribute_WhenClassDoesNotHaveAttribute_GetThrowsClassNotFoundException(): void
-    {
-        // Arrange
-        $container = $this->createContainer()->addTransientAttribute(FakeAttribute::class);
-
-        // Act
-        $fn = static fn () => $container->get(DateTime::class);
-
-        // Assert
-        self::assertThrowsClassNotFoundException(DateTime::class, $fn);
     }
 
     public function testAddKeyedTransient_WithClassName_GetReturnsInstanceOfClass(): void

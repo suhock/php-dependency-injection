@@ -12,24 +12,17 @@ declare(strict_types=1);
 namespace Suhock\DependencyInjection\Builder;
 
 use Closure;
-use Suhock\DependencyInjection\AttributeContainer;
-use Suhock\DependencyInjection\ContainerInterface;
-use Suhock\DependencyInjection\InjectorInterface;
 use Suhock\DependencyInjection\InstanceProvider\InstanceProviderFactory;
 use Suhock\DependencyInjection\InstanceProvider\InstanceProviderInterface;
-use Suhock\DependencyInjection\InterfaceContainer;
 use Suhock\DependencyInjection\Lifetime\SingletonStrategy;
-use Suhock\DependencyInjection\NamespaceContainer;
 use UnitEnum;
 
 /**
  * Default implementation for {@see ContainerSingletonBuilderInterface}. Classes using this trait must implement
- * {@see ContainerBuilderInterface} and the {@see getInjector()} function.
+ * {@see ContainerBuilderInterface}.
  */
 trait ContainerSingletonBuilderTrait
 {
-    abstract protected function getInjector(): InjectorInterface;
-
     /**
      * @template TClass of object
      * @template TImplementation of TClass
@@ -251,43 +244,5 @@ trait ContainerSingletonBuilderTrait
             InstanceProviderFactory::createObjectInstanceProvider($className, $instance),
             $shouldDispose
         );
-    }
-
-    public function addSingletonContainer(ContainerInterface $container): static
-    {
-        $this->addContainer(
-            $container,
-            /** @param class-string $className */
-            fn (string $className) => new SingletonStrategy($className)
-        );
-
-        return $this;
-    }
-
-    public function addSingletonNamespace(string $namespace, ?callable $factory = null): static
-    {
-        $this->addSingletonContainer(new NamespaceContainer($namespace, fn () => $this->getInjector(), $factory));
-
-        return $this;
-    }
-
-    /**
-     * @param class-string $interfaceName
-     */
-    public function addSingletonInterface(string $interfaceName, ?callable $factory = null): static
-    {
-        $this->addSingletonContainer(new InterfaceContainer($interfaceName, fn () => $this->getInjector(), $factory));
-
-        return $this;
-    }
-
-    /**
-     * @param class-string $attributeName
-     */
-    public function addSingletonAttribute(string $attributeName, ?callable $factory = null): static
-    {
-        $this->addSingletonContainer(new AttributeContainer($attributeName, fn () => $this->getInjector(), $factory));
-
-        return $this;
     }
 }

@@ -11,16 +11,12 @@ declare(strict_types=1);
 
 namespace Suhock\DependencyInjection\Builder;
 
-use ReflectionClass;
 use Suhock\DependencyInjection\AbstractDependencyInjectionTestCase;
 use Suhock\DependencyInjection\Container;
-use Suhock\DependencyInjection\Fakes\FakeAttribute;
 use Suhock\DependencyInjection\Fakes\FakeBaseClass;
 use Suhock\DependencyInjection\Fakes\FakeClassExtendsBaseClass;
 use Suhock\DependencyInjection\Fakes\FakeClassNoConstructor;
-use Suhock\DependencyInjection\Fakes\FakeClassWithAttribute;
 use Suhock\DependencyInjection\Fakes\FakeClassWithConstructor;
-use Suhock\DependencyInjection\Fakes\FakeContainer;
 use Suhock\DependencyInjection\InstanceProvider\ClassInstanceProvider;
 
 /**
@@ -119,78 +115,6 @@ final class ContainerScopedBuilderTraitTest extends AbstractDependencyInjectionT
 
         // Assert
         self::assertSame($scope->get(FakeClassNoConstructor::class), $instance->obj);
-    }
-
-    public function testAddScopedContainer_WithContainer_GetReturnsPerScopeInstance(): void
-    {
-        // Arrange
-        $container = $this->createContainer()
-            ->addScopedContainer(
-                new FakeContainer([FakeClassNoConstructor::class => fn () => new FakeClassNoConstructor()])
-            );
-        $scope = $container->createScope();
-
-        // Act
-        $instance = $scope->get(FakeClassNoConstructor::class);
-        $sameScopeInstance = $scope->get(FakeClassNoConstructor::class);
-        $otherScopeInstance = $container->createScope()->get(FakeClassNoConstructor::class);
-
-        // Assert
-        self::assertInstanceOf(FakeClassNoConstructor::class, $instance);
-        self::assertSame($instance, $sameScopeInstance);
-        self::assertNotSame($instance, $otherScopeInstance);
-    }
-
-    public function testAddScopedNamespace_WithValidNamespace_GetReturnsPerScopeInstance(): void
-    {
-        // Arrange
-        $namespace = (new ReflectionClass(FakeClassNoConstructor::class))->getNamespaceName();
-        $container = $this->createContainer()->addScopedNamespace($namespace);
-        $scope = $container->createScope();
-
-        // Act
-        $instance = $scope->get(FakeClassNoConstructor::class);
-        $sameScopeInstance = $scope->get(FakeClassNoConstructor::class);
-        $otherScopeInstance = $container->createScope()->get(FakeClassNoConstructor::class);
-
-        // Assert
-        self::assertInstanceOf(FakeClassNoConstructor::class, $instance);
-        self::assertSame($instance, $sameScopeInstance);
-        self::assertNotSame($instance, $otherScopeInstance);
-    }
-
-    public function testAddScopedInterface_WithValidImplementation_GetReturnsPerScopeInstance(): void
-    {
-        // Arrange
-        $container = $this->createContainer()->addScopedInterface(FakeBaseClass::class);
-        $scope = $container->createScope();
-
-        // Act
-        $instance = $scope->get(FakeClassExtendsBaseClass::class);
-        $sameScopeInstance = $scope->get(FakeClassExtendsBaseClass::class);
-        $otherScopeInstance = $container->createScope()->get(FakeClassExtendsBaseClass::class);
-
-        // Assert
-        self::assertInstanceOf(FakeClassExtendsBaseClass::class, $instance);
-        self::assertSame($instance, $sameScopeInstance);
-        self::assertNotSame($instance, $otherScopeInstance);
-    }
-
-    public function testAddScopedAttribute_WhenClassHasAttribute_GetReturnsPerScopeInstance(): void
-    {
-        // Arrange
-        $container = $this->createContainer()->addScopedAttribute(FakeAttribute::class);
-        $scope = $container->createScope();
-
-        // Act
-        $instance = $scope->get(FakeClassWithAttribute::class);
-        $sameScopeInstance = $scope->get(FakeClassWithAttribute::class);
-        $otherScopeInstance = $container->createScope()->get(FakeClassWithAttribute::class);
-
-        // Assert
-        self::assertInstanceOf(FakeClassWithAttribute::class, $instance);
-        self::assertSame($instance, $sameScopeInstance);
-        self::assertNotSame($instance, $otherScopeInstance);
     }
 
     public function testAddKeyedScoped_WithValidClass_GetByKeyReturnsPerScopeInstance(): void

@@ -11,17 +11,12 @@ declare(strict_types=1);
 
 namespace Suhock\DependencyInjection\Builder;
 
-use DateTime;
 use LogicException;
-use ReflectionClass;
 use Suhock\DependencyInjection\AbstractDependencyInjectionTestCase;
 use Suhock\DependencyInjection\Container;
-use Suhock\DependencyInjection\Fakes\FakeAttribute;
 use Suhock\DependencyInjection\Fakes\FakeBaseClass;
 use Suhock\DependencyInjection\Fakes\FakeClassExtendsBaseClass;
 use Suhock\DependencyInjection\Fakes\FakeClassNoConstructor;
-use Suhock\DependencyInjection\Fakes\FakeClassWithAttribute;
-use Suhock\DependencyInjection\Fakes\FakeContainer;
 use Suhock\DependencyInjection\InstanceProvider\InstanceTypeException;
 use Suhock\DependencyInjection\InstanceProvider\ObjectInstanceProvider;
 
@@ -216,120 +211,6 @@ final class ContainerSingletonBuilderTraitTest extends AbstractDependencyInjecti
             FakeClassNoConstructor::class,
             $fn
         );
-    }
-
-    public function testAddSingletonContainer_WithContainer_GetReturnsValueFromContainer(): void
-    {
-        // Arrange
-        $container = $this->createContainer()
-            ->addSingletonContainer(
-                new FakeContainer([FakeClassNoConstructor::class => fn () => new FakeClassNoConstructor()])
-            );
-
-        // Act
-        $instance = $container->get(FakeClassNoConstructor::class);
-        $sameInstance = $container->get(FakeClassNoConstructor::class);
-
-        // Assert
-        self::assertInstanceOf(FakeClassNoConstructor::class, $instance);
-        self::assertSame($instance, $sameInstance);
-    }
-
-    public function testAddSingletonContainer_WhenClassNotInContainer_GetThrowsClassNotFoundException(): void
-    {
-        // Arrange
-        $container = $this->createContainer()
-            ->addSingletonContainer(
-                new FakeContainer([
-                    FakeClassExtendsBaseClass::class => fn () => new FakeClassExtendsBaseClass()
-                ])
-            );
-
-        // Act
-        $fn = static fn () => $container->get(FakeClassNoConstructor::class);
-
-        // Assert
-        self::assertThrowsClassNotFoundException(FakeClassNoConstructor::class, $fn);
-    }
-
-    public function testAddSingletonNamespace_WithValidNamespace_GetReturnsInstance(): void
-    {
-        // Arrange
-        $namespace = (new ReflectionClass(FakeClassNoConstructor::class))->getNamespaceName();
-        $container = $this->createContainer()->addSingletonNamespace($namespace);
-
-        // Act
-        $instance = $container->get(FakeClassNoConstructor::class);
-        $sameInstance = $container->get(FakeClassNoConstructor::class);
-
-        // Assert
-        self::assertInstanceOf(FakeClassNoConstructor::class, $instance);
-        self::assertSame($instance, $sameInstance);
-    }
-
-    public function testAddSingletonNamespace_WithClassNotInNamespace_GetThrowsClassNotFoundException(): void
-    {
-        // Arrange
-        $namespace = (new ReflectionClass(FakeClassNoConstructor::class))->getNamespaceName();
-        $container = $this->createContainer()->addSingletonNamespace($namespace);
-
-        // Act
-        $fn = static fn () => $container->get(DateTime::class);
-
-        // Assert
-        self::assertThrowsClassNotFoundException(DateTime::class, $fn);
-    }
-
-    public function testAddSingletonInterface_WithValidImplementation_GetReturnsInstance(): void
-    {
-        // Arrange
-        $container = $this->createContainer()->addSingletonInterface(FakeBaseClass::class);
-
-        // Act
-        $instance = $container->get(FakeClassExtendsBaseClass::class);
-        $sameInstance = $container->get(FakeClassExtendsBaseClass::class);
-
-        // Assert
-        self::assertInstanceOf(FakeClassExtendsBaseClass::class, $instance);
-        self::assertSame($instance, $sameInstance);
-    }
-
-    public function testAddSingletonInterface_WhenImplementationNotSubclass_GetThrowsClassNotFoundException(): void
-    {
-        // Arrange
-        $container = $this->createContainer()->addSingletonInterface(FakeClassNoConstructor::class);
-
-        // Act
-        $fn = static fn () => $container->get(DateTime::class);
-
-        // Assert
-        self::assertThrowsClassNotFoundException(DateTime::class, $fn);
-    }
-
-    public function testAddSingletonAttribute_WhenClassHasAttribute_GetReturnsInstance(): void
-    {
-        // Arrange
-        $container = $this->createContainer()->addSingletonAttribute(FakeAttribute::class);
-
-        // Act
-        $instance = $container->get(FakeClassWithAttribute::class);
-        $sameInstance = $container->get(FakeClassWithAttribute::class);
-
-        // Assert
-        self::assertInstanceOf(FakeClassWithAttribute::class, $instance);
-        self::assertSame($instance, $sameInstance);
-    }
-
-    public function testAddSingletonAttribute_WhenClassDoesNotHaveAttribute_GetThrowsClassNotFoundException(): void
-    {
-        // Arrange
-        $container = $this->createContainer()->addSingletonAttribute(FakeAttribute::class);
-
-        // Act
-        $fn = static fn () => $container->get(DateTime::class);
-
-        // Assert
-        self::assertThrowsClassNotFoundException(DateTime::class, $fn);
     }
 
     public function testAddSingleton_WithClosureAcceptingSupertypeOfClass_UsesClosureAsFactory(): void

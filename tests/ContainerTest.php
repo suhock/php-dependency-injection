@@ -11,7 +11,6 @@ declare(strict_types=1);
 
 namespace Suhock\DependencyInjection;
 
-use Suhock\DependencyInjection\Fakes\FakeClassExtendsBaseClass;
 use Suhock\DependencyInjection\Fakes\FakeClassNoConstructor;
 use Suhock\DependencyInjection\Fakes\FakeConfigurator;
 use Suhock\DependencyInjection\Fakes\FakeUnitEnum;
@@ -26,15 +25,6 @@ final class ContainerTest extends AbstractDependencyInjectionTestCase
     protected function createContainer(): Container
     {
         return Container::createDefault();
-    }
-
-    private function getNestedContainer(): ContainerInterface
-    {
-        $container = self::createStub(ContainerInterface::class);
-        $container->method('get')->willReturn($container);
-        $container->method('has')->willReturn(true);
-
-        return $container;
     }
 
     public function testAdd_WithValidClass_AddsDescriptor(): void
@@ -194,53 +184,6 @@ final class ContainerTest extends AbstractDependencyInjectionTestCase
         self::assertSame($expectedInstance, $container->get(FakeClassNoConstructor::class, 'key1'));
     }
 
-    public function testTryGet_WithValueInFactoryAndContainer_ReturnsValueFromFactory(): void
-    {
-        // Arrange
-        self::assertStringStartsWith(
-            __NAMESPACE__ . '\\',
-            FakeClassNoConstructor::class,
-            'Namespace mismatch. Test would be invalid.'
-        );
-
-        $expectedInstance = new FakeClassExtendsBaseClass();
-
-        $container = $this->createContainer()
-            ->addSingletonContainer($this->getNestedContainer())
-            ->addSingletonFactory(
-                FakeClassExtendsBaseClass::class,
-                fn () => $expectedInstance
-            );
-
-        // Act
-        $result = $container->get(FakeClassExtendsBaseClass::class);
-
-        // Assert
-        self::assertSame($expectedInstance, $result);
-    }
-
-    public function testTryGet_WithValueInMultipleContainers_ReturnsValueFromFirstContainerAdded(): void
-    {
-        // Arrange
-        self::assertStringStartsWith(
-            __NAMESPACE__ . '\\',
-            FakeClassNoConstructor::class,
-            'Namespace mismatch. Test would be invalid.'
-        );
-
-        $expectedInstance = new FakeClassExtendsBaseClass();
-
-        $container = $this->createContainer()
-            ->addSingletonNamespace(__NAMESPACE__, fn (string $className) => $expectedInstance)
-            ->addSingletonContainer($this->getNestedContainer());
-
-        // Act
-        $result = $container->get(FakeClassExtendsBaseClass::class);
-
-        // Assert
-        self::assertSame($expectedInstance, $result);
-    }
-
     public function testGet_WhenClassNotInContainer_ThrowsClassNotFoundException(): void
     {
         // Arrange
@@ -343,56 +286,6 @@ final class ContainerTest extends AbstractDependencyInjectionTestCase
         // Arrange
         $container = $this->createContainer()
             ->addSingletonFactory(FakeClassNoConstructor::class, fn () => new FakeClassNoConstructor());
-
-        // Act
-        $result = $container->has(FakeClassNoConstructor::class);
-
-        // Assert
-        self::assertTrue($result);
-    }
-
-    public function testHas_WhenValueIsInNestedSingletonContainer_ReturnsTrue(): void
-    {
-        // Arrange
-        $container = $this->createContainer()->addSingletonContainer($this->getNestedContainer());
-
-        // Act
-        $result = $container->has(FakeClassExtendsBaseClass::class);
-
-        // Assert
-        self::assertTrue($result);
-    }
-
-    public function testHas_WhenValueIsInNestedTransientContainer_ReturnsTrue(): void
-    {
-        // Arrange
-        $container = $this->createContainer()->addTransientContainer($this->getNestedContainer());
-
-        // Act
-        $result = $container->has(FakeClassExtendsBaseClass::class);
-
-        // Assert
-        self::assertTrue($result);
-    }
-
-    public function testHas_WhenValueIsInNamespaceContainer_ReturnsTrue(): void
-    {
-        // Arrange
-        $container = $this->createContainer()
-            ->addSingletonNamespace(__NAMESPACE__);
-
-        // Act
-        $result = $container->has(FakeClassNoConstructor::class);
-
-        // Assert
-        self::assertTrue($result);
-    }
-
-    public function testHas_WhenValueIsInRootNamespaceContainer_ReturnsTrue(): void
-    {
-        // Arrange
-        $container = $this->createContainer()
-            ->addSingletonNamespace('');
 
         // Act
         $result = $container->has(FakeClassNoConstructor::class);

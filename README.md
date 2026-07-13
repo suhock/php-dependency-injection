@@ -13,14 +13,11 @@ $container->addSingletonClass(MyApplication::class)
 
 Out of the box, this library provides [singleton](#singleton),
 [scoped](#scoped), and [transient](#transient) lifetime strategies and a
-variety ways of
-[adding services](#adding-services-to-the-container) of specific
-types, as well as specifying factories for all classes in a particular
-[namespace](#namespace-container) or implementing a specific
-[interface](#interface-container). You can also add more than one
-implementation of the same type as [keyed services](#keyed-services). You can
-easily extend the default `Container` implementation with your own custom
-lifetime strategies, instance providers, or nested containers to fit your needs.
+variety of ways of [adding services](#adding-services-to-the-container) to the
+container. You can also add more than one implementation of the same type as
+[keyed services](#keyed-services). You can easily extend the default
+`Container` implementation with your own custom lifetime strategies or
+instance providers to fit your needs.
 
 The library also provides an [`Injector` class](#dependency-injector) for
 injecting dependencies and explicit parameters into a specific function or
@@ -43,14 +40,9 @@ constructor.
     - [Map an interface to an implementation](#map-an-interface-to-an-implementation)
     - [Call a factory method](#call-a-factory-method)
     - [Provide a specific instance](#provide-a-specific-instance)
-- [Nested containers](#nested-containers)
-    - [Namespace container](#namespace-container)
-    - [Interface container](#interface-container)
-    - [Attribute container](#attribute-container)
 - [Customizing the container](#customizing-the-container)
   - [Custom lifetime strategies](#custom-lifetime-strategies)
   - [Custom instance providers](#custom-instance-providers)
-  - [Custom nested containers](#custom-nested-containers)
 - [Keyed services](#keyed-services)
 - [Dependency Injector](#dependency-injector)
 - [Specifying dependencies](#specifying-dependencies)
@@ -201,12 +193,7 @@ the scope, so scoped services can depend on other scoped services. Requesting a
 scoped instance with no scope active — directly from the root container, or
 from a singleton's dependency graph, which always resolves against the root —
 throws a `ScopeException`. The default `Container` provides convenience methods
-for adding scoped factories, all starting with the prefix `addScoped`. Scoped
-services can also be bound in bulk from a nested container, namespace,
-interface, or attribute using `addScopedContainer()`, `addScopedNamespace()`,
-`addScopedInterface()`, and `addScopedAttribute()` — the scope-lifetime
-counterparts of the singleton (`addSingletonNamespace()`, etc.) and transient
-bulk-binding methods.
+for adding scoped factories, all starting with the prefix `addScoped`.
 
 #### Transient
 
@@ -279,15 +266,6 @@ final class QueueWorker
     }
 }
 ```
-
-Note that [nested containers](#nested-containers) added with
-`addSingletonContainer`/`addTransientContainer` (including namespace,
-interface, and attribute containers) construct instances with their own
-injector bound to the root container. Scope-lifetime variants
-(`addScopedContainer()`, `addScopedNamespace()`, `addScopedInterface()`, and
-`addScopedAttribute()`) cache one instance per scope, but because construction
-still runs against the root container, the classes they provide cannot have
-per-scope dependencies.
 
 #### Example: FrankenPHP worker mode
 
@@ -451,10 +429,6 @@ everywhere.
 
 Scopes created from a container are managed by their own caller; dispose them
 before disposing the container so that their scoped instances are swept.
-Disposal is not currently applied to instances provided by
-[nested containers](#nested-containers) beyond those the outer container caches,
-and disposal via a custom callback for classes that cannot implement
-`DisposableInterface` is not yet supported.
 
 ### Adding services to the container
 
@@ -713,194 +687,6 @@ $container->addSingletonInstance(Request::class, $request);
 Anytime your application requires a `Request` object, the container will provide
 the exact same instance that was passed in with the `$request` variable.
 
-### Nested containers
-
-If the container cannot find a way to provide an instance of a specific class,
-it will next check to see if there are any nested containers that can provide
-the value. Three built-in nested container implementations are provided:
-[namespace](#namespace-container), [interface](#interface-container), and
-[attribute](#attribute-container). You can also add custom containers that
-implement `ContainerInterface` using the `addContainer()` method. Nested
-containers are searched sequentially in the order they are added.
-
-#### Namespace container
-
-Namespace containers provide an instance of the requested class if it is in the
-configured namespace. By default, the namespace container will inject the
-constructor's dependencies for all classes in the namespace.
-
-The namespace container accepts an optional `$factory` parameter that specifies
-a method which provides instances of classes in the namespace. The factory must
-take the name of the class being instantiated as the first parameter. The outer
-container will provide any additional dependencies.
-
-```php
-class Container
-{
-    /**
-     * @param (callable(class-string, mixed...): object)|null $factory
-     * @return $this
-     */
-    public function addSingletonNamespace(string $namespace, ?callable $factory = null): static;
-
-    /**
-     * @param (callable(class-string, mixed...): object)|null $factory
-     * @return $this
-     */
-    public function addTransientNamespace(string $namespace, ?callable $factory = null): static;
-}
-```
-
-##### Examples
-
-```php
-$container->addSingletonNamespace('Http');
-
-/*
- * The container will provide an instance of CurlHttpClient by injecting the
- * constructor's dependencies because the class is in the Http namespace.
- */
-$curlClient = $container->get(Http\CurlHttpClient::class);
-
-$container->addSingletonImplementation(
-    Http\HttpClient::class,
-    Http\CurlHttpClient::class
-);
-
-/*
- * The container will know to provide CurlHttpClient for HttpClient because we
- * specified the interface-implementation mapping.
- */
-$httpClient = $container->get(Http\HttpClient::class);
-```
-
-#### Interface container
-
-Interface containers provide an instance of the requested class if it is a
-subclass of the specified interface or base class. Instances are acquired from
-the given factory, or by injecting the constructor's dependencies if no factory is provided.
-The factory must take the class name as the first parameter. The outer container
-will provide any additional dependencies.
-
-```php
-class Container
-{
-    /**
-     * @template TInterface of object
-     * @param class-string<TInterface> $interfaceName
-     * @param (callable(class-string<TInterface>, mixed...): TInterface)|null $factory
-     * @return $this
-     */
-    public function addSingletonInterface(string $interfaceName, ?callable $factory = null): static;
-
-    /**
-     * @template TInterface of object
-     * @param class-string<TInterface> $interfaceName
-     * @param (callable(class-string<TInterface>, mixed...): TInterface)|null $factory
-     * @return $this
-     */
-    public function addTransientInterface(string $interfaceName, ?callable $factory = null): static;
-}
-```
-
-##### Examples
-
-The following example retrieves repository instances from a third-party
-library's container.
-
-```php
-$container->addSingletonInterface(
-    EntityNameProvider::class,
-    /**
-     * @template T of EntityNameProvider
-     * @var class-string<T> $className
-     * @return T
-     */
-    fn (string $className, EntityManager $em) =>
-        $em->getRepository($className::getEntityName())
-);
-
-/*
- * The container will query the EntityManager for a UserRepository.
- */
-$userRepository = $container->get(UserRepository::class);
-
-class UserRepository extends EntityRepository implements EntityNameProvider
-{
-    public static function getEntityName(): string
-    {
-        return User::class;
-    }
-}
-```
-
-#### Attribute container
-
-Attribute containers will provide an instance of any class that has the
-specified attribute. Instances are acquired from the given factory, or by
-injecting the constructor's dependencies if no factory is provided. The factory must take the
-class name as the first parameter and an attribute instance as the second.
-The outer container will provide any additional dependencies.
-
-```php
-class Container
-{
-    /**
-     * @template TAttribute of object
-     * @param class-string<TAttribute> $attributeName
-     * @param (callable(class-string, TAttribute, mixed...): object)|null $factory
-     * @return $this
-     */
-    public function addSingletonAttribute(string $attributeName, ?callable $factory = null): static;
-
-    /**
-     * @template TAttribute of object
-     * @param class-string<TAttribute> $attributeName
-     * @param (callable(class-string, TAttribute, mixed...): object)|null $factory
-     * @return $this
-     */
-    public function addTransientAttribute(string $attributeName, ?callable $factory = null): static;
-}
-```
-
-##### Examples
-
-The following example provides an alternative to the example under
-[interface container section](#interface-container), using an attribute to
-designate metadata rather than an interface.
-
-```php
-$container->addSingletonAttribute(
-    EntityName::class,
-    fn (string $className, EntityName $attribute, EntityManager $em) =>
-        $em->getRepository($attribute->getName())
-);
-
-/*
- * The container will query the EntityManager for a UserRepository.
- */
-$userRepository = $container->get(UserRepository::class);
-
-#[EntityName(User::class)]
-class UserRepository extends EntityRepository
-{
-}
-
-#[Attribute(Attribute::TARGET_CLASS)]
-class EntityName
-{
-    public function __construct(
-        private readonly string $name
-    ) {
-    }
-
-    public function getName(): string
-    {
-        return $this->name;
-    }
-}
-```
-
 ### Customizing the Container
 
 #### Custom Lifetime Strategies
@@ -958,36 +744,6 @@ class Container
         string $className,
         InstanceProviderInterface $instanceProvider
     ): static;
-}
-```
-
-#### Custom Nested Containers
-
-Implement `ContainerInterface` and pass into the container using one of the
-methods below. If your custom container needs to be able to inject dependencies into objects,
-you can pass in the outer container to its constructor.
-
-```php
-class Container
-{
-    /**
-     * @param callable(class-string): LifetimeStrategy<object> $lifetimeStrategyFactory
-     * @return $this
-     */
-    public function addContainer(
-        ContainerInterface $container,
-        callable $lifetimeStrategyFactory
-    ): static;
-
-    /**
-     * @return $this
-     */
-    public function addSingletonContainer(ContainerInterface $container): static;
-
-    /**
-     * @return $this
-     */
-    public function addTransientContainer(ContainerInterface $container): static;
 }
 ```
 

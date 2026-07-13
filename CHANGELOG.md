@@ -10,9 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Support for PHP 8.5 (added to the CI test matrix).
-- ASP.NET-Core-style scoping support, including scoped builder methods
-  `addScopedContainer()`, `addScopedNamespace()`, `addScopedInterface()`, and
-  `addScopedAttribute()` for wiring nested, scope-bound containers.
+- ASP.NET-Core-style scoping support, including scoped variants of the
+  builder methods.
 - Deterministic disposal of services via `DisposableInterface`.
 - `remove()` on `ContainerBuilderInterface`, plus a `key` parameter on
   `Container::remove()` for removing keyed services.
@@ -29,6 +28,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+- Nested containers: `addContainer()`, the
+  `add{Singleton,Transient}{Namespace,Interface,Attribute}()` builder methods,
+  and the `NamespaceContainer`, `InterfaceContainer`, `AttributeContainer`,
+  and `AbstractFactoryContainer` classes. Services are now always added
+  explicitly; build-time enumeration of conventions may return in a
+  validatable form after 1.0.
 - `Container::getForContext()` is no longer part of the public surface.
 - The container-lifecycle methods on `InstanceStore` are now marked `@internal`.
 

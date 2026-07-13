@@ -12,24 +12,17 @@ declare(strict_types=1);
 namespace Suhock\DependencyInjection\Builder;
 
 use Closure;
-use Suhock\DependencyInjection\AttributeContainer;
-use Suhock\DependencyInjection\ContainerInterface;
-use Suhock\DependencyInjection\InjectorInterface;
 use Suhock\DependencyInjection\InstanceProvider\InstanceProviderFactory;
 use Suhock\DependencyInjection\InstanceProvider\InstanceProviderInterface;
-use Suhock\DependencyInjection\InterfaceContainer;
 use Suhock\DependencyInjection\Lifetime\TransientStrategy;
-use Suhock\DependencyInjection\NamespaceContainer;
 use UnitEnum;
 
 /**
  * Default implementation for {@see ContainerTransientBuilderInterface}. Classes using this trait must implement
- * {@see ContainerBuilderInterface} and the {@see getInjector()} function.
+ * {@see ContainerBuilderInterface}.
  */
 trait ContainerTransientBuilderTrait
 {
-    abstract protected function getInjector(): InjectorInterface;
-
     /**
      * @template TClass of object
      *
@@ -189,43 +182,5 @@ trait ContainerTransientBuilderTrait
             $key,
             InstanceProviderFactory::createClosureInstanceProvider($className, $factory(...))
         );
-    }
-
-    public function addTransientContainer(ContainerInterface $container): static
-    {
-        $this->addContainer(
-            $container,
-            /** @param class-string $className */
-            fn (string $className) => new TransientStrategy($className)
-        );
-
-        return $this;
-    }
-
-    public function addTransientNamespace(string $namespace, ?callable $factory = null): static
-    {
-        $this->addTransientContainer(new NamespaceContainer($namespace, fn () => $this->getInjector(), $factory));
-
-        return $this;
-    }
-
-    /**
-     * @param class-string $interfaceName
-     */
-    public function addTransientInterface(string $interfaceName, ?callable $factory = null): static
-    {
-        $this->addTransientContainer(new InterfaceContainer($interfaceName, fn () => $this->getInjector(), $factory));
-
-        return $this;
-    }
-
-    /**
-     * @param class-string $attributeName
-     */
-    public function addTransientAttribute(string $attributeName, ?callable $factory = null): static
-    {
-        $this->addTransientContainer(new AttributeContainer($attributeName, fn () => $this->getInjector(), $factory));
-
-        return $this;
     }
 }

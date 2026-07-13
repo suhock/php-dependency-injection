@@ -11,8 +11,6 @@ declare(strict_types=1);
 
 namespace Suhock\DependencyInjection\Builder;
 
-use Suhock\DependencyInjection\ContainerInterface;
-use Suhock\DependencyInjection\Injector;
 use Suhock\DependencyInjection\InstanceProvider\ImplementationException;
 use Suhock\DependencyInjection\InstanceProvider\InstanceProviderInterface;
 use Suhock\DependencyInjection\InstanceProvider\InstanceTypeException;
@@ -247,54 +245,4 @@ interface ContainerSingletonBuilderInterface
         object $instance,
         bool $shouldDispose = true
     ): static;
-
-    /**
-     * @return $this
-     */
-    public function addSingletonContainer(ContainerInterface $container): static;
-
-    /**
-     * Indicates the container should provide singleton instances of classes within the given namespace using the
-     * specified factory method.
-     *
-     * @param string $namespace The namespace from which to provide class instances. An empty string indicates this
-     * container should resolve classes from any namespace.
-     * @param callable|null $factory [optional] A factory to use for acquiring instances of classes. The first argument
-     * will be the name of the class. Additional arguments can be provided from this container's {@see Injector}. If no
-     * factory is provided, a default factory that directly instantiates the class will be used.
-     *
-     * @return $this
-     */
-    public function addSingletonNamespace(string $namespace, ?callable $factory = null): static;
-
-    /**
-     * Indicates the container should provide singleton instances of classes inheriting from the given interface or base
-     * class using the specified factory method.
-     *
-     * @param class-string $interfaceName The fully qualified name of the interface or base class
-     * @param callable|null $factory [optional] A factory to use for acquiring instances of classes. The first argument
-     * will be the name of the class. Additional arguments can be provided from this container's {@see Injector}. If no
-     * factory is provided, a default factory that directly instantiates the class will be used.
-     *
-     * @return $this
-     */
-    public function addSingletonInterface(string $interfaceName, ?callable $factory = null): static;
-
-    /**
-     * Indicates the container should provide singleton instances of classes with the given attribute using the
-     * specified factory method.
-     *
-     * @param class-string $attributeName The fully qualified name of the attribute that must be present to enable this
-     * container for a class
-     * @param callable|null $factory [optional] The factory to use for acquiring instances of classes. The first
-     * argument will be the name of the class. The second argument will be an instance of the attribute attached to the
-     * class. Additional arguments can be provided from this container's {@see Injector}. If no factory is provided, a
-     * default factory that directly instantiates the class will be used.
-     * <code>
-     * callable&lt;TClass, TAttr&gt;(class-string&lt;TClass&gt; $className, TAttr $attr, ...): TClass
-     * </code>
-     *
-     * @return $this
-     */
-    public function addSingletonAttribute(string $attributeName, ?callable $factory = null): static;
 }

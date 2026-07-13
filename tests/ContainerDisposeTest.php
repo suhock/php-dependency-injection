@@ -146,19 +146,6 @@ final class ContainerDisposeTest extends AbstractDependencyInjectionTestCase
         self::assertSame(1, $instance->disposeCount);
     }
 
-    public function testDispose_WithNestedContainerProvidedDisposable_DisposesInstance(): void
-    {
-        // Arrange
-        $container = $this->createContainer()->addSingletonNamespace('Suhock\DependencyInjection\Fakes');
-        $instance = $container->get(FakeDisposableClass::class);
-
-        // Act
-        $container->dispose();
-
-        // Assert
-        self::assertSame(1, $instance->disposeCount);
-    }
-
     public function testDispose_ThenGet_ThrowsContainerException(): void
     {
         // Arrange

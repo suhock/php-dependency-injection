@@ -11,8 +11,6 @@ declare(strict_types=1);
 
 namespace Suhock\DependencyInjection\Builder;
 
-use Suhock\DependencyInjection\ContainerInterface;
-use Suhock\DependencyInjection\Descriptor\ContainerDescriptor;
 use Suhock\DependencyInjection\Descriptor\Descriptor;
 use Suhock\DependencyInjection\InstanceProvider\InstanceProviderInterface;
 use Suhock\DependencyInjection\Lifetime\LifetimeStrategy;
@@ -36,8 +34,6 @@ trait ContainerBuilderTrait
      * @param Descriptor<TClass> $descriptor
      */
     abstract protected function addKeyedDescriptor(Descriptor $descriptor, string|UnitEnum $key);
-
-    abstract protected function addContainerDescriptor(ContainerDescriptor $descriptor);
 
     /**
      * @param class-string $className
@@ -106,20 +102,6 @@ trait ContainerBuilderTrait
     public function remove(string $className, string|UnitEnum|null $key = null): static
     {
         $this->removeDescriptor($className, $key);
-
-        return $this;
-    }
-
-    /**
-     * @param ContainerInterface $container The nested container to add
-     * @param callable(class-string):LifetimeStrategy<object> $lifetimeStrategyFactory A factory method for generating
-     * lifetime strategies to manage instances within the container being built
-     */
-    public function addContainer(ContainerInterface $container, callable $lifetimeStrategyFactory): static
-    {
-        $this->addContainerDescriptor(
-            new ContainerDescriptor($container, $lifetimeStrategyFactory(...))
-        );
 
         return $this;
     }
