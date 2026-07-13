@@ -37,29 +37,23 @@ final class ObjectInstanceProviderTest extends AbstractDependencyInjectionTestCa
         );
     }
 
-    public function testGet_WithInstanceOfSameClass_ReturnsSameInstance(): void
+    public function testConstruct_WithInstanceOfSameClass_ExposesTheInstance(): void
     {
         // Arrange
         $expectedInstance = new FakeClassNoConstructor();
         $factory = new ObjectInstanceProvider(FakeClassNoConstructor::class, $expectedInstance);
 
-        // Act
-        $instance = $factory->get(self::createResolutionContext());
-
-        // Assert
-        self::assertSame($expectedInstance, $instance);
+        // Act & Assert
+        self::assertSame($expectedInstance, $factory->instance);
     }
 
-    public function testGet_WithInstanceOfSubclass_ReturnsSameInstance(): void
+    public function testConstruct_WithInstanceOfSubclass_ExposesTheInstance(): void
     {
         // Arrange
         $expectedInstance = new FakeClassExtendsBaseClass();
         $factory = new ObjectInstanceProvider(FakeBaseClass::class, $expectedInstance);
 
-        // Act
-        $instance = $factory->get(self::createResolutionContext());
-
-        // Assert
-        self::assertSame($expectedInstance, $instance);
+        // Act & Assert
+        self::assertSame($expectedInstance, $factory->instance);
     }
 }

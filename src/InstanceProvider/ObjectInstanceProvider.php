@@ -11,8 +11,6 @@ declare(strict_types=1);
 
 namespace Suhock\DependencyInjection\InstanceProvider;
 
-use Suhock\DependencyInjection\ResolutionContext;
-
 /**
  * Factory that provides a previously constructed instance of the class.
  *
@@ -31,20 +29,11 @@ final class ObjectInstanceProvider implements InstanceProviderInterface
      */
     public function __construct(
         string $className,
-        private readonly object $instance
+        public readonly object $instance
     ) {
         if (!$instance instanceof $className) {
             throw new InstanceTypeException($className, $instance);
         }
-    }
-
-    /**
-     * @inheritDoc
-     * @return TClass An instance of the class
-     */
-    public function get(ResolutionContext $context): object
-    {
-        return $this->instance;
     }
 
 }

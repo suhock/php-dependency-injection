@@ -65,11 +65,7 @@ abstract class AbstractDependencyInjectionTestCase extends TestCase
      */
     protected static function buildRawContainer(array $descriptors): Container
     {
-        return new Container(
-            $descriptors,
-            (new ResolutionPlanFactory())->compile($descriptors),
-            static fn (ContainerInterface $container) => Injector::createDefault($container)
-        );
+        return new Container($descriptors, (new ResolutionPlanFactory())->compile($descriptors));
     }
 
     /**
@@ -89,13 +85,10 @@ abstract class AbstractDependencyInjectionTestCase extends TestCase
     /**
      * Creates a root resolution context for exercising lifetime strategies and instance providers directly.
      */
-    protected static function createResolutionContext(
-        ?ContainerInterface $container = null,
-        ?InjectorInterface $injector = null
-    ): ResolutionContext {
+    protected static function createResolutionContext(?ContainerInterface $container = null): ResolutionContext
+    {
         return new ResolutionContext(
             $container ?? self::createStub(ContainerInterface::class),
-            $injector ?? self::createStub(InjectorInterface::class),
             new InstanceStore()
         );
     }
@@ -107,7 +100,6 @@ abstract class AbstractDependencyInjectionTestCase extends TestCase
     {
         return new ResolutionContext(
             self::createStub(ContainerInterface::class),
-            self::createStub(InjectorInterface::class),
             new InstanceStore(),
             $rootContext
         );

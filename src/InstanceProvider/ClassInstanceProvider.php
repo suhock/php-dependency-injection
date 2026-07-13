@@ -12,8 +12,6 @@ declare(strict_types=1);
 namespace Suhock\DependencyInjection\InstanceProvider;
 
 use Closure;
-use Suhock\DependencyInjection\DependencyInjectionException;
-use Suhock\DependencyInjection\ResolutionContext;
 
 /**
  * Factory that provides instances of a class by directly instantiating the class.
@@ -38,23 +36,6 @@ final class ClassInstanceProvider implements InstanceProviderInterface
         ?callable $mutator = null
     ) {
         $this->mutator = $mutator !== null ? $mutator(...) : null;
-    }
-
-    /**
-     * @inheritDoc
-     * @return TClass A new instance of {@see $className}
-     * @throws DependencyInjectionException If there was an error resolving values for the constructor parameters or
-     * invoking the constructor
-     */
-    public function get(ResolutionContext $context): object
-    {
-        $instance = $context->injector->instantiate($this->className);
-
-        if ($this->mutator !== null) {
-            $context->injector->call($this->mutator, [$instance]);
-        }
-
-        return $instance;
     }
 
 }

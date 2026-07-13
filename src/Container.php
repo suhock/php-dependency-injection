@@ -18,7 +18,10 @@ use ReflectionProperty;
 use Suhock\DependencyInjection\Descriptor\Descriptor;
 use Suhock\DependencyInjection\InstanceProvider\ClassInstanceProvider;
 use Suhock\DependencyInjection\InstanceProvider\ClosureInstanceProvider;
+use Suhock\DependencyInjection\InstanceProvider\ContextInstanceProvider;
+use Suhock\DependencyInjection\InstanceProvider\InstanceProviderInterface;
 use Suhock\DependencyInjection\InstanceProvider\InstanceTypeException;
+use Suhock\DependencyInjection\InstanceProvider\ObjectInstanceProvider;
 use Suhock\DependencyInjection\Lifetime\InstanceStore;
 use Suhock\DependencyInjection\Resolver\ParameterResolutionException;
 use Suhock\DependencyInjection\Resolver\PropertyResolutionException;
@@ -27,6 +30,8 @@ use Suhock\DependencyInjection\Resolver\ResolutionPlanEdge;
 use Suhock\DependencyInjection\Resolver\ResolutionPlanKind;
 use Throwable;
 use UnitEnum;
+
+use function get_class;
 use function spl_object_id;
 
 /**
@@ -50,11 +55,6 @@ final class Container implements ContainerInterface, DisposableInterface, ScopeF
      */
     private array $closures = [];
 
-    private readonly InjectorInterface $injector;
-
-    /** @var Closure(ContainerInterface):InjectorInterface */
-    private readonly Closure $injectorFactory;
-
     private readonly InstanceStore $instances;
 
     private readonly ResolutionContext $resolutionContext;
@@ -77,17 +77,13 @@ final class Container implements ContainerInterface, DisposableInterface, ScopeF
      *
      * @param array<string, Descriptor<object>> $descriptors The service descriptors, keyed by descriptor id
      * @param array<string, ResolutionPlan> $plans The compiled resolution plans, keyed by descriptor id
-     * @param callable(ContainerInterface):InjectorInterface $injectorFactory Provides the injector to be used in
-     * conjunction with each resolution root (the container itself and each scope created from it)
      */
-    public function __construct(array $descriptors, array $plans, callable $injectorFactory)
+    public function __construct(array $descriptors, array $plans)
     {
         $this->descriptors = $descriptors;
         $this->plans = $plans;
-        $this->injectorFactory = $injectorFactory(...);
-        $this->injector = $injectorFactory($this);
         $this->instances = new InstanceStore();
-        $this->resolutionContext = new ResolutionContext($this, $this->injector, $this->instances);
+        $this->resolutionContext = new ResolutionContext($this, $this->instances);
 
         foreach ($plans as $id => $plan) {
             $closure = self::executableClosure($plan, $descriptors[$id] ?? null);
@@ -124,7 +120,6 @@ final class Container implements ContainerInterface, DisposableInterface, ScopeF
 
         return new Scope(
             $this,
-            $this->injectorFactory,
             $this->resolutionContext,
             fn (string $className, string|UnitEnum|null $key, ResolutionContext $context): object =>
                 $this->getForContext($className, $key, $context)
@@ -284,19 +279,38 @@ final class Container implements ContainerInterface, DisposableInterface, ScopeF
      */
     private function executePlan(string $id, Descriptor $descriptor, ResolutionContext $ctx): object
     {
-        $plan = $this->plans[$id] ?? null;
-
-        if ($plan === null) {
-            // No compiled plan (impossible via ContainerBuilder::build()); trust the provider.
-            return $descriptor->instanceProvider->get($ctx);
-        }
+        $plan = $this->plans[$id] ?? throw new ContainerException("No compiled plan exists for service $id");
 
         return match ($plan->kind) {
             ResolutionPlanKind::AutowiredClass => $this->executeAutowiredClass($id, $plan, $ctx),
             ResolutionPlanKind::Factory => $this->executeFactory($id, $plan, $ctx),
             ResolutionPlanKind::Implementation => $this->executeImplementation($plan, $ctx),
-            ResolutionPlanKind::Leaf => $descriptor->instanceProvider->get($ctx),
+            ResolutionPlanKind::Leaf => self::executeLeaf($descriptor->instanceProvider, $ctx),
         };
+    }
+
+    /**
+     * Produces an edge-less service's instance: a held instance, or one derived from the resolution context.
+     *
+     * @param InstanceProviderInterface<object> $provider
+     */
+    private static function executeLeaf(InstanceProviderInterface $provider, ResolutionContext $ctx): object
+    {
+        if ($provider instanceof ObjectInstanceProvider) {
+            return $provider->instance;
+        }
+
+        if ($provider instanceof ContextInstanceProvider) {
+            $instance = ($provider->select)($ctx);
+
+            if (!$instance instanceof $provider->className) {
+                throw new InstanceTypeException($provider->className, $instance);
+            }
+
+            return $instance;
+        }
+
+        throw new ContainerException('Unknown leaf instance provider ' . get_class($provider));
     }
 
     private function executeAutowiredClass(string $id, ResolutionPlan $plan, ResolutionContext $ctx): object

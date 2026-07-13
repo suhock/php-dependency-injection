@@ -21,6 +21,7 @@ use Suhock\DependencyInjection\InstanceProvider\ImplementationInstanceProvider;
 use Suhock\DependencyInjection\InstanceProvider\InstanceProviderInterface;
 use Suhock\DependencyInjection\Key;
 use UnitEnum;
+
 use function get_class;
 use function hash_final;
 use function hash_init;

@@ -12,8 +12,6 @@ declare(strict_types=1);
 namespace Suhock\DependencyInjection\InstanceProvider;
 
 use Suhock\DependencyInjection\AbstractDependencyInjectionTestCase;
-use Suhock\DependencyInjection\ContainerInterface;
-use Suhock\DependencyInjection\Fakes\FakeBaseClass;
 use Suhock\DependencyInjection\Fakes\FakeClassExtendsBaseClass;
 use Suhock\DependencyInjection\Fakes\FakeClassNoConstructor;
 
@@ -22,29 +20,7 @@ use Suhock\DependencyInjection\Fakes\FakeClassNoConstructor;
  */
 final class ImplementationInstanceProviderTest extends AbstractDependencyInjectionTestCase
 {
-    public function testGet_WithValidSubclass_ReturnsInstanceFromContextContainer(): void
-    {
-        // Arrange
-        $container = $this->createMock(ContainerInterface::class);
-        $container->method('has')->willReturn(true);
-        $container->expects($this->once())
-            ->method('get')
-            ->with(FakeClassExtendsBaseClass::class)
-            ->willReturn(new FakeClassExtendsBaseClass());
-
-        $factory = new ImplementationInstanceProvider(
-            FakeBaseClass::class,
-            FakeClassExtendsBaseClass::class
-        );
-
-        // Act
-        $instance = $factory->get(self::createResolutionContext(container: $container));
-
-        // Assert
-        self::assertInstanceOf(FakeClassExtendsBaseClass::class, $instance);
-    }
-
-    public function testGet_WhenImplementationSameAsInterface_ThrowsImplementationException(): void
+    public function testConstruct_WhenImplementationSameAsInterface_ThrowsImplementationException(): void
     {
         // Arrange & Act
         $fn = fn () => new ImplementationInstanceProvider(
@@ -60,7 +36,7 @@ final class ImplementationInstanceProviderTest extends AbstractDependencyInjecti
         );
     }
 
-    public function testGet_WhenImplementationNotSubclassOfInterface_ThrowsImplementationException(): void
+    public function testConstruct_WhenImplementationNotSubclassOfInterface_ThrowsImplementationException(): void
     {
         // Arrange & Act
         $fn = fn () => new ImplementationInstanceProvider(

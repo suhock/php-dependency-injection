@@ -33,25 +33,9 @@ final class ContextInstanceProvider implements InstanceProviderInterface
      * context
      */
     public function __construct(
-        private readonly string $className,
-        private readonly Closure $select
+        public readonly string $className,
+        public readonly Closure $select
     ) {
-    }
-
-    /**
-     * @inheritDoc
-     * @return TClass An instance of the class
-     * @throws InstanceTypeException
-     */
-    public function get(ResolutionContext $context): object
-    {
-        $result = ($this->select)($context);
-
-        if (!$result instanceof $this->className) {
-            throw new InstanceTypeException($this->className, $result);
-        }
-
-        return $result;
     }
 
 }

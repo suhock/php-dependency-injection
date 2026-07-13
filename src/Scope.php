@@ -17,7 +17,7 @@ use UnitEnum;
 
 /**
  * A scope created by {@see Container::createScope()}. The scope shares the root container's service descriptors but
- * owns its own instance store and injector, so scoped services are instantiated once per scope and their dependencies
+ * owns its own instance store, so scoped services are instantiated once per scope and their dependencies
  * resolve from the scope. Singleton services continue to resolve from the root container regardless of which scope
  * requests them.
  *
@@ -35,25 +35,17 @@ final class Scope implements ScopeInterface
 
     /**
      * @param Container $rootContainer The container the scope was created from
-     * @param callable(ContainerInterface):InjectorInterface $injectorFactory Provides the injector used to resolve
-     * dependencies from the scope
      * @param ResolutionContext $rootContext The resolution context of the root container
      * @param callable(class-string, string|UnitEnum|null, ResolutionContext):object $resolve Resolves a service from
      * the root container for this scope's resolution context
      */
     public function __construct(
         private readonly Container $rootContainer,
-        callable $injectorFactory,
         ResolutionContext $rootContext,
         callable $resolve
     ) {
         $this->resolve = $resolve(...);
-        $this->resolutionContext = new ResolutionContext(
-            $this,
-            $injectorFactory($this),
-            new InstanceStore(),
-            $rootContext
-        );
+        $this->resolutionContext = new ResolutionContext($this, new InstanceStore(), $rootContext);
     }
 
     /**

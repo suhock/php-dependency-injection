@@ -26,14 +26,12 @@ final class ResolutionContext
 {
     /**
      * @param ContainerInterface $container The resolution root itself
-     * @param InjectorInterface $injector The injector that resolves dependencies from {@see $container}
      * @param InstanceStore $store The instance store owned by {@see $container}
      * @param ResolutionContext|null $root The context of the root container, or <code>null</code> if this context
      * belongs to the root container itself
      */
     public function __construct(
         public readonly ContainerInterface $container,
-        public readonly InjectorInterface $injector,
         public readonly InstanceStore $store,
         public readonly ?ResolutionContext $root = null
     ) {

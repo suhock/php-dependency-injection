@@ -29,6 +29,7 @@ use Suhock\DependencyInjection\Validation\ContainerValidationException;
 use Suhock\DependencyInjection\Validation\ContainerValidator;
 use Suhock\DependencyInjection\Validation\DependencyGraph;
 use UnitEnum;
+
 use function is_array;
 use function is_string;
 
@@ -49,30 +50,23 @@ final class ContainerBuilder implements ContainerBuilderInterface
     /** @var array<string, Descriptor<object>> */
     private array $descriptors = [];
 
-    /** @var Closure(ContainerInterface):InjectorInterface */
-    private readonly Closure $injectorFactory;
-
     /**
-     * @param callable(ContainerInterface):InjectorInterface $injectorFactory Provides the injector to be used in
-     * conjunction with each resolution root (the built container and each scope created from it)
-     * @param CacheInterface|null $cache [optional] Cache used to memoize reflected metadata, shared by graph
-     * compilation and the injector
+     * @param CacheInterface|null $cache [optional] Cache used to memoize reflected metadata and to reuse the
+     * compiled graph across builds of an unchanged configuration
      */
     public function __construct(
-        callable $injectorFactory,
         private readonly ?CacheInterface $cache = null
     ) {
-        $this->injectorFactory = $injectorFactory(...);
     }
 
     /**
-     * Creates a builder whose product uses the default injector.
+     * Creates a builder with the default configuration.
      *
      * @param CacheInterface|null $cache [optional] Cache used to memoize reflected metadata.
      */
     public static function createDefault(?CacheInterface $cache = null): self
     {
-        return new self(static fn ($container) => Injector::createDefault($container, $cache), $cache);
+        return new self($cache);
     }
 
     /**
@@ -178,7 +172,7 @@ final class ContainerBuilder implements ContainerBuilderInterface
                     $plans = self::plansFromCache($cached);
 
                     if ($plans !== null) {
-                        return new Container($descriptors, $plans, $this->injectorFactory);
+                        return new Container($descriptors, $plans);
                     }
                 }
             }
@@ -191,7 +185,7 @@ final class ContainerBuilder implements ContainerBuilderInterface
             $this->cache?->set($cacheKey, $plans);
         }
 
-        return new Container($descriptors, $plans, $this->injectorFactory);
+        return new Container($descriptors, $plans);
     }
 
     /**

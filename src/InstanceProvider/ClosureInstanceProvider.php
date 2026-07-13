@@ -12,8 +12,6 @@ declare(strict_types=1);
 namespace Suhock\DependencyInjection\InstanceProvider;
 
 use Closure;
-use Suhock\DependencyInjection\DependencyInjectionException;
-use Suhock\DependencyInjection\ResolutionContext;
 
 /**
  * Factory that provides instances of a class by using a factory method.
@@ -33,23 +31,6 @@ final class ClosureInstanceProvider implements InstanceProviderInterface
         public readonly string $className,
         public readonly Closure $factory
     ) {
-    }
-
-    /**
-     * @inheritDoc
-     * @return TClass An instance of the class
-     * @throws InstanceTypeException
-     * @throws DependencyInjectionException
-     */
-    public function get(ResolutionContext $context): object
-    {
-        $result = $context->injector->call($this->factory);
-
-        if (!$result instanceof $this->className) {
-            throw new InstanceTypeException($this->className, $result);
-        }
-
-        return $result;
     }
 
 }

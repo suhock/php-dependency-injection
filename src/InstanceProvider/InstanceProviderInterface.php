@@ -11,10 +11,10 @@ declare(strict_types=1);
 
 namespace Suhock\DependencyInjection\InstanceProvider;
 
-use Suhock\DependencyInjection\ResolutionContext;
-
 /**
- * Interface for classes that manage the provision of objects.
+ * Marks the closed set of records describing how a service's instances are produced. Providers carry configuration
+ * only — a class to autowire, a factory closure, an implementation target, a held instance, or a context selector —
+ * and the compiled resolution plans execute them; no provider produces instances itself.
  *
  * @template TClass of object
  *
@@ -22,10 +22,4 @@ use Suhock\DependencyInjection\ResolutionContext;
  */
 interface InstanceProviderInterface
 {
-    /**
-     * @param ResolutionContext $context The context of the resolution root to resolve the instance's dependencies from
-     *
-     * @return TClass An instance of the class
-     */
-    public function get(ResolutionContext $context): object;
 }

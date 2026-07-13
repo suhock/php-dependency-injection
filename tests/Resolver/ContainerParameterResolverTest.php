@@ -21,6 +21,7 @@ use Suhock\DependencyInjection\Injection\InjectAttributeMemberInjector;
 use Suhock\DependencyInjection\Injector;
 use Suhock\DependencyInjection\Instantiation\ReflectionInstantiationStrategy;
 use Suhock\DependencyInjection\Key;
+use ReflectionParameter;
 
 /**
  * Test suite for {@see ContainerParameterResolver}.
@@ -28,8 +29,8 @@ use Suhock\DependencyInjection\Key;
 final class ContainerParameterResolverTest extends AbstractDependencyInjectionTestCase
 {
     /**
-     * Builds a container whose own injector resolves parameters via the {@see ContainerParameterResolver} under test,
-     * wiring it through the builder's injector factory exactly as production code would.
+     * Builds a container, then constructs an injector whose {@see ContainerParameterResolver} under test resolves
+     * parameters from it — the standalone-injector wiring production code uses.
      *
      * @param callable(ContainerBuilder):mixed $configure
      *
@@ -37,26 +38,20 @@ final class ContainerParameterResolverTest extends AbstractDependencyInjectionTe
      */
     private function createContainerAndInjector(?callable $configure = null): array
     {
-        $injector = null;
-        $builder = new ContainerBuilder(
-            function (ContainerInterface $container) use (&$injector): Injector {
-                $resolver = new ContainerParameterResolver($container);
-
-                return $injector = new Injector(
-                    $resolver,
-                    new ReflectionInstantiationStrategy($resolver),
-                    new InjectAttributeMemberInjector($resolver)
-                );
-            }
-        );
+        $builder = new ContainerBuilder();
 
         if ($configure !== null) {
             $configure($builder);
         }
 
         $container = $builder->build();
+        $resolver = new ContainerParameterResolver($container);
+        $injector = new Injector(
+            $resolver,
+            new ReflectionInstantiationStrategy($resolver),
+            new InjectAttributeMemberInjector($resolver)
+        );
 
-        /** @var Injector $injector populated by the injector factory during build */
         return [$container, $injector];
     }
 
@@ -118,5 +113,86 @@ final class ContainerParameterResolverTest extends AbstractDependencyInjectionTe
 
         // Assert
         self::assertThrowsParameterResolutionException('{closure}', 'obj', null, $fn);
+    }
+
+    public function testHasDependency_WhenContainerHasCandidate_ReturnsTrue(): void
+    {
+        // Arrange
+        [$container] = $this->createContainerAndInjector(
+            static fn (ContainerBuilder $builder) =>
+                $builder->addSingletonInstance(FakeClassNoConstructor::class, new FakeClassNoConstructor())
+        );
+        $resolver = new ContainerParameterResolver($container);
+        $dependency = new ResolvableDependency('param', [[FakeClassNoConstructor::class]]);
+
+        // Act & Assert
+        self::assertTrue($resolver->hasDependency($dependency));
+    }
+
+    public function testHasDependency_WhenNoCandidateRegistered_ReturnsFalse(): void
+    {
+        // Arrange
+        [$container] = $this->createContainerAndInjector();
+        $resolver = new ContainerParameterResolver($container);
+        $dependency = new ResolvableDependency('param', [[FakeClassNoConstructor::class]]);
+
+        // Act & Assert
+        self::assertFalse($resolver->hasDependency($dependency));
+    }
+
+    public function testResolveDependency_WhenContainerHasCandidate_ReturnsInstance(): void
+    {
+        // Arrange
+        $expectedInstance = new FakeClassNoConstructor();
+        [$container] = $this->createContainerAndInjector(
+            static fn (ContainerBuilder $builder) =>
+                $builder->addSingletonInstance(FakeClassNoConstructor::class, $expectedInstance)
+        );
+        $resolver = new ContainerParameterResolver($container);
+        $dependency = new ResolvableDependency('param', [[FakeClassNoConstructor::class]]);
+
+        // Act
+        $result = $resolver->resolveDependency($dependency);
+
+        // Assert
+        self::assertSame($expectedInstance, $result);
+    }
+
+    public function testResolveDependency_WhenNoCandidateRegistered_ThrowsClassNotFoundException(): void
+    {
+        // Arrange
+        [$container] = $this->createContainerAndInjector();
+        $resolver = new ContainerParameterResolver($container);
+        $dependency = new ResolvableDependency('param', [[FakeClassNoConstructor::class]]);
+
+        // Act
+        $fn = static fn () => $resolver->resolveDependency($dependency);
+
+        // Assert
+        self::assertThrowsClassNotFoundException(FakeClassNoConstructor::class, $fn);
+    }
+
+    public function testGetResolvableDependency_PlainTypedParameter_ReturnsDependency(): void
+    {
+        // Arrange
+        $resolver = new ContainerParameterResolver(self::createStub(ContainerInterface::class));
+        $rParam = new ReflectionParameter(static fn (FakeClassNoConstructor $param) => null, 'param');
+
+        // Act
+        $dependency = $resolver->getResolvableDependency($rParam);
+
+        // Assert
+        self::assertNotNull($dependency);
+        self::assertSame([[FakeClassNoConstructor::class]], $dependency->alternatives);
+    }
+
+    public function testGetResolvableDependency_NullableParameter_ReturnsNull(): void
+    {
+        // Arrange: a nullable parameter keeps the reflection-path fallbacks, so it is not directly resolvable.
+        $resolver = new ContainerParameterResolver(self::createStub(ContainerInterface::class));
+        $rParam = new ReflectionParameter(static fn (?FakeClassNoConstructor $param = null) => null, 'param');
+
+        // Act & Assert
+        self::assertNull($resolver->getResolvableDependency($rParam));
     }
 }

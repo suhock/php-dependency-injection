@@ -15,11 +15,17 @@ use Closure;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 use Suhock\DependencyInjection\Descriptor\Descriptor;
+use Suhock\DependencyInjection\Fakes\FakeBaseClass;
+use Suhock\DependencyInjection\Fakes\FakeClassExtendsBaseClass;
 use Suhock\DependencyInjection\Fakes\FakeClassNoConstructor;
 use Suhock\DependencyInjection\Fakes\FakeClassWithConstructor;
 use Suhock\DependencyInjection\Fakes\FakeInterfaceOne;
+use Suhock\DependencyInjection\Fakes\FakeUnitEnum;
+use Suhock\DependencyInjection\InstanceProvider\ClassInstanceProvider;
 use Suhock\DependencyInjection\InstanceProvider\ClosureInstanceProvider;
+use Suhock\DependencyInjection\InstanceProvider\ImplementationInstanceProvider;
 use Suhock\DependencyInjection\InstanceProvider\ObjectInstanceProvider;
+use Suhock\DependencyInjection\Key;
 use Suhock\DependencyInjection\Lifetime\SingletonStrategy;
 use Suhock\DependencyInjection\Lifetime\TransientStrategy;
 
@@ -258,5 +264,138 @@ final class ConfigurationFingerprintTest extends TestCase
         // Assert
         self::assertNotNull($digestWithDisposal);
         self::assertNotSame($digestWithDisposal, $digestWithoutDisposal);
+    }
+
+    /**
+     * @param class-string $className
+     *
+     * @return Descriptor<object>
+     */
+    private static function autowireClass(string $className, ?Closure $mutator = null): Descriptor
+    {
+        return new Descriptor(
+            $className,
+            new TransientStrategy($className),
+            new ClassInstanceProvider($className, $mutator)
+        );
+    }
+
+    /**
+     * @param class-string $className
+     * @param class-string $implementationClassName
+     *
+     * @return Descriptor<object>
+     */
+    private static function implementation(string $className, string $implementationClassName): Descriptor
+    {
+        return new Descriptor(
+            $className,
+            new TransientStrategy($className),
+            new ImplementationInstanceProvider($className, $implementationClassName)
+        );
+    }
+
+    /**
+     * A factory declared at a single, fixed site whose sole parameter carries a string {@see Key} — used to exercise
+     * the keyed-parameter branch of the closure signature while keeping the declaration site stable across calls.
+     *
+     * @return Closure(FakeClassNoConstructor): FakeClassNoConstructor
+     */
+    private static function makeStringKeyedFactory(): Closure
+    {
+        return static fn (#[Key('key1')] FakeClassNoConstructor $dependency): FakeClassNoConstructor => $dependency;
+    }
+
+    /**
+     * As {@see makeStringKeyedFactory()}, but the parameter's {@see Key} is a unit enum, exercising the enum branch of
+     * the key signature.
+     *
+     * @return Closure(FakeClassNoConstructor): FakeClassNoConstructor
+     */
+    private static function makeEnumKeyedFactory(): Closure
+    {
+        return static fn (
+            #[Key(FakeUnitEnum::Test)] FakeClassNoConstructor $dependency
+        ): FakeClassNoConstructor => $dependency;
+    }
+
+    public function testCompute_WithAutowireMutator_DiffersFromWithoutMutator(): void
+    {
+        // Arrange: same autowired class, one with a mutator and one without.
+        $withoutMutator = [FakeClassNoConstructor::class => self::autowireClass(FakeClassNoConstructor::class)];
+        $withMutator = [
+            FakeClassNoConstructor::class => self::autowireClass(
+                FakeClassNoConstructor::class,
+                static function (FakeClassNoConstructor $instance): void {
+                }
+            ),
+        ];
+
+        // Act
+        $digestWithout = ConfigurationFingerprint::compute($withoutMutator);
+        $digestWith = ConfigurationFingerprint::compute($withMutator);
+
+        // Assert: the mutator's signature is part of the fingerprint, so its presence changes the digest.
+        self::assertNotNull($digestWithout);
+        self::assertNotNull($digestWith);
+        self::assertNotSame($digestWithout, $digestWith);
+    }
+
+    public function testCompute_WithImplementationProvider_DiffersFromAutowireOfSameClass(): void
+    {
+        // Arrange: the same class provided by reference to a concrete implementation versus by autowiring.
+        $byReference = [FakeBaseClass::class => self::implementation(FakeBaseClass::class, FakeClassExtendsBaseClass::class)];
+        $byAutowire = [FakeBaseClass::class => self::autowireClass(FakeBaseClass::class)];
+
+        // Act
+        $digestReference = ConfigurationFingerprint::compute($byReference);
+        $digestAutowire = ConfigurationFingerprint::compute($byAutowire);
+
+        // Assert
+        self::assertNotNull($digestReference);
+        self::assertNotNull($digestAutowire);
+        self::assertNotSame($digestReference, $digestAutowire);
+    }
+
+    public function testCompute_WithStringKeyedFactoryParam_ProducesStableDigest(): void
+    {
+        // Arrange: two factories from the same site whose parameter carries the same string key.
+        $descriptorsA = [
+            FakeClassNoConstructor::class =>
+                self::transientClosure(FakeClassNoConstructor::class, self::makeStringKeyedFactory()),
+        ];
+        $descriptorsB = [
+            FakeClassNoConstructor::class =>
+                self::transientClosure(FakeClassNoConstructor::class, self::makeStringKeyedFactory()),
+        ];
+
+        // Act
+        $digestA = ConfigurationFingerprint::compute($descriptorsA);
+        $digestB = ConfigurationFingerprint::compute($descriptorsB);
+
+        // Assert: keyed parameters are fingerprinted deterministically.
+        self::assertNotNull($digestA);
+        self::assertSame($digestA, $digestB);
+    }
+
+    public function testCompute_WithEnumKeyedFactoryParam_ProducesStableDigest(): void
+    {
+        // Arrange
+        $descriptorsA = [
+            FakeClassNoConstructor::class =>
+                self::transientClosure(FakeClassNoConstructor::class, self::makeEnumKeyedFactory()),
+        ];
+        $descriptorsB = [
+            FakeClassNoConstructor::class =>
+                self::transientClosure(FakeClassNoConstructor::class, self::makeEnumKeyedFactory()),
+        ];
+
+        // Act
+        $digestA = ConfigurationFingerprint::compute($descriptorsA);
+        $digestB = ConfigurationFingerprint::compute($descriptorsB);
+
+        // Assert
+        self::assertNotNull($digestA);
+        self::assertSame($digestA, $digestB);
     }
 }
