@@ -24,6 +24,25 @@ use Throwable;
  */
 abstract class AbstractDependencyInjectionTestCase extends TestCase
 {
+    protected static function createBuilder(): ContainerBuilder
+    {
+        return ContainerBuilder::createDefault();
+    }
+
+    /**
+     * Builds a validated container from a configuration callback — the standard arrangement step for tests that
+     * exercise the built product.
+     *
+     * @param callable(ContainerBuilder):mixed $configure
+     */
+    protected static function buildContainer(callable $configure): Container
+    {
+        $builder = ContainerBuilder::createDefault();
+        $configure($builder);
+
+        return $builder->build();
+    }
+
     /**
      * Creates a root resolution context for exercising lifetime strategies and instance providers directly.
      */

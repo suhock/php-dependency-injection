@@ -12,182 +12,29 @@ declare(strict_types=1);
 namespace Suhock\DependencyInjection;
 
 use Suhock\DependencyInjection\Fakes\FakeClassNoConstructor;
-use Suhock\DependencyInjection\Fakes\FakeConfigurator;
-use Suhock\DependencyInjection\Fakes\FakeUnitEnum;
-use Suhock\DependencyInjection\InstanceProvider\ObjectInstanceProvider;
+use Suhock\DependencyInjection\InstanceProvider\InstanceProviderInterface;
 use Suhock\DependencyInjection\Lifetime\SingletonStrategy;
 
 /**
- * Test suite for {@see Container}.
+ * Test suite for the built {@see Container}: resolution, keyed lookups, and the runtime backstops that survive
+ * build-time validation. Configuration-surface behavior lives in {@see ContainerBuilderTest}.
  */
 final class ContainerTest extends AbstractDependencyInjectionTestCase
 {
-    protected function createContainer(): Container
+    /**
+     * @param class-string $className
+     *
+     * @return SingletonStrategy<object>
+     */
+    private static function singletonStrategy(string $className): SingletonStrategy
     {
-        return Container::createDefault();
-    }
-
-    public function testAdd_WithValidClass_AddsDescriptor(): void
-    {
-        // Arrange
-        $container = $this->createContainer();
-        $lifetimeStrategy = new SingletonStrategy(FakeClassNoConstructor::class);
-        $instanceProvider = new ObjectInstanceProvider(FakeClassNoConstructor::class, new FakeClassNoConstructor());
-
-        // Act
-        $container->add(FakeClassNoConstructor::class, $lifetimeStrategy, $instanceProvider);
-
-        // Assert
-        self::assertTrue($container->has(FakeClassNoConstructor::class));
-    }
-
-    public function testAdd_WithDuplicateClass_ThrowsContainerException(): void
-    {
-        // Arrange
-        $container = $this->createContainer();
-        $lifetimeStrategy = new SingletonStrategy(FakeClassNoConstructor::class);
-        $instanceProvider = new ObjectInstanceProvider(FakeClassNoConstructor::class, new FakeClassNoConstructor());
-        $container->add(FakeClassNoConstructor::class, $lifetimeStrategy, $instanceProvider);
-
-        // Act & Assert
-        $this->expectException(ContainerException::class);
-        $container->add(FakeClassNoConstructor::class, $lifetimeStrategy, $instanceProvider);
-    }
-
-    public function testAddKeyed_WithValidClass_AddsKeyedDescriptor(): void
-    {
-        // Arrange
-        $container = $this->createContainer();
-        $lifetimeStrategy = new SingletonStrategy(FakeClassNoConstructor::class);
-        $instanceProvider = new ObjectInstanceProvider(FakeClassNoConstructor::class, new FakeClassNoConstructor());
-
-        // Act
-        $container->addKeyed(FakeClassNoConstructor::class, 'key1', $lifetimeStrategy, $instanceProvider);
-
-        // Assert
-        self::assertTrue($container->has(FakeClassNoConstructor::class, 'key1'));
-    }
-
-    public function testAddKeyed_WithDuplicateKey_ThrowsContainerException(): void
-    {
-        // Arrange
-        $container = $this->createContainer();
-        $lifetimeStrategy = new SingletonStrategy(FakeClassNoConstructor::class);
-        $instanceProvider = new ObjectInstanceProvider(FakeClassNoConstructor::class, new FakeClassNoConstructor());
-        $container->addKeyed(FakeClassNoConstructor::class, 'key1', $lifetimeStrategy, $instanceProvider);
-
-        // Act & Assert
-        $this->expectException(ContainerException::class);
-        $container->addKeyed(FakeClassNoConstructor::class, 'key1', $lifetimeStrategy, $instanceProvider);
-    }
-
-    public function testAddKeyed_WhenUnkeyedServiceExists_AddsIndependentKeyedDescriptor(): void
-    {
-        // Arrange
-        $container = $this->createContainer()
-            ->addSingletonInstance(FakeClassNoConstructor::class, new FakeClassNoConstructor());
-        $lifetimeStrategy = new SingletonStrategy(FakeClassNoConstructor::class);
-        $instanceProvider = new ObjectInstanceProvider(FakeClassNoConstructor::class, new FakeClassNoConstructor());
-
-        // Act
-        $container->addKeyed(FakeClassNoConstructor::class, 'key1', $lifetimeStrategy, $instanceProvider);
-
-        // Assert
-        self::assertTrue($container->has(FakeClassNoConstructor::class));
-        self::assertTrue($container->has(FakeClassNoConstructor::class, 'key1'));
-    }
-
-    public function testConfigure_WithCallback_InvokesCallbackWithSelf(): void
-    {
-        // Arrange
-        $container = $this->createContainer();
-        $configurator = $this->createMock(FakeConfigurator::class);
-        $configurator->expects($this->once())
-            ->method('configure')
-            ->with($container);
-
-        // Act
-        $container->configure($configurator->configure(...));
-    }
-
-    public function testRemove_WithExistingClassName_RemovesClassFromContainer(): void
-    {
-        // Arrange
-        $container = $this->createContainer()
-            ->addSingletonClass(FakeClassNoConstructor::class);
-
-        // Act
-        $container->remove(FakeClassNoConstructor::class);
-
-        // Assert
-        self::assertFalse($container->has(FakeClassNoConstructor::class));
-    }
-
-    public function testRemove_WithKey_RemovesOnlyKeyedService(): void
-    {
-        // Arrange
-        $container = $this->createContainer()
-            ->addSingletonClass(FakeClassNoConstructor::class)
-            ->addKeyedSingleton(FakeClassNoConstructor::class, 'key1')
-            ->addKeyedSingleton(FakeClassNoConstructor::class, 'key2');
-
-        // Act
-        $container->remove(FakeClassNoConstructor::class, 'key1');
-
-        // Assert
-        self::assertFalse($container->has(FakeClassNoConstructor::class, 'key1'));
-        self::assertTrue($container->has(FakeClassNoConstructor::class));
-        self::assertTrue($container->has(FakeClassNoConstructor::class, 'key2'));
-    }
-
-    public function testRemove_WithoutKey_DoesNotRemoveKeyedService(): void
-    {
-        // Arrange
-        $container = $this->createContainer()
-            ->addSingletonClass(FakeClassNoConstructor::class)
-            ->addKeyedSingleton(FakeClassNoConstructor::class, 'key1');
-
-        // Act
-        $container->remove(FakeClassNoConstructor::class);
-
-        // Assert
-        self::assertFalse($container->has(FakeClassNoConstructor::class));
-        self::assertTrue($container->has(FakeClassNoConstructor::class, 'key1'));
-    }
-
-    public function testRemove_WithEnumKey_RemovesKeyedService(): void
-    {
-        // Arrange
-        $container = $this->createContainer()
-            ->addKeyedSingleton(FakeClassNoConstructor::class, FakeUnitEnum::Test);
-
-        // Act
-        $container->remove(FakeClassNoConstructor::class, FakeUnitEnum::Test);
-
-        // Assert
-        self::assertFalse($container->has(FakeClassNoConstructor::class, FakeUnitEnum::Test));
-    }
-
-    public function testRemove_WithKey_AllowsReAddingUnderSameKey(): void
-    {
-        // Arrange
-        $expectedInstance = new FakeClassNoConstructor();
-        $container = $this->createContainer()
-            ->addKeyedSingleton(FakeClassNoConstructor::class, 'key1');
-        $container->get(FakeClassNoConstructor::class, 'key1');
-
-        // Act
-        $container->remove(FakeClassNoConstructor::class, 'key1')
-            ->addKeyedSingleton(FakeClassNoConstructor::class, 'key1', $expectedInstance);
-
-        // Assert
-        self::assertSame($expectedInstance, $container->get(FakeClassNoConstructor::class, 'key1'));
+        return new SingletonStrategy($className);
     }
 
     public function testGet_WhenClassNotInContainer_ThrowsClassNotFoundException(): void
     {
         // Arrange
-        $container = $this->createContainer();
+        $container = self::buildContainer(static fn (ContainerBuilder $builder) => null);
 
         // Act
         $fn = static fn () => $container->get(FakeClassNoConstructor::class);
@@ -196,11 +43,24 @@ final class ContainerTest extends AbstractDependencyInjectionTestCase
         self::assertThrowsClassNotFoundException(FakeClassNoConstructor::class, $fn);
     }
 
-    public function testGet_WhenClassHasCircularDependency_ThrowsWrappedCircularDependencyException(): void
+    public function testGet_WhenOpaqueProviderReenters_ThrowsWrappedCircularDependencyException(): void
     {
-        // Arrange
-        $container = $this->createContainer()
-            ->addSingletonFactory(FakeClassNoConstructor::class, fn (FakeClassNoConstructor $obj) => $obj);
+        // Arrange: build-time validation cannot see through a custom provider, so the runtime $resolving guard is
+        // the backstop for cycles hidden inside one.
+        $provider = new class () implements InstanceProviderInterface {
+            public function get(ResolutionContext $context): object
+            {
+                return $context->container->get(FakeClassNoConstructor::class);
+            }
+        };
+
+        $container = self::buildContainer(
+            static fn (ContainerBuilder $builder) => $builder->add(
+                FakeClassNoConstructor::class,
+                self::singletonStrategy(FakeClassNoConstructor::class),
+                $provider
+            )
+        );
 
         // Act
         $fn = static fn () => $container->get(FakeClassNoConstructor::class);
@@ -220,8 +80,10 @@ final class ContainerTest extends AbstractDependencyInjectionTestCase
     {
         // Arrange
         $expectedInstance = new FakeClassNoConstructor();
-        $container = $this->createContainer()
-            ->addKeyedSingleton(FakeClassNoConstructor::class, 'key1', $expectedInstance);
+        $container = self::buildContainer(
+            static fn (ContainerBuilder $builder) =>
+                $builder->addKeyedSingleton(FakeClassNoConstructor::class, 'key1', $expectedInstance)
+        );
 
         // Act
         $result = $container->get(FakeClassNoConstructor::class, 'key1');
@@ -233,8 +95,10 @@ final class ContainerTest extends AbstractDependencyInjectionTestCase
     public function testGet_WithUnregisteredKey_ThrowsClassNotFoundException(): void
     {
         // Arrange
-        $container = $this->createContainer()
-            ->addSingletonInstance(FakeClassNoConstructor::class, new FakeClassNoConstructor());
+        $container = self::buildContainer(
+            static fn (ContainerBuilder $builder) =>
+                $builder->addSingletonInstance(FakeClassNoConstructor::class, new FakeClassNoConstructor())
+        );
 
         // Act
         $fn = static fn () => $container->get(FakeClassNoConstructor::class, 'key1');
@@ -246,8 +110,10 @@ final class ContainerTest extends AbstractDependencyInjectionTestCase
     public function testGet_WithoutKeyWhenOnlyKeyedServiceExists_ThrowsClassNotFoundException(): void
     {
         // Arrange
-        $container = $this->createContainer()
-            ->addKeyedSingleton(FakeClassNoConstructor::class, 'key1', new FakeClassNoConstructor());
+        $container = self::buildContainer(
+            static fn (ContainerBuilder $builder) =>
+                $builder->addKeyedSingleton(FakeClassNoConstructor::class, 'key1', new FakeClassNoConstructor())
+        );
 
         // Act
         $fn = static fn () => $container->get(FakeClassNoConstructor::class);
@@ -259,7 +125,7 @@ final class ContainerTest extends AbstractDependencyInjectionTestCase
     public function testHas_WhenClassNotInContainer_ReturnsFalse(): void
     {
         // Arrange
-        $container = $this->createContainer();
+        $container = self::buildContainer(static fn (ContainerBuilder $builder) => null);
 
         // Act
         $result = $container->has(FakeClassNoConstructor::class);
@@ -271,8 +137,10 @@ final class ContainerTest extends AbstractDependencyInjectionTestCase
     public function testHas_WhenValueProvidedByInstance_ReturnsTrue(): void
     {
         // Arrange
-        $container = $this->createContainer()
-            ->addSingletonInstance(FakeClassNoConstructor::class, new FakeClassNoConstructor());
+        $container = self::buildContainer(
+            static fn (ContainerBuilder $builder) =>
+                $builder->addSingletonInstance(FakeClassNoConstructor::class, new FakeClassNoConstructor())
+        );
 
         // Act
         $result = $container->has(FakeClassNoConstructor::class);
@@ -284,8 +152,10 @@ final class ContainerTest extends AbstractDependencyInjectionTestCase
     public function testHas_WhenValueProvidedByFactory_ReturnsTrue(): void
     {
         // Arrange
-        $container = $this->createContainer()
-            ->addSingletonFactory(FakeClassNoConstructor::class, fn () => new FakeClassNoConstructor());
+        $container = self::buildContainer(
+            static fn (ContainerBuilder $builder) =>
+                $builder->addSingletonFactory(FakeClassNoConstructor::class, fn () => new FakeClassNoConstructor())
+        );
 
         // Act
         $result = $container->has(FakeClassNoConstructor::class);
@@ -297,8 +167,10 @@ final class ContainerTest extends AbstractDependencyInjectionTestCase
     public function testHas_WithRegisteredKey_ReturnsTrue(): void
     {
         // Arrange
-        $container = $this->createContainer()
-            ->addKeyedSingleton(FakeClassNoConstructor::class, 'key1', new FakeClassNoConstructor());
+        $container = self::buildContainer(
+            static fn (ContainerBuilder $builder) =>
+                $builder->addKeyedSingleton(FakeClassNoConstructor::class, 'key1', new FakeClassNoConstructor())
+        );
 
         // Act
         $result = $container->has(FakeClassNoConstructor::class, 'key1');
@@ -310,8 +182,10 @@ final class ContainerTest extends AbstractDependencyInjectionTestCase
     public function testHas_WithUnregisteredKeyWhenUnkeyedServiceExists_ReturnsFalse(): void
     {
         // Arrange
-        $container = $this->createContainer()
-            ->addSingletonInstance(FakeClassNoConstructor::class, new FakeClassNoConstructor());
+        $container = self::buildContainer(
+            static fn (ContainerBuilder $builder) =>
+                $builder->addSingletonInstance(FakeClassNoConstructor::class, new FakeClassNoConstructor())
+        );
 
         // Act
         $result = $container->has(FakeClassNoConstructor::class, 'key1');
@@ -323,8 +197,10 @@ final class ContainerTest extends AbstractDependencyInjectionTestCase
     public function testHas_WithoutKeyWhenOnlyKeyedServiceExists_ReturnsFalse(): void
     {
         // Arrange
-        $container = $this->createContainer()
-            ->addKeyedSingleton(FakeClassNoConstructor::class, 'key1', new FakeClassNoConstructor());
+        $container = self::buildContainer(
+            static fn (ContainerBuilder $builder) =>
+                $builder->addKeyedSingleton(FakeClassNoConstructor::class, 'key1', new FakeClassNoConstructor())
+        );
 
         // Act
         $result = $container->has(FakeClassNoConstructor::class);

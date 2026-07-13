@@ -180,19 +180,4 @@ final class InstanceStoreTest extends TestCase
         self::assertSame(['later', 'shared'], $log->entries);
     }
 
-    public function testRemove_DoesNotDisposeRegisteredInstance(): void
-    {
-        // Arrange
-        $strategy = new SingletonStrategy(FakeDisposableClass::class);
-        $store = new InstanceStore();
-        $instance = new FakeDisposableClass();
-        $store->getOrCreate($strategy, static fn () => $instance);
-        $store->addDisposable($instance);
-
-        // Act
-        $store->remove($strategy);
-
-        // Assert
-        self::assertSame(0, $instance->disposeCount);
-    }
 }

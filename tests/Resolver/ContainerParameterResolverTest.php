@@ -13,6 +13,7 @@ namespace Suhock\DependencyInjection\Resolver;
 
 use Suhock\DependencyInjection\AbstractDependencyInjectionTestCase;
 use Suhock\DependencyInjection\Container;
+use Suhock\DependencyInjection\ContainerBuilder;
 use Suhock\DependencyInjection\ContainerInterface;
 use Suhock\DependencyInjection\Fakes\FakeClassNoConstructor;
 use Suhock\DependencyInjection\Fakes\FakeUnitEnum;
@@ -28,14 +29,16 @@ final class ContainerParameterResolverTest extends AbstractDependencyInjectionTe
 {
     /**
      * Builds a container whose own injector resolves parameters via the {@see ContainerParameterResolver} under test,
-     * wiring it through the container constructor callback exactly as production code would.
+     * wiring it through the builder's injector factory exactly as production code would.
+     *
+     * @param callable(ContainerBuilder):mixed $configure
      *
      * @return array{Container, Injector}
      */
-    private function createContainerAndInjector(): array
+    private function createContainerAndInjector(?callable $configure = null): array
     {
         $injector = null;
-        $container = new Container(
+        $builder = new ContainerBuilder(
             function (ContainerInterface $container) use (&$injector): Injector {
                 $resolver = new ContainerParameterResolver($container);
 
@@ -47,7 +50,13 @@ final class ContainerParameterResolverTest extends AbstractDependencyInjectionTe
             }
         );
 
-        /** @var Injector $injector populated synchronously by the constructor callback */
+        if ($configure !== null) {
+            $configure($builder);
+        }
+
+        $container = $builder->build();
+
+        /** @var Injector $injector populated by the injector factory during build */
         return [$container, $injector];
     }
 
@@ -55,8 +64,10 @@ final class ContainerParameterResolverTest extends AbstractDependencyInjectionTe
     {
         // Arrange
         $expectedInstance = new FakeClassNoConstructor();
-        [$container, $injector] = $this->createContainerAndInjector();
-        $container->addKeyedSingleton(FakeClassNoConstructor::class, 'key1', $expectedInstance);
+        [$container, $injector] = $this->createContainerAndInjector(
+            static fn (ContainerBuilder $builder) =>
+                $builder->addKeyedSingleton(FakeClassNoConstructor::class, 'key1', $expectedInstance)
+        );
 
         // Act
         $result = $injector->call(fn (#[Key('key1')] FakeClassNoConstructor $obj) => $obj);
@@ -69,8 +80,10 @@ final class ContainerParameterResolverTest extends AbstractDependencyInjectionTe
     {
         // Arrange
         $expectedInstance = new FakeClassNoConstructor();
-        [$container, $injector] = $this->createContainerAndInjector();
-        $container->addKeyedSingleton(FakeClassNoConstructor::class, FakeUnitEnum::Test, $expectedInstance);
+        [$container, $injector] = $this->createContainerAndInjector(
+            static fn (ContainerBuilder $builder) =>
+                $builder->addKeyedSingleton(FakeClassNoConstructor::class, FakeUnitEnum::Test, $expectedInstance)
+        );
 
         // Act
         $result = $injector->call(fn (#[Key(FakeUnitEnum::Test)] FakeClassNoConstructor $obj) => $obj);
@@ -83,8 +96,10 @@ final class ContainerParameterResolverTest extends AbstractDependencyInjectionTe
     {
         // Arrange
         $expectedInstance = new FakeClassNoConstructor();
-        [$container, $injector] = $this->createContainerAndInjector();
-        $container->addSingletonInstance(FakeClassNoConstructor::class, $expectedInstance);
+        [$container, $injector] = $this->createContainerAndInjector(
+            static fn (ContainerBuilder $builder) =>
+                $builder->addSingletonInstance(FakeClassNoConstructor::class, $expectedInstance)
+        );
 
         // Act
         $result = $injector->call(fn (FakeClassNoConstructor $obj) => $obj);

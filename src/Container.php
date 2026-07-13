@@ -12,43 +12,47 @@ declare(strict_types=1);
 namespace Suhock\DependencyInjection;
 
 use Closure;
-use Suhock\DependencyInjection\Builder\ContainerBuilderInterface;
-use Suhock\DependencyInjection\Builder\ContainerBuilderTrait;
-use Suhock\DependencyInjection\Builder\ContainerScopedBuilderInterface;
-use Suhock\DependencyInjection\Builder\ContainerScopedBuilderTrait;
-use Suhock\DependencyInjection\Builder\ContainerSingletonBuilderInterface;
-use Suhock\DependencyInjection\Builder\ContainerSingletonBuilderTrait;
-use Suhock\DependencyInjection\Builder\ContainerTransientBuilderInterface;
-use Suhock\DependencyInjection\Builder\ContainerTransientBuilderTrait;
-use Suhock\DependencyInjection\Cache\CacheInterface;
+use ReflectionMethod;
+use ReflectionParameter;
+use ReflectionProperty;
 use Suhock\DependencyInjection\Descriptor\Descriptor;
+use Suhock\DependencyInjection\InstanceProvider\AutowireClassSource;
+use Suhock\DependencyInjection\InstanceProvider\CallableSource;
+use Suhock\DependencyInjection\InstanceProvider\InstanceTypeException;
+use Suhock\DependencyInjection\InstanceProvider\IntrospectableInstanceProviderInterface;
 use Suhock\DependencyInjection\Lifetime\InstanceStore;
+use Suhock\DependencyInjection\Resolver\ParameterResolutionException;
+use Suhock\DependencyInjection\Resolver\PropertyResolutionException;
+use Suhock\DependencyInjection\Resolver\ResolutionPlan;
+use Suhock\DependencyInjection\Resolver\ResolutionPlanEdge;
+use Suhock\DependencyInjection\Resolver\ResolutionPlanKind;
 use Throwable;
 use UnitEnum;
 
 use function spl_object_id;
 
 /**
- * A default implementation for the {@see ContainerInterface}.
+ * The immutable product of {@see ContainerBuilder::build()}: resolves, scopes, and disposes services by executing
+ * the resolution plans compiled at build time. The descriptor map and plan set never change after construction; no
+ * dependency graph knowledge is derived at resolution time.
  */
-final class Container implements
-    ContainerInterface,
-    DisposableInterface,
-    ScopeFactoryInterface,
-    ContainerBuilderInterface,
-    ContainerScopedBuilderInterface,
-    ContainerSingletonBuilderInterface,
-    ContainerTransientBuilderInterface
+final class Container implements ContainerInterface, DisposableInterface, ScopeFactoryInterface
 {
-    use ContainerBuilderTrait;
-    use ContainerScopedBuilderTrait;
-    use ContainerSingletonBuilderTrait;
-    use ContainerTransientBuilderTrait;
-
     /** @var array<string, Descriptor<object>> */
-    protected array $descriptors = [];
+    private readonly array $descriptors;
 
-    private InjectorInterface $injector;
+    /** @var array<string, ResolutionPlan> */
+    private readonly array $plans;
+
+    /**
+     * The factory and mutator closures paired with each plan, extracted once from the descriptors' providers so
+     * execution does not rebuild dependency-source DTOs per resolution.
+     *
+     * @var array<string, Closure>
+     */
+    private array $closures = [];
+
+    private readonly InjectorInterface $injector;
 
     /** @var Closure(ContainerInterface):InjectorInterface */
     private readonly Closure $injectorFactory;
@@ -61,7 +65,8 @@ final class Container implements
      * Descriptors currently being resolved, keyed by {@see spl_object_id()} of the descriptor. Reentry marks a
      * circular dependency. Shared by the container and all of its scopes, since one resolution chain may span several
      * resolution roots (a singleton's dependency graph always resolves in the root context, even when the singleton is
-     * first requested from a scope).
+     * first requested from a scope). Build-time validation reports cycles it can prove; this guard backstops cycles
+     * through opaque custom providers.
      *
      * @var array<int, true>
      */
@@ -70,101 +75,54 @@ final class Container implements
     private bool $disposed = false;
 
     /**
+     * @internal Use {@see ContainerBuilder::build()}
+     *
+     * @param array<string, Descriptor<object>> $descriptors The service descriptors, keyed by descriptor id
+     * @param array<string, ResolutionPlan> $plans The compiled resolution plans, keyed by descriptor id
      * @param callable(ContainerInterface):InjectorInterface $injectorFactory Provides the injector to be used in
-     * conjunction with each resolution root (the container itself and each scope created from it).
+     * conjunction with each resolution root (the container itself and each scope created from it)
      */
-    public function __construct(callable $injectorFactory)
+    public function __construct(array $descriptors, array $plans, callable $injectorFactory)
     {
+        $this->descriptors = $descriptors;
+        $this->plans = $plans;
         $this->injectorFactory = $injectorFactory(...);
         $this->injector = $injectorFactory($this);
         $this->instances = new InstanceStore();
         $this->resolutionContext = new ResolutionContext($this, $this->injector, $this->instances);
+
+        foreach ($plans as $id => $plan) {
+            $closure = self::executableClosure($plan, $descriptors[$id] ?? null);
+
+            if ($closure !== null) {
+                $this->closures[$id] = $closure;
+            }
+        }
     }
 
     /**
-     * @param CacheInterface|null $cache [optional] Cache used to memoize reflected metadata.
+     * The factory or mutator closure a plan executes with, held by the descriptor's provider.
+     *
+     * @param Descriptor<object>|null $descriptor
      */
-    public static function createDefault(?CacheInterface $cache = null): self
+    private static function executableClosure(ResolutionPlan $plan, ?Descriptor $descriptor): ?Closure
     {
-        return new self(fn ($container) => Injector::createDefault($container, $cache));
-    }
+        $provider = $descriptor?->instanceProvider;
 
-    /**
-     * @template TClass of object
-     *
-     * @param Descriptor<TClass> $descriptor
-     *
-     * @return $this
-     */
-    protected function addDescriptor(Descriptor $descriptor): static
-    {
-        return $this->store($descriptor, null);
-    }
-
-    /**
-     * @template TClass of object
-     *
-     * @param Descriptor<TClass> $descriptor
-     *
-     * @return $this
-     */
-    protected function addKeyedDescriptor(Descriptor $descriptor, string|UnitEnum $key): static
-    {
-        return $this->store($descriptor, $key);
-    }
-
-    /**
-     * @template TClass of object
-     *
-     * @param Descriptor<TClass> $descriptor
-     *
-     * @return $this
-     */
-    private function store(Descriptor $descriptor, string|UnitEnum|null $key): static
-    {
-        $id = $this->descriptorId($descriptor->className, $key);
-
-        if (isset($this->descriptors[$id])) {
-            throw new ContainerException($key === null ?
-                'Class already in container: ' . $descriptor->className :
-                "Class already in container for key '" . Key::getKeyFromStringOrEnum($key) . "': " .
-                    $descriptor->className);
+        if ($provider === null || !$provider instanceof IntrospectableInstanceProviderInterface) {
+            return null;
         }
 
-        $this->descriptors[$id] = $descriptor;
+        $source = match ($plan->kind) {
+            ResolutionPlanKind::AutowiredClass, ResolutionPlanKind::Factory => $provider->getDependencySource(),
+            default => null,
+        };
 
-        return $this;
-    }
-
-    /**
-     * Computes the internal storage id for a service. Unkeyed services use the bare class name; keyed services use the
-     * class name and key joined by a NUL byte, which cannot occur in a class name, so a keyed id can never collide with
-     * an unkeyed one or with a different (class, key) pair.
-     *
-     * @param class-string $className
-     */
-    private function descriptorId(string $className, string|UnitEnum|null $key): string
-    {
-        if ($key === null) {
-            return $className;
-        }
-
-        $stringKey = Key::getKeyFromStringOrEnum($key);
-
-        return $className . "\0" . $stringKey;
-    }
-
-    /**
-     * @param class-string $className
-     */
-    protected function removeDescriptor(string $className, string|UnitEnum|null $key): void
-    {
-        $id = $this->descriptorId($className, $key);
-
-        if (isset($this->descriptors[$id])) {
-            $this->instances->remove($this->descriptors[$id]->lifetimeStrategy);
-            unset($this->descriptors[$id]);
-        }
+        return match (true) {
+            $source instanceof CallableSource => $source->callable,
+            $source instanceof AutowireClassSource => $source->mutator,
+            default => null,
+        };
     }
 
     /**
@@ -245,18 +203,11 @@ final class Container implements
     {
         $this->ensureNotDisposed();
 
-        if ($key !== null) {
-            if ($this->tryGetFromDescriptor($this->descriptorId($className, $key), $context, $instance)) {
-                /** @var TClass $instance */
-                return $instance;
-            }
+        $id = $this->descriptorId($className, $key);
 
-            throw new ClassNotFoundException($className);
-        }
-
-        if ($this->tryGetFromDescriptor($className, $context, $instance)) {
-            /** @var TClass $instance */
-            return $instance;
+        if (isset($this->descriptors[$id])) {
+            /** @var TClass */
+            return $this->resolveDescriptor($id, $this->descriptors[$id], $context);
         }
 
         throw new ClassNotFoundException($className);
@@ -270,26 +221,25 @@ final class Container implements
     {
         $this->ensureNotDisposed();
 
-        if ($key !== null) {
-            return isset($this->descriptors[$this->descriptorId($className, $key)]);
-        }
-
-        return isset($this->descriptors[$className]);
+        return isset($this->descriptors[$this->descriptorId($className, $key)]);
     }
 
     /**
-     * @param string $id The service id, as produced by {@see descriptorId()}
-     * @throws CircularDependencyException
+     * Computes the internal storage id for a service. Unkeyed services use the bare class name; keyed services use the
+     * class name and key joined by a NUL byte, which cannot occur in a class name, so a keyed id can never collide with
+     * an unkeyed one or with a different (class, key) pair.
+     *
+     * @param class-string $className
      */
-    private function tryGetFromDescriptor(string $id, ResolutionContext $context, ?object &$instance): bool
+    private function descriptorId(string $className, string|UnitEnum|null $key): string
     {
-        if (!isset($this->descriptors[$id])) {
-            return false;
+        if ($key === null) {
+            return $className;
         }
 
-        $instance = $this->resolveDescriptor($this->descriptors[$id], $context);
+        $stringKey = Key::getKeyFromStringOrEnum($key);
 
-        return true;
+        return $className . "\0" . $stringKey;
     }
 
     /**
@@ -300,7 +250,7 @@ final class Container implements
      * @return TClass
      * @throws CircularDependencyException
      */
-    private function resolveDescriptor(Descriptor $descriptor, ResolutionContext $context): object
+    private function resolveDescriptor(string $id, Descriptor $descriptor, ResolutionContext $context): object
     {
         $descriptorId = spl_object_id($descriptor);
 
@@ -311,10 +261,15 @@ final class Container implements
         $this->resolving[$descriptorId] = true;
 
         try {
+            /** @var TClass */
             return $descriptor->lifetimeStrategy->get(
                 $context,
-                static function (ResolutionContext $ctx) use ($descriptor): object {
-                    $instance = $descriptor->instanceProvider->get($ctx);
+                // Plan execution produces an instance of the descriptor's class — by construction for autowired
+                // classes, by instanceof guard for factories and held instances — but the generic cannot flow
+                // through the compiled plan.
+                // @phpstan-ignore argument.type (executed plan yields the descriptor's TClass)
+                function (ResolutionContext $ctx) use ($id, $descriptor): object {
+                    $instance = $this->executePlan($id, $descriptor, $ctx);
 
                     // The strategy invokes this factory with the context whose store bounds the instance's lifetime
                     // (root store for singletons, scope store for scoped, requesting root's store for transients), so
@@ -331,5 +286,196 @@ final class Container implements
         } finally {
             unset($this->resolving[$descriptorId]);
         }
+    }
+
+    /**
+     * Produces a service's instance by executing its compiled plan against the given resolution context.
+     *
+     * @param Descriptor<object> $descriptor
+     */
+    private function executePlan(string $id, Descriptor $descriptor, ResolutionContext $ctx): object
+    {
+        $plan = $this->plans[$id] ?? null;
+
+        if ($plan === null) {
+            // No compiled plan (impossible via ContainerBuilder::build()); trust the provider.
+            return $descriptor->instanceProvider->get($ctx);
+        }
+
+        return match ($plan->kind) {
+            ResolutionPlanKind::AutowiredClass => $this->executeAutowiredClass($id, $plan, $ctx),
+            ResolutionPlanKind::Factory => $this->executeFactory($id, $plan, $ctx),
+            ResolutionPlanKind::Implementation => $this->executeImplementation($plan, $ctx),
+            ResolutionPlanKind::Leaf,
+            ResolutionPlanKind::Opaque => $descriptor->instanceProvider->get($ctx),
+        };
+    }
+
+    private function executeAutowiredClass(string $id, ResolutionPlan $plan, ResolutionContext $ctx): object
+    {
+        $className = $plan->className;
+        $args = $this->resolveArguments($plan->argumentEdges, $ctx, [$className, '__construct']);
+        $instance = new $className(...$args);
+
+        foreach ($plan->injectMethodEdges as $methodName => $edges) {
+            (new ReflectionMethod($instance, $methodName))->invokeArgs(
+                $instance,
+                $this->resolveArguments($edges, $ctx, [$className, $methodName])
+            );
+        }
+
+        foreach ($plan->injectPropertyEdges as $propertyName => $edge) {
+            (new ReflectionProperty($className, $propertyName))
+                ->setValue($instance, $this->resolvePropertyEdge($edge, $ctx, $className));
+        }
+
+        $mutator = $this->closures[$id] ?? null;
+
+        if ($mutator !== null) {
+            $mutator($instance, ...$this->resolveArguments($plan->mutatorEdges, $ctx, $mutator, skip: 1));
+        }
+
+        return $instance;
+    }
+
+    private function executeFactory(string $id, ResolutionPlan $plan, ResolutionContext $ctx): object
+    {
+        $factory = $this->closures[$id] ?? null;
+
+        if ($factory === null) {
+            throw new ContainerException("No factory closure is paired with the plan for $plan->className");
+        }
+
+        $result = $factory(...$this->resolveArguments($plan->argumentEdges, $ctx, $factory));
+
+        if (!$result instanceof $plan->className) {
+            throw new InstanceTypeException($plan->className, $result);
+        }
+
+        return $result;
+    }
+
+    private function executeImplementation(ResolutionPlan $plan, ResolutionContext $ctx): object
+    {
+        if ($plan->implementationTarget === null) {
+            throw new ContainerException("The plan for $plan->className names no implementation");
+        }
+
+        return $ctx->container->get($plan->implementationTarget);
+    }
+
+    /**
+     * Resolves a group of parameter edges to call arguments, in order.
+     *
+     * @param list<ResolutionPlanEdge> $edges
+     * @param array{class-string, string}|Closure $functionRef The reflectable reference to the parameters' function,
+     * used only to build a precise exception when a required edge fails
+     * @param int $skip The parameter offset of the first edge within the referenced function's signature
+     *
+     * @return list<mixed>
+     */
+    private function resolveArguments(
+        array $edges,
+        ResolutionContext $ctx,
+        array|Closure $functionRef,
+        int $skip = 0
+    ): array {
+        $args = [];
+
+        foreach ($edges as $index => $edge) {
+            try {
+                if (!$this->tryResolveEdge($edge, $ctx, $value)) {
+                    throw new ParameterResolutionException(new ReflectionParameter($functionRef, $index + $skip));
+                }
+            } catch (ClassResolutionException $exception) {
+                throw new ParameterResolutionException(
+                    new ReflectionParameter($functionRef, $index + $skip),
+                    $exception
+                );
+            }
+
+            $args[] = $value;
+        }
+
+        return $args;
+    }
+
+    /**
+     * @param class-string $className
+     */
+    private function resolvePropertyEdge(ResolutionPlanEdge $edge, ResolutionContext $ctx, string $className): mixed
+    {
+        try {
+            if (!$this->tryResolveEdge($edge, $ctx, $value)) {
+                throw new PropertyResolutionException(new ReflectionProperty($className, $edge->name));
+            }
+        } catch (ClassResolutionException $exception) {
+            throw new PropertyResolutionException(new ReflectionProperty($className, $edge->name), $exception);
+        }
+
+        return $value;
+    }
+
+    /**
+     * Resolves one edge: the first candidate present in the descriptor map whose instance satisfies its whole
+     * conjunction wins; a soft edge falls back to its default value or <code>null</code> on failure, mirroring the
+     * self-healing the injector applies to defaulted and nullable injection points.
+     *
+     * @param mixed $value Receives the resolved value or the soft fallback
+     *
+     * @return bool Whether a value was produced; <code>false</code> only for a required edge that cannot be satisfied
+     * @throws ClassResolutionException If a required edge's candidate failed while resolving its own dependencies
+     */
+    private function tryResolveEdge(ResolutionPlanEdge $edge, ResolutionContext $ctx, mixed &$value): bool
+    {
+        $dependency = $edge->dependency;
+
+        if ($dependency !== null) {
+            try {
+                foreach ($dependency->alternatives as $alternative) {
+                    foreach ($alternative as $candidate) {
+                        if (!isset($this->descriptors[$this->descriptorId($candidate, $dependency->key)])) {
+                            continue;
+                        }
+
+                        $instance = $ctx->container->get($candidate, $dependency->key);
+
+                        if (self::satisfiesAll($instance, $alternative)) {
+                            $value = $instance;
+
+                            return true;
+                        }
+                    }
+                }
+            } catch (ClassResolutionException $exception) {
+                // A candidate failed while resolving its own graph: a soft edge self-heals; a required edge defers
+                // the failure to the caller, which wraps it with the injection point's identity.
+                if (!$edge->soft) {
+                    throw $exception;
+                }
+            }
+        }
+
+        if ($edge->soft) {
+            $value = $edge->hasDefault ? $edge->defaultValue : null;
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * @param non-empty-list<class-string> $conjunction
+     */
+    private static function satisfiesAll(object $instance, array $conjunction): bool
+    {
+        foreach ($conjunction as $className) {
+            if (!$instance instanceof $className) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

@@ -31,16 +31,15 @@ use Suhock\DependencyInjection\InstanceProvider\ReferenceSource;
 use function array_slice;
 use function class_exists;
 use function interface_exists;
-use function sprintf;
 
 /**
- * Compiles a set of service descriptors into {@see ResolutionPlan}s — the dependency edges and guaranteed-failure
- * defects of each service — from reflection and each provider's {@see IntrospectableInstanceProviderInterface
- * dependency source}, without instantiating anything. Providers that are not introspectable compile to opaque
- * trusted-leaf plans.
+ * Compiles a set of service descriptors into {@see ResolutionPlan}s — how each service's instance is produced, the
+ * dependency edges resolution will satisfy, and the guaranteed-failure defects — from reflection and each provider's
+ * {@see IntrospectableInstanceProviderInterface dependency source}, without instantiating anything. Providers that
+ * are not introspectable compile to opaque trusted-leaf plans.
  *
  * #[Inject] member plans are fetched through a {@see MetadataCache} under the same key prefix the runtime member
- * injector uses, so compiling a class warms the cache for runtime injection and vice versa.
+ * injector uses, so compilation and the standalone injector share the cached computation.
  *
  * @internal
  */
@@ -54,13 +53,19 @@ final class ResolutionPlanFactory
      * Per-compilation memo of the class-derived parts of autowired plans, keyed by class name, since the same class
      * may back several descriptors (e.g. added under multiple keys).
      *
-     * @var array<class-string, array{list<ResolutionPlanEdge>, string|null, list<string>}>
+     * @var array<class-string, array{
+     *     argumentEdges: list<ResolutionPlanEdge>,
+     *     injectMethodEdges: array<string, list<ResolutionPlanEdge>>,
+     *     injectPropertyEdges: array<string, ResolutionPlanEdge>,
+     *     nonInstantiableMessage: string|null,
+     *     invalidInjectMemberMessages: list<string>
+     * }>
      */
     private array $classParts = [];
 
     /**
      * @param CacheInterface|null $cache [optional] A shared cache for reflected metadata, ideally the same instance
-     * the runtime injector uses so compiled #[Inject] plans are shared with runtime member injection
+     * the runtime injector uses so compiled #[Inject] plans are shared with the standalone injector
      */
     public function __construct(?CacheInterface $cache = null)
     {
@@ -93,7 +98,7 @@ final class ResolutionPlanFactory
         $provider = $descriptor->instanceProvider;
 
         if (!$provider instanceof IntrospectableInstanceProviderInterface) {
-            return new ResolutionPlan($descriptor->className, [], opaque: true);
+            return new ResolutionPlan($descriptor->className, ResolutionPlanKind::Opaque);
         }
 
         $source = $provider->getDependencySource();
@@ -107,41 +112,40 @@ final class ResolutionPlanFactory
         }
 
         if ($source instanceof ReferenceSource) {
-            $edge = new ResolutionPlanEdge(
-                'the implementation class',
-                new ResolvableDependency('implementation', [[$source->targetId]]),
-                soft: false,
-                isImplementation: true
+            return new ResolutionPlan(
+                $descriptor->className,
+                ResolutionPlanKind::Implementation,
+                implementationTarget: $source->targetId
             );
-
-            return new ResolutionPlan($descriptor->className, [$edge]);
         }
 
-        // LeafSource and any future source kinds compile as edge-less leaves.
-        return new ResolutionPlan($descriptor->className, []);
+        // LeafSource compiles as an edge-less leaf; an unknown future source kind is trusted like an opaque provider.
+        return new ResolutionPlan($descriptor->className, ResolutionPlanKind::Leaf);
     }
 
     private function compileAutowireClass(AutowireClassSource $source): ResolutionPlan
     {
-        [$edges, $nonInstantiableMessage, $invalidInjectMemberMessages] = $this->classParts($source->className);
+        $parts = $this->classParts($source->className);
+        $mutatorEdges = [];
 
         if ($source->mutator !== null) {
             $rFunction = new ReflectionFunction($source->mutator);
 
             // The mutator's first parameter receives the new instance; the rest are injected.
             foreach (array_slice($rFunction->getParameters(), 1) as $rParam) {
-                $edges[] = $this->parameterEdge(
-                    $rParam,
-                    sprintf('parameter $%s of the mutator', $rParam->getName())
-                );
+                $mutatorEdges[] = self::parameterEdge($rParam);
             }
         }
 
         return new ResolutionPlan(
             $source->className,
-            $edges,
-            nonInstantiableMessage: $nonInstantiableMessage,
-            invalidInjectMemberMessages: $invalidInjectMemberMessages
+            ResolutionPlanKind::AutowiredClass,
+            argumentEdges: $parts['argumentEdges'],
+            injectMethodEdges: $parts['injectMethodEdges'],
+            injectPropertyEdges: $parts['injectPropertyEdges'],
+            mutatorEdges: $mutatorEdges,
+            nonInstantiableMessage: $parts['nonInstantiableMessage'],
+            invalidInjectMemberMessages: $parts['invalidInjectMemberMessages']
         );
     }
 
@@ -151,16 +155,14 @@ final class ResolutionPlanFactory
         $edges = [];
 
         foreach (array_slice($rFunction->getParameters(), $source->skipLeadingParams) as $rParam) {
-            $edges[] = $this->parameterEdge(
-                $rParam,
-                sprintf('parameter $%s of the factory', $rParam->getName())
-            );
+            $edges[] = self::parameterEdge($rParam);
         }
 
         return new ResolutionPlan(
             $source->declaredType,
-            $edges,
-            declaredFactoryReturnType: $this->declaredReturnClass($rFunction)
+            ResolutionPlanKind::Factory,
+            argumentEdges: $edges,
+            declaredFactoryReturnType: self::declaredReturnClass($rFunction)
         );
     }
 
@@ -170,7 +172,13 @@ final class ResolutionPlanFactory
      *
      * @param class-string $className
      *
-     * @return array{list<ResolutionPlanEdge>, string|null, list<string>}
+     * @return array{
+     *     argumentEdges: list<ResolutionPlanEdge>,
+     *     injectMethodEdges: array<string, list<ResolutionPlanEdge>>,
+     *     injectPropertyEdges: array<string, ResolutionPlanEdge>,
+     *     nonInstantiableMessage: string|null,
+     *     invalidInjectMemberMessages: list<string>
+     * }
      */
     private function classParts(string $className): array
     {
@@ -180,27 +188,40 @@ final class ResolutionPlanFactory
     /**
      * @param class-string $className
      *
-     * @return array{list<ResolutionPlanEdge>, string|null, list<string>}
+     * @return array{
+     *     argumentEdges: list<ResolutionPlanEdge>,
+     *     injectMethodEdges: array<string, list<ResolutionPlanEdge>>,
+     *     injectPropertyEdges: array<string, ResolutionPlanEdge>,
+     *     nonInstantiableMessage: string|null,
+     *     invalidInjectMemberMessages: list<string>
+     * }
      */
     private function computeClassParts(string $className): array
     {
+        $parts = [
+            'argumentEdges' => [],
+            'injectMethodEdges' => [],
+            'injectPropertyEdges' => [],
+            'nonInstantiableMessage' => null,
+            'invalidInjectMemberMessages' => [],
+        ];
+
         if (!class_exists($className)) {
-            return [[], "Class $className does not exist", []];
+            $parts['nonInstantiableMessage'] = "Class $className does not exist";
+
+            return $parts;
         }
 
         $rClass = new ReflectionClass($className);
 
         if (!$rClass->isInstantiable()) {
-            return [[], "Class $className is not instantiable", []];
+            $parts['nonInstantiableMessage'] = "Class $className is not instantiable";
+
+            return $parts;
         }
 
-        $edges = [];
-
         foreach ($rClass->getConstructor()?->getParameters() ?? [] as $rParam) {
-            $edges[] = $this->parameterEdge(
-                $rParam,
-                sprintf('parameter $%s of __construct()', $rParam->getName())
-            );
+            $parts['argumentEdges'][] = self::parameterEdge($rParam);
         }
 
         try {
@@ -212,45 +233,48 @@ final class ResolutionPlanFactory
         } catch (InjectorException $exception) {
             // The class's #[Inject] members are invalid; resolution throws before member injection, so member
             // edges are moot.
-            return [$edges, null, [$exception->getMessage()]];
+            $parts['invalidInjectMemberMessages'][] = $exception->getMessage();
+
+            return $parts;
         }
 
         foreach ($injectionPlan->methods as $methodName) {
-            $rMethod = new ReflectionMethod($className, $methodName);
+            $edges = [];
 
-            foreach ($rMethod->getParameters() as $rParam) {
-                $edges[] = $this->parameterEdge(
-                    $rParam,
-                    sprintf('parameter $%s of %s()', $rParam->getName(), $methodName)
-                );
+            foreach ((new ReflectionMethod($className, $methodName))->getParameters() as $rParam) {
+                $edges[] = self::parameterEdge($rParam);
             }
+
+            $parts['injectMethodEdges'][$methodName] = $edges;
         }
 
         foreach ($injectionPlan->properties as $propertyName => $key) {
-            $rProperty = new ReflectionProperty($className, $propertyName);
-            $rType = $rProperty->getType();
+            $rType = (new ReflectionProperty($className, $propertyName))->getType();
             $dependency = ResolvableDependencyFactory::createFromType($propertyName, $rType, $key);
 
-            $edges[] = new ResolutionPlanEdge(
-                sprintf('property $%s', $propertyName),
+            $parts['injectPropertyEdges'][$propertyName] = new ResolutionPlanEdge(
+                $propertyName,
                 $dependency,
                 soft: $rType === null || $rType->allowsNull(),
                 declaredType: $dependency === null && $rType !== null ? (string) $rType : null
             );
         }
 
-        return [$edges, null, []];
+        return $parts;
     }
 
-    private function parameterEdge(ReflectionParameter $rParam, string $memberDescription): ResolutionPlanEdge
+    private static function parameterEdge(ReflectionParameter $rParam): ResolutionPlanEdge
     {
         $dependency = ResolvableDependencyFactory::createFromParameter($rParam);
         $rType = $rParam->getType();
+        $hasDefault = $rParam->isDefaultValueAvailable();
 
         return new ResolutionPlanEdge(
-            $memberDescription,
+            $rParam->getName(),
             $dependency,
-            soft: $rParam->isDefaultValueAvailable() || $rParam->allowsNull(),
+            soft: $hasDefault || $rParam->allowsNull(),
+            hasDefault: $hasDefault,
+            defaultValue: $hasDefault ? $rParam->getDefaultValue() : null,
             declaredType: $dependency === null && $rType !== null ? (string) $rType : null
         );
     }
@@ -260,7 +284,7 @@ final class ResolutionPlanFactory
      * interface. Builtin, composite, absent, and unloadable (e.g. <code>self</code>/<code>static</code>) return
      * types yield <code>null</code> — their compatibility is unknowable without invoking the factory.
      */
-    private function declaredReturnClass(ReflectionFunction $rFunction): ?string
+    private static function declaredReturnClass(ReflectionFunction $rFunction): ?string
     {
         $rReturnType = $rFunction->getReturnType();
 

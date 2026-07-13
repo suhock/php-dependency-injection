@@ -86,6 +86,16 @@ final class ResolutionPlanFactoryTest extends TestCase
 
     /**
      * @param class-string $className
+     *
+     * @return Descriptor<object>
+     */
+    private static function objectDescriptor(string $className, object $instance): Descriptor
+    {
+        return self::providerDescriptor($className, new ObjectInstanceProvider($className, $instance));
+    }
+
+    /**
+     * @param class-string $className
      * @param class-string $implementationClassName
      *
      * @return Descriptor<object>
@@ -96,16 +106,6 @@ final class ResolutionPlanFactoryTest extends TestCase
             $className,
             new ImplementationInstanceProvider($className, $implementationClassName)
         );
-    }
-
-    /**
-     * @param class-string $className
-     *
-     * @return Descriptor<object>
-     */
-    private static function objectDescriptor(string $className, object $instance): Descriptor
-    {
-        return self::providerDescriptor($className, new ObjectInstanceProvider($className, $instance));
     }
 
     /**
@@ -124,12 +124,15 @@ final class ResolutionPlanFactoryTest extends TestCase
         return $plan;
     }
 
-    private static function edgeAt(ResolutionPlan $plan, int $index): ResolutionPlanEdge
+    /**
+     * @param list<ResolutionPlanEdge> $edges
+     */
+    private static function edgeAt(array $edges, int $index): ResolutionPlanEdge
     {
-        $edge = $plan->edges[$index] ?? null;
+        $edge = $edges[$index] ?? null;
 
         if ($edge === null) {
-            self::fail("Plan for $plan->className has no edge at index $index");
+            self::fail("No edge at index $index");
         }
 
         return $edge;
@@ -142,14 +145,17 @@ final class ResolutionPlanFactoryTest extends TestCase
         ]);
 
         self::assertSame(FakeClassWithDependencies::class, $plan->className);
-        self::assertFalse($plan->opaque);
+        self::assertSame(ResolutionPlanKind::AutowiredClass, $plan->kind);
         self::assertNull($plan->nonInstantiableMessage);
-        self::assertCount(2, $plan->edges);
-        self::assertSame([[Throwable::class]], self::edgeAt($plan, 0)->dependency?->alternatives);
-        self::assertSame([[RuntimeException::class]], self::edgeAt($plan, 1)->dependency?->alternatives);
-        self::assertFalse(self::edgeAt($plan, 0)->soft);
-        self::assertFalse(self::edgeAt($plan, 1)->soft);
-        self::assertSame('parameter $throwable of __construct()', self::edgeAt($plan, 0)->memberDescription);
+        self::assertCount(2, $plan->argumentEdges);
+        self::assertSame('throwable', self::edgeAt($plan->argumentEdges, 0)->name);
+        self::assertSame([[Throwable::class]], self::edgeAt($plan->argumentEdges, 0)->dependency?->alternatives);
+        self::assertSame(
+            [[RuntimeException::class]],
+            self::edgeAt($plan->argumentEdges, 1)->dependency?->alternatives
+        );
+        self::assertFalse(self::edgeAt($plan->argumentEdges, 0)->soft);
+        self::assertFalse(self::edgeAt($plan->argumentEdges, 1)->soft);
     }
 
     public function testCompile_WithRequiredBuiltinParameter_ProducesUnconsultableRequiredEdge(): void
@@ -158,10 +164,10 @@ final class ResolutionPlanFactoryTest extends TestCase
             FakeClassWithStringDependency::class => self::autowireDescriptor(FakeClassWithStringDependency::class),
         ]);
 
-        self::assertCount(1, $plan->edges);
-        self::assertNull(self::edgeAt($plan, 0)->dependency);
-        self::assertFalse(self::edgeAt($plan, 0)->soft);
-        self::assertSame('string', self::edgeAt($plan, 0)->declaredType);
+        self::assertCount(1, $plan->argumentEdges);
+        self::assertNull(self::edgeAt($plan->argumentEdges, 0)->dependency);
+        self::assertFalse(self::edgeAt($plan->argumentEdges, 0)->soft);
+        self::assertSame('string', self::edgeAt($plan->argumentEdges, 0)->declaredType);
     }
 
     public function testCompile_WithUnionDependency_ProducesAlternativesInDeclaredOrder(): void
@@ -172,7 +178,7 @@ final class ResolutionPlanFactoryTest extends TestCase
 
         self::assertSame(
             [[FakeInterfaceOne::class], [FakeInterfaceTwo::class]],
-            self::edgeAt($plan, 0)->dependency?->alternatives
+            self::edgeAt($plan->argumentEdges, 0)->dependency?->alternatives
         );
     }
 
@@ -185,7 +191,7 @@ final class ResolutionPlanFactoryTest extends TestCase
 
         self::assertSame(
             [[FakeInterfaceOne::class, FakeInterfaceTwo::class]],
-            self::edgeAt($plan, 0)->dependency?->alternatives
+            self::edgeAt($plan->argumentEdges, 0)->dependency?->alternatives
         );
     }
 
@@ -195,7 +201,7 @@ final class ResolutionPlanFactoryTest extends TestCase
             FakeClassWithKeyedDependency::class => self::autowireDescriptor(FakeClassWithKeyedDependency::class),
         ]);
 
-        self::assertSame('key1', self::edgeAt($plan, 0)->dependency?->key);
+        self::assertSame('key1', self::edgeAt($plan->argumentEdges, 0)->dependency?->key);
     }
 
     public function testCompile_WithVariadicParameter_ProducesRequiredElementEdge(): void
@@ -205,9 +211,27 @@ final class ResolutionPlanFactoryTest extends TestCase
                 self::autowireDescriptor(FakeClassWithVariadicConstructor::class),
         ]);
 
-        self::assertCount(1, $plan->edges);
-        self::assertSame([[FakeClassNoConstructor::class]], self::edgeAt($plan, 0)->dependency?->alternatives);
-        self::assertFalse(self::edgeAt($plan, 0)->soft);
+        self::assertCount(1, $plan->argumentEdges);
+        self::assertSame(
+            [[FakeClassNoConstructor::class]],
+            self::edgeAt($plan->argumentEdges, 0)->dependency?->alternatives
+        );
+        self::assertFalse(self::edgeAt($plan->argumentEdges, 0)->soft);
+    }
+
+    public function testCompile_WithDefaultedParameter_CapturesTheDefaultValue(): void
+    {
+        $plan = self::compileSingle([
+            FakeClassNoConstructor::class => self::closureDescriptor(
+                FakeClassNoConstructor::class,
+                static fn (string $name = 'preset'): FakeClassNoConstructor => new FakeClassNoConstructor()
+            ),
+        ]);
+
+        $edge = self::edgeAt($plan->argumentEdges, 0);
+        self::assertTrue($edge->soft);
+        self::assertTrue($edge->hasDefault);
+        self::assertSame('preset', $edge->defaultValue);
     }
 
     public function testCompile_WithInjectMethod_ProducesMethodParameterEdges(): void
@@ -216,9 +240,11 @@ final class ResolutionPlanFactoryTest extends TestCase
             FakeClassWithInjectFunction::class => self::autowireDescriptor(FakeClassWithInjectFunction::class),
         ]);
 
-        self::assertCount(1, $plan->edges);
-        self::assertSame('parameter $obj of setObj()', self::edgeAt($plan, 0)->memberDescription);
-        self::assertSame([[FakeClassNoConstructor::class]], self::edgeAt($plan, 0)->dependency?->alternatives);
+        self::assertArrayHasKey('setObj', $plan->injectMethodEdges);
+        $edges = $plan->injectMethodEdges['setObj'] ?? [];
+        self::assertCount(1, $edges);
+        self::assertSame('obj', self::edgeAt($edges, 0)->name);
+        self::assertSame([[FakeClassNoConstructor::class]], self::edgeAt($edges, 0)->dependency?->alternatives);
     }
 
     public function testCompile_WithInjectedProperties_ProducesPropertyEdges(): void
@@ -228,15 +254,12 @@ final class ResolutionPlanFactoryTest extends TestCase
                 self::autowireDescriptor(FakeClassWithInjectedProperties::class),
         ]);
 
-        $keyAndSoftnessByMember = [];
+        $keyed = $plan->injectPropertyEdges['keyedProperty'] ?? null;
+        $optional = $plan->injectPropertyEdges['optionalProperty'] ?? null;
 
-        foreach ($plan->edges as $edge) {
-            $keyAndSoftnessByMember[$edge->memberDescription] = [$edge->dependency?->key, $edge->soft];
-        }
-
-        self::assertSame([null, false], $keyAndSoftnessByMember['property $publicProperty'] ?? null);
-        self::assertSame(['key1', false], $keyAndSoftnessByMember['property $keyedProperty'] ?? null);
-        self::assertSame([null, true], $keyAndSoftnessByMember['property $optionalProperty'] ?? null);
+        self::assertSame('key1', $keyed?->dependency?->key);
+        self::assertFalse($keyed->soft);
+        self::assertTrue($optional?->soft);
     }
 
     public function testCompile_WithStaticInjectMethod_RecordsInvalidInjectMemberAndOmitsMemberEdges(): void
@@ -248,7 +271,8 @@ final class ResolutionPlanFactoryTest extends TestCase
 
         self::assertCount(1, $plan->invalidInjectMemberMessages);
         self::assertStringContainsString('setObj', $plan->invalidInjectMemberMessages[0] ?? '');
-        self::assertSame([], $plan->edges);
+        self::assertSame([], $plan->injectMethodEdges);
+        self::assertSame([], $plan->injectPropertyEdges);
     }
 
     public function testCompile_WithAbstractClass_RecordsNonInstantiable(): void
@@ -259,7 +283,7 @@ final class ResolutionPlanFactoryTest extends TestCase
 
         self::assertNotNull($plan->nonInstantiableMessage);
         self::assertStringContainsString(FakeAbstractClass::class, $plan->nonInstantiableMessage ?? '');
-        self::assertSame([], $plan->edges);
+        self::assertSame([], $plan->argumentEdges);
     }
 
     public function testCompile_WithMutator_ProducesEdgesForParametersAfterTheInstance(): void
@@ -271,9 +295,12 @@ final class ResolutionPlanFactoryTest extends TestCase
             ),
         ]);
 
-        self::assertCount(1, $plan->edges);
-        self::assertSame('parameter $extra of the mutator', self::edgeAt($plan, 0)->memberDescription);
-        self::assertSame([[FakeInterfaceOne::class]], self::edgeAt($plan, 0)->dependency?->alternatives);
+        self::assertCount(1, $plan->mutatorEdges);
+        self::assertSame('extra', self::edgeAt($plan->mutatorEdges, 0)->name);
+        self::assertSame(
+            [[FakeInterfaceOne::class]],
+            self::edgeAt($plan->mutatorEdges, 0)->dependency?->alternatives
+        );
     }
 
     public function testCompile_WithClosureFactory_ProducesParameterEdgesAndDeclaredReturnType(): void
@@ -289,10 +316,11 @@ final class ResolutionPlanFactoryTest extends TestCase
         ]);
 
         self::assertSame(FakeInterfaceOne::class, $plan->className);
-        self::assertCount(2, $plan->edges);
-        self::assertSame('parameter $dep of the factory', self::edgeAt($plan, 0)->memberDescription);
-        self::assertFalse(self::edgeAt($plan, 0)->soft);
-        self::assertTrue(self::edgeAt($plan, 1)->soft);
+        self::assertSame(ResolutionPlanKind::Factory, $plan->kind);
+        self::assertCount(2, $plan->argumentEdges);
+        self::assertSame('dep', self::edgeAt($plan->argumentEdges, 0)->name);
+        self::assertFalse(self::edgeAt($plan->argumentEdges, 0)->soft);
+        self::assertTrue(self::edgeAt($plan->argumentEdges, 1)->soft);
         self::assertSame(FakeClassImplementsInterfaces::class, $plan->declaredFactoryReturnType);
     }
 
@@ -308,7 +336,7 @@ final class ResolutionPlanFactoryTest extends TestCase
         self::assertNull($plan->declaredFactoryReturnType);
     }
 
-    public function testCompile_WithImplementation_ProducesImplementationEdge(): void
+    public function testCompile_WithImplementation_ProducesImplementationPlan(): void
     {
         $plan = self::compileSingle([
             FakeInterfaceOne::class => self::implementationDescriptor(
@@ -317,13 +345,9 @@ final class ResolutionPlanFactoryTest extends TestCase
             ),
         ]);
 
-        self::assertCount(1, $plan->edges);
-        self::assertTrue(self::edgeAt($plan, 0)->isImplementation);
-        self::assertFalse(self::edgeAt($plan, 0)->soft);
-        self::assertSame(
-            [[FakeClassImplementsInterfaces::class]],
-            self::edgeAt($plan, 0)->dependency?->alternatives
-        );
+        self::assertSame(ResolutionPlanKind::Implementation, $plan->kind);
+        self::assertSame(FakeClassImplementsInterfaces::class, $plan->implementationTarget);
+        self::assertSame([], $plan->argumentEdges);
     }
 
     public function testCompile_WithObjectInstance_ProducesEdgelessLeaf(): void
@@ -335,8 +359,8 @@ final class ResolutionPlanFactoryTest extends TestCase
             ),
         ]);
 
-        self::assertSame([], $plan->edges);
-        self::assertFalse($plan->opaque);
+        self::assertSame(ResolutionPlanKind::Leaf, $plan->kind);
+        self::assertSame([], $plan->argumentEdges);
     }
 
     public function testCompile_WithNonIntrospectableProvider_ProducesOpaquePlan(): void
@@ -352,8 +376,8 @@ final class ResolutionPlanFactoryTest extends TestCase
             FakeClassNoConstructor::class => self::providerDescriptor(FakeClassNoConstructor::class, $provider),
         ]);
 
-        self::assertTrue($plan->opaque);
-        self::assertSame([], $plan->edges);
+        self::assertSame(ResolutionPlanKind::Opaque, $plan->kind);
+        self::assertSame([], $plan->argumentEdges);
     }
 
     public function testCompile_WithSameClassUnderMultipleIds_ProducesEquivalentPlans(): void
@@ -367,7 +391,8 @@ final class ResolutionPlanFactoryTest extends TestCase
         self::assertCount(2, $plans);
 
         foreach ($plans as $plan) {
-            self::assertCount(2, $plan->edges);
+            self::assertCount(2, $plan->argumentEdges);
         }
     }
+
 }

@@ -19,18 +19,25 @@ use Suhock\DependencyInjection\Lifetime\SingletonStrategy;
 use Suhock\DependencyInjection\Lifetime\TransientStrategy;
 use Suhock\DependencyInjection\Resolver\ResolutionPlan;
 use Suhock\DependencyInjection\Resolver\ResolutionPlanEdge;
+use Suhock\DependencyInjection\Resolver\ResolutionPlanKind;
 use UnitEnum;
 
+use function array_map;
+use function array_pop;
 use function array_search;
+use function array_shift;
 use function array_slice;
+use function array_unshift;
 use function class_exists;
 use function count;
 use function implode;
 use function interface_exists;
 use function is_a;
 use function min;
+use function sprintf;
 use function str_contains;
 use function strpos;
+use function strtr;
 use function substr;
 
 /**
@@ -82,7 +89,7 @@ final class ContainerValidator
         foreach ($plans as $id => $plan) {
             $descriptor = $this->descriptors[$id] ?? null;
 
-            if ($descriptor === null || $plan->opaque) {
+            if ($descriptor === null || $plan->kind === ResolutionPlanKind::Opaque) {
                 continue;
             }
 
@@ -98,8 +105,37 @@ final class ContainerValidator
     }
 
     /**
+     * Every edge of a plan paired with a description of its injection point, e.g.
+     * <code>["parameter $x of __construct()", $edge]</code>.
+     *
+     * @return iterable<array{string, ResolutionPlanEdge}>
+     */
+    private static function describedEdges(ResolutionPlan $plan): iterable
+    {
+        $argumentLocation = $plan->kind === ResolutionPlanKind::Factory ? 'the factory' : '__construct()';
+
+        foreach ($plan->argumentEdges as $edge) {
+            yield [sprintf('parameter $%s of %s', $edge->name, $argumentLocation), $edge];
+        }
+
+        foreach ($plan->injectMethodEdges as $methodName => $edges) {
+            foreach ($edges as $edge) {
+                yield [sprintf('parameter $%s of %s()', $edge->name, $methodName), $edge];
+            }
+        }
+
+        foreach ($plan->injectPropertyEdges as $edge) {
+            yield [sprintf('property $%s', $edge->name), $edge];
+        }
+
+        foreach ($plan->mutatorEdges as $edge) {
+            yield [sprintf('parameter $%s of the mutator', $edge->name), $edge];
+        }
+    }
+
+    /**
      * The defects local to one service: non-instantiable classes, invalid #[Inject] members, factory return-type
-     * mismatches, and unsatisfiable required edges.
+     * mismatches, an unresolvable implementation target, and unsatisfiable required edges.
      *
      * @param Descriptor<object> $descriptor
      *
@@ -141,7 +177,16 @@ final class ContainerValidator
             );
         }
 
-        foreach ($plan->edges as $edge) {
+        if ($plan->implementationTarget !== null && !isset($this->descriptors[$plan->implementationTarget])) {
+            $issues[] = new ValidationIssue(
+                $descriptor->className,
+                $key,
+                ValidationIssueKind::MissingImplementation,
+                "the implementation class $plan->implementationTarget is not itself a resolvable service"
+            );
+        }
+
+        foreach (self::describedEdges($plan) as [$description, $edge]) {
             if ($edge->soft || $this->edgeIsSatisfied($edge)) {
                 continue;
             }
@@ -151,14 +196,16 @@ final class ContainerValidator
                     $descriptor->className,
                     $key,
                     ValidationIssueKind::UnresolvableParameter,
-                    "required $edge->memberDescription ($edge->declaredType) has a type the container is never" .
-                        ' consulted for and no default value'
+                    "required $description ($edge->declaredType) has a type the container is never consulted for" .
+                        ' and no default value'
                 ) :
                 new ValidationIssue(
                     $descriptor->className,
                     $key,
-                    self::missingKind($edge),
-                    "required $edge->memberDescription (" . self::describeAlternatives($edge) . ') is not resolvable'
+                    $edge->dependency->key !== null ?
+                        ValidationIssueKind::MissingKeyedDependency :
+                        ValidationIssueKind::MissingDependency,
+                    "required $description (" . self::describeAlternatives($edge) . ') is not resolvable'
                 );
         }
 
@@ -370,8 +417,8 @@ final class ContainerValidator
 
     /**
      * The out-edges the runtime would choose against the frozen descriptor map: per satisfied dependency, the first
-     * satisfiable alternative's first member present in the map. Unsatisfied and never-consulted edges produce no
-     * graph edge.
+     * satisfiable alternative's first member present in the map; plus the implementation target, when present.
+     * Unsatisfied and never-consulted edges produce no graph edge.
      *
      * @return list<array{string, bool}>
      */
@@ -379,7 +426,11 @@ final class ContainerValidator
     {
         $edges = [];
 
-        foreach ($plan->edges as $edge) {
+        if ($plan->implementationTarget !== null && isset($this->descriptors[$plan->implementationTarget])) {
+            $edges[] = [$plan->implementationTarget, true];
+        }
+
+        foreach (self::describedEdges($plan) as [$description, $edge]) {
             $target = $this->chosenTarget($edge);
 
             if ($target !== null) {
@@ -412,15 +463,6 @@ final class ContainerValidator
     private function edgeIsSatisfied(ResolutionPlanEdge $edge): bool
     {
         return $edge->dependency !== null && $this->chosenTarget($edge) !== null;
-    }
-
-    private static function missingKind(ResolutionPlanEdge $edge): ValidationIssueKind
-    {
-        return match (true) {
-            $edge->isImplementation => ValidationIssueKind::MissingImplementation,
-            $edge->dependency?->key !== null => ValidationIssueKind::MissingKeyedDependency,
-            default => ValidationIssueKind::MissingDependency,
-        };
     }
 
     private static function describeAlternatives(ResolutionPlanEdge $edge): string

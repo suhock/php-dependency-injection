@@ -11,12 +11,12 @@ declare(strict_types=1);
 
 namespace Suhock\DependencyInjection\Fakes;
 
-use Suhock\DependencyInjection\Container;
+use Suhock\DependencyInjection\ContainerBuilder;
 
 /**
  * Fakes a container configuration callback.
  */
 interface FakeConfigurator
 {
-    public function configure(Container $container): static;
+    public function configure(ContainerBuilder $builder): static;
 }

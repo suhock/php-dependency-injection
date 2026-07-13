@@ -101,18 +101,4 @@ final class SingletonStrategyTest extends AbstractDependencyInjectionTestCase
         });
     }
 
-    public function testGet_AfterInstanceRemovedFromStore_ReturnsFreshInstance(): void
-    {
-        // Arrange
-        $strategy = $this->createStrategy();
-        $context = self::createResolutionContext();
-        $firstInstance = $strategy->get($context, fn () => new FakeClassNoConstructor());
-
-        // Act
-        $context->store->remove($strategy);
-        $secondInstance = $strategy->get($context, fn () => new FakeClassNoConstructor());
-
-        // Assert
-        self::assertNotSame($firstInstance, $secondInstance);
-    }
 }

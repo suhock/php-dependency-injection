@@ -84,20 +84,6 @@ final class InstanceStore
         $this->disposables[$instance] ??= $this->nextSequence++;
     }
 
-    /**
-     * Discards the instance cached for the given strategy, if any. Does not dispose the instance; a still-referenced
-     * instance recorded via {@see addDisposable()} remains eligible for disposal when the store is disposed.
-     *
-     * @template TClass of object
-     *
-     * @param LifetimeStrategy<TClass> $strategy
-     *
-     * @internal
-     */
-    public function remove(LifetimeStrategy $strategy): void
-    {
-        unset($this->instances[spl_object_id($strategy)]);
-    }
 
     /**
      * Discards all cached instances without disposing them. Instances recorded via {@see addDisposable()} remain

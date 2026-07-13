@@ -37,10 +37,12 @@ use Suhock\DependencyInjection\Fakes\FakeInterfaceOne;
 use Suhock\DependencyInjection\Fakes\FakeInterfaceThree;
 use Suhock\DependencyInjection\Fakes\FakeInterfaceTwo;
 use Suhock\DependencyInjection\Injection\InjectAttributeMemberInjector;
+use Suhock\DependencyInjection\InstanceProvider\InstanceProviderInterface;
 use Suhock\DependencyInjection\Instantiation\ChainedInstantiationStrategy;
 use Suhock\DependencyInjection\Instantiation\InstantiationStrategyInterface;
 use Suhock\DependencyInjection\Instantiation\PostInstantiationHookInterface;
 use Suhock\DependencyInjection\Instantiation\ReflectionInstantiationStrategy;
+use Suhock\DependencyInjection\Lifetime\SingletonStrategy;
 use Suhock\DependencyInjection\Resolver\ContainerParameterResolver;
 use Suhock\DependencyInjection\Resolver\ParameterResolverInterface;
 use Suhock\DependencyInjection\Resolver\PropertyResolutionException;
@@ -52,6 +54,16 @@ use UnitEnum;
  */
 final class InjectorTest extends AbstractDependencyInjectionTestCase
 {
+    /**
+     * @param class-string $className
+     *
+     * @return SingletonStrategy<object>
+     */
+    private static function singletonStrategy(string $className): SingletonStrategy
+    {
+        return new SingletonStrategy($className);
+    }
+
     /**
      * @param array<callable> $classMapping
      *
@@ -261,9 +273,11 @@ final class InjectorTest extends AbstractDependencyInjectionTestCase
     {
         // Arrange
         $keyed = new FakeClassNoConstructor();
-        $container = Container::createDefault();
-        $container->addSingletonInstance(FakeClassNoConstructor::class, new FakeClassNoConstructor());
-        $container->addKeyedSingleton(FakeClassNoConstructor::class, 'key1', $keyed);
+        $container = self::buildContainer(
+            static fn (ContainerBuilder $builder) => $builder
+                ->addSingletonInstance(FakeClassNoConstructor::class, new FakeClassNoConstructor())
+                ->addKeyedSingleton(FakeClassNoConstructor::class, 'key1', $keyed)
+        );
         $injector = Injector::createDefault($container);
 
         // Act
@@ -540,9 +554,11 @@ final class InjectorTest extends AbstractDependencyInjectionTestCase
         // Arrange
         $unkeyed = new FakeClassNoConstructor();
         $keyed = new FakeClassNoConstructor();
-        $container = Container::createDefault();
-        $container->addSingletonInstance(FakeClassNoConstructor::class, $unkeyed);
-        $container->addKeyedSingleton(FakeClassNoConstructor::class, 'key1', $keyed);
+        $container = self::buildContainer(
+            static fn (ContainerBuilder $builder) => $builder
+                ->addSingletonInstance(FakeClassNoConstructor::class, $unkeyed)
+                ->addKeyedSingleton(FakeClassNoConstructor::class, 'key1', $keyed)
+        );
         $injector = Injector::createDefault($container);
 
         // Act
@@ -615,9 +631,11 @@ final class InjectorTest extends AbstractDependencyInjectionTestCase
 
     public function testCall_WithDependencyWithUnresolvableDependency_ThrowsInjectorException(): void
     {
-        // Arrange
-        $container = Container::createDefault();
-        $container->addSingletonClass(FakeClassWithConstructor::class);
+        // Arrange: FakeClassWithConstructor is deliberately left unregistered, since registering an autowired class
+        // whose own dependency is unresolvable would now fail ContainerBuilder::build() itself (see
+        // ContainerBuilderTest::testBuild_WithDefectiveConfiguration_ThrowsAggregatedValidationException) rather than
+        // surfacing as an InjectorException when the injector later resolves it.
+        $container = self::createBuilder()->build();
         $injector = Injector::createDefault($container);
 
         // Act & Assert
@@ -760,11 +778,22 @@ final class InjectorTest extends AbstractDependencyInjectionTestCase
 
     public function testCall_WithParameterHavingCircularDependency_ThrowsParameterResolutionException(): void
     {
-        // Arrange
-        $container = Container::createDefault();
-        $container->addSingletonFactory(
-            FakeClassNoConstructor::class,
-            fn (FakeClassNoConstructor $obj) => $obj
+        // Arrange: a self-referential factory is a cycle build-time validation proves and rejects, so an opaque
+        // custom provider (invisible to the validator) is used instead to hide the cycle until the injector actually
+        // resolves it.
+        $provider = new class () implements InstanceProviderInterface {
+            public function get(ResolutionContext $context): object
+            {
+                return $context->container->get(FakeClassNoConstructor::class);
+            }
+        };
+
+        $container = self::buildContainer(
+            static fn (ContainerBuilder $builder) => $builder->add(
+                FakeClassNoConstructor::class,
+                self::singletonStrategy(FakeClassNoConstructor::class),
+                $provider
+            )
         );
 
         $injector = Injector::createDefault($container);
