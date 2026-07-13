@@ -2,7 +2,6 @@
     "name": "suhock/dependency-injection",
     "description": "PHP Dependency Injection Library",
     "type": "library",
-    "version": "0.9.0",
     "keywords": [
         "dependency injection",
         "dependency",
