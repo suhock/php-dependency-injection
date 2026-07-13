@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace Suhock\DependencyInjection;
 
+use Suhock\DependencyInjection\Fakes\FakeCache;
 use Suhock\DependencyInjection\Fakes\FakeClassNoConstructor;
 use Suhock\DependencyInjection\Fakes\FakeClassWithDependencies;
 use Suhock\DependencyInjection\Fakes\FakeClassWithStringDependency;
@@ -253,5 +254,80 @@ final class ContainerBuilderTest extends AbstractDependencyInjectionTestCase
         // Assert
         self::assertFalse($first->has(FakeClassNoConstructor::class, 'key1'));
         self::assertTrue($second->has(FakeClassNoConstructor::class, 'key1'));
+    }
+
+    public function testBuild_WithCache_StoresTheCompiledGraphUnderTheConfigurationFingerprint(): void
+    {
+        // Arrange
+        $cache = new FakeCache();
+
+        // Act
+        ContainerBuilder::createDefault($cache)->addSingletonClass(FakeClassNoConstructor::class)->build();
+
+        // Assert
+        self::assertCount(1, $cache->idsWithPrefix('sdi:graph:'));
+    }
+
+    public function testBuild_WithIdenticalConfigurationAndWarmCache_ReusesTheStoredGraph(): void
+    {
+        // Arrange: two builders, same configuration shape, same cache.
+        $cache = new FakeCache();
+        ContainerBuilder::createDefault($cache)->addSingletonClass(FakeClassNoConstructor::class)->build();
+        $storesAfterFirstBuild = count($cache->storedIds);
+
+        // Act
+        $container = ContainerBuilder::createDefault($cache)
+            ->addSingletonClass(FakeClassNoConstructor::class)
+            ->build();
+
+        // Assert: the second build stored nothing new and its product still resolves.
+        self::assertCount($storesAfterFirstBuild, $cache->storedIds);
+        self::assertInstanceOf(FakeClassNoConstructor::class, $container->get(FakeClassNoConstructor::class));
+    }
+
+    public function testBuild_WithChangedConfiguration_StoresASecondGraph(): void
+    {
+        // Arrange
+        $cache = new FakeCache();
+        ContainerBuilder::createDefault($cache)->addSingletonClass(FakeClassNoConstructor::class)->build();
+
+        // Act
+        ContainerBuilder::createDefault($cache)->addTransientClass(FakeClassNoConstructor::class)->build();
+
+        // Assert
+        self::assertCount(2, $cache->idsWithPrefix('sdi:graph:'));
+    }
+
+    public function testBuild_WithDefectiveConfigurationAndCache_StoresNoGraph(): void
+    {
+        // Arrange
+        $cache = new FakeCache();
+        $builder = ContainerBuilder::createDefault($cache)->addTransientClass(FakeClassWithStringDependency::class);
+
+        // Act
+        try {
+            $builder->build();
+            self::fail('Expected ' . ContainerValidationException::class);
+        } catch (ContainerValidationException) {
+        }
+
+        // Assert
+        self::assertSame([], $cache->idsWithPrefix('sdi:graph:'));
+    }
+
+    public function testBuild_WithUnfingerprintableConfiguration_BuildsWithoutStoringAGraph(): void
+    {
+        // Arrange: a factory from an internal function has no definition site to fingerprint. Its parameter is
+        // optional and its return is unchecked, so the configuration still validates.
+        $cache = new FakeCache();
+
+        // Act
+        $container = ContainerBuilder::createDefault($cache)
+            ->addSingletonFactory(FakeClassNoConstructor::class, phpversion(...))
+            ->build();
+
+        // Assert
+        self::assertTrue($container->has(FakeClassNoConstructor::class));
+        self::assertSame([], $cache->idsWithPrefix('sdi:graph:'));
     }
 }

@@ -24,10 +24,15 @@ use Suhock\DependencyInjection\Cache\CacheInterface;
 use Suhock\DependencyInjection\Descriptor\Descriptor;
 use Suhock\DependencyInjection\InstanceProvider\ContextInstanceProvider;
 use Suhock\DependencyInjection\Lifetime\TransientStrategy;
+use Suhock\DependencyInjection\Resolver\ResolutionPlan;
 use Suhock\DependencyInjection\Resolver\ResolutionPlanFactory;
 use Suhock\DependencyInjection\Validation\ContainerValidationException;
+use Suhock\DependencyInjection\Validation\ConfigurationFingerprint;
 use Suhock\DependencyInjection\Validation\ContainerValidator;
 use UnitEnum;
+
+use function is_array;
+use function is_string;
 
 /**
  * Carries the full mutable configuration surface for building a {@see Container}. Services are added, removed, and
@@ -45,6 +50,7 @@ final class ContainerBuilder implements
     use ContainerScopedBuilderTrait;
     use ContainerSingletonBuilderTrait;
     use ContainerTransientBuilderTrait;
+    private const GRAPH_KEY_PREFIX = 'sdi:graph:';
 
     /** @var array<string, Descriptor<object>> */
     private array $descriptors = [];
@@ -85,10 +91,59 @@ final class ContainerBuilder implements
     {
         $descriptors = $this->descriptors;
         self::addAutoBindings($descriptors);
+
+        // An unchanged configuration reuses the plans a previous validated build stored under its fingerprint,
+        // skipping compilation and validation entirely. Only successful builds are stored.
+        $cacheKey = null;
+
+        if ($this->cache !== null) {
+            $fingerprint = ConfigurationFingerprint::compute($descriptors);
+
+            if ($fingerprint !== null) {
+                $cacheKey = self::GRAPH_KEY_PREFIX . $fingerprint;
+
+                if ($this->cache->tryGet($cacheKey, $cached)) {
+                    $plans = self::plansFromCache($cached);
+
+                    if ($plans !== null) {
+                        return new Container($descriptors, $plans, $this->injectorFactory);
+                    }
+                }
+            }
+        }
+
         $plans = (new ResolutionPlanFactory($this->cache))->compile($descriptors);
         (new ContainerValidator($descriptors))->validate($plans);
 
+        if ($cacheKey !== null) {
+            $this->cache?->set($cacheKey, $plans);
+        }
+
         return new Container($descriptors, $plans, $this->injectorFactory);
+    }
+
+    /**
+     * Restores a cached plan set, or <code>null</code> when the cached value does not have the expected shape.
+     *
+     * @return array<string, ResolutionPlan>|null
+     */
+    private static function plansFromCache(mixed $cached): ?array
+    {
+        if (!is_array($cached)) {
+            return null;
+        }
+
+        $plans = [];
+
+        foreach ($cached as $id => $plan) {
+            if (!is_string($id) || !$plan instanceof ResolutionPlan) {
+                return null;
+            }
+
+            $plans[$id] = $plan;
+        }
+
+        return $plans;
     }
 
     /**
