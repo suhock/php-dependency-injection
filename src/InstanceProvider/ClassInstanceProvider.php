@@ -21,7 +21,7 @@ use Suhock\DependencyInjection\ResolutionContext;
  * @template TClass of object
  * @template-implements InstanceProviderInterface<TClass>
  */
-final class ClassInstanceProvider implements InstanceProviderInterface
+final class ClassInstanceProvider implements InstanceProviderInterface, IntrospectableInstanceProviderInterface
 {
     private readonly ?Closure $mutator;
 
@@ -53,5 +53,13 @@ final class ClassInstanceProvider implements InstanceProviderInterface
         }
 
         return $instance;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getDependencySource(): DependencySource
+    {
+        return new AutowireClassSource($this->className, $this->mutator);
     }
 }

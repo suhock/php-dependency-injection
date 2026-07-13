@@ -19,7 +19,7 @@ use Suhock\DependencyInjection\ResolutionContext;
  * @template TClass of object
  * @template-implements InstanceProviderInterface<TClass>
  */
-final class ObjectInstanceProvider implements InstanceProviderInterface
+final class ObjectInstanceProvider implements InstanceProviderInterface, IntrospectableInstanceProviderInterface
 {
     /**
      * @param class-string<TClass> $className The name of the class or interface provided
@@ -43,5 +43,13 @@ final class ObjectInstanceProvider implements InstanceProviderInterface
     public function get(ResolutionContext $context): object
     {
         return $this->instance;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getDependencySource(): DependencySource
+    {
+        return new LeafSource();
     }
 }

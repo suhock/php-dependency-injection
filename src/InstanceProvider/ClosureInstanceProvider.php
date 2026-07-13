@@ -21,7 +21,7 @@ use Suhock\DependencyInjection\ResolutionContext;
  * @template TClass of object
  * @template-implements InstanceProviderInterface<TClass>
  */
-final class ClosureInstanceProvider implements InstanceProviderInterface
+final class ClosureInstanceProvider implements InstanceProviderInterface, IntrospectableInstanceProviderInterface
 {
     /**
      * @param class-string<TClass> $className The name of the class this factory will provide
@@ -48,5 +48,13 @@ final class ClosureInstanceProvider implements InstanceProviderInterface
         }
 
         return $result;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getDependencySource(): DependencySource
+    {
+        return new CallableSource($this->factory, 0, $this->className);
     }
 }
