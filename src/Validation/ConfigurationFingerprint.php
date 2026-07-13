@@ -26,7 +26,9 @@ use Suhock\DependencyInjection\Key;
 use UnitEnum;
 
 use function get_class;
-use function hash;
+use function hash_final;
+use function hash_init;
+use function hash_update;
 use function implode;
 use function ksort;
 
@@ -50,13 +52,17 @@ final class ConfigurationFingerprint
      * fingerprinted — currently, only when a factory or mutator closure's origin cannot be determined (an internal
      * function or one defined in eval'd code), since then no file/line identity exists to hash.
      *
+     * The digest is computed incrementally: each descriptor's record is fed to the hash context as it is produced,
+     * so peak memory use is independent of the number of descriptors.
+     *
      * @param array<string, Descriptor<object>> $descriptors The service descriptors, keyed by descriptor id
      */
     public static function compute(array $descriptors): ?string
     {
         ksort($descriptors);
 
-        $lines = [(string) self::SCHEMA_VERSION, PHP_VERSION];
+        $context = hash_init('sha256');
+        hash_update($context, self::SCHEMA_VERSION . "\n" . PHP_VERSION);
 
         foreach ($descriptors as $id => $descriptor) {
             $shape = self::providerShape($descriptor->instanceProvider);
@@ -65,16 +71,16 @@ final class ConfigurationFingerprint
                 return null;
             }
 
-            $lines[] = implode('|', [
+            hash_update($context, "\n" . implode('|', [
                 $id,
                 $descriptor->className,
                 get_class($descriptor->lifetimeStrategy),
                 $descriptor->shouldDispose ? '1' : '0',
                 $shape,
-            ]);
+            ]));
         }
 
-        return hash('sha256', implode("\n", $lines));
+        return hash_final($context);
     }
 
     /**
