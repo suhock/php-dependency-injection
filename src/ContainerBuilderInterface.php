@@ -9,8 +9,11 @@
 
 declare(strict_types=1);
 
-namespace Suhock\DependencyInjection\Builder;
+namespace Suhock\DependencyInjection;
 
+use Suhock\DependencyInjection\Builder\ContainerScopedBuilderInterface;
+use Suhock\DependencyInjection\Builder\ContainerSingletonBuilderInterface;
+use Suhock\DependencyInjection\Builder\ContainerTransientBuilderInterface;
 use UnitEnum;
 
 /**

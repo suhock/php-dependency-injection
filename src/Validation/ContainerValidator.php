@@ -12,7 +12,7 @@ declare(strict_types=1);
 namespace Suhock\DependencyInjection\Validation;
 
 use ReflectionClass;
-use Suhock\DependencyInjection\Descriptor\Descriptor;
+use Suhock\DependencyInjection\Builder\Descriptor;
 use Suhock\DependencyInjection\Key;
 use Suhock\DependencyInjection\Lifetime\ScopedStrategy;
 use Suhock\DependencyInjection\Lifetime\SingletonStrategy;
@@ -21,7 +21,6 @@ use Suhock\DependencyInjection\Resolver\ResolutionPlan;
 use Suhock\DependencyInjection\Resolver\ResolutionPlanEdge;
 use Suhock\DependencyInjection\Resolver\ResolutionPlanKind;
 use UnitEnum;
-
 use function array_map;
 use function array_pop;
 use function array_search;

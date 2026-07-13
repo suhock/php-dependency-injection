@@ -14,7 +14,7 @@ namespace Suhock\DependencyInjection\Resolver;
 use Closure;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
-use Suhock\DependencyInjection\Descriptor\Descriptor;
+use Suhock\DependencyInjection\Builder\Descriptor;
 use Suhock\DependencyInjection\Fakes\FakeAbstractClass;
 use Suhock\DependencyInjection\Fakes\FakeClassImplementsInterfaces;
 use Suhock\DependencyInjection\Fakes\FakeClassNoConstructor;
@@ -36,7 +36,6 @@ use Suhock\DependencyInjection\InstanceProvider\InstanceProviderInterface;
 use Suhock\DependencyInjection\InstanceProvider\ObjectInstanceProvider;
 use Suhock\DependencyInjection\Lifetime\TransientStrategy;
 use Throwable;
-
 use function reset;
 
 /**

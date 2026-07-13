@@ -18,16 +18,15 @@ use ReflectionMethod;
 use ReflectionNamedType;
 use ReflectionParameter;
 use ReflectionProperty;
+use Suhock\DependencyInjection\Builder\Descriptor;
 use Suhock\DependencyInjection\Cache\CacheInterface;
 use Suhock\DependencyInjection\Cache\MetadataCache;
-use Suhock\DependencyInjection\Descriptor\Descriptor;
 use Suhock\DependencyInjection\Injection\InjectionPlan;
 use Suhock\DependencyInjection\Injection\InjectionPlanFactory;
 use Suhock\DependencyInjection\InjectorException;
 use Suhock\DependencyInjection\InstanceProvider\ClassInstanceProvider;
 use Suhock\DependencyInjection\InstanceProvider\ClosureInstanceProvider;
 use Suhock\DependencyInjection\InstanceProvider\ImplementationInstanceProvider;
-
 use function array_slice;
 use function class_exists;
 use function interface_exists;

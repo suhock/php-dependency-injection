@@ -15,7 +15,7 @@ use Closure;
 use ReflectionMethod;
 use ReflectionParameter;
 use ReflectionProperty;
-use Suhock\DependencyInjection\Descriptor\Descriptor;
+use Suhock\DependencyInjection\Builder\Descriptor;
 use Suhock\DependencyInjection\InstanceProvider\ClassInstanceProvider;
 use Suhock\DependencyInjection\InstanceProvider\ClosureInstanceProvider;
 use Suhock\DependencyInjection\InstanceProvider\ContextInstanceProvider;
@@ -30,7 +30,6 @@ use Suhock\DependencyInjection\Resolver\ResolutionPlanEdge;
 use Suhock\DependencyInjection\Resolver\ResolutionPlanKind;
 use Throwable;
 use UnitEnum;
-
 use function get_class;
 use function spl_object_id;
 

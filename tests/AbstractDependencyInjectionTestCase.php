@@ -13,14 +13,14 @@ namespace Suhock\DependencyInjection;
 
 use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\TestCase;
-use Suhock\DependencyInjection\Descriptor\Descriptor;
+use Suhock\DependencyInjection\Builder\Descriptor;
+use Suhock\DependencyInjection\InstanceProvider\ClassInstanceProvider;
 use Suhock\DependencyInjection\InstanceProvider\ImplementationException;
 use Suhock\DependencyInjection\InstanceProvider\InstanceTypeException;
-use Suhock\DependencyInjection\InstanceProvider\ClassInstanceProvider;
+use Suhock\DependencyInjection\Lifetime\InstanceStore;
 use Suhock\DependencyInjection\Lifetime\ScopedStrategy;
 use Suhock\DependencyInjection\Lifetime\SingletonStrategy;
 use Suhock\DependencyInjection\Lifetime\TransientStrategy;
-use Suhock\DependencyInjection\Lifetime\InstanceStore;
 use Suhock\DependencyInjection\Resolver\ParameterResolutionException;
 use Suhock\DependencyInjection\Resolver\ResolutionPlanFactory;
 use Throwable;

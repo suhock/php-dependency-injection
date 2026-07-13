@@ -12,12 +12,11 @@ declare(strict_types=1);
 namespace Suhock\DependencyInjection;
 
 use Closure;
-use Suhock\DependencyInjection\Builder\ContainerBuilderInterface;
 use Suhock\DependencyInjection\Builder\ContainerScopedBuilderTrait;
 use Suhock\DependencyInjection\Builder\ContainerSingletonBuilderTrait;
 use Suhock\DependencyInjection\Builder\ContainerTransientBuilderTrait;
+use Suhock\DependencyInjection\Builder\Descriptor;
 use Suhock\DependencyInjection\Cache\CacheInterface;
-use Suhock\DependencyInjection\Descriptor\Descriptor;
 use Suhock\DependencyInjection\InstanceProvider\ContextInstanceProvider;
 use Suhock\DependencyInjection\InstanceProvider\InstanceProviderInterface;
 use Suhock\DependencyInjection\Lifetime\LifetimeStrategy;
@@ -29,7 +28,6 @@ use Suhock\DependencyInjection\Validation\ContainerValidationException;
 use Suhock\DependencyInjection\Validation\ContainerValidator;
 use Suhock\DependencyInjection\Validation\DependencyGraph;
 use UnitEnum;
-
 use function is_array;
 use function is_string;
 

@@ -11,7 +11,7 @@ declare(strict_types=1);
 
 namespace Suhock\DependencyInjection\Resolver;
 
-use Suhock\DependencyInjection\Descriptor\Descriptor;
+use Suhock\DependencyInjection\Builder\Descriptor;
 
 /**
  * The compiled resolution shape of one service {@see Descriptor}: how the instance is produced, every dependency edge

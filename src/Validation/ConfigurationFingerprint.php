@@ -14,14 +14,13 @@ namespace Suhock\DependencyInjection\Validation;
 use Closure;
 use ReflectionFunction;
 use ReflectionParameter;
-use Suhock\DependencyInjection\Descriptor\Descriptor;
+use Suhock\DependencyInjection\Builder\Descriptor;
 use Suhock\DependencyInjection\InstanceProvider\ClassInstanceProvider;
 use Suhock\DependencyInjection\InstanceProvider\ClosureInstanceProvider;
 use Suhock\DependencyInjection\InstanceProvider\ImplementationInstanceProvider;
 use Suhock\DependencyInjection\InstanceProvider\InstanceProviderInterface;
 use Suhock\DependencyInjection\Key;
 use UnitEnum;
-
 use function get_class;
 use function hash_final;
 use function hash_init;
