@@ -55,6 +55,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+- Public extensibility of instance providers and lifetime strategies:
+  `InstanceProviderInterface`, the built-in providers, and the lifetime
+  strategy classes are now internal, and the low-level `add()`/`addKeyed()`
+  and `add*InstanceProvider()` builder methods are gone. Factory closures —
+  with the auto-bound `ContainerInterface` — cover the same ground with
+  dependencies that build-time validation can actually see.
 - `Container::createDefault()` and every builder method on `Container` — use
   `ContainerBuilder`.
 - `FastPathInstantiationStrategy`; descriptor-backed resolution executes

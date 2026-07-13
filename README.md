@@ -17,9 +17,7 @@ Out of the box, this library provides [singleton](#singleton),
 [scoped](#scoped), and [transient](#transient) lifetime strategies and a
 variety of ways of [adding services](#adding-services-to-the-container) to the
 container. You can also add more than one implementation of the same type as
-[keyed services](#keyed-services). You can easily extend the default
-`ContainerBuilder` with your own custom lifetime strategies or instance
-providers to fit your needs. Once configured,
+[keyed services](#keyed-services). Once configured,
 [`build()`](#building-the-container) compiles and validates the whole
 dependency graph and hands back an immutable `Container`.
 
@@ -33,7 +31,6 @@ constructor.
 - [Compatibility](#compatibility)
 - [Basic usage](#basic-usage)
 - [Building the container](#building-the-container)
-    - [Honest limits](#honest-limits)
     - [Build performance](#build-performance)
     - [Graph diagnostics](#graph-diagnostics)
 - [Instance lifetime](#instance-lifetime)
@@ -49,9 +46,6 @@ constructor.
     - [Map an interface to an implementation](#map-an-interface-to-an-implementation)
     - [Call a factory method](#call-a-factory-method)
     - [Provide a specific instance](#provide-a-specific-instance)
-- [Customizing the container](#customizing-the-container)
-  - [Custom lifetime strategies](#custom-lifetime-strategies)
-  - [Custom instance providers](#custom-instance-providers)
 - [Keyed services](#keyed-services)
 - [Dependency Injector](#dependency-injector)
 - [Specifying dependencies](#specifying-dependencies)
@@ -235,24 +229,6 @@ independent `Container`.
    captive dependency, which always resolves outside a scope (see
    [Scopes](#scopes)).
 
-#### Honest limits
-
-Validation proves what it can from the configuration alone; it does not
-execute anything. A few things are deliberately out of scope:
-
- - A custom `InstanceProviderInterface` is a trusted opaque leaf — see
-   [Custom instance providers](#custom-instance-providers) — so a missing
-   dependency hidden inside one is not caught at build time.
- - Per-call `$params` overrides passed to `Injector::call()` or
-   `Injector::instantiate()` are invisible to the build: they only exist at
-   the point of that call, long after the container was built.
- - Factory bodies are never executed while building, so a factory that throws,
-   or otherwise fails only at run time, is not caught.
- - A dependency cycle hidden inside a custom provider cannot be proven from the
-   configuration; it is instead caught by the runtime cycle guard, which
-   throws a `CircularDependencyException` if such a cycle is actually
-   resolved.
-
 #### Build performance
 
 Without a cache, `build()` fully recompiles and revalidates the graph every
@@ -304,17 +280,15 @@ foreach ($graph->edges as $edge) {
 The export mirrors what resolution would actually traverse: unsatisfiable
 injection points produce no edge (they are [validation](#building-the-container)'s
 domain), an added-but-never-chosen union member receives no incoming edge, and
-dependencies hidden inside
-[custom instance providers](#custom-instance-providers) are invisible.
+dependencies hidden inside factory bodies are invisible.
 `exportDependencyGraph()` never throws — a configuration that would fail
 `build()` still exports.
 
 ### Instance lifetime
 
 The lifetime of an instance determines when the container should request a fresh
-instance of a class. There are three builtin lifetime strategies for classes:
-singleton, scoped, and transient. You can also add your own custom
-[lifetime strategies](#custom-lifetime-strategies).
+instance of a class. There are three lifetime strategies for classes:
+singleton, scoped, and transient.
 
 #### Singleton
 
@@ -386,9 +360,9 @@ root container — so a singleton that depends on a scoped service fails with a
 mistake earlier, when the scoped service is reachable through required edges
 alone: a singleton that requires a scoped service is a captive-dependency
 build error, not a runtime surprise. A `get()` call made directly against a
-scoped service with no scope active — for example from inside a factory or a
-custom instance provider — is a call-pattern error validation cannot see, and
-still throws `ScopeException` at run time.
+scoped service with no scope active — for example from inside a factory body
+— is a call-pattern error validation cannot see, and still throws
+`ScopeException` at run time.
 
 `dispose()` releases the scope's cached instances; any further request to the
 scope throws a `ScopeException`. Disposing a scope more than once has no
@@ -575,19 +549,11 @@ shared with code beyond it, or borrowed from an external registry — pass
 ```php
 // The pool is closed elsewhere; the container must not dispose it.
 $builder->addSingletonInstance(ConnectionPool::class, $pool, shouldDispose: false);
-
-// Same idea for a service built by a factory or provider:
-$builder->add(
-    Connection::class,
-    new SingletonStrategy(Connection::class),
-    new ClosureInstanceProvider(Connection::class, fn () => $registry->connection()),
-    shouldDispose: false
-);
 ```
 
-`shouldDispose` is available on `addSingletonInstance()`/`addKeyedSingletonInstance()`
-and on the low-level `add()`/`addKeyed()` methods — all on `ContainerBuilder`
-— and defaults to `true` everywhere.
+`shouldDispose` is available on `addSingletonInstance()` and
+`addKeyedSingletonInstance()` — the only two `ContainerBuilder` methods that
+register an already-constructed instance — and defaults to `true`.
 
 #### Lifetime and ordering guarantees
 
@@ -621,9 +587,6 @@ them, then call `build()` (see
  - [Map an interface to an implementation](#map-an-interface-to-an-implementation)
  - [Call a factory method](#call-a-factory-method)
  - [Provide a specific instance](#provide-a-specific-instance)
-
-If needed, can also specify your own custom
-[instance providers](#custom-instance-providers).
 
 #### Inject a class
 
@@ -707,9 +670,9 @@ class CurlHttpClient
 
 #### Map an interface to an implementation
 
-The container will provide classes by using the instance provider of the
-specified implementing subclass. You must therefore also add the implementing
-class to the container.
+The container will provide classes by resolving the specified implementing
+subclass in its place. You must therefore also add the implementing class to
+the container.
 
 ```php
 class ContainerBuilder
@@ -784,7 +747,12 @@ $container = $builder->build();
 #### Call a factory method
 
 The container will provide class instances by requesting them from a factory
-method. Any parameters in the factory method will be injected.
+method. Any parameters in the factory method will be injected. A factory also
+covers cases that might otherwise call for a hand-rolled provider — pulling an
+instance from a pool, or deferring expensive construction until first use —
+while keeping every dependency the factory declares visible to
+[build validation](#building-the-container); only what happens inside the
+factory body itself is opaque to it.
 
 ```php
 class ContainerBuilder
@@ -870,73 +838,6 @@ $builder->addSingletonInstance(Request::class, $request);
 Anytime your application requires a `Request` object, the container will provide
 the exact same instance that was passed in with the `$request` variable.
 
-### Customizing the Container
-
-#### Custom Lifetime Strategies
-
-Extend `LifetimeStrategy` and optionally extend `ContainerBuilder` with
-convenience methods for your new lifetime strategy. `get()` receives the
-`ResolutionContext` of the resolution root (the root container or a scope)
-alongside the instance factory. A strategy that persists instances picks the
-context whose lifetime matches — the given context, or `rootContext()` for
-container-wide caching — then caches in that context's `InstanceStore`, keyed
-by the strategy itself, and invokes the factory with that same context so the
-instance's dependencies come from the root its lifetime is bound to. See
-`SingletonStrategy` and `ScopedStrategy` for the two built-in examples of this
-pattern. Build validation's captive-dependency check only recognizes that
-built-in pair — a custom lifetime strategy ends the search early, so a
-singleton reaching a scoped service through a custom strategy is not flagged
-as a captive dependency and should be tested for directly (see
-[Honest limits](#honest-limits)).
-
-#### Custom Instance Providers
-
-Implement `InstanceProviderInterface` and add it to your container using one of
-the basic add methods. You can also extend `ContainerBuilder` to add
-convenience methods for using your new instance provider. A custom provider is
-a trusted opaque leaf to validation (see [Honest limits](#honest-limits)): any
-dependency it resolves internally is not checked at build time.
-
-```php
-class ContainerBuilder
-{
-    /**
-     * @template TClass of object
-     * @param class-string<TClass> $className
-     * @param LifetimeStrategy<TClass> $lifetimeStrategy
-     * @param InstanceProviderInterface<TClass> $instanceProvider
-     * @return $this
-     */
-    public function add(
-        string $className,
-        LifetimeStrategy $lifetimeStrategy,
-        InstanceProviderInterface $instanceProvider
-    ): static;
-
-    /**
-     * @template TClass of object
-     * @param class-string<TClass> $className
-     * @param InstanceProviderInterface<TClass> $instanceProvider
-     * @return $this
-     */
-    public function addSingletonInstanceProvider(
-        string $className,
-        InstanceProviderInterface $instanceProvider
-    ): static;
-
-    /**
-     * @template TClass of object
-     * @param class-string<TClass> $className
-     * @param InstanceProviderInterface<TClass> $instanceProvider
-     * @return $this
-     */
-    public function addTransientInstanceProvider(
-        string $className,
-        InstanceProviderInterface $instanceProvider
-    ): static;
-}
-```
-
 ## Keyed services
 
 An application sometimes needs to provide the same type in more than one
@@ -1005,8 +906,7 @@ The `$source` parameter determines how the container provides the instance:
 
 Each explicit `add*` variant also has a keyed counterpart —
 `addKeyedSingletonFactory()`, `addKeyedTransientClass()`,
-`addKeyedScopedImplementation()`, and so on — and a custom lifetime strategy
-and instance provider can be added under a key with `addKeyed()`.
+`addKeyedScopedImplementation()`, and so on.
 
 ### Examples
 
@@ -1291,7 +1191,7 @@ The base class is `DependencyInjectionException`. Notable subclasses include:
  - `CircularDependencyException` — a dependency cycle was detected; for cycles
    through ordinary descriptors this is now caught at build time as a
    `ContainerValidationException` instead, so this exception at run time means
-   the cycle passed through a custom instance provider.
+   the cycle passed through a factory body.
  - `ScopeException` — a scoped service was requested with no active scope, or a
    disposed scope was used.
  - `ImplementationException` — a mapped implementation is not a subtype of the
