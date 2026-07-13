@@ -13,23 +13,21 @@ namespace Suhock\DependencyInjection;
 
 use Closure;
 use Suhock\DependencyInjection\Builder\ContainerBuilderInterface;
-use Suhock\DependencyInjection\Builder\ContainerBuilderTrait;
-use Suhock\DependencyInjection\Builder\ContainerScopedBuilderInterface;
 use Suhock\DependencyInjection\Builder\ContainerScopedBuilderTrait;
-use Suhock\DependencyInjection\Builder\ContainerSingletonBuilderInterface;
 use Suhock\DependencyInjection\Builder\ContainerSingletonBuilderTrait;
-use Suhock\DependencyInjection\Builder\ContainerTransientBuilderInterface;
 use Suhock\DependencyInjection\Builder\ContainerTransientBuilderTrait;
 use Suhock\DependencyInjection\Cache\CacheInterface;
 use Suhock\DependencyInjection\Descriptor\Descriptor;
 use Suhock\DependencyInjection\InstanceProvider\ContextInstanceProvider;
+use Suhock\DependencyInjection\InstanceProvider\InstanceProviderInterface;
+use Suhock\DependencyInjection\Lifetime\LifetimeStrategy;
 use Suhock\DependencyInjection\Lifetime\TransientStrategy;
 use Suhock\DependencyInjection\Resolver\ResolutionPlan;
 use Suhock\DependencyInjection\Resolver\ResolutionPlanFactory;
-use Suhock\DependencyInjection\Validation\ContainerValidationException;
 use Suhock\DependencyInjection\Validation\ConfigurationFingerprint;
-use Suhock\DependencyInjection\Validation\DependencyGraph;
+use Suhock\DependencyInjection\Validation\ContainerValidationException;
 use Suhock\DependencyInjection\Validation\ContainerValidator;
+use Suhock\DependencyInjection\Validation\DependencyGraph;
 use UnitEnum;
 
 use function is_array;
@@ -41,16 +39,12 @@ use function is_string;
  * {@see Container}. The builder remains usable after a failed build — fix the configuration and build again — and
  * every successful build yields a fully independent product.
  */
-final class ContainerBuilder implements
-    ContainerBuilderInterface,
-    ContainerScopedBuilderInterface,
-    ContainerSingletonBuilderInterface,
-    ContainerTransientBuilderInterface
+final class ContainerBuilder implements ContainerBuilderInterface
 {
-    use ContainerBuilderTrait;
     use ContainerScopedBuilderTrait;
     use ContainerSingletonBuilderTrait;
     use ContainerTransientBuilderTrait;
+
     private const GRAPH_KEY_PREFIX = 'sdi:graph:';
 
     /** @var array<string, Descriptor<object>> */
@@ -80,6 +74,84 @@ final class ContainerBuilder implements
     public static function createDefault(?CacheInterface $cache = null): self
     {
         return new self(static fn ($container) => Injector::createDefault($container, $cache), $cache);
+    }
+
+    /**
+     * Adds an instance provider with a lifetime strategy to the container for a given class.
+     *
+     * @template TClass of object
+     *
+     * @param class-string<TClass> $className The class name of the service to add
+     * @param LifetimeStrategy<TClass> $lifetimeStrategy The lifetime strategy to use to manage instances
+     * @param InstanceProviderInterface<TClass> $instanceProvider The instance provider to use to create new instances
+     * @param bool $shouldDispose Whether the container should dispose the disposable instances it creates for this
+     * service; pass false when their disposal is the responsibility of something outside the container
+     *
+     * @return $this
+     */
+    private function add(
+        string $className,
+        LifetimeStrategy $lifetimeStrategy,
+        InstanceProviderInterface $instanceProvider,
+        bool $shouldDispose = true
+    ): static {
+        $this->addDescriptor(new Descriptor($className, $lifetimeStrategy, $instanceProvider, $shouldDispose));
+
+        return $this;
+    }
+
+    /**
+     * Adds a keyed instance provider with a lifetime strategy to the container for a given class.
+     *
+     * @template TClass of object
+     *
+     * @param class-string<TClass> $className The class name of the service to add
+     * @param string|UnitEnum $key The key of the service
+     * @param LifetimeStrategy<TClass> $lifetimeStrategy The lifetime strategy to use to manage instances
+     * @param InstanceProviderInterface<TClass> $instanceProvider The instance provider to use to create new instances
+     * @param bool $shouldDispose Whether the container should dispose the disposable instances it creates for this
+     * service; pass false when their disposal is the responsibility of something outside the container
+     *
+     * @return $this
+     */
+    private function addKeyed(
+        string $className,
+        string|UnitEnum $key,
+        LifetimeStrategy $lifetimeStrategy,
+        InstanceProviderInterface $instanceProvider,
+        bool $shouldDispose = true
+    ): static {
+        $this->addKeyedDescriptor(
+            new Descriptor($className, $lifetimeStrategy, $instanceProvider, $shouldDispose),
+            $key
+        );
+
+        return $this;
+    }
+
+    /**
+     * @param class-string $className The class name of the service to remove
+     * @param string|UnitEnum|null $key [optional] The key of the service to remove, or null for the unkeyed service
+     *
+     * @return $this
+     */
+    public function remove(string $className, string|UnitEnum|null $key = null): static
+    {
+        $this->removeDescriptor($className, $key);
+
+        return $this;
+    }
+
+    /**
+     * @param callable(static):mixed $configure
+     *
+     * @return $this
+     */
+    public function configure(callable $configure): static
+    {
+        $configure($this);
+
+        return $this;
     }
 
     /**

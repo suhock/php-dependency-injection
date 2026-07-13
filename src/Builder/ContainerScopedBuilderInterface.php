@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace Suhock\DependencyInjection\Builder;
 
+use Closure;
 use Suhock\DependencyInjection\InstanceProvider\ImplementationException;
 use Suhock\DependencyInjection\ScopeException;
 use Suhock\DependencyInjection\ScopeInterface;
@@ -30,7 +31,7 @@ interface ContainerScopedBuilderInterface
      * @template TClass of object
      *
      * @param class-string<TClass> $className The fully qualified name of the class to add
-     * @param callable|null $mutator [optional] This function will be called after an instance of the class has been
+     * @param Closure|callable-string|null $mutator [optional] This function will be called after an instance of the class has been
      * created. The class instance will be provided as the first parameter. Any additional parameters will be injected.
      *
      * @return $this
@@ -47,7 +48,7 @@ interface ContainerScopedBuilderInterface
      *
      * @param class-string<TClass> $className The fully qualified name of the class to add
      * @param string|UnitEnum $key The key to add the service under
-     * @param callable|null $mutator [optional] This function will be called after an instance of the class has been
+     * @param Closure|callable-string|null $mutator [optional] This function will be called after an instance of the class has been
      * created. The class instance will be provided as the first parameter. Any additional parameters will be injected.
      *
      * @return $this

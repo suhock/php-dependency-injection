@@ -48,7 +48,6 @@ trait ContainerSingletonBuilderTrait
      *
      * @return $this
      */
-    // @phpstan-ignore method.childParameterType (false positive on templated builder generics)
     public function addSingleton(string $className, string|object|null $source = null): static
     {
         $this->addSingletonInstanceProvider(
@@ -124,7 +123,6 @@ trait ContainerSingletonBuilderTrait
      * @param class-string<TClass> $className
      * @param Closure|callable-string|null $mutator
      */
-    // @phpstan-ignore method.childParameterType (false positive on templated builder generics)
     public function addSingletonClass(string $className, ?callable $mutator = null): static
     {
         $this->addSingletonInstanceProvider(
@@ -141,7 +139,6 @@ trait ContainerSingletonBuilderTrait
      * @param class-string<TClass> $className
      * @param Closure|callable-string|null $mutator
      */
-    // @phpstan-ignore method.childParameterType (false positive on templated builder generics)
     public function addKeyedSingletonClass(
         string $className,
         string|UnitEnum $key,
@@ -215,17 +212,15 @@ trait ContainerSingletonBuilderTrait
 
     /**
      * @template TClass of object
-     * @template TInstance of TClass
      *
      * @param class-string<TClass> $className
-     * @param TInstance $instance
+     * @param TClass $instance
      * @param bool $shouldDispose Whether the container should dispose the instance, if it implements
      * {@see \Suhock\DependencyInjection\DisposableInterface}, when the container is disposed. Pass false to retain
      * disposal responsibility yourself, e.g. when the instance is shared with code outside the container.
      *
      * @return $this
      */
-    // @phpstan-ignore method.childParameterType (false positive on templated builder generics)
     public function addSingletonInstance(string $className, object $instance, bool $shouldDispose = true): static
     {
         return $this->addSingletonInstanceProvider(
@@ -237,17 +232,15 @@ trait ContainerSingletonBuilderTrait
 
     /**
      * @template TClass of object
-     * @template TInstance of TClass
      *
      * @param class-string<TClass> $className
-     * @param TInstance $instance
+     * @param TClass $instance
      * @param bool $shouldDispose Whether the container should dispose the instance, if it implements
      * {@see \Suhock\DependencyInjection\DisposableInterface}, when the container is disposed. Pass false to retain
      * disposal responsibility yourself, e.g. when the instance is shared with code outside the container.
      *
      * @return $this
      */
-    // @phpstan-ignore method.childParameterType (false positive on templated builder generics)
     public function addKeyedSingletonInstance(
         string $className,
         string|UnitEnum $key,

@@ -48,7 +48,6 @@ trait ContainerScopedBuilderTrait
      *
      * @return $this
      */
-    // @phpstan-ignore method.childParameterType (false positive on templated builder generics)
     public function addScoped(string $className, string|object|null $source = null): static
     {
         $this->addScopedInstanceProvider(
@@ -116,7 +115,6 @@ trait ContainerScopedBuilderTrait
      * @param class-string<TClass> $className
      * @param Closure|callable-string|null $mutator
      */
-    // @phpstan-ignore method.childParameterType (false positive on templated builder generics)
     public function addScopedClass(string $className, ?callable $mutator = null): static
     {
         $this->addScopedInstanceProvider(
@@ -133,7 +131,6 @@ trait ContainerScopedBuilderTrait
      * @param class-string<TClass> $className
      * @param Closure|callable-string|null $mutator
      */
-    // @phpstan-ignore method.childParameterType (false positive on templated builder generics)
     public function addKeyedScopedClass(
         string $className,
         string|UnitEnum $key,

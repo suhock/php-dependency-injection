@@ -16,7 +16,8 @@ use UnitEnum;
 /**
  * Interface for building a dependency container.
  */
-interface ContainerBuilderInterface
+interface ContainerBuilderInterface extends ContainerSingletonBuilderInterface, ContainerScopedBuilderInterface,
+    ContainerTransientBuilderInterface
 {
     /**
      * Removes the specified service and any instance cached by this container, if they exist. Services of the same

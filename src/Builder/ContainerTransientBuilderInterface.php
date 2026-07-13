@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace Suhock\DependencyInjection\Builder;
 
+use Closure;
 use Suhock\DependencyInjection\InstanceProvider\ImplementationException;
 use UnitEnum;
 
@@ -25,7 +26,7 @@ interface ContainerTransientBuilderInterface
      * constructed object.
      *
      * @param class-string $className The fully qualified name of the class to add
-     * @param callable|null $mutator [optional] This function will be called after an instance of the class has been
+     * @param Closure|callable-string|null $mutator [optional] This function will be called after an instance of the class has been
      * created. The class instance will be provided as the first parameter. Any additional parameters will be injected.
      *
      * @return $this
@@ -40,7 +41,7 @@ interface ContainerTransientBuilderInterface
      *
      * @param class-string $className The fully qualified name of the class to add
      * @param string|UnitEnum $key The key to add the service under
-     * @param callable|null $mutator [optional] This function will be called after an instance of the class has been
+     * @param Closure|callable-string|null $mutator [optional] This function will be called after an instance of the class has been
      * created. The class instance will be provided as the first parameter. Any additional parameters will be injected.
      *
      * @return $this
@@ -58,10 +59,9 @@ interface ContainerTransientBuilderInterface
      * implementation class.
      *
      * @template TClass of object
-     * @template TImplementation of TClass
      *
      * @param class-string<TClass> $className The fully qualified name of the class to add
-     * @param class-string<TImplementation> $implementationClassName The fully qualified name of a class that implements
+     * @param class-string<TClass> $implementationClassName The fully qualified name of a class that implements
      * or extends {@see $className}.
      *
      * @return $this
@@ -75,11 +75,10 @@ interface ContainerTransientBuilderInterface
      * specify how to resolve the implementation class.
      *
      * @template TClass of object
-     * @template TImplementation of TClass
      *
      * @param class-string<TClass> $className The fully qualified name of the class to add
      * @param string|UnitEnum $key The key to add the service under
-     * @param class-string<TImplementation> $implementationClassName The fully qualified name of a class that
+     * @param class-string<TClass> $implementationClassName The fully qualified name of a class that
      * implements or extends {@see $className}.
      *
      * @return $this
