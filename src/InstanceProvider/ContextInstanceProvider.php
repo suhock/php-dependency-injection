@@ -22,8 +22,10 @@ use Suhock\DependencyInjection\ResolutionContext;
  *
  * @template TClass of object
  * @template-implements InstanceProviderInterface<TClass>
+ *
+ * @internal
  */
-final class ContextInstanceProvider implements InstanceProviderInterface, IntrospectableInstanceProviderInterface
+final class ContextInstanceProvider implements InstanceProviderInterface
 {
     /**
      * @param class-string<TClass> $className The name of the class this factory will provide
@@ -52,11 +54,4 @@ final class ContextInstanceProvider implements InstanceProviderInterface, Intros
         return $result;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getDependencySource(): DependencySource
-    {
-        return new LeafSource();
-    }
 }

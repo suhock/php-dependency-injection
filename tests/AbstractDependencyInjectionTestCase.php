@@ -13,10 +13,16 @@ namespace Suhock\DependencyInjection;
 
 use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\TestCase;
+use Suhock\DependencyInjection\Descriptor\Descriptor;
 use Suhock\DependencyInjection\InstanceProvider\ImplementationException;
 use Suhock\DependencyInjection\InstanceProvider\InstanceTypeException;
+use Suhock\DependencyInjection\InstanceProvider\ClassInstanceProvider;
+use Suhock\DependencyInjection\Lifetime\ScopedStrategy;
+use Suhock\DependencyInjection\Lifetime\SingletonStrategy;
+use Suhock\DependencyInjection\Lifetime\TransientStrategy;
 use Suhock\DependencyInjection\Lifetime\InstanceStore;
 use Suhock\DependencyInjection\Resolver\ParameterResolutionException;
+use Suhock\DependencyInjection\Resolver\ResolutionPlanFactory;
 use Throwable;
 
 /**
@@ -27,6 +33,43 @@ abstract class AbstractDependencyInjectionTestCase extends TestCase
     protected static function createBuilder(): ContainerBuilder
     {
         return ContainerBuilder::createDefault();
+    }
+
+    /**
+     * A class-autowired descriptor with the given lifetime, for {@see buildRawContainer()}.
+     *
+     * @param class-string $className
+     *
+     * @return Descriptor<object>
+     */
+    protected static function classDescriptor(
+        string $className,
+        string $lifetime,
+        bool $shouldDispose = true
+    ): Descriptor {
+        $strategy = match ($lifetime) {
+            'singleton' => new SingletonStrategy($className),
+            'scoped' => new ScopedStrategy($className),
+            default => new TransientStrategy($className),
+        };
+
+        return new Descriptor($className, $strategy, new ClassInstanceProvider($className), $shouldDispose);
+    }
+
+    /**
+     * Builds a container directly from hand-assembled descriptors, bypassing the builder, for tests that exercise
+     * engine behavior the public configuration surface deliberately no longer expresses (e.g. shouldDispose on
+     * container-created services other than instances).
+     *
+     * @param array<string, Descriptor<object>> $descriptors
+     */
+    protected static function buildRawContainer(array $descriptors): Container
+    {
+        return new Container(
+            $descriptors,
+            (new ResolutionPlanFactory())->compile($descriptors),
+            static fn (ContainerInterface $container) => Injector::createDefault($container)
+        );
     }
 
     /**

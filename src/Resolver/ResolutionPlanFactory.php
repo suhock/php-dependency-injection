@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace Suhock\DependencyInjection\Resolver;
 
+use Closure;
 use ReflectionClass;
 use ReflectionFunction;
 use ReflectionMethod;
@@ -23,10 +24,9 @@ use Suhock\DependencyInjection\Descriptor\Descriptor;
 use Suhock\DependencyInjection\Injection\InjectionPlan;
 use Suhock\DependencyInjection\Injection\InjectionPlanFactory;
 use Suhock\DependencyInjection\InjectorException;
-use Suhock\DependencyInjection\InstanceProvider\AutowireClassSource;
-use Suhock\DependencyInjection\InstanceProvider\CallableSource;
-use Suhock\DependencyInjection\InstanceProvider\IntrospectableInstanceProviderInterface;
-use Suhock\DependencyInjection\InstanceProvider\ReferenceSource;
+use Suhock\DependencyInjection\InstanceProvider\ClassInstanceProvider;
+use Suhock\DependencyInjection\InstanceProvider\ClosureInstanceProvider;
+use Suhock\DependencyInjection\InstanceProvider\ImplementationInstanceProvider;
 
 use function array_slice;
 use function class_exists;
@@ -34,9 +34,8 @@ use function interface_exists;
 
 /**
  * Compiles a set of service descriptors into {@see ResolutionPlan}s — how each service's instance is produced, the
- * dependency edges resolution will satisfy, and the guaranteed-failure defects — from reflection and each provider's
- * {@see IntrospectableInstanceProviderInterface dependency source}, without instantiating anything. Providers that
- * are not introspectable compile to opaque trusted-leaf plans.
+ * dependency edges resolution will satisfy, and the guaranteed-failure defects — from reflection and the closed set
+ * of instance providers, without instantiating anything.
  *
  * #[Inject] member plans are fetched through a {@see MetadataCache} under the same key prefix the runtime member
  * injector uses, so compilation and the standalone injector share the cached computation.
@@ -97,39 +96,36 @@ final class ResolutionPlanFactory
     {
         $provider = $descriptor->instanceProvider;
 
-        if (!$provider instanceof IntrospectableInstanceProviderInterface) {
-            return new ResolutionPlan($descriptor->className, ResolutionPlanKind::Opaque);
+        if ($provider instanceof ClassInstanceProvider) {
+            return $this->compileAutowireClass($provider->className, $provider->mutator);
         }
 
-        $source = $provider->getDependencySource();
-
-        if ($source instanceof AutowireClassSource) {
-            return $this->compileAutowireClass($source);
+        if ($provider instanceof ClosureInstanceProvider) {
+            return self::compileCallable($provider->className, $provider->factory);
         }
 
-        if ($source instanceof CallableSource) {
-            return $this->compileCallable($source);
-        }
-
-        if ($source instanceof ReferenceSource) {
+        if ($provider instanceof ImplementationInstanceProvider) {
             return new ResolutionPlan(
                 $descriptor->className,
                 ResolutionPlanKind::Implementation,
-                implementationTarget: $source->targetId
+                implementationTarget: $provider->implementationClassName
             );
         }
 
-        // LeafSource compiles as an edge-less leaf; an unknown future source kind is trusted like an opaque provider.
+        // The remaining providers of the closed set — held instances and context selectors — have no dependencies.
         return new ResolutionPlan($descriptor->className, ResolutionPlanKind::Leaf);
     }
 
-    private function compileAutowireClass(AutowireClassSource $source): ResolutionPlan
+    /**
+     * @param class-string $className
+     */
+    private function compileAutowireClass(string $className, ?Closure $mutator): ResolutionPlan
     {
-        $parts = $this->classParts($source->className);
+        $parts = $this->classParts($className);
         $mutatorEdges = [];
 
-        if ($source->mutator !== null) {
-            $rFunction = new ReflectionFunction($source->mutator);
+        if ($mutator !== null) {
+            $rFunction = new ReflectionFunction($mutator);
 
             // The mutator's first parameter receives the new instance; the rest are injected.
             foreach (array_slice($rFunction->getParameters(), 1) as $rParam) {
@@ -138,7 +134,7 @@ final class ResolutionPlanFactory
         }
 
         return new ResolutionPlan(
-            $source->className,
+            $className,
             ResolutionPlanKind::AutowiredClass,
             argumentEdges: $parts['argumentEdges'],
             injectMethodEdges: $parts['injectMethodEdges'],
@@ -149,17 +145,20 @@ final class ResolutionPlanFactory
         );
     }
 
-    private function compileCallable(CallableSource $source): ResolutionPlan
+    /**
+     * @param class-string $className
+     */
+    private static function compileCallable(string $className, Closure $factory): ResolutionPlan
     {
-        $rFunction = new ReflectionFunction($source->callable);
+        $rFunction = new ReflectionFunction($factory);
         $edges = [];
 
-        foreach (array_slice($rFunction->getParameters(), $source->skipLeadingParams) as $rParam) {
+        foreach ($rFunction->getParameters() as $rParam) {
             $edges[] = self::parameterEdge($rParam);
         }
 
         return new ResolutionPlan(
-            $source->declaredType,
+            $className,
             ResolutionPlanKind::Factory,
             argumentEdges: $edges,
             declaredFactoryReturnType: self::declaredReturnClass($rFunction)

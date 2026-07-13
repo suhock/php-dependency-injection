@@ -16,7 +16,6 @@ use Suhock\DependencyInjection\AbstractDependencyInjectionTestCase;
 use Suhock\DependencyInjection\Fakes\FakeBaseClass;
 use Suhock\DependencyInjection\Fakes\FakeClassExtendsBaseClass;
 use Suhock\DependencyInjection\Fakes\FakeClassNoConstructor;
-use Suhock\DependencyInjection\InstanceProvider\ClosureInstanceProvider;
 use Suhock\DependencyInjection\InstanceProvider\InstanceTypeException;
 
 /**
@@ -235,26 +234,6 @@ final class ContainerTransientBuilderTraitTest extends AbstractDependencyInjecti
         self::assertNotSame($instance, $newInstance);
     }
 
-    public function testAddKeyedTransientInstanceProvider_WithProvider_GetByKeyReturnsInstanceFromProvider(): void
-    {
-        // Arrange
-        $container = self::createBuilder()
-            ->addKeyedTransientInstanceProvider(
-                FakeClassNoConstructor::class,
-                'key1',
-                new ClosureInstanceProvider(FakeClassNoConstructor::class, fn () => new FakeClassNoConstructor())
-            )
-            ->build();
-
-        // Act
-        $instance = $container->get(FakeClassNoConstructor::class, 'key1');
-        $newInstance = $container->get(FakeClassNoConstructor::class, 'key1');
-
-        // Assert
-        self::assertInstanceOf(FakeClassNoConstructor::class, $instance);
-        self::assertNotSame($instance, $newInstance);
-        self::assertFalse($container->has(FakeClassNoConstructor::class));
-    }
 
     public function testAddKeyedTransientClass_WithMutator_GetByKeyReturnsMutatedInstance(): void
     {

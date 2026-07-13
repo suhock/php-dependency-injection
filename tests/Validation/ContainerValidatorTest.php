@@ -36,7 +36,6 @@ use Suhock\DependencyInjection\InstanceProvider\ClassInstanceProvider;
 use Suhock\DependencyInjection\InstanceProvider\ClosureInstanceProvider;
 use Suhock\DependencyInjection\InstanceProvider\ImplementationInstanceProvider;
 use Suhock\DependencyInjection\InstanceProvider\InstanceProviderInterface;
-use Suhock\DependencyInjection\ResolutionContext;
 use Suhock\DependencyInjection\Lifetime\ScopedStrategy;
 use Suhock\DependencyInjection\Lifetime\SingletonStrategy;
 use Suhock\DependencyInjection\Lifetime\TransientStrategy;
@@ -417,19 +416,6 @@ final class ContainerValidatorTest extends TestCase
         $this->assertNoIssues();
     }
 
-    public function testValidate_WithOpaqueCustomProvider_ReportsNothing(): void
-    {
-        $provider = new class () implements InstanceProviderInterface {
-            public function get(ResolutionContext $context): object
-            {
-                return new FakeClassNoConstructor();
-            }
-        };
-
-        $this->add(FakeClassNoConstructor::class, $provider, 'transient', null);
-
-        $this->assertNoIssues();
-    }
 
     public function testValidate_WithMultipleDefects_AggregatesAllIssues(): void
     {

@@ -20,8 +20,10 @@ use Suhock\DependencyInjection\ResolutionContext;
  *
  * @template TClass of object
  * @template-implements InstanceProviderInterface<TClass>
+ *
+ * @internal
  */
-final class ImplementationInstanceProvider implements InstanceProviderInterface, IntrospectableInstanceProviderInterface
+final class ImplementationInstanceProvider implements InstanceProviderInterface
 {
     /**
      * @param class-string<TClass> $className The name of the class or interface provided
@@ -32,7 +34,7 @@ final class ImplementationInstanceProvider implements InstanceProviderInterface,
      */
     public function __construct(
         string $className,
-        private readonly string $implementationClassName
+        public readonly string $implementationClassName
     ) {
         if (!is_subclass_of($implementationClassName, $className)) {
             throw new ImplementationException($className, $this->implementationClassName);
@@ -49,11 +51,4 @@ final class ImplementationInstanceProvider implements InstanceProviderInterface,
         return $context->container->get($this->implementationClassName);
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getDependencySource(): DependencySource
-    {
-        return new ReferenceSource($this->implementationClassName);
-    }
 }

@@ -20,16 +20,18 @@ use Suhock\DependencyInjection\ResolutionContext;
  *
  * @template TClass of object
  * @template-implements InstanceProviderInterface<TClass>
+ *
+ * @internal
  */
-final class ClosureInstanceProvider implements InstanceProviderInterface, IntrospectableInstanceProviderInterface
+final class ClosureInstanceProvider implements InstanceProviderInterface
 {
     /**
      * @param class-string<TClass> $className The name of the class this factory will provide
      * @param Closure $factory The factory that will be used for providing instances
      */
     public function __construct(
-        private readonly string $className,
-        private readonly Closure $factory
+        public readonly string $className,
+        public readonly Closure $factory
     ) {
     }
 
@@ -50,11 +52,4 @@ final class ClosureInstanceProvider implements InstanceProviderInterface, Intros
         return $result;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getDependencySource(): DependencySource
-    {
-        return new CallableSource($this->factory, 0, $this->className);
-    }
 }

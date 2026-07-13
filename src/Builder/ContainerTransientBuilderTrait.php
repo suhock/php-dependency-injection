@@ -14,6 +14,7 @@ namespace Suhock\DependencyInjection\Builder;
 use Closure;
 use Suhock\DependencyInjection\InstanceProvider\InstanceProviderFactory;
 use Suhock\DependencyInjection\InstanceProvider\InstanceProviderInterface;
+use Suhock\DependencyInjection\Lifetime\LifetimeStrategy;
 use Suhock\DependencyInjection\Lifetime\TransientStrategy;
 use UnitEnum;
 
@@ -23,6 +24,21 @@ use UnitEnum;
  */
 trait ContainerTransientBuilderTrait
 {
+    abstract private function add(
+        string $className,
+        LifetimeStrategy $lifetimeStrategy,
+        InstanceProviderInterface $instanceProvider,
+        bool $shouldDispose = true
+    ): static;
+
+    abstract private function addKeyed(
+        string $className,
+        string|UnitEnum $key,
+        LifetimeStrategy $lifetimeStrategy,
+        InstanceProviderInterface $instanceProvider,
+        bool $shouldDispose = true
+    ): static;
+
     /**
      * @template TClass of object
      *
@@ -67,7 +83,7 @@ trait ContainerTransientBuilderTrait
      *
      * @return $this
      */
-    public function addTransientInstanceProvider(string $className, InstanceProviderInterface $instanceProvider): static
+    private function addTransientInstanceProvider(string $className, InstanceProviderInterface $instanceProvider): static
     {
         $this->add($className, new TransientStrategy($className), $instanceProvider);
 
@@ -82,7 +98,7 @@ trait ContainerTransientBuilderTrait
      *
      * @return $this
      */
-    public function addKeyedTransientInstanceProvider(
+    private function addKeyedTransientInstanceProvider(
         string $className,
         string|UnitEnum $key,
         InstanceProviderInterface $instanceProvider

@@ -16,7 +16,6 @@ use Suhock\DependencyInjection\Fakes\FakeBaseClass;
 use Suhock\DependencyInjection\Fakes\FakeClassExtendsBaseClass;
 use Suhock\DependencyInjection\Fakes\FakeClassNoConstructor;
 use Suhock\DependencyInjection\Fakes\FakeClassWithConstructor;
-use Suhock\DependencyInjection\InstanceProvider\ClassInstanceProvider;
 
 /**
  * Test suite for {@see ContainerScopedBuilderTrait}.
@@ -128,26 +127,6 @@ final class ContainerScopedBuilderTraitTest extends AbstractDependencyInjectionT
         self::assertFalse($scope->has(FakeClassNoConstructor::class));
     }
 
-    public function testAddKeyedScopedInstanceProvider_WithProvider_GetByKeyReturnsPerScopeInstance(): void
-    {
-        // Arrange
-        $container = self::createBuilder()
-            ->addKeyedScopedInstanceProvider(
-                FakeClassNoConstructor::class,
-                'key1',
-                new ClassInstanceProvider(FakeClassNoConstructor::class)
-            )
-            ->build();
-        $scope = $container->createScope();
-
-        // Act
-        $instance = $scope->get(FakeClassNoConstructor::class, 'key1');
-        $otherScopeInstance = $container->createScope()->get(FakeClassNoConstructor::class, 'key1');
-
-        // Assert
-        self::assertSame($instance, $scope->get(FakeClassNoConstructor::class, 'key1'));
-        self::assertNotSame($instance, $otherScopeInstance);
-    }
 
     public function testAddKeyedScopedClass_WithMutator_GetByKeyReturnsMutatedPerScopeInstance(): void
     {

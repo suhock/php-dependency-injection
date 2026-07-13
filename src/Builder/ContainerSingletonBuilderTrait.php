@@ -14,6 +14,7 @@ namespace Suhock\DependencyInjection\Builder;
 use Closure;
 use Suhock\DependencyInjection\InstanceProvider\InstanceProviderFactory;
 use Suhock\DependencyInjection\InstanceProvider\InstanceProviderInterface;
+use Suhock\DependencyInjection\Lifetime\LifetimeStrategy;
 use Suhock\DependencyInjection\Lifetime\SingletonStrategy;
 use UnitEnum;
 
@@ -23,6 +24,21 @@ use UnitEnum;
  */
 trait ContainerSingletonBuilderTrait
 {
+    abstract private function add(
+        string $className,
+        LifetimeStrategy $lifetimeStrategy,
+        InstanceProviderInterface $instanceProvider,
+        bool $shouldDispose = true
+    ): static;
+
+    abstract private function addKeyed(
+        string $className,
+        string|UnitEnum $key,
+        LifetimeStrategy $lifetimeStrategy,
+        InstanceProviderInterface $instanceProvider,
+        bool $shouldDispose = true
+    ): static;
+
     /**
      * @template TClass of object
      * @template TImplementation of TClass
@@ -71,7 +87,7 @@ trait ContainerSingletonBuilderTrait
      *
      * @return $this
      */
-    public function addSingletonInstanceProvider(
+    private function addSingletonInstanceProvider(
         string $className,
         InstanceProviderInterface $instanceProvider,
         bool $shouldDispose = true
@@ -91,7 +107,7 @@ trait ContainerSingletonBuilderTrait
      *
      * @return $this
      */
-    public function addKeyedSingletonInstanceProvider(
+    private function addKeyedSingletonInstanceProvider(
         string $className,
         string|UnitEnum $key,
         InstanceProviderInterface $instanceProvider,

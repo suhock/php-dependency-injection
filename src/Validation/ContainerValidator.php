@@ -89,7 +89,7 @@ final class ContainerValidator
         foreach ($plans as $id => $plan) {
             $descriptor = $this->descriptors[$id] ?? null;
 
-            if ($descriptor === null || $plan->kind === ResolutionPlanKind::Opaque) {
+            if ($descriptor === null) {
                 continue;
             }
 
@@ -107,7 +107,7 @@ final class ContainerValidator
     /**
      * Exports the configuration's dependency graph: every service and every satisfied, chosen edge, with the
      * injection point each edge flows through. Mirrors exactly what resolution would traverse — unsatisfiable
-     * injection points produce no edge, and opaque custom providers contribute none. Purely informational: a
+     * injection points produce no edge. Purely informational: a
      * defective configuration still exports.
      *
      * @param array<string, ResolutionPlan> $plans The compiled plans, keyed by descriptor id
@@ -123,7 +123,7 @@ final class ContainerValidator
         $edges = [];
 
         foreach ($plans as $id => $plan) {
-            if (!isset($this->descriptors[$id]) || $plan->kind === ResolutionPlanKind::Opaque) {
+            if (!isset($this->descriptors[$id])) {
                 continue;
             }
 
@@ -382,8 +382,7 @@ final class ContainerValidator
     /**
      * Captive-dependency detection: a singleton constructs its entire required subgraph in the root context, so a
      * path of required edges from a singleton to a scoped service always throws. The search is context-transparent
-     * through singleton and transient intermediaries; descriptors with custom lifetime strategies end the search,
-     * since their context behavior cannot be proven.
+     * through singleton and transient intermediaries.
      *
      * @param array<string, list<array{string, bool}>> $adjacency
      *

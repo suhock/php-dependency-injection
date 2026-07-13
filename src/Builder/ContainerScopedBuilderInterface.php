@@ -12,7 +12,6 @@ declare(strict_types=1);
 namespace Suhock\DependencyInjection\Builder;
 
 use Suhock\DependencyInjection\InstanceProvider\ImplementationException;
-use Suhock\DependencyInjection\InstanceProvider\InstanceProviderInterface;
 use Suhock\DependencyInjection\ScopeException;
 use Suhock\DependencyInjection\ScopeInterface;
 use UnitEnum;
@@ -23,69 +22,6 @@ use UnitEnum;
  */
 interface ContainerScopedBuilderInterface
 {
-    /**
-     * @template TClass of object
-     * @template TImplementation of TClass
-     *
-     * @param class-string<TClass> $className The fully qualified name of the class to add
-     * @param class-string<TImplementation>|object|null $source
-     * - If null, indicates that the container should provide an instance of the given class by autowiring its
-     *   constructor.
-     * - If a string, indicates that the container should provide an instance of the given class by retrieving an
-     *   instance of the specified implementation class from the container. The container must also specify how to
-     *   resolve the implementation class.
-     * - If a closure, indicates that the container should provide an instance of the given class by calling the
-     *   closure as a factory. Any closure parameters will be injected. To autowire the class and then mutate the
-     *   constructed instance, use {@see addScopedClass()} or {@see addKeyedScopedClass()} instead.
-     *
-     * @return $this
-     */
-    public function addScoped(string $className, string|object|null $source = null): static;
-
-    /**
-     * @template TClass of object
-     * @template TImplementation of TClass
-     *
-     * @param class-string<TClass> $className The fully qualified name of the class to add
-     * @param string|UnitEnum $key The key to add the service under
-     * @param class-string<TImplementation>|object|null $source See {@see addScoped()}
-     *
-     * @return $this
-     */
-    public function addKeyedScoped(
-        string $className,
-        string|UnitEnum $key,
-        string|object|null $source = null
-    ): static;
-
-    /**
-     * @template TClass of object
-     *
-     * @param class-string<TClass> $className The fully qualified name of the class to add
-     * @param InstanceProviderInterface<TClass> $instanceProvider
-     *
-     * @return $this
-     */
-    public function addScopedInstanceProvider(
-        string $className,
-        InstanceProviderInterface $instanceProvider
-    ): static;
-
-    /**
-     * @template TClass of object
-     *
-     * @param class-string<TClass> $className The fully qualified name of the class to add
-     * @param string|UnitEnum $key The key to add the service under
-     * @param InstanceProviderInterface<TClass> $instanceProvider
-     *
-     * @return $this
-     */
-    public function addKeyedScopedInstanceProvider(
-        string $className,
-        string|UnitEnum $key,
-        InstanceProviderInterface $instanceProvider
-    ): static;
-
     /**
      * Indicates that the container should provide a per-scope instance of the given class by autowiring its
      * constructor. An optional mutator function can be specified to perform additional initialization on the

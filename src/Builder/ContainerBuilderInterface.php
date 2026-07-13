@@ -11,8 +11,6 @@ declare(strict_types=1);
 
 namespace Suhock\DependencyInjection\Builder;
 
-use Suhock\DependencyInjection\InstanceProvider\InstanceProviderInterface;
-use Suhock\DependencyInjection\Lifetime\LifetimeStrategy;
 use UnitEnum;
 
 /**
@@ -20,48 +18,6 @@ use UnitEnum;
  */
 interface ContainerBuilderInterface
 {
-    /**
-     * Adds an instance provider with a lifetime strategy to the container for a given class.
-     *
-     * @template TClass of object
-     *
-     * @param class-string<TClass> $className The class name of the service to add
-     * @param LifetimeStrategy<TClass> $lifetimeStrategy The lifetime strategy to use to manage instances
-     * @param InstanceProviderInterface<TClass> $instanceProvider The instance provider to use to create new instances
-     * @param bool $shouldDispose Whether the container should dispose the disposable instances it creates for this
-     * service; pass false when their disposal is the responsibility of something outside the container
-     *
-     * @return $this
-     */
-    public function add(
-        string $className,
-        LifetimeStrategy $lifetimeStrategy,
-        InstanceProviderInterface $instanceProvider,
-        bool $shouldDispose = true
-    ): static;
-
-    /**
-     * Adds a keyed instance provider with a lifetime strategy to the container for a given class.
-     *
-     * @template TClass of object
-     *
-     * @param class-string<TClass> $className The class name of the service to add
-     * @param string|UnitEnum $key The key of the service
-     * @param LifetimeStrategy<TClass> $lifetimeStrategy The lifetime strategy to use to manage instances
-     * @param InstanceProviderInterface<TClass> $instanceProvider The instance provider to use to create new instances
-     * @param bool $shouldDispose Whether the container should dispose the disposable instances it creates for this
-     * service; pass false when their disposal is the responsibility of something outside the container
-     *
-     * @return $this
-     */
-    public function addKeyed(
-        string $className,
-        string|UnitEnum $key,
-        LifetimeStrategy $lifetimeStrategy,
-        InstanceProviderInterface $instanceProvider,
-        bool $shouldDispose = true
-    ): static;
-
     /**
      * Removes the specified service and any instance cached by this container, if they exist. Services of the same
      * class added under other keys are unaffected.

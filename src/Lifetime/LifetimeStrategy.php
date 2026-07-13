@@ -17,6 +17,8 @@ use Suhock\DependencyInjection\ResolutionContext;
  * Interface for classes that manage the lifetime of an object instance.
  *
  * @template TClass of object
+ *
+ * @internal The set of lifetime strategies is closed (singleton, scoped, transient); captive-dependency validation depends on classifying every strategy.
  */
 abstract class LifetimeStrategy
 {

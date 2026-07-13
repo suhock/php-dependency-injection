@@ -17,8 +17,8 @@ namespace Suhock\DependencyInjection\Validation;
  * such as Graphviz, and dead-service linting are all derivable from this plain data.
  *
  * The export mirrors what the runtime and validation see: unsatisfiable injection points produce no edge (they are
- * validation's domain), an added-but-never-chosen union member receives no incoming edge, and dependencies hidden
- * inside custom instance providers are invisible.
+ * validation's domain) and an added-but-never-chosen union member receives no incoming edge. Calls a factory body
+ * makes back into the container are invisible.
  */
 final class DependencyGraph
 {

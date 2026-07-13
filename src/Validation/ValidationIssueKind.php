@@ -13,8 +13,8 @@ namespace Suhock\DependencyInjection\Validation;
 
 /**
  * The kinds of guaranteed-failure configuration defects container validation detects. Every kind describes a
- * configuration that cannot resolve successfully at runtime; conditions that merely might fail (opaque custom
- * providers, factory bodies, per-call parameter overrides) are out of validation's scope and are never reported.
+ * configuration that cannot resolve successfully at runtime; conditions that merely might fail (factory
+ * bodies, per-call injector parameter overrides) are out of validation's scope and are never reported.
  */
 enum ValidationIssueKind
 {

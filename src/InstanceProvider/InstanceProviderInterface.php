@@ -17,6 +17,8 @@ use Suhock\DependencyInjection\ResolutionContext;
  * Interface for classes that manage the provision of objects.
  *
  * @template TClass of object
+ *
+ * @internal The set of instance providers is closed; add services through the {@see \Suhock\DependencyInjection\ContainerBuilder} convenience methods (classes, factories, instances, implementations) instead of implementing this.
  */
 interface InstanceProviderInterface
 {

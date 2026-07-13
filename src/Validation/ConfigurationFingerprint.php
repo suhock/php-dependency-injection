@@ -15,13 +15,10 @@ use Closure;
 use ReflectionFunction;
 use ReflectionParameter;
 use Suhock\DependencyInjection\Descriptor\Descriptor;
-use Suhock\DependencyInjection\InstanceProvider\AutowireClassSource;
-use Suhock\DependencyInjection\InstanceProvider\CallableSource;
-use Suhock\DependencyInjection\InstanceProvider\DependencySource;
+use Suhock\DependencyInjection\InstanceProvider\ClassInstanceProvider;
+use Suhock\DependencyInjection\InstanceProvider\ClosureInstanceProvider;
+use Suhock\DependencyInjection\InstanceProvider\ImplementationInstanceProvider;
 use Suhock\DependencyInjection\InstanceProvider\InstanceProviderInterface;
-use Suhock\DependencyInjection\InstanceProvider\IntrospectableInstanceProviderInterface;
-use Suhock\DependencyInjection\InstanceProvider\LeafSource;
-use Suhock\DependencyInjection\InstanceProvider\ReferenceSource;
 use Suhock\DependencyInjection\Key;
 use UnitEnum;
 
@@ -38,14 +35,13 @@ use function ksort;
  * that could affect the outcome.
  *
  * The digest is deliberately insensitive to anything the compiler that walks the dependency graph is insensitive to:
- * captured closure variables, provider internal state hidden behind an opaque (non-introspectable) provider, and
- * anything else the compiler never inspects.
+ * captured closure variables, held-instance state, and anything else the compiler never inspects.
  *
  * @internal
  */
 final class ConfigurationFingerprint
 {
-    private const SCHEMA_VERSION = 1;
+    private const SCHEMA_VERSION = 2;
 
     /**
      * Computes a stable digest of the given configuration, or <code>null</code> if the configuration cannot be
@@ -88,49 +84,29 @@ final class ConfigurationFingerprint
      */
     private static function providerShape(InstanceProviderInterface $provider): ?string
     {
-        if (!$provider instanceof IntrospectableInstanceProviderInterface) {
-            // Safe: a non-introspectable provider compiles to an edge-less opaque plan, so its internal state
-            // cannot change the validation verdict.
-            return 'opaque:' . get_class($provider);
-        }
-
-        return self::dependencySourceShape($provider->getDependencySource(), $provider);
-    }
-
-    /**
-     * @param InstanceProviderInterface<object> $provider
-     */
-    private static function dependencySourceShape(DependencySource $source, InstanceProviderInterface $provider): ?string
-    {
-        if ($source instanceof AutowireClassSource) {
-            if ($source->mutator === null) {
-                return 'autowire:' . $source->className . '-';
+        if ($provider instanceof ClassInstanceProvider) {
+            if ($provider->mutator === null) {
+                return 'autowire:' . $provider->className . '-';
             }
 
-            $signature = self::closureSignature($source->mutator);
+            $signature = self::closureSignature($provider->mutator);
 
-            return $signature === null ? null : 'autowire:' . $source->className . $signature;
+            return $signature === null ? null : 'autowire:' . $provider->className . $signature;
         }
 
-        if ($source instanceof CallableSource) {
-            $signature = self::closureSignature($source->callable);
+        if ($provider instanceof ClosureInstanceProvider) {
+            $signature = self::closureSignature($provider->factory);
 
-            return $signature === null
-                ? null
-                : 'callable:' . $source->declaredType . ':' . $source->skipLeadingParams . ':' . $signature;
+            return $signature === null ? null : 'callable:' . $provider->className . ':' . $signature;
         }
 
-        if ($source instanceof ReferenceSource) {
-            return 'reference:' . $source->targetId;
+        if ($provider instanceof ImplementationInstanceProvider) {
+            return 'reference:' . $provider->implementationClassName;
         }
 
-        if ($source instanceof LeafSource) {
-            return 'leaf:' . get_class($provider);
-        }
-
-        // An unknown future DependencySource is treated like an opaque provider: its shape is not understood, so it
-        // is trusted rather than inspected.
-        return 'opaque:' . get_class($provider);
+        // The remaining providers of the closed set — held instances and context selectors — contribute no edges,
+        // so their class name is their whole validation-relevant shape.
+        return 'leaf:' . get_class($provider);
     }
 
     /**

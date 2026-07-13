@@ -23,8 +23,6 @@ use Suhock\DependencyInjection\Fakes\FakeClassWithDependencies;
 use Suhock\DependencyInjection\Fakes\FakeClassWithStringDependency;
 use Suhock\DependencyInjection\Fakes\FakeConfigurator;
 use Suhock\DependencyInjection\Fakes\FakeUnitEnum;
-use Suhock\DependencyInjection\InstanceProvider\ObjectInstanceProvider;
-use Suhock\DependencyInjection\Lifetime\SingletonStrategy;
 use Suhock\DependencyInjection\Validation\ContainerValidationException;
 use Suhock\DependencyInjection\Validation\DependencyGraphEdge;
 use Suhock\DependencyInjection\Validation\ValidationIssue;
@@ -40,20 +38,6 @@ use function array_map;
  */
 final class ContainerBuilderTest extends AbstractDependencyInjectionTestCase
 {
-    public function testAdd_WithValidClass_ProductHasService(): void
-    {
-        // Arrange
-        $builder = self::createBuilder();
-        $lifetimeStrategy = new SingletonStrategy(FakeClassNoConstructor::class);
-        $instanceProvider = new ObjectInstanceProvider(FakeClassNoConstructor::class, new FakeClassNoConstructor());
-
-        // Act
-        $container = $builder->add(FakeClassNoConstructor::class, $lifetimeStrategy, $instanceProvider)->build();
-
-        // Assert
-        self::assertTrue($container->has(FakeClassNoConstructor::class));
-    }
-
     public function testAdd_WithDuplicateClass_ThrowsContainerException(): void
     {
         // Arrange

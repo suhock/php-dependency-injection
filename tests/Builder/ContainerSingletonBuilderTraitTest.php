@@ -17,7 +17,6 @@ use Suhock\DependencyInjection\Fakes\FakeBaseClass;
 use Suhock\DependencyInjection\Fakes\FakeClassExtendsBaseClass;
 use Suhock\DependencyInjection\Fakes\FakeClassNoConstructor;
 use Suhock\DependencyInjection\InstanceProvider\InstanceTypeException;
-use Suhock\DependencyInjection\InstanceProvider\ObjectInstanceProvider;
 
 /**
  * Test suite for {@see ContainerSingletonBuilderTrait}.
@@ -298,25 +297,6 @@ final class ContainerSingletonBuilderTraitTest extends AbstractDependencyInjecti
         self::assertSame($expectedInstance, $result);
     }
 
-    public function testAddKeyedSingletonInstanceProvider_WithProvider_GetByKeyReturnsInstanceFromProvider(): void
-    {
-        // Arrange
-        $expectedInstance = new FakeClassNoConstructor();
-        $container = self::createBuilder()
-            ->addKeyedSingletonInstanceProvider(
-                FakeClassNoConstructor::class,
-                'key1',
-                new ObjectInstanceProvider(FakeClassNoConstructor::class, $expectedInstance)
-            )
-            ->build();
-
-        // Act
-        $result = $container->get(FakeClassNoConstructor::class, 'key1');
-
-        // Assert
-        self::assertSame($expectedInstance, $result);
-        self::assertFalse($container->has(FakeClassNoConstructor::class));
-    }
 
     public function testAddKeyedSingletonClass_WithMutator_GetByKeyReturnsMutatedInstance(): void
     {

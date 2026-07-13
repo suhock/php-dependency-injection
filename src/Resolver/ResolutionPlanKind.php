@@ -27,9 +27,6 @@ enum ResolutionPlanKind
     /** Resolve the implementation target from the container. */
     case Implementation;
 
-    /** Ask the instance provider directly — an introspectable provider with no dependencies (e.g. a held instance). */
+    /** Ask the instance provider directly — a provider with no dependencies (a held instance or context selector). */
     case Leaf;
-
-    /** Ask the instance provider directly — a non-introspectable provider, trusted as-is. */
-    case Opaque;
 }

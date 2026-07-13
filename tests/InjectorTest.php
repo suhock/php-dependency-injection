@@ -37,12 +37,10 @@ use Suhock\DependencyInjection\Fakes\FakeInterfaceOne;
 use Suhock\DependencyInjection\Fakes\FakeInterfaceThree;
 use Suhock\DependencyInjection\Fakes\FakeInterfaceTwo;
 use Suhock\DependencyInjection\Injection\InjectAttributeMemberInjector;
-use Suhock\DependencyInjection\InstanceProvider\InstanceProviderInterface;
 use Suhock\DependencyInjection\Instantiation\ChainedInstantiationStrategy;
 use Suhock\DependencyInjection\Instantiation\InstantiationStrategyInterface;
 use Suhock\DependencyInjection\Instantiation\PostInstantiationHookInterface;
 use Suhock\DependencyInjection\Instantiation\ReflectionInstantiationStrategy;
-use Suhock\DependencyInjection\Lifetime\SingletonStrategy;
 use Suhock\DependencyInjection\Resolver\ContainerParameterResolver;
 use Suhock\DependencyInjection\Resolver\ParameterResolverInterface;
 use Suhock\DependencyInjection\Resolver\PropertyResolutionException;
@@ -54,16 +52,6 @@ use UnitEnum;
  */
 final class InjectorTest extends AbstractDependencyInjectionTestCase
 {
-    /**
-     * @param class-string $className
-     *
-     * @return SingletonStrategy<object>
-     */
-    private static function singletonStrategy(string $className): SingletonStrategy
-    {
-        return new SingletonStrategy($className);
-    }
-
     /**
      * @param array<callable> $classMapping
      *
@@ -778,21 +766,13 @@ final class InjectorTest extends AbstractDependencyInjectionTestCase
 
     public function testCall_WithParameterHavingCircularDependency_ThrowsParameterResolutionException(): void
     {
-        // Arrange: a self-referential factory is a cycle build-time validation proves and rejects, so an opaque
-        // custom provider (invisible to the validator) is used instead to hide the cycle until the injector actually
-        // resolves it.
-        $provider = new class () implements InstanceProviderInterface {
-            public function get(ResolutionContext $context): object
-            {
-                return $context->container->get(FakeClassNoConstructor::class);
-            }
-        };
-
+        // Arrange: a self-referential factory *parameter* is a cycle build-time validation proves and rejects, so
+        // the cycle hides in the factory body instead — invisible to the validator, caught by the runtime guard.
         $container = self::buildContainer(
-            static fn (ContainerBuilder $builder) => $builder->add(
+            static fn (ContainerBuilder $builder) => $builder->addSingletonFactory(
                 FakeClassNoConstructor::class,
-                self::singletonStrategy(FakeClassNoConstructor::class),
-                $provider
+                static fn (ContainerInterface $c): FakeClassNoConstructor =>
+                    $c->get(FakeClassNoConstructor::class)
             )
         );
 

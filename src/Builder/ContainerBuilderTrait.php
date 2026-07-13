@@ -53,7 +53,7 @@ trait ContainerBuilderTrait
      *
      * @return $this
      */
-    public function add(
+    private function add(
         string $className,
         LifetimeStrategy $lifetimeStrategy,
         InstanceProviderInterface $instanceProvider,
@@ -78,7 +78,7 @@ trait ContainerBuilderTrait
      *
      * @return $this
      */
-    public function addKeyed(
+    private function addKeyed(
         string $className,
         string|UnitEnum $key,
         LifetimeStrategy $lifetimeStrategy,

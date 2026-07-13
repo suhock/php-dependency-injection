@@ -14,8 +14,6 @@ namespace Suhock\DependencyInjection;
 use Suhock\DependencyInjection\Fakes\FakeDisposableClass;
 use Suhock\DependencyInjection\Fakes\FakeDisposableClassWithDependency;
 use Suhock\DependencyInjection\Fakes\FakeDisposalLog;
-use Suhock\DependencyInjection\InstanceProvider\ClassInstanceProvider;
-use Suhock\DependencyInjection\Lifetime\SingletonStrategy;
 
 /**
  * Test suite for {@see Container::dispose()} and container-owned disposal.
@@ -101,14 +99,13 @@ final class ContainerDisposeTest extends AbstractDependencyInjectionTestCase
     public function testDispose_WithShouldDisposeFalseSingleton_DoesNotDisposeInstance(): void
     {
         // Arrange
-        $container = self::buildContainer(
-            static fn (ContainerBuilder $builder) => $builder->add(
+        $container = self::buildRawContainer([
+            FakeDisposableClass::class => self::classDescriptor(
                 FakeDisposableClass::class,
-                new SingletonStrategy(FakeDisposableClass::class),
-                new ClassInstanceProvider(FakeDisposableClass::class),
+                'singleton',
                 shouldDispose: false
-            )
-        );
+            ),
+        ]);
         $instance = $container->get(FakeDisposableClass::class);
 
         // Act

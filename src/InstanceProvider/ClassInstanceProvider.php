@@ -20,10 +20,12 @@ use Suhock\DependencyInjection\ResolutionContext;
  *
  * @template TClass of object
  * @template-implements InstanceProviderInterface<TClass>
+ *
+ * @internal
  */
-final class ClassInstanceProvider implements InstanceProviderInterface, IntrospectableInstanceProviderInterface
+final class ClassInstanceProvider implements InstanceProviderInterface
 {
-    private readonly ?Closure $mutator;
+    public readonly ?Closure $mutator;
 
     /**
      * @param class-string<TClass> $className The name of the class this factory will instantiate
@@ -32,7 +34,7 @@ final class ClassInstanceProvider implements InstanceProviderInterface, Introspe
      * injected.
      */
     public function __construct(
-        private readonly string $className,
+        public readonly string $className,
         ?callable $mutator = null
     ) {
         $this->mutator = $mutator !== null ? $mutator(...) : null;
@@ -55,11 +57,4 @@ final class ClassInstanceProvider implements InstanceProviderInterface, Introspe
         return $instance;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getDependencySource(): DependencySource
-    {
-        return new AutowireClassSource($this->className, $this->mutator);
-    }
 }

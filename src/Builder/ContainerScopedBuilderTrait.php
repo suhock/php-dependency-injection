@@ -14,6 +14,7 @@ namespace Suhock\DependencyInjection\Builder;
 use Closure;
 use Suhock\DependencyInjection\InstanceProvider\InstanceProviderFactory;
 use Suhock\DependencyInjection\InstanceProvider\InstanceProviderInterface;
+use Suhock\DependencyInjection\Lifetime\LifetimeStrategy;
 use Suhock\DependencyInjection\Lifetime\ScopedStrategy;
 use UnitEnum;
 
@@ -23,6 +24,21 @@ use UnitEnum;
  */
 trait ContainerScopedBuilderTrait
 {
+    abstract private function add(
+        string $className,
+        LifetimeStrategy $lifetimeStrategy,
+        InstanceProviderInterface $instanceProvider,
+        bool $shouldDispose = true
+    ): static;
+
+    abstract private function addKeyed(
+        string $className,
+        string|UnitEnum $key,
+        LifetimeStrategy $lifetimeStrategy,
+        InstanceProviderInterface $instanceProvider,
+        bool $shouldDispose = true
+    ): static;
+
     /**
      * @template TClass of object
      * @template TImplementation of TClass
@@ -69,7 +85,7 @@ trait ContainerScopedBuilderTrait
      *
      * @return $this
      */
-    public function addScopedInstanceProvider(string $className, InstanceProviderInterface $instanceProvider): static
+    private function addScopedInstanceProvider(string $className, InstanceProviderInterface $instanceProvider): static
     {
         $this->add($className, new ScopedStrategy($className), $instanceProvider);
 
@@ -84,7 +100,7 @@ trait ContainerScopedBuilderTrait
      *
      * @return $this
      */
-    public function addKeyedScopedInstanceProvider(
+    private function addKeyedScopedInstanceProvider(
         string $className,
         string|UnitEnum $key,
         InstanceProviderInterface $instanceProvider

@@ -59,20 +59,6 @@ final class ContextInstanceProviderTest extends AbstractDependencyInjectionTestC
         );
     }
 
-    public function testGetDependencySource_ReturnsLeafSource(): void
-    {
-        // Arrange
-        $provider = new ContextInstanceProvider(
-            FakeBaseClass::class,
-            static fn (ResolutionContext $context) => new FakeBaseClass()
-        );
-
-        // Act
-        $source = $provider->getDependencySource();
-
-        // Assert
-        self::assertInstanceOf(LeafSource::class, $source);
-    }
 
     public function testGet_PassesGivenResolutionContextToSelector(): void
     {

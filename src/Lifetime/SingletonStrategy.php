@@ -20,6 +20,8 @@ use Suhock\DependencyInjection\ResolutionContext;
  *
  * @template TClass of object
  * @extends LifetimeStrategy<TClass>
+ *
+ * @internal
  */
 final class SingletonStrategy extends LifetimeStrategy
 {

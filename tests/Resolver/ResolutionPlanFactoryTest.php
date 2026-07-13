@@ -35,7 +35,6 @@ use Suhock\DependencyInjection\InstanceProvider\ImplementationInstanceProvider;
 use Suhock\DependencyInjection\InstanceProvider\InstanceProviderInterface;
 use Suhock\DependencyInjection\InstanceProvider\ObjectInstanceProvider;
 use Suhock\DependencyInjection\Lifetime\TransientStrategy;
-use Suhock\DependencyInjection\ResolutionContext;
 use Throwable;
 
 use function reset;
@@ -363,22 +362,6 @@ final class ResolutionPlanFactoryTest extends TestCase
         self::assertSame([], $plan->argumentEdges);
     }
 
-    public function testCompile_WithNonIntrospectableProvider_ProducesOpaquePlan(): void
-    {
-        $provider = new class () implements InstanceProviderInterface {
-            public function get(ResolutionContext $context): object
-            {
-                return new FakeClassNoConstructor();
-            }
-        };
-
-        $plan = self::compileSingle([
-            FakeClassNoConstructor::class => self::providerDescriptor(FakeClassNoConstructor::class, $provider),
-        ]);
-
-        self::assertSame(ResolutionPlanKind::Opaque, $plan->kind);
-        self::assertSame([], $plan->argumentEdges);
-    }
 
     public function testCompile_WithSameClassUnderMultipleIds_ProducesEquivalentPlans(): void
     {

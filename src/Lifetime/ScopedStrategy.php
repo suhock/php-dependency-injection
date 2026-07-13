@@ -21,6 +21,8 @@ use Suhock\DependencyInjection\ScopeException;
  *
  * @template TClass of object
  * @extends LifetimeStrategy<TClass>
+ *
+ * @internal
  */
 final class ScopedStrategy extends LifetimeStrategy
 {

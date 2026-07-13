@@ -12,8 +12,6 @@ declare(strict_types=1);
 namespace Suhock\DependencyInjection;
 
 use Suhock\DependencyInjection\Fakes\FakeClassNoConstructor;
-use Suhock\DependencyInjection\InstanceProvider\InstanceProviderInterface;
-use Suhock\DependencyInjection\Lifetime\SingletonStrategy;
 
 /**
  * Test suite for the built {@see Container}: resolution, keyed lookups, and the runtime backstops that survive
@@ -21,16 +19,6 @@ use Suhock\DependencyInjection\Lifetime\SingletonStrategy;
  */
 final class ContainerTest extends AbstractDependencyInjectionTestCase
 {
-    /**
-     * @param class-string $className
-     *
-     * @return SingletonStrategy<object>
-     */
-    private static function singletonStrategy(string $className): SingletonStrategy
-    {
-        return new SingletonStrategy($className);
-    }
-
     public function testGet_WhenClassNotInContainer_ThrowsClassNotFoundException(): void
     {
         // Arrange
@@ -43,22 +31,15 @@ final class ContainerTest extends AbstractDependencyInjectionTestCase
         self::assertThrowsClassNotFoundException(FakeClassNoConstructor::class, $fn);
     }
 
-    public function testGet_WhenOpaqueProviderReenters_ThrowsWrappedCircularDependencyException(): void
+    public function testGet_WhenFactoryBodyReenters_ThrowsWrappedCircularDependencyException(): void
     {
-        // Arrange: build-time validation cannot see through a custom provider, so the runtime $resolving guard is
-        // the backstop for cycles hidden inside one.
-        $provider = new class () implements InstanceProviderInterface {
-            public function get(ResolutionContext $context): object
-            {
-                return $context->container->get(FakeClassNoConstructor::class);
-            }
-        };
-
+        // Arrange: build-time validation cannot see inside a factory body, so the runtime $resolving guard is
+        // the backstop for a factory that resolves its own service.
         $container = self::buildContainer(
-            static fn (ContainerBuilder $builder) => $builder->add(
+            static fn (ContainerBuilder $builder) => $builder->addSingletonFactory(
                 FakeClassNoConstructor::class,
-                self::singletonStrategy(FakeClassNoConstructor::class),
-                $provider
+                static fn (ContainerInterface $c): FakeClassNoConstructor =>
+                    $c->get(FakeClassNoConstructor::class)
             )
         );
 

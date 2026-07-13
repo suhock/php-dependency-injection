@@ -11,9 +11,7 @@ declare(strict_types=1);
 
 namespace Suhock\DependencyInjection\Builder;
 
-use Closure;
 use Suhock\DependencyInjection\InstanceProvider\ImplementationException;
-use Suhock\DependencyInjection\InstanceProvider\InstanceProviderInterface;
 use UnitEnum;
 
 /**
@@ -21,85 +19,6 @@ use UnitEnum;
  */
 interface ContainerTransientBuilderInterface
 {
-    /**
-     * @template TClass of object
-     * @template TImplementation of TClass
-     *
-     * @param class-string<TClass> $className The fully qualified name of the class to add
-     * @param class-string<TImplementation>|Closure|null $source
-     * - If null, indicates that the container should provide an instance of the given class by autowiring its
-     *   constructor.
-     * - If a string, indicates that the container should provide an instance of the given class by retrieving an
-     *   instance of the specified implementation class from the container. The container must also specify how to
-     *   resolve the implementation class.
-     * - If a closure, indicates that the container should provide an instance of the given class by calling the
-     *   closure as a factory. Any closure parameters will be injected. To autowire the class and then mutate the
-     *   constructed instance, use {@see addTransientClass()} or {@see addKeyedTransientClass()} instead.
-     *
-     * Unlike {@see ContainerSingletonBuilderInterface::addSingleton()}, a pre-constructed object instance is not a valid
-     * source: a shared instance cannot have a transient lifetime, so only a closure factory (or an implementation class
-     * name) is accepted here.
-     *
-     * @return $this
-     */
-    public function addTransient(string $className, string|Closure|null $source = null): static;
-
-    /**
-     * @template TClass of object
-     * @template TImplementation of TClass
-     *
-     * @param class-string<TClass> $className The fully qualified name of the class to add
-     * @param string|UnitEnum $key The key to add the service under
-     * @param class-string<TImplementation>|Closure|null $source
-     * - If null, indicates that the container should provide an instance of the given class by autowiring its
-     *   constructor.
-     * - If a string, indicates that the container should provide an instance of the given class by retrieving an
-     *   instance of the specified implementation class from the container. The container must also specify how to
-     *   resolve the implementation class.
-     * - If a closure, indicates that the container should provide an instance of the given class by calling the
-     *   closure as a factory. Any closure parameters will be injected. To autowire the class and then mutate the
-     *   constructed instance, use {@see addTransientClass()} or {@see addKeyedTransientClass()} instead.
-     *
-     * Unlike {@see ContainerSingletonBuilderInterface::addKeyedSingleton()}, a pre-constructed object instance is not a
-     * valid source: a shared instance cannot have a transient lifetime, so only a closure factory (or an implementation
-     * class name) is accepted here.
-     *
-     * @return $this
-     */
-    public function addKeyedTransient(
-        string $className,
-        string|UnitEnum $key,
-        string|Closure|null $source = null
-    ): static;
-
-    /**
-     * @template TClass of object
-     *
-     * @param class-string<TClass> $className The fully qualified name of the class to add
-     * @param InstanceProviderInterface<TClass> $instanceProvider
-     *
-     * @return $this
-     */
-    public function addTransientInstanceProvider(
-        string $className,
-        InstanceProviderInterface $instanceProvider
-    ): static;
-
-    /**
-     * @template TClass of object
-     *
-     * @param class-string<TClass> $className The fully qualified name of the class to add
-     * @param string|UnitEnum $key The key to add the service under
-     * @param InstanceProviderInterface<TClass> $instanceProvider
-     *
-     * @return $this
-     */
-    public function addKeyedTransientInstanceProvider(
-        string $className,
-        string|UnitEnum $key,
-        InstanceProviderInterface $instanceProvider
-    ): static;
-
     /**
      * Indicates that the container should provide a transient instance of the given class by autowiring its
      * constructor. An optional mutator function can be specified to perform additional initialization on the

@@ -16,10 +16,9 @@ use ReflectionMethod;
 use ReflectionParameter;
 use ReflectionProperty;
 use Suhock\DependencyInjection\Descriptor\Descriptor;
-use Suhock\DependencyInjection\InstanceProvider\AutowireClassSource;
-use Suhock\DependencyInjection\InstanceProvider\CallableSource;
+use Suhock\DependencyInjection\InstanceProvider\ClassInstanceProvider;
+use Suhock\DependencyInjection\InstanceProvider\ClosureInstanceProvider;
 use Suhock\DependencyInjection\InstanceProvider\InstanceTypeException;
-use Suhock\DependencyInjection\InstanceProvider\IntrospectableInstanceProviderInterface;
 use Suhock\DependencyInjection\Lifetime\InstanceStore;
 use Suhock\DependencyInjection\Resolver\ParameterResolutionException;
 use Suhock\DependencyInjection\Resolver\PropertyResolutionException;
@@ -66,7 +65,7 @@ final class Container implements ContainerInterface, DisposableInterface, ScopeF
      * circular dependency. Shared by the container and all of its scopes, since one resolution chain may span several
      * resolution roots (a singleton's dependency graph always resolves in the root context, even when the singleton is
      * first requested from a scope). Build-time validation reports cycles it can prove; this guard backstops cycles
-     * through opaque custom providers.
+     * hidden inside factory bodies that resolve from the container.
      *
      * @var array<int, true>
      */
@@ -109,18 +108,9 @@ final class Container implements ContainerInterface, DisposableInterface, ScopeF
     {
         $provider = $descriptor?->instanceProvider;
 
-        if ($provider === null || !$provider instanceof IntrospectableInstanceProviderInterface) {
-            return null;
-        }
-
-        $source = match ($plan->kind) {
-            ResolutionPlanKind::AutowiredClass, ResolutionPlanKind::Factory => $provider->getDependencySource(),
-            default => null,
-        };
-
         return match (true) {
-            $source instanceof CallableSource => $source->callable,
-            $source instanceof AutowireClassSource => $source->mutator,
+            $provider instanceof ClosureInstanceProvider => $provider->factory,
+            $provider instanceof ClassInstanceProvider => $provider->mutator,
             default => null,
         };
     }
@@ -306,8 +296,7 @@ final class Container implements ContainerInterface, DisposableInterface, ScopeF
             ResolutionPlanKind::AutowiredClass => $this->executeAutowiredClass($id, $plan, $ctx),
             ResolutionPlanKind::Factory => $this->executeFactory($id, $plan, $ctx),
             ResolutionPlanKind::Implementation => $this->executeImplementation($plan, $ctx),
-            ResolutionPlanKind::Leaf,
-            ResolutionPlanKind::Opaque => $descriptor->instanceProvider->get($ctx),
+            ResolutionPlanKind::Leaf => $descriptor->instanceProvider->get($ctx),
         };
     }
 

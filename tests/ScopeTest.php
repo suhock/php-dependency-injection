@@ -17,9 +17,6 @@ use Suhock\DependencyInjection\Fakes\FakeClassWithConstructor;
 use Suhock\DependencyInjection\Fakes\FakeDisposableClass;
 use Suhock\DependencyInjection\Fakes\FakeDisposableClassWithDependency;
 use Suhock\DependencyInjection\Fakes\FakeDisposalLog;
-use Suhock\DependencyInjection\InstanceProvider\ClassInstanceProvider;
-use Suhock\DependencyInjection\InstanceProvider\InstanceProviderInterface;
-use Suhock\DependencyInjection\Lifetime\ScopedStrategy;
 use Suhock\DependencyInjection\Validation\ContainerValidationException;
 use Suhock\DependencyInjection\Validation\ValidationIssue;
 use Suhock\DependencyInjection\Validation\ValidationIssueKind;
@@ -362,24 +359,22 @@ final class ScopeTest extends AbstractDependencyInjectionTestCase
         // Arrange: scoped service depends on a singleton that depends back on the scoped service. Build-time
         // validation now rejects a singleton with a *visible* required dependency on a scoped service (captive
         // dependency, see testBuild_WithSingletonDependingOnScoped_ThrowsCaptiveDependencyValidationException()), so
-        // the singleton is added behind an opaque custom provider replicating its real constructor call — the same
-        // technique ContainerTest uses to hide an edge from validation and preserve a runtime-only backstop test. The
+        // the singleton's dependency hides in its factory body — the same technique ContainerTest uses to keep an
+        // edge invisible to validation and preserve a runtime-only backstop test. The
         // singleton's dependency graph still resolves in the root context, so the cycle must surface as a resolution
         // failure — a CircularDependencyException from the shared in-progress tracker, or a ScopeException from
         // re-entering the scoped service at the root — rather than recursing.
-        $singletonProvider = new class () implements InstanceProviderInterface {
-            public function get(ResolutionContext $context): object
-            {
-                return new FakeClassWithConstructor($context->container->get(FakeClassNoConstructor::class));
-            }
-        };
         $container = self::buildContainer(
             static fn (ContainerBuilder $builder) => $builder
                 ->addScopedFactory(
                     FakeClassNoConstructor::class,
                     fn (FakeClassWithConstructor $dependency) => new FakeClassNoConstructor()
                 )
-                ->addSingletonInstanceProvider(FakeClassWithConstructor::class, $singletonProvider)
+                ->addSingletonFactory(
+                    FakeClassWithConstructor::class,
+                    static fn (ContainerInterface $c): FakeClassWithConstructor =>
+                        new FakeClassWithConstructor($c->get(FakeClassNoConstructor::class))
+                )
         );
         $scope = $container->createScope();
 
@@ -489,14 +484,13 @@ final class ScopeTest extends AbstractDependencyInjectionTestCase
     public function testDispose_WithShouldDisposeFalseScopedService_DoesNotDisposeInstance(): void
     {
         // Arrange
-        $container = self::buildContainer(
-            static fn (ContainerBuilder $builder) => $builder->add(
+        $container = self::buildRawContainer([
+            FakeDisposableClass::class => self::classDescriptor(
                 FakeDisposableClass::class,
-                new ScopedStrategy(FakeDisposableClass::class),
-                new ClassInstanceProvider(FakeDisposableClass::class),
+                'scoped',
                 shouldDispose: false
-            )
-        );
+            ),
+        ]);
         $scope = $container->createScope();
         $instance = $scope->get(FakeDisposableClass::class);
 
