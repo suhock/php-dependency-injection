@@ -36,7 +36,6 @@ final class ResolvableDependencyFactory
     public static function createFromParameter(ReflectionParameter $rParam): ?ResolvableDependency
     {
         return self::createFromType(
-            $rParam->getName(),
             $rParam->getType(),
             self::keyFromAttributes($rParam->getAttributes(Key::class))
         );
@@ -47,22 +46,18 @@ final class ResolvableDependencyFactory
      * not resolvable from the container (untyped, builtin, or an unsupported composite such as a DNF whose members are
      * not plain named types).
      *
-     * @param string $name The name of the injection point, carried into the descriptor for diagnostics and overrides
      * @param ReflectionType|null $rType The declared type of the injection point
      * @param string|UnitEnum|null $key The key to resolve by, if any
      */
-    public static function createFromType(
-        string $name,
-        ?ReflectionType $rType,
-        string|UnitEnum|null $key
-    ): ?ResolvableDependency {
+    public static function createFromType(?ReflectionType $rType, string|UnitEnum|null $key): ?ResolvableDependency
+    {
         if ($rType === null) {
             return null;
         }
 
         $alternatives = self::alternativesFromType($rType);
 
-        return $alternatives === null ? null : new ResolvableDependency($name, $alternatives, $key);
+        return $alternatives === null ? null : new ResolvableDependency($alternatives, $key);
     }
 
     /**

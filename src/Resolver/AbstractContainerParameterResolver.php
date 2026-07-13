@@ -14,7 +14,6 @@ namespace Suhock\DependencyInjection\Resolver;
 use ReflectionParameter;
 use ReflectionProperty;
 use ReflectionType;
-use Suhock\DependencyInjection\ClassNotFoundException;
 use Suhock\DependencyInjection\ClassResolutionException;
 use Suhock\DependencyInjection\ContainerInterface;
 use UnitEnum;
@@ -30,25 +29,6 @@ abstract class AbstractContainerParameterResolver implements ParameterResolverIn
     public function __construct(
         private readonly ContainerInterface $container
     ) {
-    }
-
-    public function hasDependency(ResolvableDependency $dependency): bool
-    {
-        foreach ($dependency->alternatives as $alternative) {
-            foreach ($alternative as $className) {
-                if ($this->container->has($className, $dependency->key)) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
-
-    public function resolveDependency(ResolvableDependency $dependency): object
-    {
-        return $this->tryResolveDependency($dependency)
-            ?? throw new ClassNotFoundException($dependency->alternatives[0][0]);
     }
 
     /**
@@ -149,7 +129,7 @@ abstract class AbstractContainerParameterResolver implements ParameterResolverIn
     {
         $deferredException = null;
         $rType = $rProperty->getType();
-        $dependency = $this->describeFromType($rProperty->getName(), $rType, $key);
+        $dependency = $this->describeFromType($rType, $key);
 
         if ($dependency !== null) {
             try {
@@ -175,15 +155,11 @@ abstract class AbstractContainerParameterResolver implements ParameterResolverIn
      * not resolvable from the container (untyped, builtin, or an unsupported composite such as a DNF whose members are
      * not plain named types).
      *
-     * @param string $name The name of the injection point, carried into the descriptor for diagnostics and overrides
      * @param ReflectionType|null $rType The declared type of the injection point
      * @param string|UnitEnum|null $key The key to resolve by, if any
      */
-    protected function describeFromType(
-        string $name,
-        ?ReflectionType $rType,
-        string|UnitEnum|null $key
-    ): ?ResolvableDependency {
-        return ResolvableDependencyFactory::createFromType($name, $rType, $key);
+    protected function describeFromType(?ReflectionType $rType, string|UnitEnum|null $key): ?ResolvableDependency
+    {
+        return ResolvableDependencyFactory::createFromType($rType, $key);
     }
 }

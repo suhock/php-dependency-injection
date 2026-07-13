@@ -22,23 +22,8 @@ use Suhock\DependencyInjection\Key;
  *
  * @internal
  */
-final class ContainerParameterResolver extends AbstractContainerParameterResolver implements
-    TypeParameterResolverInterface
+final class ContainerParameterResolver extends AbstractContainerParameterResolver
 {
-    /**
-     * Directly resolvable when {@see resolveParameter()} would reduce to resolving the same candidate(s) the
-     * reflection path would, with no fallback. Nullable/defaulted parameters are excluded so the fallbacks in
-     * {@see AbstractContainerParameterResolver::resolveParameter()} still apply; otherwise the plan is identical.
-     */
-    public function getResolvableDependency(ReflectionParameter $rParam): ?ResolvableDependency
-    {
-        if ($rParam->allowsNull() || $rParam->isDefaultValueAvailable()) {
-            return null;
-        }
-
-        return $this->describeDependency($rParam);
-    }
-
     /**
      * Builds the resolution plan from the parameter's type, honoring any {@see Key} attribute.
      */

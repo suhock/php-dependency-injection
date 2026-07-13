@@ -67,7 +67,6 @@ final class ResolvableDependencyFactoryTest extends TestCase
 
         // Assert
         self::assertNotNull($dependency);
-        self::assertSame('namedParam', $dependency->name);
         self::assertSame([[FakeClassNoConstructor::class]], $dependency->alternatives);
         self::assertNull($dependency->key);
     }
@@ -180,7 +179,7 @@ final class ResolvableDependencyFactoryTest extends TestCase
     {
         // Arrange
         // Act
-        $dependency = ResolvableDependencyFactory::createFromType('name', null, null);
+        $dependency = ResolvableDependencyFactory::createFromType(null, null);
 
         // Assert
         self::assertNull($dependency);
@@ -193,7 +192,7 @@ final class ResolvableDependencyFactoryTest extends TestCase
         $rParam = $this->createParameter($this->fakeNamedParam(...), 'namedParam');
 
         // Act
-        $dependency = ResolvableDependencyFactory::createFromType($rParam->getName(), $rParam->getType(), 'explicitKey');
+        $dependency = ResolvableDependencyFactory::createFromType($rParam->getType(), 'explicitKey');
 
         // Assert
         self::assertNotNull($dependency);

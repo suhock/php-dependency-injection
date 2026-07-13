@@ -36,6 +36,7 @@ use Suhock\DependencyInjection\InstanceProvider\InstanceProviderInterface;
 use Suhock\DependencyInjection\InstanceProvider\ObjectInstanceProvider;
 use Suhock\DependencyInjection\Lifetime\TransientStrategy;
 use Throwable;
+
 use function reset;
 
 /**

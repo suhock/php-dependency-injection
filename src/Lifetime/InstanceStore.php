@@ -84,18 +84,6 @@ final class InstanceStore
         $this->disposables[$instance] ??= $this->nextSequence++;
     }
 
-
-    /**
-     * Discards all cached instances without disposing them. Instances recorded via {@see addDisposable()} remain
-     * eligible for disposal when the store is disposed.
-     *
-     * @internal
-     */
-    public function clear(): void
-    {
-        $this->instances = [];
-    }
-
     /**
      * Disposes every recorded disposable instance still alive, in reverse recording order so that dependents are
      * disposed before their dependencies, then discards all cached instances and records. If a

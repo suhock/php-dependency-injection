@@ -27,6 +27,7 @@ use Suhock\DependencyInjection\InjectorException;
 use Suhock\DependencyInjection\InstanceProvider\ClassInstanceProvider;
 use Suhock\DependencyInjection\InstanceProvider\ClosureInstanceProvider;
 use Suhock\DependencyInjection\InstanceProvider\ImplementationInstanceProvider;
+
 use function array_slice;
 use function class_exists;
 use function interface_exists;
@@ -248,7 +249,7 @@ final class ResolutionPlanFactory
 
         foreach ($injectionPlan->properties as $propertyName => $key) {
             $rType = (new ReflectionProperty($className, $propertyName))->getType();
-            $dependency = ResolvableDependencyFactory::createFromType($propertyName, $rType, $key);
+            $dependency = ResolvableDependencyFactory::createFromType($rType, $key);
 
             $parts['injectPropertyEdges'][$propertyName] = new ResolutionPlanEdge(
                 $propertyName,
