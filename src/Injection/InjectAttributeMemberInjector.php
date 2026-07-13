@@ -11,19 +11,14 @@ declare(strict_types=1);
 
 namespace Suhock\DependencyInjection\Injection;
 
-use ReflectionClass;
 use ReflectionMethod;
 use ReflectionProperty;
 use Suhock\DependencyInjection\Cache\CacheInterface;
 use Suhock\DependencyInjection\Cache\MetadataCache;
 use Suhock\DependencyInjection\Inject;
-use Suhock\DependencyInjection\InjectorException;
 use Suhock\DependencyInjection\Instantiation\PostInstantiationHookInterface;
-use Suhock\DependencyInjection\Key;
 use Suhock\DependencyInjection\Resolver\ArgumentResolver;
 use Suhock\DependencyInjection\Resolver\ParameterResolverInterface;
-
-use function count;
 
 /**
  * Post-instantiation hook that fills the {@see Inject} injection points on a new instance — invoking its Inject methods
@@ -40,6 +35,8 @@ final class InjectAttributeMemberInjector implements PostInstantiationHookInterf
 
     private readonly ArgumentResolver $argumentResolver;
 
+    private readonly InjectionPlanFactory $planFactory;
+
     /**
      * @param ParameterResolverInterface $resolver The resolver to use for resolving injection point values
      * @param CacheInterface|null $sharedCache [optional] Optional shared (L2) metadata cache for the reflected
@@ -51,6 +48,7 @@ final class InjectAttributeMemberInjector implements PostInstantiationHookInterf
     ) {
         $this->cache = new MetadataCache($sharedCache);
         $this->argumentResolver = new ArgumentResolver($resolver);
+        $this->planFactory = new InjectionPlanFactory();
     }
 
     public function postInstantiate(object $instance): void
@@ -80,53 +78,7 @@ final class InjectAttributeMemberInjector implements PostInstantiationHookInterf
     {
         return $this->cache->get(
             self::INJECTION_PLAN_CACHE_PREFIX . $className,
-            static function () use ($className) {
-                $class = new ReflectionClass($className);
-                $methods = [];
-                $properties = [];
-
-                foreach ($class->getMethods() as $rMethod) {
-                    if (count($rMethod->getAttributes(Inject::class)) === 0) {
-                        continue;
-                    }
-
-                    if ($rMethod->isStatic()) {
-                        throw new InjectorException(
-                            "Method $className::" . $rMethod->getName() .
-                                '() is static and cannot be an #[Inject] method; injection happens per instance'
-                        );
-                    }
-
-                    $methods[] = $rMethod->getName();
-                }
-
-                foreach ($class->getProperties() as $rProperty) {
-                    // A promoted property is constructor-injected; a Key on it qualifies the constructor parameter.
-                    if ($rProperty->isPromoted()) {
-                        continue;
-                    }
-
-                    $rKeyAttributes = $rProperty->getAttributes(Key::class);
-
-                    if (count($rProperty->getAttributes(Inject::class)) === 0) {
-                        if (count($rKeyAttributes) > 0) {
-                            throw new InjectorException(
-                                "Property $className::\$" . $rProperty->getName() .
-                                    ' has a #[Key] attribute but no #[Inject]; a key alone does not mark a property' .
-                                    ' for injection'
-                            );
-                        }
-
-                        continue;
-                    }
-
-                    $properties[$rProperty->getName()] = count($rKeyAttributes) > 0 ?
-                        $rKeyAttributes[0]->newInstance()->getKey() :
-                        null;
-                }
-
-                return new InjectionPlan($methods, $properties);
-            }
+            fn () => $this->planFactory->create($className)
         );
     }
 }

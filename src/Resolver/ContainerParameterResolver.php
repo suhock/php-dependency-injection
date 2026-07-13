@@ -11,13 +11,9 @@ declare(strict_types=1);
 
 namespace Suhock\DependencyInjection\Resolver;
 
-use ReflectionAttribute;
 use ReflectionParameter;
 use Suhock\DependencyInjection\ContainerInterface;
 use Suhock\DependencyInjection\Key;
-use UnitEnum;
-
-use function count;
 
 /**
  * Resolves function parameters using a {@see ContainerInterface}, honoring the {@see Key} attribute on a parameter. A
@@ -48,27 +44,6 @@ final class ContainerParameterResolver extends AbstractContainerParameterResolve
      */
     protected function describeDependency(ReflectionParameter $rParam): ?ResolvableDependency
     {
-        return $this->describeFromType(
-            $rParam->getName(),
-            $rParam->getType(),
-            $this->keyFromAttributes($rParam->getAttributes(Key::class))
-        );
-    }
-
-    /**
-     * @param array<ReflectionAttribute<Key>> $rAttributes
-     */
-    private function keyFromAttributes(array $rAttributes): string|UnitEnum|null
-    {
-        foreach ($rAttributes as $rAttribute) {
-            /** @var list<string|UnitEnum> $args */
-            $args = $rAttribute->getArguments();
-
-            if (count($args) > 0) {
-                return $args[0];
-            }
-        }
-
-        return null;
+        return $this->describer->describeParameter($rParam);
     }
 }
