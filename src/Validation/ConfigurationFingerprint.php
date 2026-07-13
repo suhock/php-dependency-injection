@@ -21,7 +21,6 @@ use Suhock\DependencyInjection\InstanceProvider\ImplementationInstanceProvider;
 use Suhock\DependencyInjection\InstanceProvider\InstanceProviderInterface;
 use Suhock\DependencyInjection\Key;
 use UnitEnum;
-
 use function get_class;
 use function hash_final;
 use function hash_init;
@@ -104,7 +103,7 @@ final class ConfigurationFingerprint
             return 'reference:' . $provider->implementationClassName;
         }
 
-        // The remaining providers of the closed set — held instances and context selectors — contribute no edges,
+        // The remaining providers of the closed set (held instances and context selectors) contribute no edges,
         // so their class name is their whole validation-relevant shape.
         return 'leaf:' . get_class($provider);
     }

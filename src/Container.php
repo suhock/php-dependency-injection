@@ -27,7 +27,6 @@ use Suhock\DependencyInjection\Resolver\ResolutionPlanEdge;
 use Suhock\DependencyInjection\Resolver\ResolutionPlanKind;
 use Throwable;
 use UnitEnum;
-
 use function spl_object_id;
 
 /**
@@ -133,8 +132,8 @@ final class Container implements ContainerInterface, DisposableInterface, ScopeF
     }
 
     /**
-     * Disposes the container. Container-owned disposable singletons — and any container-owned disposable transients
-     * still referenced that were resolved directly from the container — are disposed in reverse creation order
+     * Disposes the container. Container-owned disposable singletons (and any container-owned disposable transients
+     * still referenced that were resolved directly from the container) are disposed in reverse creation order
      * (dependents before their dependencies). Any subsequent request to the container ({@see get()}, {@see has()},
      * {@see createScope()}) throws a {@see ContainerException}. Disposing an already disposed container has no effect.
      *
@@ -254,8 +253,8 @@ final class Container implements ContainerInterface, DisposableInterface, ScopeF
             /** @var TClass */
             return $descriptor->lifetimeStrategy->get(
                 $context,
-                // Plan execution produces an instance of the descriptor's class — by construction for autowired
-                // classes, by instanceof guard for factories and held instances — but the generic cannot flow
+                // Plan execution produces an instance of the descriptor's class (by construction for autowired
+                // classes, by instanceof guard for factories and held instances), but the generic cannot flow
                 // through the compiled plan.
                 // @phpstan-ignore argument.type (executed plan yields the descriptor's TClass)
                 function (ResolutionContext $ctx) use ($id, $descriptor): object {

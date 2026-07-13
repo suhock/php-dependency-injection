@@ -16,7 +16,7 @@ use ReflectionProperty;
 use UnitEnum;
 
 /**
- * Provides methods for resolving injection points — function parameters and injected properties — to concrete values.
+ * Provides methods for resolving injection points (function parameters and injected properties) to concrete values.
  */
 interface ParameterResolverInterface
 {

@@ -91,10 +91,11 @@ enables persistent caching of reflected metadata; see
 
 ## Basic Usage
 
-`ContainerBuilder` carries the whole configuration surface — every `add*`
-method, `remove()`, and `configure()` — and its `build()` method compiles that
-configuration into an immutable `Container` exposing only `get()`, `has()`,
-`createScope()`, and `dispose()`. Start by constructing a builder.
+The `ContainerBuilder` class contains the methods for configuring the
+container: the `add*` methods, `remove()`, and `configure()`. Its `build()`
+method compiles that configuration into an immutable `Container`, which
+provides `get()`, `has()`, `createScope()`, and `dispose()`. Start by
+constructing a builder.
 
 ```php
 use Suhock\DependencyInjection\ContainerBuilder;
@@ -102,7 +103,7 @@ use Suhock\DependencyInjection\ContainerBuilder;
 $builder = ContainerBuilder::createDefault();
 ```
 
-Next, configure the builder, i.e., tell it how it should resolve specific
+Next, configure the builder: tell it how it should resolve specific
 services in your application.
 
 ```php
@@ -157,7 +158,7 @@ If your application has other entry points (e.g. controllers), it might be
 useful to inject the container into the part of your application that invokes
 those entry points (e.g. a router). There is nothing to add for this:
 `ContainerInterface` auto-binds to the current resolution root, so a router
-resolved from the container receives the container itself — see
+resolved from the container receives the container itself. See
 [Scopes](#scopes) for the full auto-binding rules, including what a router
 resolved from a scope receives instead.
 
@@ -181,10 +182,9 @@ class MyRouter
 ### Building the container
 
 `ContainerBuilder::build(): Container` compiles the configured dependency
-graph into a per-service resolution plan, validates the whole thing, and
-returns an immutable `Container`. There is no opt-out: every service you add
-must be resolvable, and a configuration defect is a build error rather than a
-surprise at some later `get()` call.
+graph, validates it, and returns an immutable `Container`. Every service you
+add must be resolvable. If the configuration has a defect, `build()` reports
+it as an error rather than waiting until you request the service.
 
 ```php
 $container = $builder->build();
@@ -231,12 +231,13 @@ independent `Container`.
 
 #### Build performance
 
-Without a cache, `build()` fully recompiles and revalidates the graph every
-time it is called — inexpensive for most applications, but on a per-request
-lifecycle (e.g. PHP-FPM) that cost is paid on every request. Supplying a
-`CacheInterface` (e.g. `ApcuCache`) lets `build()` store the validated plan set
-under a fingerprint of the configuration; rebuilding an unchanged configuration
-loads the stored plans and skips compilation and validation entirely:
+Without a cache, `build()` recompiles and revalidates the whole graph every
+time it is called. That is inexpensive for most applications, but on a
+per-request lifecycle such as PHP-FPM you pay that cost on every request.
+Supplying a `CacheInterface` (e.g. `ApcuCache`) lets `build()` store the
+validated plans under a fingerprint of the configuration; rebuilding an
+unchanged configuration loads the stored plans and skips compilation and
+validation entirely:
 
 ```php
 use Suhock\DependencyInjection\Cache\ApcuCache;
@@ -247,14 +248,13 @@ $container = ContainerBuilder::createDefault(new ApcuCache())
     ->build();
 ```
 
-With APCu, that reduces a per-request `build()` to roughly a hash and a cache
-lookup after the first request following a deploy; the first build (and any
-build after a configuration change) still pays full compilation and
-validation. A worker-mode runtime that builds once at boot — see
-[FrankenPHP worker mode](#example-frankenphp-worker-mode) — pays that full
-cost exactly once regardless of caching. See
-[Caching reflected metadata](#caching-reflected-metadata) for the same cache
-also memoizing the reflected metadata used by the injector.
+With APCu, each later `build()` of an unchanged configuration costs little more
+than a hash and a cache lookup; the first build after a deploy or a
+configuration change still pays for full compilation and validation. A
+worker-mode runtime that builds once at boot (see
+[FrankenPHP worker mode](#example-frankenphp-worker-mode)) pays that cost once
+regardless of caching. The same cache also memoizes the reflected metadata used
+by the injector; see [Caching reflected metadata](#caching-reflected-metadata).
 
 #### Graph diagnostics
 
@@ -266,7 +266,7 @@ injection point each edge flows through and whether it is required.
 ```php
 $graph = $builder->exportDependencyGraph();
 
-// The graph roots — services nothing injects — are the ids no edge targets.
+// The graph roots (services nothing injects) are the ids no edge targets.
 // They are typically the entry points your application resolves itself.
 $targets = array_map(fn ($edge) => $edge->targetId, $graph->edges);
 $roots = array_diff($graph->serviceIds, $targets);
@@ -277,12 +277,11 @@ foreach ($graph->edges as $edge) {
 }
 ```
 
-The export mirrors what resolution would actually traverse: unsatisfiable
-injection points produce no edge (they are [validation](#building-the-container)'s
-domain), an added-but-never-chosen union member receives no incoming edge, and
-dependencies hidden inside factory bodies are invisible.
-`exportDependencyGraph()` never throws — a configuration that would fail
-`build()` still exports.
+The export mirrors what resolution would actually traverse. Unsatisfiable
+injection points produce no edge (validation reports those); an
+added-but-never-chosen union member gets no incoming edge; and dependencies
+hidden inside factory bodies do not appear. `exportDependencyGraph()` never
+throws, so a configuration that would fail `build()` still exports.
 
 ### Instance lifetime
 
@@ -296,7 +295,7 @@ Singleton instances are persisted for the lifetime of the container. When the
 container receives a request for a singleton instance for the first time, it
 will call the factory that you specified for that class, store the result, and
 then return it. Any time the container receives a subsequent request for that
-class — directly or through any [scope](#scopes) — it will return that same
+class, directly or through any [scope](#scopes), it will return that same
 instance. The default `ContainerBuilder` provides convenience methods for
 adding singleton factories, all starting with the prefix `addSingleton`.
 
@@ -306,8 +305,8 @@ Scoped instances are persisted for the lifetime of a [scope](#scopes) created
 by `Container::createScope()`. Each scope receives its own instance the first
 time it requests the class, and that instance's dependencies are resolved from
 the scope, so scoped services can depend on other scoped services. Requesting a
-scoped instance with no scope active — directly from the root container, or
-from a singleton's dependency graph, which always resolves against the root —
+scoped instance with no scope active (directly from the root container, or
+from a singleton's dependency graph, which always resolves against the root)
 throws a `ScopeException`. The default `ContainerBuilder` provides convenience
 methods for adding scoped factories, all starting with the prefix `addScoped`.
 
@@ -321,9 +320,10 @@ adding transient factories, all starting with the prefix `addTransient`.
 
 ### Scopes
 
-A scope represents a bounded unit of work — an HTTP request in a long-running
-application server, a message pulled off a queue, a job in a worker. Build the
-container once, then create a scope with `Container::createScope()`, resolve
+A scope represents a bounded unit of work, such as an HTTP request in a
+long-running application server, a message pulled off a queue, or a job in a
+worker. Build the container once, then create a scope with
+`Container::createScope()`, resolve
 services from it as you would from the container, and dispose it when the
 unit of work ends:
 
@@ -354,15 +354,13 @@ instance per scope, and every dependency in their graph is resolved from the
 scope, so transient services requested from a scope also receive the scope's
 scoped instances. Singleton services resolve to the same instance no matter
 which scope requests them, and their dependencies always resolve against the
-root container — so a singleton that depends on a scoped service fails with a
-`ScopeException` instead of silently capturing one scope's instance.
-[Build validation](#building-the-container) catches the common shape of this
-mistake earlier, when the scoped service is reachable through required edges
-alone: a singleton that requires a scoped service is a captive-dependency
-build error, not a runtime surprise. A `get()` call made directly against a
-scoped service with no scope active — for example from inside a factory body
-— is a call-pattern error validation cannot see, and still throws
-`ScopeException` at run time.
+root container. A singleton that depends on a scoped service therefore fails
+with a `ScopeException` instead of capturing one scope's instance. When the
+scoped service is required (reachable through required edges alone),
+[build validation](#building-the-container) catches this as a
+captive-dependency error before you ever call `get()`. A scoped service
+requested with no active scope (for example from inside a factory body) is
+something validation cannot predict, so it throws `ScopeException` at run time.
 
 `dispose()` releases the scope's cached instances; any further request to the
 scope throws a `ScopeException`. Disposing a scope more than once has no
@@ -412,14 +410,12 @@ final class QueueWorker
 #### Example: FrankenPHP worker mode
 
 Application servers such as [FrankenPHP](https://frankenphp.dev/docs/worker/)
-keep the PHP process alive across many requests: the application — including
-the container and its singletons — boots once, and each incoming request is
+keep the PHP process alive across many requests: the application (including
+the container and its singletons) boots once, and each incoming request is
 handled by a callback. Without the per-request teardown that PHP-FPM provided,
 any request-specific state held by a long-lived service silently leaks into
 subsequent requests. Creating a scope per request restores that isolation:
-scoped services live exactly as long as the request, and a singleton that
-tries to depend on one fails with a `ScopeException` instead of capturing the
-first request's instance.
+scoped services live exactly as long as the request.
 
 ```php
 <?php
@@ -463,17 +459,17 @@ frankenphp php-server --worker public/worker.php
 
 Every `RequestHandler` and any service in its dependency graph receives the
 current request's `RequestContext`; when `dispose()` runs, the scope's cached
-instances are released — and any that implement
+instances are released (and any that implement
 [`DisposableInterface`](#disposing-services) have their `dispose()` method
-called — so nothing carries over into the next iteration of the loop. The same
-pattern applies to any long-running runtime — a RoadRunner or Swoole worker, a
-queue consumer, or a daemon — with the runtime's own receive loop in place of
+called), so nothing carries over into the next iteration of the loop. The same
+pattern applies to any long-running runtime (a RoadRunner or Swoole worker, a
+queue consumer, or a daemon), with the runtime's own receive loop in place of
 `frankenphp_handle_request()`.
 
 ### Disposing services
 
-A service that holds a resource — a database transaction, an open file, a
-socket — often needs to release it deterministically when its lifetime ends,
+A service that holds a resource (a database transaction, an open file, a
+socket) often needs to release it deterministically when its lifetime ends,
 rather than waiting for garbage collection. A service can implement
 `DisposableInterface` to be notified:
 
@@ -493,13 +489,11 @@ final class UnitOfWork implements DisposableInterface
 }
 ```
 
-When a resolution root — the container or a scope — is disposed, it calls
+When a resolution root (the container or a scope) is disposed, it calls
 `dispose()` on the disposable services **it created**, in reverse creation
 order so that dependents are disposed before their dependencies. `build()`
-itself constructs nothing — compiling and validating the graph never calls a
-constructor, factory, or provider — so disposal counts and ordering are
-governed entirely by what your application actually resolves at run time,
-exactly as before the builder/product split:
+itself constructs nothing, so only the services your application actually
+resolves are ever disposed:
 
 ```php
 use Suhock\DependencyInjection\ContainerBuilder;
@@ -540,10 +534,10 @@ once has no effect.
 
 By default the built container disposes every disposable instance it holds,
 including one you supply yourself with `addSingletonInstance()` on the
-builder — registering an instance hands its disposal to the container along
+builder; registering an instance hands its disposal to the container along
 with the rest of its lifecycle. When an instance's disposal is the
-responsibility of something outside the container — for example a resource
-shared with code beyond it, or borrowed from an external registry — pass
+responsibility of something outside the container (for example a resource
+shared with code beyond it, or borrowed from an external registry), pass
 `shouldDispose: false`:
 
 ```php
@@ -552,8 +546,8 @@ $builder->addSingletonInstance(ConnectionPool::class, $pool, shouldDispose: fals
 ```
 
 `shouldDispose` is available on `addSingletonInstance()` and
-`addKeyedSingletonInstance()` — the only two `ContainerBuilder` methods that
-register an already-constructed instance — and defaults to `true`.
+`addKeyedSingletonInstance()` (the only two `ContainerBuilder` methods that
+register an already-constructed instance) and defaults to `true`.
 
 #### Lifetime and ordering guarantees
 
@@ -567,8 +561,8 @@ register an already-constructed instance — and defaults to `true`.
  - Disposal proceeds in **reverse creation order**. This relies on
    dependencies being constructed before their dependents, which holds for
    constructor, `Inject`-attribute, and mutator injection. A service that
-   resolves further dependencies lazily — for example by holding the container
-   or a `ScopeFactoryInterface` and calling `get()` after construction — can
+   resolves further dependencies lazily (for example by holding the container
+   or a `ScopeFactoryInterface` and calling `get()` after construction) can
    invert that order for the pair involved.
  - If a `dispose()` call throws, the remaining instances are still disposed and
    the first exception is rethrown once the sweep completes.
@@ -579,7 +573,7 @@ before disposing the container so that their scoped instances are swept.
 ### Adding services to the container
 
 There are a number of built-in ways to specify how new instances should be
-created. All of them live on `ContainerBuilder` — configure the builder with
+created. All of them live on `ContainerBuilder`: configure the builder with
 them, then call `build()` (see
 [Building the container](#building-the-container)) before resolving anything.
 
@@ -747,12 +741,7 @@ $container = $builder->build();
 #### Call a factory method
 
 The container will provide class instances by requesting them from a factory
-method. Any parameters in the factory method will be injected. A factory also
-covers cases that might otherwise call for a hand-rolled provider — pulling an
-instance from a pool, or deferring expensive construction until first use —
-while keeping every dependency the factory declares visible to
-[build validation](#building-the-container); only what happens inside the
-factory body itself is opaque to it.
+method. Any parameters in the factory method will be injected.
 
 ```php
 class ContainerBuilder
@@ -1175,9 +1164,9 @@ try {
 }
 ```
 
-These exceptions all extend `RuntimeException`: they signal a misconfigured or
-misused container — a consumer error surfaced at build time or at run time —
-rather than a violated internal invariant.
+These exceptions all extend `RuntimeException`: they signal a container that
+was misconfigured or misused, whether the problem shows up at build time or at
+run time, not a bug inside the library itself.
 
 The base class is `DependencyInjectionException`. Notable subclasses include:
 
@@ -1188,10 +1177,10 @@ The base class is `DependencyInjectionException`. Notable subclasses include:
    list, this is a build-time error: fix the builder's configuration and call
    `build()` again.
  - `ClassNotFoundException` — no service is registered for the requested class.
- - `CircularDependencyException` — a dependency cycle was detected; for cycles
-   through ordinary descriptors this is now caught at build time as a
-   `ContainerValidationException` instead, so this exception at run time means
-   the cycle passed through a factory body.
+ - `CircularDependencyException` — a dependency cycle was detected. Cycles
+   through ordinary descriptors are caught at build time as a
+   `ContainerValidationException`, so this exception at run time means the
+   cycle passed through a factory body.
  - `ScopeException` — a scoped service was requested with no active scope, or a
    disposed scope was used.
  - `ImplementationException` — a mapped implementation is not a subtype of the
@@ -1222,7 +1211,7 @@ Injector::createDefault(ContainerInterface $container, ?CacheInterface $cache = 
 
 The same `CacheInterface` instance backs two independent things: the reflected
 metadata memoized here, and `build()`'s compiled-graph reuse described in
-[Build performance](#build-performance) — supplying one cache to
+[Build performance](#build-performance); supplying one cache to
 `ContainerBuilder::createDefault()` gets you both.
 
 `Suhock\DependencyInjection\Cache\CacheInterface` is a minimal key/value store
@@ -1244,8 +1233,8 @@ reference. Reporting presence through the return value means a stored `null` or
 `Suhock\DependencyInjection\Cache\ApcuCache` implements `CacheInterface` using
 the APCu extension. Its entries live in shared memory and persist across
 requests served by the same worker pool. The constructor throws a
-`RuntimeException` if the `apcu` extension is not loaded and enabled — on the
-CLI, `apc.enable_cli` must be set — and it requires the optional `ext-apcu`
+`RuntimeException` if the `apcu` extension is not loaded and enabled (on the
+CLI, `apc.enable_cli` must be set), and it requires the optional `ext-apcu`
 extension.
 
 ```php
@@ -1266,10 +1255,10 @@ The previous example resembles a service locator pattern. Please note that while
 the `Container` class is functionally equivalent to a service locator, it is
 usually best to avoid the service locator pattern, since it makes testing,
 refactoring, and reasoning about your application more difficult. Note also
-that nothing had to be added to the builder to make the container available
-that way: as covered in [Auto-binding](#auto-binding), `ContainerInterface`
-resolves to the current resolution root automatically, which is exactly what
-makes the pattern easy to reach for and worth avoiding deliberately.
+that you do not need to add anything to the builder to make the container
+available this way: as covered in [Auto-binding](#auto-binding),
+`ContainerInterface` resolves to the current resolution root automatically.
+That makes the pattern convenient, but it is still best avoided.
 
 Only places in your application that invoke entry points should directly use the
 container. If you know the specific object type required before runtime, you
@@ -1366,18 +1355,6 @@ function getAppContainer(): Container
 
 ### PSR-11 compatibility
 
-This library defines its own `ContainerInterface` with a typed, optionally keyed
-`get()` method:
-
-```php
-public function get(string $className, string|UnitEnum|null $key = null): object;
-```
-
-This signature is intentionally not compatible with
-`Psr\Container\ContainerInterface::get(string $id)`, so the library does not
-depend on `psr/container`.
-
-For frameworks that expect a PSR-11 container, a thin adapter — one that
-implements `Psr\Container\ContainerInterface` by delegating to this container —
-can be layered on top in a separate package, keeping the core library
-dependency-free.
+For frameworks that expect a PSR-11 container, a thin adapter implementing
+`Psr\Container\ContainerInterface` and delegating to this library's `Container`
+can be provided instead.

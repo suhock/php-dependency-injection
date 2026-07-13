@@ -27,14 +27,13 @@ use Suhock\DependencyInjection\InjectorException;
 use Suhock\DependencyInjection\InstanceProvider\ClassInstanceProvider;
 use Suhock\DependencyInjection\InstanceProvider\ClosureInstanceProvider;
 use Suhock\DependencyInjection\InstanceProvider\ImplementationInstanceProvider;
-
 use function array_slice;
 use function class_exists;
 use function interface_exists;
 
 /**
- * Compiles a set of service descriptors into {@see ResolutionPlan}s — how each service's instance is produced, the
- * dependency edges resolution will satisfy, and the guaranteed-failure defects — from reflection and the closed set
+ * Compiles a set of service descriptors into {@see ResolutionPlan}s (how each service's instance is produced, the
+ * dependency edges resolution will satisfy, and the guaranteed-failure defects) from reflection and the closed set
  * of instance providers, without instantiating anything.
  *
  * #[Inject] member plans are fetched through a {@see MetadataCache} under the same key prefix the runtime member
@@ -112,7 +111,7 @@ final class ResolutionPlanFactory
             );
         }
 
-        // The remaining providers of the closed set — held instances and context selectors — have no dependencies.
+        // The remaining providers of the closed set (held instances and context selectors) have no dependencies.
         return new ResolutionPlan($descriptor->className, ResolutionPlanKind::Leaf);
     }
 
@@ -166,8 +165,8 @@ final class ResolutionPlanFactory
     }
 
     /**
-     * The class-derived parts of an autowired plan — constructor and #[Inject] member edges plus guaranteed-failure
-     * defects — independent of the descriptor's mutator.
+     * The class-derived parts of an autowired plan (constructor and #[Inject] member edges plus guaranteed-failure
+     * defects), independent of the descriptor's mutator.
      *
      * @param class-string $className
      *

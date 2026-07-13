@@ -24,10 +24,10 @@ use Suhock\DependencyInjection\Resolver\ParameterResolverInterface;
 
 /**
  * Default implementation for {@see InjectorInterface} that resolves missing parameter values using a
- * {@see ParameterResolverInterface}. Instantiation is delegated to an {@see InstantiationStrategyInterface} — by
- * default a {@see ReflectionInstantiationStrategy} — and the new instance is then passed to a
- * {@see PostInstantiationHookInterface} — by default an {@see InjectAttributeMemberInjector} that fills its
- * {@see Inject} members. A {@see ChainedInstantiationStrategy} and {@see InstantiationStrategyInterface} remain
+ * {@see ParameterResolverInterface}. Instantiation is delegated to an {@see InstantiationStrategyInterface} (by
+ * default a {@see ReflectionInstantiationStrategy}), and the new instance is then passed to a
+ * {@see PostInstantiationHookInterface} (by default an {@see InjectAttributeMemberInjector} that fills its
+ * {@see Inject} members). A {@see ChainedInstantiationStrategy} and {@see InstantiationStrategyInterface} remain
  * available for callers who need to compose or supply a custom strategy.
  */
 final class Injector implements InjectorInterface

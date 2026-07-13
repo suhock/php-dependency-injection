@@ -19,8 +19,8 @@ namespace Suhock\DependencyInjection;
 interface ScopeInterface extends ContainerInterface, DisposableInterface
 {
     /**
-     * Ends the scope. Container-owned disposable instances cached by the scope are disposed — dependents before their
-     * dependencies — and all cached instances are released. Any further request to the scope throws a
+     * Ends the scope. Container-owned disposable instances cached by the scope are disposed, dependents before their
+     * dependencies, and all cached instances are released. Any further request to the scope throws a
      * {@see ScopeException}. Disposing an already disposed scope has no effect.
      */
     public function dispose(): void;

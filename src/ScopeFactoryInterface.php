@@ -12,8 +12,8 @@ declare(strict_types=1);
 namespace Suhock\DependencyInjection;
 
 /**
- * Interface for classes that create scopes. Services that need to open scopes of their own — a queue worker creating a
- * scope per message, for example — should depend on this interface rather than on the container itself.
+ * Interface for classes that create scopes. Services that need to open scopes of their own (a queue worker creating a
+ * scope per message, for example) should depend on this interface rather than on the container itself.
  */
 interface ScopeFactoryInterface
 {

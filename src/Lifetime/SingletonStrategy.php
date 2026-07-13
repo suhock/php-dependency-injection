@@ -14,8 +14,8 @@ namespace Suhock\DependencyInjection\Lifetime;
 use Suhock\DependencyInjection\ResolutionContext;
 
 /**
- * Manages the lifetime of a singleton object: one instance per root container, created on first request — from the root
- * or from any of its scopes — and reused for the root's lifetime. The instance is created in the root container's
+ * Manages the lifetime of a singleton object: one instance per root container, created on first request (from the root
+ * or from any of its scopes) and reused for the root's lifetime. The instance is created in the root container's
  * context, so its dependencies never come from a shorter-lived scope.
  *
  * @template TClass of object

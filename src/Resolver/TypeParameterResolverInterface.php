@@ -22,8 +22,8 @@ use Suhock\DependencyInjection\ClassResolutionException;
 interface TypeParameterResolverInterface extends ParameterResolverInterface
 {
     /**
-     * If the parameter is satisfied purely by a single direct lookup -- that is, {@see resolveParameter()} would return
-     * exactly the service for one class name (optionally keyed), with no default, null, or union/intersection fallback --
+     * If the parameter is satisfied purely by a single direct lookup (that is, {@see resolveParameter()} would return
+     * exactly the service for one class name (optionally keyed), with no default, null, or union/intersection fallback),
      * returns a descriptor the caller may cache and resolve directly. Returns <code>null</code> otherwise, meaning the
      * caller must fall back to {@see resolveParameter()}. The descriptor is opaque to the caller: it is handed back
      * verbatim to {@see hasDependency()} and {@see resolveDependency()}.

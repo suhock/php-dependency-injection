@@ -16,8 +16,8 @@ use Suhock\DependencyInjection\ScopeException;
 
 /**
  * Manages the lifetime of a scoped object: one instance per scope, created on first request within a scope and reused
- * for the scope's lifetime. Requesting the instance with no scope active — directly from the root container, or from a
- * singleton's dependency graph, which always resolves in the root context — throws a {@see ScopeException}.
+ * for the scope's lifetime. Requesting the instance with no scope active (directly from the root container, or from a
+ * singleton's dependency graph, which always resolves in the root context) throws a {@see ScopeException}.
  *
  * @template TClass of object
  * @extends LifetimeStrategy<TClass>

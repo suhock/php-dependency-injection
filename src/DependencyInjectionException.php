@@ -16,8 +16,8 @@ use Throwable;
 
 /**
  * Base class for every exception thrown by the dependency injection library. These signal errors in how the container
- * or injector was configured or used — a missing binding, a circular dependency, a service requested outside a scope,
- * a factory returning the wrong type — so they extend {@see RuntimeException} rather than {@see \LogicException}, which
+ * or injector was configured or used (a missing binding, a circular dependency, a service requested outside a scope,
+ * a factory returning the wrong type), so they extend {@see RuntimeException} rather than {@see \LogicException}, which
  * is reserved for the library detecting a violation of its own internal invariants. Catch this, or the
  * {@see DependencyInjectionExceptionInterface} it implements, to handle any dependency injection failure.
  */

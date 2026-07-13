@@ -21,8 +21,8 @@ use Suhock\DependencyInjection\Resolver\ArgumentResolver;
 use Suhock\DependencyInjection\Resolver\ParameterResolverInterface;
 
 /**
- * Post-instantiation hook that fills the {@see Inject} injection points on a new instance — invoking its Inject methods
- * and assigning its Inject properties — resolving values through a {@see ParameterResolverInterface}. The injection
+ * Post-instantiation hook that fills the {@see Inject} injection points on a new instance, invoking its Inject methods
+ * and assigning its Inject properties, resolving values through a {@see ParameterResolverInterface}. The injection
  * points are computed via reflection once per class and cached as an {@see InjectionPlan}, so subsequent injections
  * skip the scan.
  */
@@ -64,8 +64,8 @@ final class InjectAttributeMemberInjector implements PostInstantiationHookInterf
     }
 
     /**
-     * Returns the {@see Inject} injection points on the given class — the methods to invoke and the properties to
-     * assign, each of any visibility — computing them via reflection on the first request and caching the result so
+     * Returns the {@see Inject} injection points on the given class (the methods to invoke and the properties to
+     * assign, each of any visibility), computing them via reflection on the first request and caching the result so
      * subsequent injections skip the scan. Private members declared by a parent class are not visible to the scan and
      * are not injected.
      *

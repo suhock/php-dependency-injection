@@ -29,14 +29,13 @@ use Suhock\DependencyInjection\Validation\ContainerValidationException;
 use Suhock\DependencyInjection\Validation\ContainerValidator;
 use Suhock\DependencyInjection\Validation\DependencyGraph;
 use UnitEnum;
-
 use function is_array;
 use function is_string;
 
 /**
  * Carries the full mutable configuration surface for building a {@see Container}. Services are added, removed, and
  * reconfigured here; {@see build()} compiles the whole dependency graph, validates it, and produces an immutable
- * {@see Container}. The builder remains usable after a failed build — fix the configuration and build again — and
+ * {@see Container}. The builder remains usable after a failed build (fix the configuration and build again), and
  * every successful build yields a fully independent product.
  */
 final class ContainerBuilder implements ContainerBuilderInterface
@@ -220,8 +219,8 @@ final class ContainerBuilder implements ContainerBuilderInterface
     }
 
     /**
-     * Exports the dependency graph {@see build()} would produce — every service (including the automatic
-     * self-bindings) and every satisfied, chosen dependency edge — as plain data for external tooling: computing the
+     * Exports the dependency graph {@see build()} would produce, every service (including the automatic
+     * self-bindings) and every satisfied, chosen dependency edge, as plain data for external tooling: computing the
      * graph roots that nothing injects, rendering the graph, or linting for dead services. Unsatisfiable injection
      * points produce no edge, and dependencies hidden inside custom instance providers are invisible, exactly as they
      * are to validation. Never throws: a configuration that would fail {@see build()} still exports.
@@ -237,8 +236,8 @@ final class ContainerBuilder implements ContainerBuilderInterface
 
     /**
      * Adds the services the container supplies about itself, unless the configuration already provides them:
-     * {@see ContainerInterface} resolves to the current resolution root — a service resolved from a scope receives
-     * that scope — and {@see ScopeFactoryInterface} resolves to the root container from any depth. Both are transient
+     * {@see ContainerInterface} resolves to the current resolution root (a service resolved from a scope receives
+     * that scope), and {@see ScopeFactoryInterface} resolves to the root container from any depth. Both are transient
      * so every resolution re-reads its context, and neither is disposed by the container (no self-disposal).
      *
      * @param array<string, Descriptor<object>> $descriptors

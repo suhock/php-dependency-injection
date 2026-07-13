@@ -12,8 +12,8 @@ declare(strict_types=1);
 namespace Suhock\DependencyInjection\Cache;
 
 /**
- * A minimal key/value store used to memoize reflected metadata. Values are treated as opaque — an implementation must
- * return what it was given, unchanged — so any type may be stored, including <code>null</code> and <code>false</code>.
+ * A minimal key/value store used to memoize reflected metadata. Values are treated as opaque: an implementation must
+ * return what it was given, unchanged, so any type may be stored, including <code>null</code> and <code>false</code>.
  * The {@see Injector} pairs an implementation of this (as a shared, potentially cross-request cache) with its own
  * in-process cache; a persistent implementation such as {@see ApcuCache} lets reflected metadata survive between
  * requests.

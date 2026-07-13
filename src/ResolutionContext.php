@@ -15,7 +15,7 @@ use Suhock\DependencyInjection\Lifetime\InstanceStore;
 use Suhock\DependencyInjection\Lifetime\LifetimeStrategy;
 
 /**
- * Identifies the resolution root — the root container or a scope — a service is being resolved from, so that a
+ * Identifies the resolution root (the root container or a scope) a service is being resolved from, so that a
  * {@see LifetimeStrategy} can decide where, if anywhere, to cache the instances it hands out, and so that instance
  * providers resolve a service's dependencies from the same root.
  */

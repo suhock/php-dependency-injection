@@ -15,8 +15,8 @@ namespace Suhock\DependencyInjection\Resolver;
  * One dependency edge of a {@see ResolutionPlan}: an injection point the container satisfies when the service
  * resolves. Immutable and free of reflection objects.
  *
- * A soft edge self-heals at runtime — when resolution fails, the injection point falls back to its default value
- * (when {@see $hasDefault}) or <code>null</code> — so it can never be a guaranteed failure on its own. An edge whose
+ * A soft edge self-heals at runtime: when resolution fails, the injection point falls back to its default value
+ * (when {@see $hasDefault}) or <code>null</code>, so it can never be a guaranteed failure on its own. An edge whose
  * {@see $dependency} is <code>null</code> describes an injection point the container is never consulted for (untyped,
  * builtin, or an unsupported composite type); if such an edge is not soft, resolution is guaranteed to throw, which
  * validation reports at build time.

@@ -14,8 +14,8 @@ namespace Suhock\DependencyInjection\Resolver;
 use UnitEnum;
 
 /**
- * A directly resolvable constructor dependency — the parameter's name plus the class name(s) and optional key that
- * satisfy it — produced by {@see TypeParameterResolverInterface::getResolvableDependency()} for a constructor parameter
+ * A directly resolvable constructor dependency (the parameter's name plus the class name(s) and optional key that
+ * satisfy it), produced by {@see TypeParameterResolverInterface::getResolvableDependency()} for a constructor parameter
  * that can be resolved without reflection, consumed by the resolvers themselves and by the build-time compiler. The
  * name lets a caller match caller-supplied override arguments without reflecting. Immutable and free of reflection
  * objects, so a list of these is cheap to cache and pass back to the resolver opaquely.
