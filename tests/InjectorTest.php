@@ -381,9 +381,9 @@ final class InjectorTest extends AbstractDependencyInjectionTestCase
         $injector->instantiate(FakeClassWithInjectedProperties::class);
     }
 
-    public function testInstantiate_WithResolverLackingFastPathCapability_UsesReflection(): void
+    public function testInstantiate_WithPlainParameterResolver_UsesReflection(): void
     {
-        // Arrange: a plain resolver (no TypeParameterResolverInterface) leaves only the reflection strategy.
+        // Arrange: a plain resolver (not a TypeParameterResolverInterface) still works via reflection.
         $dependency = new FakeClassNoConstructor();
         $resolver = new class ($dependency) implements ParameterResolverInterface {
             public function __construct(private readonly FakeClassNoConstructor $dependency)

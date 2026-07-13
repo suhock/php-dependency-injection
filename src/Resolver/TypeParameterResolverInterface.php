@@ -15,9 +15,9 @@ use ReflectionParameter;
 use Suhock\DependencyInjection\ClassResolutionException;
 
 /**
- * A {@see ParameterResolverInterface} that can also resolve services directly by class name. Implementing this lets the
- * {@see Injector} take its fast path without holding a reference to any concrete value source: the injector resolves
- * whole constructor dependency lists through this capability instead of reaching around the resolver to a container.
+ * A {@see ParameterResolverInterface} that can also resolve services directly by class name. Implementing this lets a
+ * resolver or the build-time compiler resolve whole constructor dependency lists through this capability, without
+ * reaching around the resolver to a container.
  */
 interface TypeParameterResolverInterface extends ParameterResolverInterface
 {

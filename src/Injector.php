@@ -15,22 +15,20 @@ use ReflectionFunction;
 use Suhock\DependencyInjection\Cache\CacheInterface;
 use Suhock\DependencyInjection\Injection\InjectAttributeMemberInjector;
 use Suhock\DependencyInjection\Instantiation\ChainedInstantiationStrategy;
-use Suhock\DependencyInjection\Instantiation\FastPathInstantiationStrategy;
 use Suhock\DependencyInjection\Instantiation\InstantiationStrategyInterface;
 use Suhock\DependencyInjection\Instantiation\PostInstantiationHookInterface;
 use Suhock\DependencyInjection\Instantiation\ReflectionInstantiationStrategy;
 use Suhock\DependencyInjection\Resolver\ArgumentResolver;
 use Suhock\DependencyInjection\Resolver\ContainerParameterResolver;
 use Suhock\DependencyInjection\Resolver\ParameterResolverInterface;
-use Suhock\DependencyInjection\Resolver\TypeParameterResolverInterface;
 
 /**
  * Default implementation for {@see InjectorInterface} that resolves missing parameter values using a
  * {@see ParameterResolverInterface}. Instantiation is delegated to an {@see InstantiationStrategyInterface} — by
- * default a {@see ChainedInstantiationStrategy} of a fast path (when the resolver supports
- * {@see TypeParameterResolverInterface}) that avoids per-instantiation reflection, followed by full reflection — and
- * the new instance is then passed to a {@see PostInstantiationHookInterface} — by default an
- * {@see InjectAttributeMemberInjector} that fills its {@see Inject} members.
+ * default a {@see ReflectionInstantiationStrategy} — and the new instance is then passed to a
+ * {@see PostInstantiationHookInterface} — by default an {@see InjectAttributeMemberInjector} that fills its
+ * {@see Inject} members. A {@see ChainedInstantiationStrategy} and {@see InstantiationStrategyInterface} remain
+ * available for callers who need to compose or supply a custom strategy.
  */
 final class Injector implements InjectorInterface
 {
@@ -57,22 +55,19 @@ final class Injector implements InjectorInterface
     }
 
     /**
-     * Creates an injector that resolves parameters from the given container and instantiates classes using the default
-     * strategy: a fast path (when supported) followed by full reflection. This is the standard way to construct an
-     * injector; use the constructor directly only to supply a custom resolver, instantiation strategy, or
-     * post-instantiation hook.
+     * Creates an injector that resolves parameters from the given container and instantiates classes by reflection.
+     * This is the standard way to construct an injector; use the constructor directly only to supply a custom
+     * resolver, instantiation strategy, or post-instantiation hook.
      *
      * @param ContainerInterface $container The container to resolve parameter values from
      * @param CacheInterface|null $cache [optional] Optional shared (L2) metadata cache; supply an
-     * {@see Cache\CacheInterface} to share reflected metadata across requests
+     * {@see Cache\CacheInterface} to share the {@see InjectAttributeMemberInjector}'s reflected member metadata across
+     * requests
      */
     public static function createDefault(ContainerInterface $container, ?CacheInterface $cache = null): self
     {
         $resolver = new ContainerParameterResolver($container);
-        $strategy = new ChainedInstantiationStrategy([
-            new FastPathInstantiationStrategy($resolver, $cache),
-            new ReflectionInstantiationStrategy($resolver)
-        ]);
+        $strategy = new ReflectionInstantiationStrategy($resolver);
 
         return new self($resolver, $strategy, new InjectAttributeMemberInjector($resolver, $cache));
     }

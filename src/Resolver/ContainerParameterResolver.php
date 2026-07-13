@@ -26,8 +26,8 @@ final class ContainerParameterResolver extends AbstractContainerParameterResolve
     TypeParameterResolverInterface
 {
     /**
-     * Fast-path eligible when {@see resolveParameter()} would reduce to resolving the same candidate(s) the reflection
-     * path would, with no fallback. Nullable/defaulted parameters are excluded so the fallbacks in
+     * Directly resolvable when {@see resolveParameter()} would reduce to resolving the same candidate(s) the
+     * reflection path would, with no fallback. Nullable/defaulted parameters are excluded so the fallbacks in
      * {@see AbstractContainerParameterResolver::resolveParameter()} still apply; otherwise the plan is identical.
      */
     public function getResolvableDependency(ReflectionParameter $rParam): ?ResolvableDependency

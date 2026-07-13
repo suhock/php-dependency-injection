@@ -21,9 +21,9 @@ use UnitEnum;
 
 /**
  * Abstract base class for {@see ParameterResolverInterface} implementations that resolve dependencies from an
- * implementation of {@see ContainerInterface}. Both the fast path ({@see resolveDependency()}) and the reflection path
- * ({@see resolveParameter()}) resolve through a single {@see ResolvableDependency} plan, so the resolution algorithm
- * lives in one place.
+ * implementation of {@see ContainerInterface}. Both direct resolution ({@see resolveDependency()}) and the reflection
+ * path ({@see resolveParameter()}) resolve through a single {@see ResolvableDependency} plan, so the resolution
+ * algorithm lives in one place.
  */
 abstract class AbstractContainerParameterResolver implements ParameterResolverInterface
 {
