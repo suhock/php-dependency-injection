@@ -14,7 +14,6 @@ namespace Suhock\DependencyInjection;
 use ReflectionFunction;
 use Suhock\DependencyInjection\Cache\CacheInterface;
 use Suhock\DependencyInjection\Injection\InjectAttributeMemberInjector;
-use Suhock\DependencyInjection\Instantiation\ChainedInstantiationStrategy;
 use Suhock\DependencyInjection\Instantiation\InstantiationStrategyInterface;
 use Suhock\DependencyInjection\Instantiation\PostInstantiationHookInterface;
 use Suhock\DependencyInjection\Instantiation\ReflectionInstantiationStrategy;
@@ -27,7 +26,7 @@ use Suhock\DependencyInjection\Resolver\ParameterResolverInterface;
  * {@see ParameterResolverInterface}. Instantiation is delegated to an {@see InstantiationStrategyInterface} (by
  * default a {@see ReflectionInstantiationStrategy}), and the new instance is then passed to a
  * {@see PostInstantiationHookInterface} (by default an {@see InjectAttributeMemberInjector} that fills its
- * {@see Inject} members). A {@see ChainedInstantiationStrategy} and {@see InstantiationStrategyInterface} remain
+ * {@see Inject} members). {@see InstantiationStrategyInterface} remains
  * available for callers who need to compose or supply a custom strategy.
  */
 final class Injector implements InjectorInterface

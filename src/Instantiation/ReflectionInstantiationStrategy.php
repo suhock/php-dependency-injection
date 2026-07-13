@@ -19,9 +19,9 @@ use Suhock\DependencyInjection\Resolver\ParameterResolverInterface;
 
 /**
  * Instantiates a class by reflecting its constructor and resolving each parameter through the
- * {@see ParameterResolverInterface}. This is the universal fallback strategy: it applies to every instantiable class and
- * produces the authoritative diagnostics, so it never declines (its {@see tryInstantiate()} narrows the contract to
- * always return an instance or throw).
+ * {@see ParameterResolverInterface}. This is the universal fallback strategy: it applies to every instantiable class
+ * and produces the authoritative diagnostics, so it never declines (its {@see tryInstantiate()} narrows the contract
+ * to always return an instance or throw).
  */
 final class ReflectionInstantiationStrategy implements InstantiationStrategyInterface
 {

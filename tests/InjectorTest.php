@@ -37,7 +37,6 @@ use Suhock\DependencyInjection\Fakes\FakeInterfaceOne;
 use Suhock\DependencyInjection\Fakes\FakeInterfaceThree;
 use Suhock\DependencyInjection\Fakes\FakeInterfaceTwo;
 use Suhock\DependencyInjection\Injection\InjectAttributeMemberInjector;
-use Suhock\DependencyInjection\Instantiation\ChainedInstantiationStrategy;
 use Suhock\DependencyInjection\Instantiation\InstantiationStrategyInterface;
 use Suhock\DependencyInjection\Instantiation\PostInstantiationHookInterface;
 use Suhock\DependencyInjection\Instantiation\ReflectionInstantiationStrategy;
@@ -401,34 +400,6 @@ final class InjectorTest extends AbstractDependencyInjectionTestCase
         self::assertSame($dependency, $instance->obj);
     }
 
-    public function testInstantiate_ConsultsInjectedStrategiesInOrderThenFallsThrough(): void
-    {
-        // Arrange: a spy strategy that records what it was asked for and declines, ordered ahead of reflection.
-        $resolver = new ContainerParameterResolver(new FakeContainer());
-        $spy = new class () implements InstantiationStrategyInterface {
-            /** @var list<string> */
-            public array $seen = [];
-
-            public function tryInstantiate(string $className, array $params): ?object
-            {
-                $this->seen[] = $className;
-
-                return null;
-            }
-        };
-        $injector = new Injector(
-            $resolver,
-            new ChainedInstantiationStrategy([$spy, new ReflectionInstantiationStrategy($resolver)]),
-            new InjectAttributeMemberInjector($resolver)
-        );
-
-        // Act
-        $instance = $injector->instantiate(FakeClassNoConstructor::class);
-
-        // Assert
-        self::assertInstanceOf(FakeClassNoConstructor::class, $instance);
-        self::assertSame([FakeClassNoConstructor::class], $spy->seen);
-    }
 
     public function testInstantiate_WithCustomProducingStrategy_UsesItsInstance(): void
     {
