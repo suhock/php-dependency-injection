@@ -2,7 +2,3 @@
 /.phpunit.result.cache
 /.php-cs-fixer.cache
 /phpstan.neon
-/benchmarks/
-/.phpactor.json
-/.claude/
-/CLAUDE.md

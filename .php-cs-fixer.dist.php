@@ -11,12 +11,10 @@ declare(strict_types=1);
 return (new PhpCsFixer\Config())
     ->setRules([
         '@PSR12' => true,
-        // The rules below codify non-PSR-12 conventions the codebase follows unanimously. Import and class-member
-        // ordering are deliberately omitted: both are grouped conceptually rather than alphabetically.
+        // The rules below are additional conventions the codebase follows.
         'array_syntax' => ['syntax' => 'short'],
         'blank_line_before_statement' => ['statements' => ['return']],
         'concat_space' => ['spacing' => 'one'],
-        'nullable_type_declaration_for_default_null_value' => true,
         'global_namespace_import' => [
             'import_functions' => true,
             'import_constants' => true,
@@ -25,6 +23,7 @@ return (new PhpCsFixer\Config())
         'no_unused_imports' => true,
         'no_useless_else' => true,
         'no_superfluous_phpdoc_tags' => ['allow_mixed' => true],
+        'nullable_type_declaration_for_default_null_value' => true,
         'single_quote' => true,
         // Comparisons are written subject-first, not Yoda-style.
         'yoda_style' => ['equal' => false, 'identical' => false, 'less_and_greater' => false],
