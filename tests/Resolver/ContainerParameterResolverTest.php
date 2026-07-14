@@ -28,7 +28,7 @@ final class ContainerParameterResolverTest extends AbstractDependencyInjectionTe
 {
     /**
      * Builds a container, then constructs an injector whose {@see ContainerParameterResolver} under test resolves
-     * parameters from it — the standalone-injector wiring production code uses.
+     * parameters from it, the standalone-injector wiring production code uses.
      *
      * @param callable(ContainerBuilder):mixed $configure
      *

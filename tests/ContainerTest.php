@@ -119,7 +119,7 @@ final class ContainerTest extends AbstractDependencyInjectionTestCase
 
     public function testGet_WhenContextSelectorReturnsNonConformingInstance_ThrowsInstanceTypeException(): void
     {
-        // Arrange: a context-derived descriptor whose selector produces the wrong type — the executor's leaf
+        // Arrange: a context-derived descriptor whose selector produces the wrong type; the executor's leaf
         // type guard is the backstop. Built raw, since only auto-binding constructs these providers normally.
         $container = self::buildRawContainer([
             FakeInterfaceOne::class => self::contextDescriptor(

@@ -5,21 +5,24 @@ injection framework for projects running on PHP 8.1 or later.
 
 ```php
 $container = Suhock\DependencyInjection\ContainerBuilder::createDefault()
-    ->addSingletonClass(MyApplication::class)
-    ->addSingletonFactory(Logger::class, fn () => new FileLogger('myapp.log'))
-    ->addTransientImplementation(HttpClient::class, CurlHttpClient::class)
+    ->addSingleton(MyApplication::class)
+    ->addSingleton(MyLogger::class, fn () => new FileLogger('myapp.log'))
+    ->addSingletonInstance(RequestContext::class, $requestContext, shouldDispose: false)
+    ->addTransient(HttpClient::class, CurlHttpClient::class)
+    ->addTransient(CurlHttpClient::class)
     ->build()
     ->get(MyApplication::class)
     ->run();
 ```
 
-Out of the box, this library provides [singleton](#singleton),
-[scoped](#scoped), and [transient](#transient) lifetime strategies and a
-variety of ways of [adding services](#adding-services-to-the-container) to the
-container. You can also add more than one implementation of the same type as
-[keyed services](#keyed-services). Once configured,
-[`build()`](#building-the-container) compiles and validates the whole
-dependency graph and hands back an immutable `Container`.
+This library provides [singleton](#singleton), [scoped](#scoped), and
+[transient](#transient) lifetime strategies and a variety of ways of
+[adding services](#adding-services-to-the-container) to the container.
+You can also add more than one implementation of the same type as
+[keyed services](#keyed-services).
+
+Once configured, [`build()`](#building-the-container) compiles and validates
+the whole dependency graph and hands back an immutable `Container`.
 
 The library also provides an [`Injector` class](#dependency-injector) for
 injecting dependencies and explicit parameters into a specific function or
@@ -42,10 +45,10 @@ constructor.
     - [Example: FrankenPHP worker mode](#example-frankenphp-worker-mode)
 - [Disposing services](#disposing-services)
 - [Adding services to the container](#adding-services-to-the-container)
-    - [Inject a class](#inject-a-class)
-    - [Map an interface to an implementation](#map-an-interface-to-an-implementation)
-    - [Call a factory method](#call-a-factory-method)
-    - [Provide a specific instance](#provide-a-specific-instance)
+    - [Specify the class name](#specify-the-class-name)
+    - [Specify an implementing class name](#specify-an-implementing-class-name)
+    - [Provide a factory callback](#provide-a-factory-callback)
+    - [Provide a concrete instance](#provide-a-concrete-instance)
 - [Keyed services](#keyed-services)
 - [Dependency Injector](#dependency-injector)
 - [Specifying dependencies](#specifying-dependencies)
@@ -57,9 +60,8 @@ constructor.
 - [Error handling](#error-handling)
 - [Caching reflected metadata](#caching-reflected-metadata)
 - [Appendix](#appendix)
-  - [A note on service locators](#a-note-on-the-service-locator-pattern)
-  - [Refactoring toward dependency injection](#refactoring-toward-the-dependency-injection-pattern)
   - [PSR-11 compatibility](#psr-11-compatibility)
+  - [PHPStan extensions](#phpstan-extensions)
 
 ## Installation
 
@@ -109,13 +111,16 @@ services in your application.
 ```php
 $builder
     // Inject the constructor's dependencies
-    ->addSingletonClass(MyApplication::class)
+    ->addSingleton(MyApplication::class)
 
     // Manually construct an instance with factory
-    ->addSingletonFactory(Logger::class, fn () => new FileLogger('myapp.log'))
+    ->addSingleton(MyLogger::class, fn () => new FileLogger('myapp.log'))
+
+    // Provide a pre-constructed instance and promise to dispose it later ourselves
+    ->addSingletonInstance(RequestContext::class, $requestContext, shouldDispose: false)
 
     // Alias an interface to an implementing type
-    ->addTransientImplementation(HttpClient::class, CurlHttpClient::class)
+    ->addTransient(HttpClient::class, CurlHttpClient::class)
 
     // Add optional values with a mutator after injecting the constructor's dependencies
     ->addTransientClass(
@@ -154,9 +159,9 @@ class MyApplication
 }
 ```
 
-If your application has other entry points (e.g. controllers), it might be
+If your application has other entry points (e.g., controllers), it might be
 useful to inject the container into the part of your application that invokes
-those entry points (e.g. a router). There is nothing to add for this:
+those entry points (e.g., a router). There is nothing to add for this:
 `ContainerInterface` auto-binds to the current resolution root, so a router
 resolved from the container receives the container itself. See
 [Scopes](#scopes) for the full auto-binding rules, including what a router
@@ -178,6 +183,11 @@ class MyRouter
     }
 }
 ```
+
+> [!WARNING]
+> Reserve this for dispatchers that only know the required type at runtime.
+> Everywhere else, inject the concrete dependency directly; pulling it from the
+> container (the service locator pattern) makes code harder to test and refactor.
 
 ### Building the container
 
@@ -221,13 +231,12 @@ independent `Container`.
  - A factory whose declared return type can never satisfy the service class it
    was added for.
  - An invalid `#[Inject]` or `#[Key]` member.
- - A service class that can never be instantiated — missing, abstract, or an
+ - A service class that can never be instantiated: missing, abstract, or an
    interface.
  - A dependency cycle in which every edge is required, so no member of the
    cycle can ever construct.
- - A singleton that reaches a scoped service through required edges — a
-   captive dependency, which always resolves outside a scope (see
-   [Scopes](#scopes)).
+ - A singleton that reaches a scoped service through required edges: a
+   captive dependency (see [Scopes](#scopes)).
 
 #### Build performance
 
@@ -323,9 +332,8 @@ adding transient factories, all starting with the prefix `addTransient`.
 A scope represents a bounded unit of work, such as an HTTP request in a
 long-running application server, a message pulled off a queue, or a job in a
 worker. Build the container once, then create a scope with
-`Container::createScope()`, resolve
-services from it as you would from the container, and dispose it when the
-unit of work ends:
+`Container::createScope()`, resolve services from it as you would from the
+container, and dispose it when the unit of work ends:
 
 ```php
 use Suhock\DependencyInjection\ContainerBuilder;
@@ -377,7 +385,7 @@ applications never add either explicitly:
    root container receives the container. A scoped service can therefore
    depend on `ContainerInterface` to look up further services scoped to the
    same unit of work, and a service resolved from the root always receives the
-   root — see the router example in [Basic usage](#basic-usage).
+   root. See the router example in [Basic usage](#basic-usage).
  - `ScopeFactoryInterface` resolves to the root `Container` from any depth,
    even from inside a scope, since only the root can create new scopes.
  - Neither auto-bound service is ever disposed by the container, and `has()`
@@ -532,22 +540,17 @@ once has no effect.
 
 #### Opting out of disposal
 
-By default the built container disposes every disposable instance it holds,
-including one you supply yourself with `addSingletonInstance()` on the
-builder; registering an instance hands its disposal to the container along
-with the rest of its lifecycle. When an instance's disposal is the
-responsibility of something outside the container (for example a resource
-shared with code beyond it, or borrowed from an external registry), pass
-`shouldDispose: false`:
+> [!CAUTION]
+> By default the built container disposes every disposable instance it holds,
+> including concrete instances you explicitly supply. When an instance's
+> disposal is managed by something outside the container or if you intend to
+> dispose it yourself, you should use `add*Instance()` and pass
+> `shouldDispose: false`:
 
 ```php
 // The pool is closed elsewhere; the container must not dispose it.
 $builder->addSingletonInstance(ConnectionPool::class, $pool, shouldDispose: false);
 ```
-
-`shouldDispose` is available on `addSingletonInstance()` and
-`addKeyedSingletonInstance()` (the only two `ContainerBuilder` methods that
-register an already-constructed instance) and defaults to `true`.
 
 #### Lifetime and ordering guarantees
 
@@ -572,24 +575,22 @@ before disposing the container so that their scoped instances are swept.
 
 ### Adding services to the container
 
-There are a number of built-in ways to specify how new instances should be
-created. All of them live on `ContainerBuilder`: configure the builder with
-them, then call `build()` (see
-[Building the container](#building-the-container)) before resolving anything.
+There are a number of built-in ways to specify how services should be resolved:
 
- - [Inject a class](#inject-a-class)
- - [Map an interface to an implementation](#map-an-interface-to-an-implementation)
- - [Call a factory method](#call-a-factory-method)
- - [Provide a specific instance](#provide-a-specific-instance)
+ - [Specify the class name](#specify-the-class-name)
+ - [Specify an implementing class name](#specify-an-implementing-class-name)
+ - [Provide a factory callback](#provide-a-factory-callback)
+ - [Provide a concrete instance](#provide-a-concrete-instance)
 
-#### Inject a class
+#### Specify the class name
 
-The container will construct classes by calling the class's constructor,
+The container will construct the named class by calling the class's constructor,
 automatically resolving any dependencies in the constructor's parameter list.
 
 If the class has any methods with an `Inject` attribute, the container will
 call those methods, resolving and injecting any dependencies listed in the
-parameter list.
+parameter list. Any property with the `Inject` attribute will be resolved
+automatically from the container.
 
 The optional `$mutator` callback allows additional configuration of the object
 after the container has initialized it. The callback must take an instance of
@@ -604,17 +605,22 @@ class ContainerBuilder
      * @param (callable(TClass, mixed...): void)|null $mutator
      * @return $this
      */
-    public function addSingletonClass(string $className, ?callable $mutator = null): static;
-
-    /**
-     * @template TClass of object
-     * @param class-string<TClass> $className
-     * @param (callable(TClass, mixed...): void)|null $mutator
-     * @return $this
-     */
-    public function addTransientClass(string $className, ?callable $mutator = null): static;
+    public function addSingletonClass(string $className, ?callable $mutator = null): self;
+    
+    public function addScopedClass(string $className, ?callable $mutator = null): self;
+    
+    public function addTransientClass(string $className, ?callable $mutator = null): self;
 }
 ```
+
+> [!TIP]
+> If a mutator callback is not needed, the shorthand forms can be used instead:
+>
+> ```php
+> $builder->addSingleton(MyService::class); // equivalent to $builder->addSingletonClass(MyService::class);
+> $builder->addScoped(MyService::class);    // equivalent to $builder->addScopedClass(MyService::class);
+> $builder->addTransient(MyService::class); // equivalent to $builder->addTransientClass(MyService::class);
+> ```
 
 ##### Examples
 
@@ -662,11 +668,14 @@ class CurlHttpClient
 }
 ```
 
-#### Map an interface to an implementation
+#### Specify an implementing class name
 
-The container will provide classes by resolving the specified implementing
-subclass in its place. You must therefore also add the implementing class to
-the container.
+The container will provide the named service by resolving the named implementing
+subclass in its place.
+
+> [!IMPORTANT]
+> You must also add the implementing class to the container as its own
+> resolvable service, or `build()` will reject the configuration.
 
 ```php
 class ContainerBuilder
@@ -678,16 +687,11 @@ class ContainerBuilder
      * @param class-string<TImplementation> $implementationClassName
      * @return $this
      */
-    public function addSingletonImplementation(string $className, string $implementationClassName): static;
-
-    /**
-     * @template TClass of object
-     * @template TImplementation of TClass
-     * @param class-string<TClass> $className
-     * @param class-string<TImplementation> $implementationClassName
-     * @return $this
-     */
-    public function addTransientImplementation(string $className, string $implementationClassName): static;
+    public function addSingletonImplementation(string $className, string $implementationClassName): self;
+    
+    public function addScopedImplementation(string $className, string $implementationClassName): self;
+    
+    public function addTransientImplementation(string $className, string $implementationClassName): self;
 }
 ```
 
@@ -732,16 +736,16 @@ $builder->addSingletonImplementation(HttpClient::class, CurlHttpClient::class);
 
 /*
  * build() throws a ContainerValidationException because CurlHttpClient is
- * not itself added as a resolvable service — validation catches this before
- * any request ever reaches get(). See "Building the container".
+ * not itself added as a resolvable service. See "Building the container".
  */
 $container = $builder->build();
 ```
 
-#### Call a factory method
+#### Provide a factory callback
 
-The container will provide class instances by requesting them from a factory
-method. Any parameters in the factory method will be injected.
+The container will resolve the named service by requesting it from the provided
+factory callback method. Any parameters in the factory method will be resolved
+automatically.
 
 ```php
 class ContainerBuilder
@@ -753,16 +757,24 @@ class ContainerBuilder
      * @return $this
      */
     public function addSingletonFactory(string $className, callable $factory): static;
+    
+    public function addScopedFactory(string $className, callable $factory): static;
 
-    /**
-     * @template TClass of object
-     * @param class-string<TClass> $className
-     * @param callable(mixed...): TClass $factory
-     * @return $this
-     */
     public function addTransientFactory(string $className, callable $factory): static;
 }
 ```
+
+> [!TIP]
+> If providing a `Closure` the shorthand forms can be also used:
+>
+> ```php
+> // equivalent to $builder->addSingletonFactory(MyService::class, fn () => new MyService('foo'));
+> $builder->addSingleton(MyService::class, fn () => new MyService('foo'));
+> ```
+
+> [!CAUTION]
+> If you need to provide a named function, you must use the `add{Lifetime}Factory`
+> form, since the shorthand methods interpret string sources as class names.
 
 ##### Examples
 
@@ -798,9 +810,9 @@ $builder->addTransientFactory(
 );
 ```
 
-#### Provide a specific instance
+#### Provide a concrete instance
 
-The container will provide a pre-constructed instance of a class.
+The container will resolve the specified service to the provided class instance.
 
 ```php
 class ContainerBuilder
@@ -811,9 +823,22 @@ class ContainerBuilder
      * @param TClass $instance
      * @return $this
      */
-    public function addSingletonInstance(string $className, object $instance): static;
+    public function addSingletonInstance(string $className, object $instance, bool $shouldDispose = true): static;
 }
 ```
+
+> [!NOTE]
+> There is no `addScopedInstance` or `addTransientInstance`: a provided instance is a
+> single object, so it can only be a container-wide singleton.
+
+> [!TIP]
+> If the default value of `$shouldDispose: true` does not need to be changed
+> the shorthand forms can be used.
+>
+> ```php
+> // equivalent to $builder->addSingletonInstance(MyService::class, $obj);
+> $builder->addSingleton(MyService::class, $obj);
+> ```
 
 ##### Examples
 
@@ -858,13 +883,12 @@ class ContainerBuilder
         string|object|null $source = null
     ): static;
 
-    /**
-     * @template TClass of object
-     * @template TImplementation of TClass
-     * @param class-string<TClass> $className
-     * @param class-string<TImplementation>|(Closure(mixed...): TClass)|null $source
-     * @return $this
-     */
+    public function addKeyedScoped(
+        string $className,
+        string|UnitEnum $key,
+        string|Closure|null $source = null
+    ): static;
+
     public function addKeyedTransient(
         string $className,
         string|UnitEnum $key,
@@ -893,7 +917,7 @@ The `$source` parameter determines how the container provides the instance:
  - If a closure, the container calls it as a factory, injecting its parameters.
  - If any other object, the container provides that object directly.
 
-Each explicit `add*` variant also has a keyed counterpart —
+Each explicit `add*` variant also has a keyed counterpart:
 `addKeyedSingletonFactory()`, `addKeyedTransientClass()`,
 `addKeyedScopedImplementation()`, and so on.
 
@@ -1099,7 +1123,7 @@ class MyApplication
 In the example above, although the container cannot resolve `string`, `int`, or
 `array` types, it will construct the class using the specified default
 values. If you need to inject non-default values for builtin types, use a
-[factory method](#call-a-factory-method).
+[factory callback](#provide-a-factory-callback).
 
 ### Union types
 
@@ -1170,28 +1194,28 @@ run time, not a bug inside the library itself.
 
 The base class is `DependencyInjectionException`. Notable subclasses include:
 
- - `Validation\ContainerValidationException` — thrown by
+ - `Validation\ContainerValidationException`: thrown by
    `ContainerBuilder::build()`, aggregating every guaranteed-failure
-   configuration defect it found (see
+   configuration defect (see
    [Building the container](#building-the-container)). Unlike the rest of this
-   list, this is a build-time error: fix the builder's configuration and call
-   `build()` again.
- - `ClassNotFoundException` — no service is registered for the requested class.
- - `CircularDependencyException` — a dependency cycle was detected. Cycles
+   list, it is a build-time error: fix the configuration and call `build()`
+   again.
+ - `ClassNotFoundException`: no service is registered for the requested class.
+ - `CircularDependencyException`: a dependency cycle was detected. Cycles
    through ordinary descriptors are caught at build time as a
-   `ContainerValidationException`, so this exception at run time means the
-   cycle passed through a factory body.
- - `ScopeException` — a scoped service was requested with no active scope, or a
+   `ContainerValidationException`, so at run time this means the cycle passed
+   through a factory body.
+ - `ScopeException`: a scoped service was requested with no active scope, or a
    disposed scope was used.
- - `ImplementationException` — a mapped implementation is not a subtype of the
+ - `ImplementationException`: a mapped implementation is not a subtype of the
    class it is mapped to.
- - `ParameterResolutionException` / `PropertyResolutionException` — the
+ - `ParameterResolutionException` / `PropertyResolutionException`: the
    injector could not resolve a parameter or property.
 
 When dependency-injection exceptions are chained through a resolution graph,
 they are consolidated into a single message; the original exception remains
 available via `getConsolidatedException()`. `ContainerValidationException`
-does not chain a previous exception — its issue list carries every problem
+does not chain a previous exception; its issue list carries every problem
 found instead.
 
 ## Caching reflected metadata
@@ -1249,112 +1273,33 @@ another store.
 
 ## Appendix
 
-### A note on the service locator pattern
-
-The previous example resembles a service locator pattern. Please note that while
-the `Container` class is functionally equivalent to a service locator, it is
-usually best to avoid the service locator pattern, since it makes testing,
-refactoring, and reasoning about your application more difficult. Note also
-that you do not need to add anything to the builder to make the container
-available this way: as covered in [Auto-binding](#auto-binding),
-`ContainerInterface` resolves to the current resolution root automatically.
-That makes the pattern convenient, but it is still best avoided.
-
-Only places in your application that invoke entry points should directly use the
-container. If you know the specific object type required before runtime, you
-should rely on the container's automatic dependency injection capabilities
-instead of directly invoking the container. In the prior example, the
-application cannot know which container to invoke until it receives an actual
-request, so injecting the container is necessary.
-
-The following is an example of what not to do.
-
-```php
-/* Do NOT do this! */
-
-class MyApiCaller
-{
-    public function __construct(
-        private readonly ContainerInterface $container
-    ) {
-    }
-
-    public function callApi(): HttpResponse
-    {
-        $httpClient = $this->container->get(HttpClient::class);
-        return $httpClient->get('https://www.example.com/api');
-    }
-}
-```
-
-In the above example, the required type, `HttpClient` is known before runtime
-and can be requested directly by the constructor. This change will make
-`MyClass`'s actual dependencies much clearer thereby making testing and
-refactoring far easier.
-
-```php
-/* Do this instead! */
-
-class MyApiCaller
-{
-    public function __construct(
-        private readonly HttpClient $httpClient
-    ) {
-    }
-
-    public function callApi(): HttpResponse
-    {
-        return $this->httpClient->get('https://www.example.com/api');
-    }
-}
-```
-
-### Refactoring toward the dependency injection pattern
-
-An exception to the rule against the service locator pattern might be if you are
-refactoring a legacy application toward the dependency injection pattern: you
-want to reuse the container's dependency building logic as much as possible, but
-there is still code where it is difficult to inject dependencies properly.
-
-In this case, the application container can be built off a singleton instance
-and made available to legacy code as an intermediate step. Once you finally
-refactor all uses of the singleton container to use proper dependency injection,
-the singleton container can be removed. All configuration has to happen inside
-the function that builds it, though: the `Container` it returns is already
-built and immutable, with no `add*` methods left to call.
-
-```php
-/* Refactor this! */
-public function myFragileBloatedFunction(...$args)
-{
-    // ...
-
-    // $httpClient = new CurlHttpClient();
-    // $logger = new FileLogger('myapp.log');
-    // $httpClient->setLogger($logger);
-
-    // Replaced the above duplicated construction logic with a call to the
-    // container
-    $httpClient = getAppContainer()->get(HttpClient::class);
-
-    $result = $httpClient->get('https://www.example.com/api/' . $args[42]);
-    // ...
-}
-
-/* Eliminate all references to the singleton container and remove this! */
-function getAppContainer(): Container
-{
-    static $container;
-
-    return $container ??= ContainerBuilder::createDefault()
-        ->addSingletonClass(MyApplication::class)
-        // ... add the rest of your services ...
-        ->build();
-}
-```
-
 ### PSR-11 compatibility
 
-For frameworks that expect a PSR-11 container, a thin adapter implementing
-`Psr\Container\ContainerInterface` and delegating to this library's `Container`
-can be provided instead.
+This library's `get()` takes a class name and optional key rather than PSR-11's
+opaque string id, so `Container` does not implement `Psr\Container\ContainerInterface`
+directly. For frameworks that expect a PSR-11 container, the
+[`suhock/dependency-injection-psr11`](https://github.com/suhock/php-dependency-injection-psr11)
+package provides a thin adapter that wraps the container and translates its
+exceptions into their PSR-11 counterparts.
+
+```json
+{
+    "require": {
+        "suhock/dependency-injection-psr11": "^1.0"
+    }
+}
+```
+
+### PHPStan extensions
+
+The [`suhock/dependency-injection-phpstan`](https://github.com/suhock/php-dependency-injection-phpstan) package provides
+[PHPStan](https://phpstan.org/) extensions that provide analyses relvant to this
+library. Add it to `require-dev` in projects that use these attributes.
+
+```json
+{
+    "require-dev": {
+        "suhock/dependency-injection-phpstan": "^1.0"
+    }
+}
+```

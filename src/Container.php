@@ -30,7 +30,6 @@ use Suhock\DependencyInjection\Resolver\ResolutionPlanEdge;
 use Suhock\DependencyInjection\Resolver\ResolutionPlanKind;
 use Throwable;
 use UnitEnum;
-
 use function get_class;
 use function spl_object_id;
 
@@ -173,7 +172,7 @@ final class Container implements ContainerInterface, DisposableInterface, ScopeF
     }
 
     /**
-     * Resolves a service on behalf of a resolution root — the container itself or one of its scopes.
+     * Resolves a service on behalf of a resolution root (the container itself or one of its scopes).
      *
      * @template TClass of object
      * @param class-string<TClass> $className

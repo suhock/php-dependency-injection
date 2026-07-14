@@ -28,7 +28,6 @@ use Suhock\DependencyInjection\InstanceProvider\ObjectInstanceProvider;
 use Suhock\DependencyInjection\Key;
 use Suhock\DependencyInjection\Lifetime\SingletonStrategy;
 use Suhock\DependencyInjection\Lifetime\TransientStrategy;
-
 use function strlen;
 
 /**
@@ -296,7 +295,7 @@ final class ConfigurationFingerprintTest extends TestCase
     }
 
     /**
-     * A factory declared at a single, fixed site whose sole parameter carries a string {@see Key} — used to exercise
+     * A factory declared at a single, fixed site whose sole parameter carries a string {@see Key}, used to exercise
      * the keyed-parameter branch of the closure signature while keeping the declaration site stable across calls.
      *
      * @return Closure(FakeClassNoConstructor): FakeClassNoConstructor

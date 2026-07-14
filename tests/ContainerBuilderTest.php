@@ -170,7 +170,7 @@ final class ContainerBuilderTest extends AbstractDependencyInjectionTestCase
 
     public function testBuild_WithDefectiveConfiguration_ThrowsAggregatedValidationException(): void
     {
-        // Arrange: two independent defects — a missing required dependency and an unresolvable builtin parameter.
+        // Arrange: two independent defects, a missing required dependency and an unresolvable builtin parameter.
         $builder = self::createBuilder()
             ->addTransientClass(FakeClassWithDependencies::class)
             ->addTransientClass(FakeClassWithStringDependency::class);
@@ -433,7 +433,7 @@ final class ContainerBuilderTest extends AbstractDependencyInjectionTestCase
 
     public function testExportDependencyGraph_WithDefectiveConfiguration_StillExportsWithoutTheBrokenEdge(): void
     {
-        // Arrange: FakeClassWithDependencies is missing its required dependencies — build() would throw.
+        // Arrange: FakeClassWithDependencies is missing its required dependencies, so build() would throw.
         $builder = self::createBuilder()->addTransientClass(FakeClassWithDependencies::class);
 
         // Act
@@ -446,7 +446,7 @@ final class ContainerBuilderTest extends AbstractDependencyInjectionTestCase
 
     public function testExportDependencyGraph_RootsAreDerivable(): void
     {
-        // Arrange: the roots — services nothing injects — are the ids that appear as no edge's target.
+        // Arrange: the roots (services nothing injects) are the ids that appear as no edge's target.
         $builder = self::createBuilder()
             ->addSingletonClass(FakeClassWithConstructor::class)
             ->addSingletonClass(FakeClassNoConstructor::class);

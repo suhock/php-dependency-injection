@@ -21,7 +21,7 @@ use UnitEnum;
 /**
  * Resolves function parameters and injected properties from a {@see ContainerInterface}, honoring the {@see Key}
  * attribute on a parameter. A keyed injection point is resolved absolutely against that key; an unkeyed one is
- * resolved by type. Only the injection point itself is inspected — no scope is tracked and the declaring function and
+ * resolved by type. Only the injection point itself is inspected. No scope is tracked and the declaring function and
  * class are not traversed. Every path resolves through a single {@see ResolvableDependency} plan, so the resolution
  * algorithm lives in one place.
  *

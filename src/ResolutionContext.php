@@ -19,8 +19,8 @@ use Suhock\DependencyInjection\Lifetime\LifetimeStrategy;
  * {@see LifetimeStrategy} can decide where, if anywhere, to cache the instances it hands out, and so that instance
  * providers resolve a service's dependencies from the same root.
  *
- * @internal Only the container's own resolution machinery — lifetime strategies and instance providers, themselves
- * internal — ever receives a context.
+ * @internal Only the container's own resolution machinery (lifetime strategies and instance providers, themselves
+ * internal) ever receives a context.
  */
 final class ResolutionContext
 {

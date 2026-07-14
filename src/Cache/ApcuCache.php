@@ -12,7 +12,6 @@ declare(strict_types=1);
 namespace Suhock\DependencyInjection\Cache;
 
 use RuntimeException;
-
 use function apcu_enabled;
 use function apcu_fetch;
 use function apcu_store;
@@ -20,8 +19,8 @@ use function extension_loaded;
 
 /**
  * A {@see CacheInterface} backed by the APCu extension. Entries live in shared memory, so cached metadata persists
- * across requests served by the same PHP worker pool. Requires the <code>apcu</code> extension to be loaded and enabled
- * — including on the CLI, where <code>apc.enable_cli</code> must be set.
+ * across requests served by the same PHP worker pool. Requires the <code>apcu</code> extension to be loaded and
+ * enabled.
  */
 final class ApcuCache implements CacheInterface
 {

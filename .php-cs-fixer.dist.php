@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Copyright (c) 2022-2026 Matthew Suhocki. All rights reserved.
  *
@@ -11,7 +12,7 @@ declare(strict_types=1);
 return (new PhpCsFixer\Config())
     ->setRules([
         '@PSR12' => true,
-        // The rules below are additional conventions the codebase follows.
+        // Additional conventions the codebase follows:
         'array_syntax' => ['syntax' => 'short'],
         'blank_line_before_statement' => ['statements' => ['return']],
         'concat_space' => ['spacing' => 'one'],
@@ -31,5 +32,4 @@ return (new PhpCsFixer\Config())
     ->setFinder(
         PhpCsFixer\Finder::create()
             ->exclude('vendor')
-            ->in(__DIR__)
     );

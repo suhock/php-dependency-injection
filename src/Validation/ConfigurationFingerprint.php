@@ -21,7 +21,6 @@ use Suhock\DependencyInjection\InstanceProvider\ImplementationInstanceProvider;
 use Suhock\DependencyInjection\InstanceProvider\InstanceProviderInterface;
 use Suhock\DependencyInjection\Key;
 use UnitEnum;
-
 use function get_class;
 use function hash_final;
 use function hash_init;
@@ -45,7 +44,7 @@ final class ConfigurationFingerprint
 
     /**
      * Computes a stable digest of the given configuration, or <code>null</code> if the configuration cannot be
-     * fingerprinted — currently, only when a factory or mutator closure's origin cannot be determined (an internal
+     * fingerprinted. Currently, only when a factory or mutator closure's origin cannot be determined (an internal
      * function or one defined in eval'd code), since then no file/line identity exists to hash.
      *
      * The digest is computed incrementally: each descriptor's record is fed to the hash context as it is produced,
@@ -111,8 +110,7 @@ final class ConfigurationFingerprint
 
     /**
      * The validation-relevant identity of a closure: where it is declared and its declared parameter/return
-     * signature. Captured variables are deliberately irrelevant — the compiler never invokes closures, so two
-     * closures declared at the same site with the same signature always compile to identical dependency edges.
+     * signature.
      *
      * @return string|null <code>null</code> if the closure has no file (an internal function or one defined in
      * eval'd code), and so cannot be fingerprinted

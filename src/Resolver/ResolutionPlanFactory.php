@@ -27,7 +27,6 @@ use Suhock\DependencyInjection\InjectorException;
 use Suhock\DependencyInjection\InstanceProvider\ClassInstanceProvider;
 use Suhock\DependencyInjection\InstanceProvider\ClosureInstanceProvider;
 use Suhock\DependencyInjection\InstanceProvider\ImplementationInstanceProvider;
-
 use function array_slice;
 use function class_exists;
 use function interface_exists;
@@ -281,7 +280,7 @@ final class ResolutionPlanFactory
     /**
      * The factory's declared return class, when it declares a single named type naming an existing class or
      * interface. Builtin, composite, absent, and unloadable (e.g. <code>self</code>/<code>static</code>) return
-     * types yield <code>null</code> — their compatibility is unknowable without invoking the factory.
+     * types yield <code>null</code>; their compatibility is unknowable without invoking the factory.
      */
     private static function declaredReturnClass(ReflectionFunction $rFunction): ?string
     {

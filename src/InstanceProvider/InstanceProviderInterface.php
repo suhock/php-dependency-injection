@@ -13,7 +13,7 @@ namespace Suhock\DependencyInjection\InstanceProvider;
 
 /**
  * Marks the closed set of records describing how a service's instances are produced. Providers carry configuration
- * only — a class to autowire, a factory closure, an implementation target, a held instance, or a context selector —
+ * only (a class to autowire, a factory closure, an implementation target, a held instance, or a context selector),
  * and the compiled resolution plans execute them; no provider produces instances itself.
  *
  * @template TClass of object

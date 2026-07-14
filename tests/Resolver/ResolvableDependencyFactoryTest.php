@@ -79,7 +79,7 @@ final class ResolvableDependencyFactoryTest extends TestCase
         // Act
         $dependency = ResolvableDependencyFactory::createFromParameter($rParam);
 
-        // Assert: nullability does not change the described alternatives — it is applied by the caller's fallback.
+        // Assert: nullability does not change the described alternatives; it is applied by the caller's fallback.
         self::assertNotNull($dependency);
         self::assertSame([[FakeClassNoConstructor::class]], $dependency->alternatives);
     }
@@ -188,7 +188,7 @@ final class ResolvableDependencyFactoryTest extends TestCase
     public function testCreateFromType_GivenKeyDirectly_UsesGivenKeyRegardlessOfAttributes(): void
     {
         // Arrange: createFromType() takes the key as a plain argument, independent of any attribute on the reflected
-        // parameter — the attribute-reading behavior belongs to createFromParameter() alone.
+        // parameter; the attribute-reading behavior belongs to createFromParameter() alone.
         $rParam = $this->createParameter($this->fakeNamedParam(...), 'namedParam');
 
         // Act

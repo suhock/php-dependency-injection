@@ -21,7 +21,6 @@ use Suhock\DependencyInjection\Validation\ContainerValidationException;
 use Suhock\DependencyInjection\Validation\ValidationIssue;
 use Suhock\DependencyInjection\Validation\ValidationIssueKind;
 use Throwable;
-
 use function array_map;
 use function gc_collect_cycles;
 
@@ -359,11 +358,11 @@ final class ScopeTest extends AbstractDependencyInjectionTestCase
         // Arrange: scoped service depends on a singleton that depends back on the scoped service. Build-time
         // validation now rejects a singleton with a *visible* required dependency on a scoped service (captive
         // dependency, see testBuild_WithSingletonDependingOnScoped_ThrowsCaptiveDependencyValidationException()), so
-        // the singleton's dependency hides in its factory body — the same technique ContainerTest uses to keep an
+        // the singleton's dependency hides in its factory body, the same technique ContainerTest uses to keep an
         // edge invisible to validation and preserve a runtime-only backstop test. The
         // singleton's dependency graph still resolves in the root context, so the cycle must surface as a resolution
-        // failure — a CircularDependencyException from the shared in-progress tracker, or a ScopeException from
-        // re-entering the scoped service at the root — rather than recursing.
+        // failure (a CircularDependencyException from the shared in-progress tracker, or a ScopeException from
+        // re-entering the scoped service at the root) rather than recursing.
         $container = self::buildContainer(
             static fn (ContainerBuilder $builder) => $builder
                 ->addScopedFactory(

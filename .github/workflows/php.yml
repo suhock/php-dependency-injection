@@ -42,8 +42,7 @@ jobs:
                   restore-keys: |
                       ${{ runner.os }}-php${{ matrix.php }}-
 
-            # Resolve dependencies per PHP version rather than installing the committed
-            # lock, whose PHPUnit pin does not satisfy every supported PHP version.
+            # Resolve dependencies and select a PHPUnit version per PHP version.
             - name: Install dependencies
               run: composer update --prefer-dist --no-progress
 

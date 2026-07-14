@@ -27,6 +27,6 @@ enum ResolutionPlanKind
     /** Resolve the implementation target from the container. */
     case Implementation;
 
-    /** Ask the instance provider directly — a provider with no dependencies (a held instance or context selector). */
+    /** No dependencies. Ask the instance provider directly. */
     case Leaf;
 }

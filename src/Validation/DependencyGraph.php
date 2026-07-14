@@ -24,7 +24,7 @@ final class DependencyGraph
 {
     /**
      * @param list<string> $serviceIds Every service in the built configuration, as <code>Class</code> or
-     * <code>Class#key</code>, in configuration order — including the automatic self-bindings
+     * <code>Class#key</code>, in configuration order
      * @param list<DependencyGraphEdge> $edges Every satisfied, chosen dependency edge
      */
     public function __construct(

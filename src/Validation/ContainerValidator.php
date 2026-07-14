@@ -21,7 +21,6 @@ use Suhock\DependencyInjection\Lifetime\TransientStrategy;
 use Suhock\DependencyInjection\Resolver\ResolutionPlan;
 use Suhock\DependencyInjection\Resolver\ResolutionPlanEdge;
 use Suhock\DependencyInjection\Resolver\ResolutionPlanKind;
-
 use function array_map;
 use function array_pop;
 use function array_search;
@@ -102,7 +101,7 @@ final class ContainerValidator
 
     /**
      * Exports the configuration's dependency graph: every service and every satisfied, chosen edge, with the
-     * injection point each edge flows through. Mirrors exactly what resolution would traverse — unsatisfiable
+     * injection point each edge flows through. Mirrors exactly what resolution would traverse; unsatisfiable
      * injection points produce no edge. Purely informational: a
      * defective configuration still exports.
      *
@@ -529,7 +528,7 @@ final class ContainerValidator
 
     /**
      * Mirrors the conservative rule for factory return types: a mismatch is only guaranteed when the declared type
-     * and the service class are unrelated in both directions and no unseen subtype could bridge them — the declared
+     * and the service class are unrelated in both directions and no unseen subtype could bridge them: the declared
      * type is final, or both are non-interface classes.
      */
     private static function returnTypeCanNeverSatisfy(string $returnType, string $className): bool

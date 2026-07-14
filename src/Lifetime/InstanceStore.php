@@ -14,7 +14,6 @@ namespace Suhock\DependencyInjection\Lifetime;
 use Suhock\DependencyInjection\DisposableInterface;
 use Throwable;
 use WeakMap;
-
 use function krsort;
 use function spl_object_id;
 
@@ -28,7 +27,7 @@ use function spl_object_id;
  * The store also tracks the container-owned {@see DisposableInterface} instances created within its resolution root so
  * that they can be disposed when the root's lifetime ends. See {@see addDisposable()} and {@see dispose()}.
  *
- * Of this class, only {@see getOrCreate()} is part of the supported extension surface — a custom
+ * Of this class, only {@see getOrCreate()} is part of the supported extension surface; a custom
  * {@see LifetimeStrategy} caches through it. The remaining methods manage container-owned disposal and eviction and are
  * {@internal}: they are driven by the container and may change without notice.
  */
@@ -39,7 +38,7 @@ final class InstanceStore
 
     /**
      * Disposable instances awaiting disposal, mapped to their recording sequence number. Held weakly so that an
-     * instance dropped before disposal (e.g. a transient no longer referenced by the application) is collected
+     * instance dropped before disposal (e.g., a transient no longer referenced by the application) is collected
      * normally and simply omitted from the sweep in {@see dispose()}.
      *
      * @var WeakMap<DisposableInterface, int>

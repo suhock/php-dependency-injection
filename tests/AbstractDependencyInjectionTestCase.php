@@ -69,7 +69,7 @@ abstract class AbstractDependencyInjectionTestCase extends TestCase
     }
 
     /**
-     * Builds a validated container from a configuration callback — the standard arrangement step for tests that
+     * Builds a validated container from a configuration callback, the standard arrangement step for tests that
      * exercise the built product.
      *
      * @param callable(ContainerBuilder):mixed $configure
