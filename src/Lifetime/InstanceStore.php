@@ -14,6 +14,7 @@ namespace Suhock\DependencyInjection\Lifetime;
 use Suhock\DependencyInjection\DisposableInterface;
 use Throwable;
 use WeakMap;
+
 use function krsort;
 use function spl_object_id;
 

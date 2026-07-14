@@ -21,6 +21,7 @@ use Suhock\DependencyInjection\Validation\ContainerValidationException;
 use Suhock\DependencyInjection\Validation\ValidationIssue;
 use Suhock\DependencyInjection\Validation\ValidationIssueKind;
 use Throwable;
+
 use function array_map;
 use function gc_collect_cycles;
 

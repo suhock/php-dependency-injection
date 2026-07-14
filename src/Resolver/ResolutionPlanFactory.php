@@ -27,6 +27,7 @@ use Suhock\DependencyInjection\InjectorException;
 use Suhock\DependencyInjection\InstanceProvider\ClassInstanceProvider;
 use Suhock\DependencyInjection\InstanceProvider\ClosureInstanceProvider;
 use Suhock\DependencyInjection\InstanceProvider\ImplementationInstanceProvider;
+
 use function array_slice;
 use function class_exists;
 use function interface_exists;

@@ -29,6 +29,7 @@ use Suhock\DependencyInjection\Validation\DependencyGraphEdge;
 use Suhock\DependencyInjection\Validation\ValidationIssue;
 use Suhock\DependencyInjection\Validation\ValidationIssueKind;
 use Throwable;
+
 use function array_map;
 
 /**
