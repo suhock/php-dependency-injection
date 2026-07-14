@@ -24,6 +24,49 @@ use UnitEnum;
 interface ContainerScopedBuilderInterface
 {
     /**
+     * Adds a scoped service. The provider is chosen from the type of $source:
+     * - `null`: autowire $className's constructor.
+     * - a `class-string`: the implementation class to resolve in place of $className.
+     * - a `Closure`: a factory to call.
+     * - an `object`: the instance to use.
+     *
+     * The convenience form takes the default for each shape. To pass a mutator,
+     * use {@see addScopedClass()}.
+     *
+     * @template TClass of object
+     *
+     * @param class-string<TClass> $className
+     * @param class-string<TClass>|TClass|Closure|null $source
+     *
+     * @return $this
+     */
+    public function addScoped(string $className, string|object|null $source = null): static;
+
+    /**
+     * Adds a scoped service under $key. The provider is chosen from the type of $source:
+     * - `null`: autowire $className's constructor.
+     * - a `class-string`: the implementation class to resolve in place of $className.
+     * - a `Closure`: a factory to call.
+     * - an `object`: the instance to use.
+     *
+     * The convenience form takes the default for each shape. To pass a mutator,
+     * use {@see addKeyedScopedClass()}.
+     *
+     * @template TClass of object
+     *
+     * @param class-string<TClass> $className
+     * @param string|UnitEnum $key The key to add the service under
+     * @param class-string<TClass>|TClass|Closure|null $source
+     *
+     * @return $this
+     */
+    public function addKeyedScoped(
+        string $className,
+        string|UnitEnum $key,
+        string|object|null $source = null
+    ): static;
+
+    /**
      * Indicates that the container should provide a per-scope instance of the given class by autowiring its
      * constructor. An optional mutator function can be specified to perform additional initialization on the
      * constructed object.
@@ -31,8 +74,9 @@ interface ContainerScopedBuilderInterface
      * @template TClass of object
      *
      * @param class-string<TClass> $className The fully qualified name of the class to add
-     * @param Closure|callable-string|null $mutator [optional] This function will be called after an instance of the class has been
-     * created. The class instance will be provided as the first parameter. Any additional parameters will be injected.
+     * @param Closure|callable-string|null $mutator [optional] This function will be called after an instance of the
+     * class has been created. The class instance will be provided as the first parameter. Any additional parameters
+     * will be injected.
      *
      * @return $this
      * @throws ImplementationException
@@ -48,8 +92,9 @@ interface ContainerScopedBuilderInterface
      *
      * @param class-string<TClass> $className The fully qualified name of the class to add
      * @param string|UnitEnum $key The key to add the service under
-     * @param Closure|callable-string|null $mutator [optional] This function will be called after an instance of the class has been
-     * created. The class instance will be provided as the first parameter. Any additional parameters will be injected.
+     * @param Closure|callable-string|null $mutator [optional] This function will be called after an instance of the
+     * class has been created. The class instance will be provided as the first parameter. Any additional parameters
+     * will be injected.
      *
      * @return $this
      * @throws ImplementationException

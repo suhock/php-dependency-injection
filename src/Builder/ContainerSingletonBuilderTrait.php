@@ -11,7 +11,6 @@ declare(strict_types=1);
 
 namespace Suhock\DependencyInjection\Builder;
 
-use Closure;
 use Suhock\DependencyInjection\ContainerBuilderInterface;
 use Suhock\DependencyInjection\InstanceProvider\InstanceProviderFactory;
 use Suhock\DependencyInjection\InstanceProvider\InstanceProviderInterface;
@@ -41,13 +40,7 @@ trait ContainerSingletonBuilderTrait
     ): static;
 
     /**
-     * @template TClass of object
-     * @template TImplementation of TClass
-     *
-     * @param class-string<TClass> $className
-     * @param class-string<TImplementation>|TClass|Closure|null $source
-     *
-     * @return $this
+     * @inheritDoc
      */
     public function addSingleton(string $className, string|object|null $source = null): static
     {
@@ -60,10 +53,7 @@ trait ContainerSingletonBuilderTrait
     }
 
     /**
-     * @template TClass of object
-     *
-     * @param class-string<TClass> $className
-     * @param class-string<TClass>|TClass|Closure|null $source
+     * @inheritDoc
      */
     public function addKeyedSingleton(
         string $className,
@@ -74,6 +64,116 @@ trait ContainerSingletonBuilderTrait
             $className,
             $key,
             InstanceProviderFactory::createInstanceProvider($className, $source)
+        );
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function addSingletonClass(string $className, ?callable $mutator = null): static
+    {
+        $this->addSingletonInstanceProvider(
+            $className,
+            InstanceProviderFactory::createClassInstanceProvider($className, $mutator)
+        );
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function addKeyedSingletonClass(
+        string $className,
+        string|UnitEnum $key,
+        ?callable $mutator = null
+    ): static {
+        return $this->addKeyedSingletonInstanceProvider(
+            $className,
+            $key,
+            InstanceProviderFactory::createClassInstanceProvider($className, $mutator)
+        );
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function addSingletonImplementation(string $className, string $implementationClassName): static
+    {
+        $this->addSingletonInstanceProvider(
+            $className,
+            InstanceProviderFactory::createImplementationInstanceProvider($className, $implementationClassName)
+        );
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function addKeyedSingletonImplementation(
+        string $className,
+        string|UnitEnum $key,
+        string $implementationClassName
+    ): static {
+        return $this->addKeyedSingletonInstanceProvider(
+            $className,
+            $key,
+            InstanceProviderFactory::createImplementationInstanceProvider($className, $implementationClassName)
+        );
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function addSingletonFactory(string $className, callable $factory): static
+    {
+        $this->addSingletonInstanceProvider(
+            $className,
+            InstanceProviderFactory::createClosureInstanceProvider($className, $factory(...))
+        );
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function addKeyedSingletonFactory(string $className, string|UnitEnum $key, callable $factory): static
+    {
+        return $this->addKeyedSingletonInstanceProvider(
+            $className,
+            $key,
+            InstanceProviderFactory::createClosureInstanceProvider($className, $factory(...))
+        );
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function addSingletonInstance(string $className, object $instance, bool $shouldDispose = true): static
+    {
+        return $this->addSingletonInstanceProvider(
+            $className,
+            InstanceProviderFactory::createObjectInstanceProvider($className, $instance),
+            $shouldDispose
+        );
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function addKeyedSingletonInstance(
+        string $className,
+        string|UnitEnum $key,
+        object $instance,
+        bool $shouldDispose = true
+    ): static {
+        return $this->addKeyedSingletonInstanceProvider(
+            $className,
+            $key,
+            InstanceProviderFactory::createObjectInstanceProvider($className, $instance),
+            $shouldDispose
         );
     }
 
@@ -114,145 +214,5 @@ trait ContainerSingletonBuilderTrait
         bool $shouldDispose = true
     ): static {
         return $this->addKeyed($className, $key, new SingletonStrategy($className), $instanceProvider, $shouldDispose);
-    }
-
-    /**
-     * @inheritDoc
-     *
-     * @template TClass of object
-     *
-     * @param class-string<TClass> $className
-     * @param Closure|callable-string|null $mutator
-     */
-    public function addSingletonClass(string $className, ?callable $mutator = null): static
-    {
-        $this->addSingletonInstanceProvider(
-            $className,
-            InstanceProviderFactory::createClassInstanceProvider($className, $mutator)
-        );
-
-        return $this;
-    }
-
-    /**
-     * @template TClass of object
-     *
-     * @param class-string<TClass> $className
-     * @param Closure|callable-string|null $mutator
-     */
-    public function addKeyedSingletonClass(
-        string $className,
-        string|UnitEnum $key,
-        ?callable $mutator = null
-    ): static {
-        return $this->addKeyedSingletonInstanceProvider(
-            $className,
-            $key,
-            InstanceProviderFactory::createClassInstanceProvider($className, $mutator)
-        );
-    }
-
-    /**
-     * @template TClass of object
-     * @template TImplementation of TClass
-     */
-    public function addSingletonImplementation(string $className, string $implementationClassName): static
-    {
-        $this->addSingletonInstanceProvider(
-            $className,
-            InstanceProviderFactory::createImplementationInstanceProvider($className, $implementationClassName)
-        );
-
-        return $this;
-    }
-
-    /**
-     * @template TClass of object
-     * @template TImplementation of TClass
-     */
-    public function addKeyedSingletonImplementation(
-        string $className,
-        string|UnitEnum $key,
-        string $implementationClassName
-    ): static {
-        return $this->addKeyedSingletonInstanceProvider(
-            $className,
-            $key,
-            InstanceProviderFactory::createImplementationInstanceProvider($className, $implementationClassName)
-        );
-    }
-
-    /**
-     * @template TClass of object
-     *
-     * @param class-string<TClass> $className
-     */
-    public function addSingletonFactory(string $className, callable $factory): static
-    {
-        $this->addSingletonInstanceProvider(
-            $className,
-            InstanceProviderFactory::createClosureInstanceProvider($className, $factory(...))
-        );
-
-        return $this;
-    }
-
-    /**
-     * @template TClass of object
-     *
-     * @param class-string<TClass> $className
-     */
-    public function addKeyedSingletonFactory(string $className, string|UnitEnum $key, callable $factory): static
-    {
-        return $this->addKeyedSingletonInstanceProvider(
-            $className,
-            $key,
-            InstanceProviderFactory::createClosureInstanceProvider($className, $factory(...))
-        );
-    }
-
-    /**
-     * @template TClass of object
-     *
-     * @param class-string<TClass> $className
-     * @param TClass $instance
-     * @param bool $shouldDispose Whether the container should dispose the instance, if it implements
-     * {@see \Suhock\DependencyInjection\DisposableInterface}, when the container is disposed. Pass false to retain
-     * disposal responsibility yourself, e.g. when the instance is shared with code outside the container.
-     *
-     * @return $this
-     */
-    public function addSingletonInstance(string $className, object $instance, bool $shouldDispose = true): static
-    {
-        return $this->addSingletonInstanceProvider(
-            $className,
-            InstanceProviderFactory::createObjectInstanceProvider($className, $instance),
-            $shouldDispose
-        );
-    }
-
-    /**
-     * @template TClass of object
-     *
-     * @param class-string<TClass> $className
-     * @param TClass $instance
-     * @param bool $shouldDispose Whether the container should dispose the instance, if it implements
-     * {@see \Suhock\DependencyInjection\DisposableInterface}, when the container is disposed. Pass false to retain
-     * disposal responsibility yourself, e.g. when the instance is shared with code outside the container.
-     *
-     * @return $this
-     */
-    public function addKeyedSingletonInstance(
-        string $className,
-        string|UnitEnum $key,
-        object $instance,
-        bool $shouldDispose = true
-    ): static {
-        return $this->addKeyedSingletonInstanceProvider(
-            $className,
-            $key,
-            InstanceProviderFactory::createObjectInstanceProvider($className, $instance),
-            $shouldDispose
-        );
     }
 }

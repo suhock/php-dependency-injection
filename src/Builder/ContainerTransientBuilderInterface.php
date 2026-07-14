@@ -21,6 +21,49 @@ use UnitEnum;
 interface ContainerTransientBuilderInterface
 {
     /**
+     * Adds a transient service. The provider is chosen from the type of $source:
+     * - `null`: autowire $className's constructor.
+     * - a `class-string`: the implementation class to resolve in place of $className.
+     * - a `Closure`: a factory to call.
+     * - an `object`: the instance to use.
+     *
+     * The convenience form takes the default for each shape. To pass a mutator,
+     * use {@see addTransientClass()}.
+     *
+     * @template TClass of object
+     *
+     * @param class-string<TClass> $className
+     * @param class-string<TClass>|Closure|null $source
+     *
+     * @return $this
+     */
+    public function addTransient(string $className, string|Closure|null $source = null): static;
+
+    /**
+     * Adds a transient service under $key. The provider is chosen from the type of $source:
+     * - `null`: autowire $className's constructor.
+     * - a `class-string`: the implementation class to resolve in place of $className.
+     * - a `Closure`: a factory to call.
+     * - an `object`: the instance to use.
+     *
+     * The convenience form takes the default for each shape. To pass a mutator,
+     * use {@see addKeyedTransientClass()}.
+     *
+     * @template TClass of object
+     *
+     * @param class-string<TClass> $className
+     * @param string|UnitEnum $key The key to add the service under
+     * @param class-string<TClass>|Closure|null $source
+     *
+     * @return $this
+     */
+    public function addKeyedTransient(
+        string $className,
+        string|UnitEnum $key,
+        string|Closure|null $source = null
+    ): static;
+
+    /**
      * Indicates that the container should provide a transient instance of the given class by autowiring its
      * constructor. An optional mutator function can be specified to perform additional initialization on the
      * constructed object.

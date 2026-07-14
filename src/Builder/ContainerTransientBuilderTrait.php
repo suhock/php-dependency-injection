@@ -41,12 +41,7 @@ trait ContainerTransientBuilderTrait
     ): static;
 
     /**
-     * @template TClass of object
-     *
-     * @param class-string<TClass> $className
-     * @param class-string<TClass>|Closure|null $source
-     *
-     * @return $this
+     * @inheritDoc
      */
     public function addTransient(string $className, string|Closure|null $source = null): static
     {
@@ -59,10 +54,7 @@ trait ContainerTransientBuilderTrait
     }
 
     /**
-     * @template TClass of object
-     *
-     * @param class-string<TClass> $className
-     * @param class-string<TClass>|Closure|null $source
+     * @inheritDoc
      */
     public function addKeyedTransient(
         string $className,
@@ -73,6 +65,87 @@ trait ContainerTransientBuilderTrait
             $className,
             $key,
             InstanceProviderFactory::createInstanceProvider($className, $source)
+        );
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function addTransientClass(string $className, ?callable $mutator = null): static
+    {
+        $this->addTransientInstanceProvider(
+            $className,
+            InstanceProviderFactory::createClassInstanceProvider($className, $mutator)
+        );
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function addKeyedTransientClass(
+        string $className,
+        string|UnitEnum $key,
+        ?callable $mutator = null
+    ): static {
+        return $this->addKeyedTransientInstanceProvider(
+            $className,
+            $key,
+            InstanceProviderFactory::createClassInstanceProvider($className, $mutator)
+        );
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function addTransientImplementation(string $className, string $implementationClassName): static
+    {
+        $this->addTransientInstanceProvider(
+            $className,
+            InstanceProviderFactory::createImplementationInstanceProvider($className, $implementationClassName)
+        );
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function addKeyedTransientImplementation(
+        string $className,
+        string|UnitEnum $key,
+        string $implementationClassName
+    ): static {
+        return $this->addKeyedTransientInstanceProvider(
+            $className,
+            $key,
+            InstanceProviderFactory::createImplementationInstanceProvider($className, $implementationClassName)
+        );
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function addTransientFactory(string $className, callable $factory): static
+    {
+        $this->addTransientInstanceProvider(
+            $className,
+            InstanceProviderFactory::createClosureInstanceProvider($className, $factory(...))
+        );
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function addKeyedTransientFactory(string $className, string|UnitEnum $key, callable $factory): static
+    {
+        return $this->addKeyedTransientInstanceProvider(
+            $className,
+            $key,
+            InstanceProviderFactory::createClosureInstanceProvider($className, $factory(...))
         );
     }
 
@@ -105,95 +178,5 @@ trait ContainerTransientBuilderTrait
         InstanceProviderInterface $instanceProvider
     ): static {
         return $this->addKeyed($className, $key, new TransientStrategy($className), $instanceProvider);
-    }
-
-    /**
-     * @inheritDoc
-     *
-     * @param class-string $className
-     * @param Closure|callable-string|null $mutator
-     */
-    public function addTransientClass(string $className, ?callable $mutator = null): static
-    {
-        $this->addTransientInstanceProvider(
-            $className,
-            InstanceProviderFactory::createClassInstanceProvider($className, $mutator)
-        );
-
-        return $this;
-    }
-
-    /**
-     * @template TClass of object
-     *
-     * @param class-string<TClass> $className
-     * @param Closure|callable-string|null $mutator
-     */
-    public function addKeyedTransientClass(
-        string $className,
-        string|UnitEnum $key,
-        ?callable $mutator = null
-    ): static {
-        return $this->addKeyedTransientInstanceProvider(
-            $className,
-            $key,
-            InstanceProviderFactory::createClassInstanceProvider($className, $mutator)
-        );
-    }
-
-    /**
-     * @template TClass of object
-     *
-     * @param class-string<TClass> $className
-     * @param class-string<TClass> $implementationClassName
-     */
-    public function addTransientImplementation(string $className, string $implementationClassName): static
-    {
-        $this->addTransientInstanceProvider(
-            $className,
-            InstanceProviderFactory::createImplementationInstanceProvider($className, $implementationClassName)
-        );
-
-        return $this;
-    }
-
-    /**
-     * @template TClass of object
-     */
-    public function addKeyedTransientImplementation(
-        string $className,
-        string|UnitEnum $key,
-        string $implementationClassName
-    ): static {
-        return $this->addKeyedTransientInstanceProvider(
-            $className,
-            $key,
-            InstanceProviderFactory::createImplementationInstanceProvider($className, $implementationClassName)
-        );
-    }
-
-    /**
-     * @param class-string $className
-     */
-    public function addTransientFactory(string $className, callable $factory): static
-    {
-        $this->addTransientInstanceProvider(
-            $className,
-            InstanceProviderFactory::createClosureInstanceProvider($className, $factory(...))
-        );
-
-        return $this;
-    }
-
-    /**
-     * @param class-string $className
-     */
-    public function addKeyedTransientFactory(string $className, string|UnitEnum $key, callable $factory): static
-    {
-        return $this->addKeyedTransientInstanceProvider(
-            $className,
-            $key,
-            InstanceProviderFactory::createClosureInstanceProvider($className, $factory(...))
-        );
     }
 }

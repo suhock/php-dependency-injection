@@ -22,6 +22,51 @@ use UnitEnum;
 interface ContainerSingletonBuilderInterface
 {
     /**
+     * Adds a singleton service. The provider is chosen from the type of $source:
+     * - `null`: autowire $className's constructor.
+     * - a `class-string`: the implementation class to resolve in place of $className.
+     * - a `Closure`: a factory to call.
+     * - an `object`: the instance to use.
+     *
+     * The convenience form takes the default for each shape. To pass a mutator,
+     * use {@see addSingletonClass()}; to set disposal of a supplied instance,
+     * use {@see addSingletonInstance()} with `$shouldDispose`.
+     *
+     * @template TClass of object
+     *
+     * @param class-string<TClass> $className
+     * @param class-string<TClass>|TClass|Closure|null $source
+     *
+     * @return $this
+     */
+    public function addSingleton(string $className, string|object|null $source = null): static;
+
+    /**
+     * Adds a singleton service under $key. The provider is chosen from the type of $source:
+     * - `null`: autowire $className's constructor.
+     * * - a `class-string`: the implementation class to resolve in place of $className.
+     * * - a `Closure`: a factory to call.
+     * * - an `object`: the instance to use.
+     *
+     * The convenience form takes the default for each shape. To pass a mutator,
+     * use {@see addKeyedSingletonClass()}; to set disposal of a supplied instance,
+     * use {@see addKeyedSingletonInstance()} with `$shouldDispose`.
+     *
+     * @template TClass of object
+     *
+     * @param class-string<TClass> $className
+     * @param string|UnitEnum $key The key to add the service under
+     * @param class-string<TClass>|TClass|Closure|null $source
+     *
+     * @return $this
+     */
+    public function addKeyedSingleton(
+        string $className,
+        string|UnitEnum $key,
+        string|object|null $source = null
+    ): static;
+
+    /**
      * Indicates that the container should provide a singleton instance of the given class by autowiring its
      * constructor. An optional mutator function can be specified to perform additional initialization on the
      * constructed object.
