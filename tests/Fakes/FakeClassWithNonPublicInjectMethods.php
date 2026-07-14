@@ -28,6 +28,7 @@ final class FakeClassWithNonPublicInjectMethods
         $this->protectedSetterValue = $obj;
     }
 
+    /** @phpstan-ignore method.unused (invoked by the injector via reflection; no caller PHPStan can see) */
     #[Inject]
     private function setPrivate(FakeClassNoConstructor $obj): void
     {

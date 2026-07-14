@@ -18,7 +18,6 @@ use Suhock\DependencyInjection\Key;
  */
 final class FakeClassWithDanglingKeyProperty
 {
-    /** @phpstan-ignore suhock.keyWithoutInject (deliberately violates the rule to exercise the injector's runtime guard) */
     #[Key('key1')]
     public ?FakeClassNoConstructor $dependency = null;
 }

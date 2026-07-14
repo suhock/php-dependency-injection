@@ -15,13 +15,3 @@ parameters:
     reportPossiblyNonexistentGeneralArrayOffset: true
     reportPossiblyNonexistentConstantArrayOffset: true
     reportWrongPhpDocTypeInVarTag: true
-
-services:
-    -
-        class: Suhock\DependencyInjection\PHPStan\InjectMethodAlwaysUsedExtension
-        tags:
-            - phpstan.methods.alwaysUsedMethodExtension
-    -
-        class: Suhock\DependencyInjection\PHPStan\KeyWithoutInjectPropertyRule
-        tags:
-            - phpstan.rules.rule
