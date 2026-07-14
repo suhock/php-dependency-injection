@@ -53,11 +53,11 @@ jobs:
               run: composer run-script test
 
             - name: Report coverage
-              if: matrix.php == '8.4'
+              if: matrix.php == '8.5'
               run: vendor/bin/phpunit -c . --coverage-text --coverage-clover=coverage.xml
 
             - name: Upload coverage to Codecov
-              if: matrix.php == '8.4'
+              if: matrix.php == '8.5'
               uses: codecov/codecov-action@v4
               with:
                   files: coverage.xml
