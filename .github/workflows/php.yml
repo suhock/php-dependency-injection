@@ -46,7 +46,11 @@ jobs:
             - name: Install dependencies
               run: composer update --prefer-dist --no-progress
 
+            # Skipped on 8.1: a DNF test fixture needs 8.2+ grammar to parse, and PHPUnit 10.5 (the only line that
+            # supports 8.1) declares matcher methods like once() static, which trips the strict rules. Static analysis
+            # on 8.2+ covers the code; 8.1 runtime support is covered by the test suite.
             - name: Run PHPStan static analysis
+              if: matrix.php != '8.1'
               run: composer run-script phpstan
 
             - name: Run test suite

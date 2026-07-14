@@ -7,11 +7,6 @@ parameters:
     paths:
         - src
         - tests
-    # A test fixture uses DNF types (PHP 8.2+), so static analysis targets 8.2 and up; the 8.1 grammar cannot parse
-    # the tree. Runtime 8.1 support is verified by running the test suite on 8.1.
-    phpVersion:
-        min: 80200
-        max: 80500
     checkImplicitMixed: true
     checkBenevolentUnionTypes: true
     checkUninitializedProperties: true
