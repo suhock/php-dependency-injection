@@ -11,25 +11,24 @@ declare(strict_types=1);
 
 namespace Suhock\DependencyInjection;
 
+use RuntimeException;
 use Suhock\DependencyInjection\Fakes\FakeCache;
 use Suhock\DependencyInjection\Fakes\FakeClassImplementsInterfaces;
 use Suhock\DependencyInjection\Fakes\FakeClassNoConstructor;
 use Suhock\DependencyInjection\Fakes\FakeClassWithConstructor;
+use Suhock\DependencyInjection\Fakes\FakeClassWithDependencies;
 use Suhock\DependencyInjection\Fakes\FakeClassWithKeyedDependency;
+use Suhock\DependencyInjection\Fakes\FakeClassWithStringDependency;
 use Suhock\DependencyInjection\Fakes\FakeClassWithUnionDependency;
+use Suhock\DependencyInjection\Fakes\FakeConfigurator;
 use Suhock\DependencyInjection\Fakes\FakeInterfaceOne;
 use Suhock\DependencyInjection\Fakes\FakeInterfaceTwo;
-use Suhock\DependencyInjection\Fakes\FakeClassWithDependencies;
-use Suhock\DependencyInjection\Fakes\FakeClassWithStringDependency;
-use Suhock\DependencyInjection\Fakes\FakeConfigurator;
 use Suhock\DependencyInjection\Fakes\FakeUnitEnum;
 use Suhock\DependencyInjection\Validation\ContainerValidationException;
 use Suhock\DependencyInjection\Validation\DependencyGraphEdge;
 use Suhock\DependencyInjection\Validation\ValidationIssue;
 use Suhock\DependencyInjection\Validation\ValidationIssueKind;
-use RuntimeException;
 use Throwable;
-
 use function array_map;
 
 /**
