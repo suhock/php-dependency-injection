@@ -25,5 +25,5 @@ interface DependencyInjectionExceptionInterface extends Throwable
      * @return DependencyInjectionExceptionInterface|null The dependency injection exception that was passed in as
      * previous but was consolidated into this instance, or <code>null</code>
      */
-    public function getConsolidatedException(): ?DependencyInjectionExceptionInterface;
+    public function getConsolidatedException(): ?self;
 }

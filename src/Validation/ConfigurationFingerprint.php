@@ -106,7 +106,7 @@ final class ConfigurationFingerprint
 
         // The remaining providers of the closed set (held instances and context selectors) contribute no edges,
         // so their class name is their whole validation-relevant shape.
-        return 'leaf:' . get_class($provider);
+        return 'leaf:' . $provider::class;
     }
 
     /**
@@ -160,7 +160,7 @@ final class ConfigurationFingerprint
 
             $key = $args[0];
 
-            return $key instanceof UnitEnum ? get_class($key) . '::' . $key->name : $key;
+            return $key instanceof UnitEnum ? $key::class . '::' . $key->name : $key;
         }
 
         return '-';

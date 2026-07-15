@@ -31,7 +31,6 @@ use Suhock\DependencyInjection\Resolver\ResolutionPlanKind;
 use Throwable;
 use UnitEnum;
 
-use function get_class;
 use function spl_object_id;
 
 /**
@@ -301,7 +300,7 @@ final class Container implements ContainerInterface, DisposableInterface, ScopeF
             return $instance;
         }
 
-        throw new ContainerException('Unknown leaf instance provider ' . get_class($provider));
+        throw new ContainerException('Unknown leaf instance provider ' . $provider::class);
     }
 
     private function executeAutowiredClass(string $id, ResolutionPlan $plan, ResolutionContext $ctx): object

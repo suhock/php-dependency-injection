@@ -15,7 +15,6 @@ use Suhock\DependencyInjection\DependencyInjectionException;
 use Suhock\DependencyInjection\InjectorException;
 use Throwable;
 
-use function get_class;
 use function gettype;
 use function is_object;
 
@@ -44,7 +43,7 @@ final class InstanceTypeException extends InjectorException
         parent::__construct(
             "Expected object of type $this->expectedClassName, got " . (
                 is_object($actualValue)
-                ? 'object of type ' . get_class($actualValue)
+                ? 'object of type ' . $actualValue::class
                 : gettype($this->actualValue)
             ),
             $previous,
