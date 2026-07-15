@@ -20,7 +20,7 @@ use Suhock\DependencyInjection\Lifetime\LifetimeStrategy;
  * providers resolve a service's dependencies from the same root.
  *
  * @internal Only the container's own resolution machinery (lifetime strategies and instance providers, themselves
- * internal) ever receives a context.
+ *     internal) ever receives a context.
  */
 final class ResolutionContext
 {
@@ -28,7 +28,7 @@ final class ResolutionContext
      * @param ContainerInterface $container The resolution root itself
      * @param InstanceStore $store The instance store owned by {@see $container}
      * @param ResolutionContext|null $root The context of the root container, or <code>null</code> if this context
-     * belongs to the root container itself
+     *     belongs to the root container itself
      */
     public function __construct(
         public readonly ContainerInterface $container,

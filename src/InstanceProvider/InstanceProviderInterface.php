@@ -18,6 +18,6 @@ namespace Suhock\DependencyInjection\InstanceProvider;
  *
  * @template TClass of object
  *
- * @internal The set of instance providers is closed; add services through the {@see \Suhock\DependencyInjection\ContainerBuilder} convenience methods (classes, factories, instances, implementations) instead of implementing this.
+ * @internal
  */
 interface InstanceProviderInterface {}

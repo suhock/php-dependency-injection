@@ -114,7 +114,7 @@ final class ConfigurationFingerprint
      * signature.
      *
      * @return string|null <code>null</code> if the closure has no file (an internal function or one defined in
-     * eval'd code), and so cannot be fingerprinted
+     *     eval'd code), and so cannot be fingerprinted
      */
     private static function closureSignature(Closure $closure): ?string
     {

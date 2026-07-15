@@ -29,7 +29,7 @@ final class InjectionPlanFactory
      * @param class-string $className
      *
      * @throws InjectorException if a method with an {@see Inject} attribute is static, or a property has a
-     * {@see Key} attribute but no {@see Inject} attribute
+     *     {@see Key} attribute but no {@see Inject} attribute
      */
     public static function create(string $className): InjectionPlan
     {

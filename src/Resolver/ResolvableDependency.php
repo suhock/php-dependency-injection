@@ -27,7 +27,7 @@ final class ResolvableDependency
 {
     /**
      * @param non-empty-list<non-empty-list<class-string>> $alternatives The candidate resolutions, in priority order;
-     * each inner list is a set of types a single instance must satisfy
+     *     each inner list is a set of types a single instance must satisfy
      * @param string|UnitEnum|null $key The key the service was added under, if any
      */
     public function __construct(

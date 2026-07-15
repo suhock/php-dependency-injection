@@ -26,7 +26,7 @@ final class ImplementationInstanceProvider implements InstanceProviderInterface
     /**
      * @param class-string<TClass> $className The name of the class or interface provided
      * @param class-string<TClass> $implementationClassName The name of the class providing the implementation
-     * instance
+     *     instance
      *
      * @throws ImplementationException If {@see $implementationClassName} is not a subclass of {@see $className}
      */

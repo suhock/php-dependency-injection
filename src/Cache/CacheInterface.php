@@ -28,7 +28,7 @@ interface CacheInterface
      * @param mixed $value Assigned the stored value when the id is present; left indeterminate otherwise
      *
      * @return bool <code>true</code> if the id was present (and <code>$value</code> was populated), <code>false</code>
-     * otherwise
+     *     otherwise
      */
     public function tryGet(string $id, mixed &$value): bool;
 

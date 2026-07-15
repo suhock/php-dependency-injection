@@ -49,7 +49,7 @@ final class ContainerValidator
 {
     /**
      * @param array<string, Descriptor<object>> $descriptors The full descriptor map the plans were compiled from,
-     * keyed by descriptor id
+     *     keyed by descriptor id
      */
     public function __construct(
         private readonly array $descriptors,

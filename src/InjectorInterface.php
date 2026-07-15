@@ -21,10 +21,10 @@ interface InjectorInterface
      *
      * @param callable $function The function to call
      * @param array<mixed> $params [optional] A list of parameter values to provide to the function. String keys will be
-     * matched by name; integer keys will be matched by position.
+     *     matched by name; integer keys will be matched by position.
      *
      * @throws InjectorException If there was an error resolving values for the function parameters or invoking the
-     * function
+     *     function
      *
      * @return mixed The value returned by the function
      */
@@ -37,10 +37,10 @@ interface InjectorInterface
      *
      * @param class-string<TClass> $className The name of the class to instantiate
      * @param array<mixed> $params [optional] A list of parameter values to provide to the constructor. String keys will
-     * be matched by name; integer keys will be matched by position.
+     *     be matched by name; integer keys will be matched by position.
      *
      * @throws InjectorException If there was an error resolving values for the constructor parameters or invoking the
-     * constructor
+     *     constructor
      *
      * @return TClass A new instance of the specified class
      */

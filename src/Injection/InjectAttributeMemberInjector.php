@@ -38,7 +38,7 @@ final class InjectAttributeMemberInjector implements PostInstantiationHookInterf
     /**
      * @param ParameterResolverInterface $resolver The resolver to use for resolving injection point values
      * @param CacheInterface|null $sharedCache [optional] Optional shared (L2) metadata cache for the reflected
-     * injection plans
+     *     injection plans
      */
     public function __construct(
         private readonly ParameterResolverInterface $resolver,

@@ -58,13 +58,13 @@ final class ResolutionPlanFactory
      *     injectPropertyEdges: array<string, ResolutionPlanEdge>,
      *     nonInstantiableMessage: string|null,
      *     invalidInjectMemberMessages: list<string>
-     * }>
+     *     }>
      */
     private array $classParts = [];
 
     /**
      * @param CacheInterface|null $cache [optional] A shared cache for reflected metadata, ideally the same instance
-     * the runtime injector uses so compiled #[Inject] plans are shared with the standalone injector
+     *     the runtime injector uses so compiled #[Inject] plans are shared with the standalone injector
      */
     public function __construct(?CacheInterface $cache = null)
     {
@@ -177,7 +177,7 @@ final class ResolutionPlanFactory
      *     injectPropertyEdges: array<string, ResolutionPlanEdge>,
      *     nonInstantiableMessage: string|null,
      *     invalidInjectMemberMessages: list<string>
-     * }
+     *     }
      */
     private function classParts(string $className): array
     {
@@ -193,7 +193,7 @@ final class ResolutionPlanFactory
      *     injectPropertyEdges: array<string, ResolutionPlanEdge>,
      *     nonInstantiableMessage: string|null,
      *     invalidInjectMemberMessages: list<string>
-     * }
+     *     }
      */
     private function computeClassParts(string $className): array
     {

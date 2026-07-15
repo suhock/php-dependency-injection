@@ -74,8 +74,9 @@ interface ContainerSingletonBuilderInterface
      * @template TClass of object
      *
      * @param class-string<TClass> $className The fully qualified name of the class to add
-     * @param Closure|callable-string|null $mutator [optional] This function will be called after an instance of the class has been
-     * created. The class instance will be provided as the first parameter. Any additional parameters will be injected.
+     * @param Closure|callable-string|null $mutator [optional] This function will be called after an instance of the
+     *     class has been created. The class instance will be provided as the first parameter. Any additional
+     *     parameters will be injected.
      *
      * @throws ImplementationException
      *
@@ -92,8 +93,9 @@ interface ContainerSingletonBuilderInterface
      *
      * @param class-string<TClass> $className The fully qualified name of the class to add
      * @param string|UnitEnum $key The key to add the service under
-     * @param Closure|callable-string|null $mutator [optional] This function will be called after an instance of the class has been
-     * created. The class instance will be provided as the first parameter. Any additional parameters will be injected.
+     * @param Closure|callable-string|null $mutator [optional] This function will be called after an instance of the
+     *     class has been created. The class instance will be provided as the first parameter. Any additional
+     *     parameters will be injected.
      *
      * @throws ImplementationException
      *
@@ -115,7 +117,7 @@ interface ContainerSingletonBuilderInterface
      *
      * @param class-string<TClass> $className The fully qualified name of the class to add
      * @param class-string<TImplementation> $implementationClassName The fully qualified name of a class that implements
-     * or extends {@see $className}.
+     *     or extends {@see $className}.
      *
      * @throws ImplementationException If the implementation class is not a subclass of the class being added
      *
@@ -134,7 +136,7 @@ interface ContainerSingletonBuilderInterface
      * @param class-string<TClass> $className The fully qualified name of the class to add
      * @param string|UnitEnum $key The key to add the service under
      * @param class-string<TImplementation> $implementationClassName The fully qualified name of a class that
-     * implements or extends {@see $className}.
+     *     implements or extends {@see $className}.
      *
      * @throws ImplementationException If the implementation class is not a subclass of the class being added
      *
@@ -154,7 +156,7 @@ interface ContainerSingletonBuilderInterface
      *
      * @param class-string<TClass> $className The fully qualified name of the class to add
      * @param callable $factory A factory method that returns an instance of the class specified by {@see $className}.
-     * Any method parameters will be injected.
+     *     Any method parameters will be injected.
      *
      * @return $this
      */
@@ -169,7 +171,7 @@ interface ContainerSingletonBuilderInterface
      * @param class-string<TClass> $className The fully qualified name of the class to add
      * @param string|UnitEnum $key The key to add the service under
      * @param callable $factory A factory method that returns an instance of the class specified by {@see $className}.
-     * Any method parameters will be injected.
+     *     Any method parameters will be injected.
      *
      * @return $this
      */
@@ -183,8 +185,8 @@ interface ContainerSingletonBuilderInterface
      * @param class-string<TClass> $className The fully qualified name of the class to add
      * @param TClass $instance An instance of the class
      * @param bool $shouldDispose Whether the container should dispose the instance, if it implements
-     * {@see \Suhock\DependencyInjection\DisposableInterface}, when the container is disposed. Pass false to retain
-     * disposal responsibility yourself, e.g. when the instance is shared with code outside the container.
+     *     {@see \Suhock\DependencyInjection\DisposableInterface}, when the container is disposed. Pass false to retain
+     *     disposal responsibility yourself, e.g. when the instance is shared with code outside the container.
      *
      * @throws InstanceTypeException
      *
@@ -202,8 +204,8 @@ interface ContainerSingletonBuilderInterface
      * @param string|UnitEnum $key The key to add the service under
      * @param TClass $instance An instance of the class
      * @param bool $shouldDispose Whether the container should dispose the instance, if it implements
-     * {@see \Suhock\DependencyInjection\DisposableInterface}, when the container is disposed. Pass false to retain
-     * disposal responsibility yourself, e.g. when the instance is shared with code outside the container.
+     *     {@see \Suhock\DependencyInjection\DisposableInterface}, when the container is disposed. Pass false to retain
+     *     disposal responsibility yourself, e.g. when the instance is shared with code outside the container.
      *
      * @throws InstanceTypeException
      *

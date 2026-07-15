@@ -29,7 +29,7 @@ final class Descriptor
      * @param LifetimeStrategy<TClass> $lifetimeStrategy
      * @param InstanceProviderInterface<TClass> $instanceProvider
      * @param bool $shouldDispose Whether the container should dispose the disposable instances it creates for this
-     * service when the resolution root that cached them is disposed
+     *     service when the resolution root that cached them is disposed
      */
     public function __construct(
         public readonly string $className,

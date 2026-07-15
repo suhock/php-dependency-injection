@@ -24,10 +24,10 @@ final class CircularDependencyException extends ContainerException
      * @inheritDoc
      *
      * @param class-string<TClass> $className The class name of the dependency that could not be resolved due to a
-     * circular dependency
+     *     circular dependency
      * @param Throwable|null $previous [optional] The previous throwable used for exception chaining. If the throwable
-     * is an instance of {@see DependencyInjectionException} then its content will be consolidated into the new
-     * instance.
+     *     is an instance of {@see DependencyInjectionException} then its content will be consolidated into the new
+     *     instance.
      */
     public function __construct(
         private readonly string $className,

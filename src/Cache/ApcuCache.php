@@ -38,7 +38,7 @@ final class ApcuCache implements CacheInterface
     /**
      * @inheritDoc
      *
-     * Uses the success flag from {@see apcu_fetch()} to distinguish a stored <code>false</code> from a cache miss.
+     *     Uses the success flag from {@see apcu_fetch()} to distinguish a stored <code>false</code> from a cache miss.
      */
     public function tryGet(string $id, mixed &$value): bool
     {

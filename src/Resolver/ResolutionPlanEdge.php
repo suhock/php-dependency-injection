@@ -28,13 +28,13 @@ final class ResolutionPlanEdge
     /**
      * @param string $name The parameter or property name of the injection point
      * @param ResolvableDependency|null $dependency The container-resolvable description, or <code>null</code> if the
-     * container is never consulted for this injection point
+     *     container is never consulted for this injection point
      * @param bool $soft Whether resolution failure self-heals via the default value or <code>null</code>
      * @param bool $hasDefault Whether the injection point declares a default value
      * @param mixed $defaultValue The declared default value, resolved at compile time; only meaningful when
-     * {@see $hasDefault}
+     *     {@see $hasDefault}
      * @param string|null $declaredType The raw declared type, populated only when {@see $dependency} is
-     * <code>null</code> and the injection point has a type, for diagnostics
+     *     <code>null</code> and the injection point has a type, for diagnostics
      */
     public function __construct(
         public readonly string $name,

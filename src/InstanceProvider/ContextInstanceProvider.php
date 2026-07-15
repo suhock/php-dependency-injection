@@ -31,7 +31,7 @@ final class ContextInstanceProvider implements InstanceProviderInterface
     /**
      * @param class-string<TClass> $className The name of the class this factory will provide
      * @param Closure(ResolutionContext): object $select The selector that derives the instance from the resolution
-     * context
+     *     context
      */
     public function __construct(
         public readonly string $className,

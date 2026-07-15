@@ -21,9 +21,9 @@ final class DependencyGraphEdge
      * @param string $sourceId The service doing the injecting, as <code>Class</code> or <code>Class#key</code>
      * @param string $targetId The service being injected, as <code>Class</code> or <code>Class#key</code>
      * @param bool $required Whether resolution fails without the target; a non-required edge self-heals to the
-     * injection point's default value or <code>null</code>
+     *     injection point's default value or <code>null</code>
      * @param string $injectionPoint The injection point on the source, e.g.
-     * <code>parameter $transport of __construct()</code>
+     *     <code>parameter $transport of __construct()</code>
      */
     public function __construct(
         public readonly string $sourceId,

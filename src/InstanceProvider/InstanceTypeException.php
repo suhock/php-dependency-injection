@@ -32,8 +32,8 @@ final class InstanceTypeException extends InjectorException
      * @param class-string<TExpected> $expectedClassName The name of the expected class
      * @param mixed $actualValue The value actually received
      * @param Throwable|null $previous [optional] The previous throwable used for exception chaining. If the throwable
-     * is an instance of {@see DependencyInjectionException} then its content will be consolidated into the new
-     * instance.
+     *     is an instance of {@see DependencyInjectionException} then its content will be consolidated into the new
+     *     instance.
      */
     public function __construct(
         private readonly string $expectedClassName,

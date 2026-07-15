@@ -18,7 +18,7 @@ use Suhock\DependencyInjection\ResolutionContext;
  *
  * @template TClass of object
  *
- * @internal The set of lifetime strategies is closed (singleton, scoped, transient); captive-dependency validation depends on classifying every strategy.
+ * @internal
  */
 abstract class LifetimeStrategy
 {
@@ -37,7 +37,7 @@ abstract class LifetimeStrategy
      *
      * @param ResolutionContext $context The context of the resolution root requesting the instance
      * @param callable $factory A factory function that should be called when an instance of the class is needed,
-     * resolving the instance's dependencies from the context it is given
+     *     resolving the instance's dependencies from the context it is given
      *
      * @phpstan-param callable(ResolutionContext):TClass $factory
      *

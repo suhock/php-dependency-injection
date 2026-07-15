@@ -25,7 +25,7 @@ final class ImplementationException extends ContainerException
     /**
      * @param class-string<TExpected> $expectedClassName The name of the expected base class
      * @param class-string<TActual> $actualClassName The name of the incorrect implementation class
-     * @param null|Throwable $previous [optional] The previous throwable used for exception chaining
+     * @param Throwable|null $previous [optional] The previous throwable used for exception chaining
      */
     public function __construct(
         private readonly string $expectedClassName,

@@ -361,7 +361,7 @@ final class Container implements ContainerInterface, DisposableInterface, ScopeF
      *
      * @param list<ResolutionPlanEdge> $edges
      * @param array{class-string, string}|Closure $functionRef The reflectable reference to the parameters' function,
-     * used only to build a precise exception when a required edge fails
+     *     used only to build a precise exception when a required edge fails
      * @param int $skip The parameter offset of the first edge within the referenced function's signature
      *
      * @return list<mixed>

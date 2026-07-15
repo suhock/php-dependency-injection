@@ -23,8 +23,8 @@ final class PropertyResolutionException extends InjectorException
     /**
      * @param ReflectionProperty $reflectionProperty The unresolved property
      * @param Throwable|null $previous [optional] The previous throwable used for exception chaining. If the throwable
-     * is an instance of {@see DependencyInjectionException} then its content will be consolidated into the new
-     * instance.
+     *     is an instance of {@see DependencyInjectionException} then its content will be consolidated into the new
+     *     instance.
      */
     public function __construct(
         private readonly ReflectionProperty $reflectionProperty,
