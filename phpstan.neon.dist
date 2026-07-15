@@ -1,8 +1,28 @@
 includes:
     - phar://vendor/phpstan/phpstan/phpstan.phar/conf/bleedingEdge.neon
     - vendor/phpstan/phpstan-strict-rules/rules.neon
+    - vendor/ergebnis/phpstan-rules/rules.neon
+    - vendor/suhock/phpstan-rules/rules.neon
 
 parameters:
+    # ergebnis/phpstan-rules ships ~30 opinionated rules, all on by default.
+    # Opt out of the whole set, then enable only the ones we want.
+    ergebnis:
+        allRules: false
+        declareStrictTypes:
+            enabled: true
+        final:
+            enabled: true
+        finalInAbstractClass:
+            enabled: true
+        noCompact:
+            enabled: true
+        privateInFinalClass:
+            enabled: true
+        noErrorSuppression:
+            enabled: true
+        noEval:
+            enabled: true
     level: 10
     paths:
         - src
@@ -12,6 +32,7 @@ parameters:
     checkUninitializedProperties: true
     checkMissingCallableSignature: false
     reportAnyTypeWideningInVarTag: true
+    reportIgnoresWithoutComments: true
     reportPossiblyNonexistentGeneralArrayOffset: true
     reportPossiblyNonexistentConstantArrayOffset: true
     reportWrongPhpDocTypeInVarTag: true

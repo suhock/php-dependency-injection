@@ -13,5 +13,8 @@ namespace Suhock\DependencyInjection\Fakes;
 
 /**
  * Fake a base class for extension.
+ *
+ * @phpstan-ignore ergebnis.final (Test fake intentionally left extensible for testing resolution of inheritence
+ *     hierarchies)
  */
 class FakeBaseClass {}

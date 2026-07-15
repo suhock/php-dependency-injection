@@ -12,7 +12,9 @@ declare(strict_types=1);
 namespace Suhock\DependencyInjection;
 
 /**
- * Exception that indicates an error occurred as part of the dependency injection process (i.e. while resolving or
+ * Exception that indicates an error occurred as part of the dependency injection process (i.e., while resolving or
  * injecting dependencies when calling a function or building an object).
+ *
+ * @phpstan-ignore ergebnis.final (Extended by specific subtypes and thrown directly)
  */
 class InjectorException extends DependencyInjectionException {}

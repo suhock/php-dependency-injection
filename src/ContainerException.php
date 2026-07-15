@@ -14,5 +14,7 @@ namespace Suhock\DependencyInjection;
 /**
  * Exception that indicates an error specific to a container occurred (i.e., while building or retrieving instances from
  * the container).
+ *
+ * @phpstan-ignore ergebnis.final (Extended by specific subtypes and thrown directly)
  */
 class ContainerException extends DependencyInjectionException {}
