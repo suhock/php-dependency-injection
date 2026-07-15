@@ -11,6 +11,9 @@ declare(strict_types=1);
 
 return (new PhpCsFixer\Config())
     ->setRiskyAllowed(true)
+    ->registerCustomFixers([
+        new \Suhock\PhpCsFixer\PhpdocTagDescriptionIndentFixer(),
+    ])
     ->setRules([
         '@PER-CS3x0' => true,
 
@@ -47,6 +50,7 @@ return (new PhpCsFixer\Config())
         'phpdoc_trim' => true,
         'phpdoc_types' => true,
         'phpdoc_var_without_name' => true,
+        'Suhock/phpdoc_tag_description_indent' => true, // custom: suhock/php-cs-fixer-rules
 
         // Whitespace & layout
         'blank_line_before_statement' => ['statements' => ['return']],
