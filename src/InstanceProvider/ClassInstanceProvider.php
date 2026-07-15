@@ -17,6 +17,7 @@ use Closure;
  * Factory that provides instances of a class by directly instantiating the class.
  *
  * @template TClass of object
+ *
  * @template-implements InstanceProviderInterface<TClass>
  *
  * @internal
@@ -33,7 +34,7 @@ final class ClassInstanceProvider implements InstanceProviderInterface
      */
     public function __construct(
         public readonly string $className,
-        ?callable $mutator = null
+        ?callable $mutator = null,
     ) {
         $this->mutator = $mutator !== null ? $mutator(...) : null;
     }

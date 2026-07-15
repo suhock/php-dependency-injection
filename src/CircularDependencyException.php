@@ -31,7 +31,7 @@ final class CircularDependencyException extends ContainerException
      */
     public function __construct(
         private readonly string $className,
-        ?Throwable $previous = null
+        ?Throwable $previous = null,
     ) {
         parent::__construct("Circular dependency detected for class $className", $previous);
     }

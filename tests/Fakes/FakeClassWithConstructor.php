@@ -16,7 +16,5 @@ namespace Suhock\DependencyInjection\Fakes;
  */
 final class FakeClassWithConstructor implements FakeInterfaceOne
 {
-    public function __construct(public readonly FakeClassNoConstructor $obj)
-    {
-    }
+    public function __construct(public readonly FakeClassNoConstructor $obj) {}
 }

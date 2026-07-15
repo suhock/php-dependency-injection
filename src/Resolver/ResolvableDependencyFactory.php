@@ -37,7 +37,7 @@ final class ResolvableDependencyFactory
     {
         return self::createFromType(
             $rParam->getType(),
-            self::keyFromAttributes($rParam->getAttributes(Key::class))
+            self::keyFromAttributes($rParam->getAttributes(Key::class)),
         );
     }
 

@@ -29,7 +29,6 @@ final class InjectionPlan
      */
     public function __construct(
         public readonly array $methods,
-        public readonly array $properties
-    ) {
-    }
+        public readonly array $properties,
+    ) {}
 }

@@ -24,16 +24,16 @@ final class ObjectInstanceProviderTest extends AbstractDependencyInjectionTestCa
     public function testConstruct_WhenInstanceIsNotAnInstanceOfClass_ThrowsInstanceTypeException(): void
     {
         // Arrange & Act
-        $fn = static fn () => new ObjectInstanceProvider(
+        $fn = static fn() => new ObjectInstanceProvider(
             FakeClassExtendsBaseClass::class,
-            new FakeClassNoConstructor()
+            new FakeClassNoConstructor(),
         );
 
         // Assert
         self::assertThrowsInstanceTypeException(
             FakeClassExtendsBaseClass::class,
             FakeClassNoConstructor::class,
-            $fn
+            $fn,
         );
     }
 

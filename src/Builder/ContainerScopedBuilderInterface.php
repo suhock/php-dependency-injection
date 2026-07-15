@@ -63,7 +63,7 @@ interface ContainerScopedBuilderInterface
     public function addKeyedScoped(
         string $className,
         string|UnitEnum $key,
-        string|object|null $source = null
+        string|object|null $source = null,
     ): static;
 
     /**
@@ -78,8 +78,9 @@ interface ContainerScopedBuilderInterface
      * class has been created. The class instance will be provided as the first parameter. Any additional parameters
      * will be injected.
      *
-     * @return $this
      * @throws ImplementationException
+     *
+     * @return $this
      */
     public function addScopedClass(string $className, ?callable $mutator = null): static;
 
@@ -96,13 +97,14 @@ interface ContainerScopedBuilderInterface
      * class has been created. The class instance will be provided as the first parameter. Any additional parameters
      * will be injected.
      *
-     * @return $this
      * @throws ImplementationException
+     *
+     * @return $this
      */
     public function addKeyedScopedClass(
         string $className,
         string|UnitEnum $key,
-        ?callable $mutator = null
+        ?callable $mutator = null,
     ): static;
 
     /**
@@ -117,8 +119,9 @@ interface ContainerScopedBuilderInterface
      * @param class-string<TImplementation> $implementationClassName The fully qualified name of a class that implements
      * or extends {@see $className}.
      *
-     * @return $this
      * @throws ImplementationException If the implementation class is not a subclass of the class being added
+     *
+     * @return $this
      */
     public function addScopedImplementation(string $className, string $implementationClassName): static;
 
@@ -135,13 +138,14 @@ interface ContainerScopedBuilderInterface
      * @param class-string<TImplementation> $implementationClassName The fully qualified name of a class that
      * implements or extends {@see $className}.
      *
-     * @return $this
      * @throws ImplementationException If the implementation class is not a subclass of the class being added
+     *
+     * @return $this
      */
     public function addKeyedScopedImplementation(
         string $className,
         string|UnitEnum $key,
-        string $implementationClassName
+        string $implementationClassName,
     ): static;
 
     /**

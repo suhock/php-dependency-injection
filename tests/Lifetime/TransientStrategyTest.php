@@ -35,7 +35,7 @@ final class TransientStrategyTest extends AbstractDependencyInjectionTestCase
         $context = self::createResolutionContext();
 
         // Act
-        $instance = $strategy->get($context, fn () => new FakeClassNoConstructor());
+        $instance = $strategy->get($context, fn() => new FakeClassNoConstructor());
 
         // Assert
         self::assertInstanceOf(FakeClassNoConstructor::class, $instance);
@@ -48,8 +48,8 @@ final class TransientStrategyTest extends AbstractDependencyInjectionTestCase
         $context = self::createResolutionContext();
 
         // Act
-        $firstInstance = $strategy->get($context, fn () => new FakeClassNoConstructor());
-        $secondInstance = $strategy->get($context, fn () => new FakeClassNoConstructor());
+        $firstInstance = $strategy->get($context, fn() => new FakeClassNoConstructor());
+        $secondInstance = $strategy->get($context, fn() => new FakeClassNoConstructor());
 
         // Assert
         self::assertNotSame($firstInstance, $secondInstance);

@@ -44,8 +44,8 @@ final class InjectionPlanFactory
 
             if ($rMethod->isStatic()) {
                 throw new InjectorException(
-                    "Method $className::" . $rMethod->getName() .
-                        '() is static and cannot be an #[Inject] method; injection happens per instance'
+                    "Method $className::" . $rMethod->getName()
+                        . '() is static and cannot be an #[Inject] method; injection happens per instance',
                 );
             }
 
@@ -63,18 +63,18 @@ final class InjectionPlanFactory
             if (count($rProperty->getAttributes(Inject::class)) === 0) {
                 if (count($rKeyAttributes) > 0) {
                     throw new InjectorException(
-                        "Property $className::\$" . $rProperty->getName() .
-                            ' has a #[Key] attribute but no #[Inject]; a key alone does not mark a property' .
-                            ' for injection'
+                        "Property $className::\$" . $rProperty->getName()
+                            . ' has a #[Key] attribute but no #[Inject]; a key alone does not mark a property'
+                            . ' for injection',
                     );
                 }
 
                 continue;
             }
 
-            $properties[$rProperty->getName()] = count($rKeyAttributes) > 0 ?
-                $rKeyAttributes[0]->newInstance()->getKey() :
-                null;
+            $properties[$rProperty->getName()] = count($rKeyAttributes) > 0
+                ? $rKeyAttributes[0]->newInstance()->getKey()
+                : null;
         }
 
         return new InjectionPlan($methods, $properties);

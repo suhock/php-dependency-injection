@@ -28,7 +28,7 @@ trait ContainerSingletonBuilderTrait
         string $className,
         LifetimeStrategy $lifetimeStrategy,
         InstanceProviderInterface $instanceProvider,
-        bool $shouldDispose = true
+        bool $shouldDispose = true,
     ): static;
 
     abstract private function addKeyed(
@@ -36,7 +36,7 @@ trait ContainerSingletonBuilderTrait
         string|UnitEnum $key,
         LifetimeStrategy $lifetimeStrategy,
         InstanceProviderInterface $instanceProvider,
-        bool $shouldDispose = true
+        bool $shouldDispose = true,
     ): static;
 
     /**
@@ -46,7 +46,7 @@ trait ContainerSingletonBuilderTrait
     {
         $this->addSingletonInstanceProvider(
             $className,
-            InstanceProviderFactory::createInstanceProvider($className, $source)
+            InstanceProviderFactory::createInstanceProvider($className, $source),
         );
 
         return $this;
@@ -58,12 +58,12 @@ trait ContainerSingletonBuilderTrait
     public function addKeyedSingleton(
         string $className,
         string|UnitEnum $key,
-        string|object|null $source = null
+        string|object|null $source = null,
     ): static {
         return $this->addKeyedSingletonInstanceProvider(
             $className,
             $key,
-            InstanceProviderFactory::createInstanceProvider($className, $source)
+            InstanceProviderFactory::createInstanceProvider($className, $source),
         );
     }
 
@@ -74,7 +74,7 @@ trait ContainerSingletonBuilderTrait
     {
         $this->addSingletonInstanceProvider(
             $className,
-            InstanceProviderFactory::createClassInstanceProvider($className, $mutator)
+            InstanceProviderFactory::createClassInstanceProvider($className, $mutator),
         );
 
         return $this;
@@ -86,12 +86,12 @@ trait ContainerSingletonBuilderTrait
     public function addKeyedSingletonClass(
         string $className,
         string|UnitEnum $key,
-        ?callable $mutator = null
+        ?callable $mutator = null,
     ): static {
         return $this->addKeyedSingletonInstanceProvider(
             $className,
             $key,
-            InstanceProviderFactory::createClassInstanceProvider($className, $mutator)
+            InstanceProviderFactory::createClassInstanceProvider($className, $mutator),
         );
     }
 
@@ -102,7 +102,7 @@ trait ContainerSingletonBuilderTrait
     {
         $this->addSingletonInstanceProvider(
             $className,
-            InstanceProviderFactory::createImplementationInstanceProvider($className, $implementationClassName)
+            InstanceProviderFactory::createImplementationInstanceProvider($className, $implementationClassName),
         );
 
         return $this;
@@ -114,12 +114,12 @@ trait ContainerSingletonBuilderTrait
     public function addKeyedSingletonImplementation(
         string $className,
         string|UnitEnum $key,
-        string $implementationClassName
+        string $implementationClassName,
     ): static {
         return $this->addKeyedSingletonInstanceProvider(
             $className,
             $key,
-            InstanceProviderFactory::createImplementationInstanceProvider($className, $implementationClassName)
+            InstanceProviderFactory::createImplementationInstanceProvider($className, $implementationClassName),
         );
     }
 
@@ -130,7 +130,7 @@ trait ContainerSingletonBuilderTrait
     {
         $this->addSingletonInstanceProvider(
             $className,
-            InstanceProviderFactory::createClosureInstanceProvider($className, $factory(...))
+            InstanceProviderFactory::createClosureInstanceProvider($className, $factory(...)),
         );
 
         return $this;
@@ -144,7 +144,7 @@ trait ContainerSingletonBuilderTrait
         return $this->addKeyedSingletonInstanceProvider(
             $className,
             $key,
-            InstanceProviderFactory::createClosureInstanceProvider($className, $factory(...))
+            InstanceProviderFactory::createClosureInstanceProvider($className, $factory(...)),
         );
     }
 
@@ -156,7 +156,7 @@ trait ContainerSingletonBuilderTrait
         return $this->addSingletonInstanceProvider(
             $className,
             InstanceProviderFactory::createObjectInstanceProvider($className, $instance),
-            $shouldDispose
+            $shouldDispose,
         );
     }
 
@@ -167,13 +167,13 @@ trait ContainerSingletonBuilderTrait
         string $className,
         string|UnitEnum $key,
         object $instance,
-        bool $shouldDispose = true
+        bool $shouldDispose = true,
     ): static {
         return $this->addKeyedSingletonInstanceProvider(
             $className,
             $key,
             InstanceProviderFactory::createObjectInstanceProvider($className, $instance),
-            $shouldDispose
+            $shouldDispose,
         );
     }
 
@@ -190,7 +190,7 @@ trait ContainerSingletonBuilderTrait
     private function addSingletonInstanceProvider(
         string $className,
         InstanceProviderInterface $instanceProvider,
-        bool $shouldDispose = true
+        bool $shouldDispose = true,
     ): static {
         $this->add($className, new SingletonStrategy($className), $instanceProvider, $shouldDispose);
 
@@ -211,7 +211,7 @@ trait ContainerSingletonBuilderTrait
         string $className,
         string|UnitEnum $key,
         InstanceProviderInterface $instanceProvider,
-        bool $shouldDispose = true
+        bool $shouldDispose = true,
     ): static {
         return $this->addKeyed($className, $key, new SingletonStrategy($className), $instanceProvider, $shouldDispose);
     }

@@ -50,7 +50,7 @@ final class InjectionPlanFactoryTest extends TestCase
                 'keyedProperty' => 'key1',
                 'optionalProperty' => null,
             ],
-            $plan->properties
+            $plan->properties,
         );
     }
 

@@ -32,7 +32,7 @@ final class InstanceProviderFactory
      */
     public static function createInstanceProvider(
         string $className,
-        string|object|null $source = null
+        string|object|null $source = null,
     ): InstanceProviderInterface {
         if ($source === null) {
             return self::createClassInstanceProvider($className);
@@ -58,7 +58,7 @@ final class InstanceProviderFactory
      */
     public static function createClassInstanceProvider(
         string $className,
-        ?callable $mutator = null
+        ?callable $mutator = null,
     ): ClassInstanceProvider {
         return new ClassInstanceProvider($className, $mutator !== null ? $mutator(...) : null);
     }
@@ -73,7 +73,7 @@ final class InstanceProviderFactory
      */
     public static function createImplementationInstanceProvider(
         string $className,
-        string $implementationClassName
+        string $implementationClassName,
     ): ImplementationInstanceProvider {
         return new ImplementationInstanceProvider($className, $implementationClassName);
     }
@@ -88,7 +88,7 @@ final class InstanceProviderFactory
      */
     public static function createObjectInstanceProvider(
         string $className,
-        object $object
+        object $object,
     ): ObjectInstanceProvider {
         return new ObjectInstanceProvider($className, $object);
     }
@@ -102,7 +102,7 @@ final class InstanceProviderFactory
      */
     public static function createClosureInstanceProvider(
         string $className,
-        callable $closure
+        callable $closure,
     ): ClosureInstanceProvider {
         return new ClosureInstanceProvider($className, $closure(...));
     }

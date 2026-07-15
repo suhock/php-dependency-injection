@@ -33,7 +33,7 @@ final class ParameterResolutionException extends InjectorException
      */
     public function __construct(
         private readonly ReflectionParameter $reflectionParameter,
-        ?Throwable $previous = null
+        ?Throwable $previous = null,
     ) {
         parent::__construct(self::buildMessage($reflectionParameter), $previous);
     }
@@ -63,8 +63,8 @@ final class ParameterResolutionException extends InjectorException
         if (!$rFunction->isClosure()) {
             $functionName = "function $functionName()";
         } elseif ($rFunction->getFileName() !== false) {
-            $functionName .= ' defined in \'' .
-                $rFunction->getFileName() . '\':' . $rFunction->getStartLine();
+            $functionName .= ' defined in \''
+                . $rFunction->getFileName() . '\':' . $rFunction->getStartLine();
         }
 
         return $functionName;
@@ -88,13 +88,13 @@ final class ParameterResolutionException extends InjectorException
             $rType instanceof ReflectionNamedType => $rType->getName(),
             $rType instanceof ReflectionUnionType => self::buildCombinedParameterTypeName($rType, '|'),
             $rType instanceof ReflectionIntersectionType => self::buildCombinedParameterTypeName($rType, '&'),
-            default => null // covers null $rType as well as any new types introduced after PHP 8.1
+            default => null, // covers null $rType as well as any new types introduced after PHP 8.1
         };
     }
 
     private static function buildCombinedParameterTypeName(
         ReflectionUnionType|ReflectionIntersectionType $rType,
-        string $delimiter
+        string $delimiter,
     ): string {
         $parts = [];
 

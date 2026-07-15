@@ -29,17 +29,16 @@ final class ValidationIssue
         public readonly string $className,
         public readonly string|UnitEnum|null $key,
         public readonly ValidationIssueKind $kind,
-        public readonly string $message
-    ) {
-    }
+        public readonly string $message,
+    ) {}
 
     /**
      * @return string The service's display id: the class name, plus <code>#key</code> for keyed services
      */
     public function serviceId(): string
     {
-        return $this->key === null ?
-            $this->className :
-            $this->className . '#' . Key::getKeyFromStringOrEnum($this->key);
+        return $this->key === null
+            ? $this->className
+            : $this->className . '#' . Key::getKeyFromStringOrEnum($this->key);
     }
 }

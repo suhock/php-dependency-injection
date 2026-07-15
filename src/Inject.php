@@ -20,6 +20,4 @@ use Attribute;
  * {@see Key} to the property or to the individual method parameter.
  */
 #[Attribute(Attribute::TARGET_METHOD | Attribute::TARGET_PROPERTY)]
-final class Inject
-{
-}
+final class Inject {}

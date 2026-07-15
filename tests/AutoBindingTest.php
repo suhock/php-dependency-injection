@@ -22,7 +22,7 @@ final class AutoBindingTest extends AbstractDependencyInjectionTestCase
     public function testHas_OnBareProduct_ReportsTheAutoBoundServices(): void
     {
         // Arrange
-        $container = self::buildContainer(static fn (ContainerBuilder $builder) => null);
+        $container = self::buildContainer(static fn(ContainerBuilder $builder) => null);
 
         // Assert
         self::assertTrue($container->has(ContainerInterface::class));
@@ -32,7 +32,7 @@ final class AutoBindingTest extends AbstractDependencyInjectionTestCase
     public function testGet_ContainerInterfaceFromRoot_ReturnsTheRootContainer(): void
     {
         // Arrange
-        $container = self::buildContainer(static fn (ContainerBuilder $builder) => null);
+        $container = self::buildContainer(static fn(ContainerBuilder $builder) => null);
 
         // Act & Assert
         self::assertSame($container, $container->get(ContainerInterface::class));
@@ -50,9 +50,9 @@ final class AutoBindingTest extends AbstractDependencyInjectionTestCase
                         $received = $c;
 
                         return new FakeClassNoConstructor();
-                    }
+                    },
                 );
-            }
+            },
         );
 
         // Act
@@ -74,9 +74,9 @@ final class AutoBindingTest extends AbstractDependencyInjectionTestCase
                         $received = $c;
 
                         return new FakeClassNoConstructor();
-                    }
+                    },
                 );
-            }
+            },
         );
         $scope = $container->createScope();
 
@@ -99,9 +99,9 @@ final class AutoBindingTest extends AbstractDependencyInjectionTestCase
                         $received = $factory;
 
                         return new FakeClassNoConstructor();
-                    }
+                    },
                 );
-            }
+            },
         );
         $scope = $container->createScope();
 
@@ -115,10 +115,10 @@ final class AutoBindingTest extends AbstractDependencyInjectionTestCase
     public function testGet_WithUserProvidedContainerInterfaceBinding_PrefersTheUserBinding(): void
     {
         // Arrange
-        $userSupplied = self::buildContainer(static fn (ContainerBuilder $builder) => null);
+        $userSupplied = self::buildContainer(static fn(ContainerBuilder $builder) => null);
         $container = self::buildContainer(
-            static fn (ContainerBuilder $builder) =>
-                $builder->addSingletonInstance(ContainerInterface::class, $userSupplied)
+            static fn(ContainerBuilder $builder)
+                => $builder->addSingletonInstance(ContainerInterface::class, $userSupplied),
         );
 
         // Act & Assert
@@ -128,7 +128,7 @@ final class AutoBindingTest extends AbstractDependencyInjectionTestCase
     public function testDispose_AfterResolvingAutoBoundServices_DoesNotSelfDispose(): void
     {
         // Arrange
-        $container = self::buildContainer(static fn (ContainerBuilder $builder) => null);
+        $container = self::buildContainer(static fn(ContainerBuilder $builder) => null);
         $container->get(ContainerInterface::class);
         $container->get(ScopeFactoryInterface::class);
 

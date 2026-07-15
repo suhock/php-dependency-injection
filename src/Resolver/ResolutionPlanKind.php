@@ -18,15 +18,23 @@ namespace Suhock\DependencyInjection\Resolver;
  */
 enum ResolutionPlanKind
 {
-    /** Construct the class, injecting constructor arguments, #[Inject] members, and the mutator's arguments. */
+    /**
+     * Construct the class, injecting constructor arguments, #[Inject] members, and the mutator's arguments.
+     */
     case AutowiredClass;
 
-    /** Invoke the factory closure with resolved arguments and type-check the result. */
+    /**
+     * Invoke the factory closure with resolved arguments and type-check the result.
+     */
     case Factory;
 
-    /** Resolve the implementation target from the container. */
+    /**
+     * Resolve the implementation target from the container.
+     */
     case Implementation;
 
-    /** No dependencies. Ask the instance provider directly. */
+    /**
+     * No dependencies. Ask the instance provider directly.
+     */
     case Leaf;
 }

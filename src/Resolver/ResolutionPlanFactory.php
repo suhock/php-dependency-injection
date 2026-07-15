@@ -108,7 +108,7 @@ final class ResolutionPlanFactory
             return new ResolutionPlan(
                 $descriptor->className,
                 ResolutionPlanKind::Implementation,
-                implementationTarget: $provider->implementationClassName
+                implementationTarget: $provider->implementationClassName,
             );
         }
 
@@ -141,7 +141,7 @@ final class ResolutionPlanFactory
             injectPropertyEdges: $parts['injectPropertyEdges'],
             mutatorEdges: $mutatorEdges,
             nonInstantiableMessage: $parts['nonInstantiableMessage'],
-            invalidInjectMemberMessages: $parts['invalidInjectMemberMessages']
+            invalidInjectMemberMessages: $parts['invalidInjectMemberMessages'],
         );
     }
 
@@ -161,7 +161,7 @@ final class ResolutionPlanFactory
             $className,
             ResolutionPlanKind::Factory,
             argumentEdges: $edges,
-            declaredFactoryReturnType: self::declaredReturnClass($rFunction)
+            declaredFactoryReturnType: self::declaredReturnClass($rFunction),
         );
     }
 
@@ -227,7 +227,7 @@ final class ResolutionPlanFactory
             /** @var InjectionPlan $injectionPlan */
             $injectionPlan = $this->metadataCache->get(
                 self::INJECTION_PLAN_KEY_PREFIX . $className,
-                static fn () => InjectionPlanFactory::create($className)
+                static fn() => InjectionPlanFactory::create($className),
             );
         } catch (InjectorException $exception) {
             // The class's #[Inject] members are invalid; resolution throws before member injection, so member
@@ -255,7 +255,7 @@ final class ResolutionPlanFactory
                 $propertyName,
                 $dependency,
                 soft: $rType === null || $rType->allowsNull(),
-                declaredType: $dependency === null && $rType !== null ? (string) $rType : null
+                declaredType: $dependency === null && $rType !== null ? (string) $rType : null,
             );
         }
 
@@ -274,7 +274,7 @@ final class ResolutionPlanFactory
             soft: $hasDefault || $rParam->allowsNull(),
             hasDefault: $hasDefault,
             defaultValue: $hasDefault ? $rParam->getDefaultValue() : null,
-            declaredType: $dependency === null && $rType !== null ? (string) $rType : null
+            declaredType: $dependency === null && $rType !== null ? (string) $rType : null,
         );
     }
 

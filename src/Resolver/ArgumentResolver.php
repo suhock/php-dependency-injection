@@ -26,9 +26,8 @@ use function array_key_exists;
 final class ArgumentResolver
 {
     public function __construct(
-        private readonly ParameterResolverInterface $resolver
-    ) {
-    }
+        private readonly ParameterResolverInterface $resolver,
+    ) {}
 
     /**
      * @param array<ReflectionParameter> $rParameters
@@ -45,7 +44,7 @@ final class ArgumentResolver
             $values[] = match (true) {
                 array_key_exists($rParam->getPosition(), $params) => $params[$rParam->getPosition()],
                 array_key_exists($rParam->getName(), $params) => $params[$rParam->getName()],
-                default => $this->resolver->resolveParameter($rParam)
+                default => $this->resolver->resolveParameter($rParam),
             };
         }
 

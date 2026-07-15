@@ -45,7 +45,7 @@ abstract class AbstractDependencyInjectionTestCase extends TestCase
     protected static function classDescriptor(
         string $className,
         string $lifetime,
-        bool $shouldDispose = true
+        bool $shouldDispose = true,
     ): Descriptor {
         $strategy = match ($lifetime) {
             'singleton' => new SingletonStrategy($className),
@@ -89,7 +89,7 @@ abstract class AbstractDependencyInjectionTestCase extends TestCase
     {
         return new ResolutionContext(
             $container ?? self::createStub(ContainerInterface::class),
-            new InstanceStore()
+            new InstanceStore(),
         );
     }
 
@@ -101,7 +101,7 @@ abstract class AbstractDependencyInjectionTestCase extends TestCase
         return new ResolutionContext(
             self::createStub(ContainerInterface::class),
             new InstanceStore(),
-            $rootContext
+            $rootContext,
         );
     }
 
@@ -114,7 +114,7 @@ abstract class AbstractDependencyInjectionTestCase extends TestCase
     private static function assertThrowsThrowable(
         string $expectedException,
         callable $exceptionTest,
-        callable $codeUnderTest
+        callable $codeUnderTest,
     ): void {
         try {
             $codeUnderTest();
@@ -134,15 +134,15 @@ abstract class AbstractDependencyInjectionTestCase extends TestCase
      */
     public static function assertThrowsCircularDependencyException(
         string $exClassName,
-        callable $codeUnderTest
+        callable $codeUnderTest,
     ): void {
         self::assertThrowsThrowable(
             CircularDependencyException::class,
-            static fn (CircularDependencyException $exception) => self::assertCircularDependencyException(
+            static fn(CircularDependencyException $exception) => self::assertCircularDependencyException(
                 $exClassName,
-                $exception
+                $exception,
             ),
-            $codeUnderTest
+            $codeUnderTest,
         );
     }
 
@@ -152,12 +152,12 @@ abstract class AbstractDependencyInjectionTestCase extends TestCase
      */
     public static function assertCircularDependencyException(
         string $exClassName,
-        CircularDependencyException $actualException
+        CircularDependencyException $actualException,
     ): void {
         self::assertSame(
             $exClassName,
             $actualException->getClassName(),
-            'Failed asserting that class name is identical'
+            'Failed asserting that class name is identical',
         );
     }
 
@@ -168,22 +168,23 @@ abstract class AbstractDependencyInjectionTestCase extends TestCase
     public static function assertThrowsImplementationException(
         string $exExpectedClassName,
         string $exActualClassName,
-        callable $codeUnderTest
+        callable $codeUnderTest,
     ): void {
         self::assertThrowsThrowable(
             ImplementationException::class,
-            static fn (ImplementationException $exception) => self::assertImplementationException(
+            static fn(ImplementationException $exception) => self::assertImplementationException(
                 $exExpectedClassName,
                 $exActualClassName,
-                $exception
+                $exception,
             ),
-            $codeUnderTest
+            $codeUnderTest,
         );
     }
 
     /**
      * @template TExpected of object
      * @template TActual of object
+     *
      * @param class-string<TExpected> $exExpectedClassName
      * @param class-string<TActual> $exActualClassName
      * @param ImplementationException<TExpected, TActual> $actualException
@@ -191,17 +192,17 @@ abstract class AbstractDependencyInjectionTestCase extends TestCase
     public static function assertImplementationException(
         string $exExpectedClassName,
         string $exActualClassName,
-        ImplementationException $actualException
+        ImplementationException $actualException,
     ): void {
         self::assertSame(
             $exExpectedClassName,
             $actualException->getExpectedClassName(),
-            'Failed asserting that expected class name is identical'
+            'Failed asserting that expected class name is identical',
         );
         self::assertSame(
             $exActualClassName,
             $actualException->getActualClassName(),
-            'Failed asserting that actual class name is identical'
+            'Failed asserting that actual class name is identical',
         );
     }
 
@@ -212,16 +213,16 @@ abstract class AbstractDependencyInjectionTestCase extends TestCase
     public static function assertThrowsInstanceTypeException(
         string $exExpectedClassName,
         ?string $exActualClassName,
-        callable $codeUnderTest
+        callable $codeUnderTest,
     ): void {
         self::assertThrowsThrowable(
             InstanceTypeException::class,
-            static fn (InstanceTypeException $exception) => self::assertInstanceTypeException(
+            static fn(InstanceTypeException $exception) => self::assertInstanceTypeException(
                 $exExpectedClassName,
                 $exActualClassName,
-                $exception
+                $exception,
             ),
-            $codeUnderTest
+            $codeUnderTest,
         );
     }
 
@@ -233,24 +234,24 @@ abstract class AbstractDependencyInjectionTestCase extends TestCase
     public static function assertInstanceTypeException(
         string $exExpectedClassName,
         ?string $exActualClassName,
-        InstanceTypeException $actualException
+        InstanceTypeException $actualException,
     ): void {
         self::assertSame(
             $exExpectedClassName,
             $actualException->getExpectedClassName(),
-            'Failed asserting that expected class name is identical'
+            'Failed asserting that expected class name is identical',
         );
 
         if ($exActualClassName !== null) {
             self::assertInstanceOf(
                 $exActualClassName,
                 $actualException->getActualValue(),
-                'Failed asserting that actual value is of the correct type'
+                'Failed asserting that actual value is of the correct type',
             );
         } else {
             self::assertNull(
                 $actualException->getActualValue(),
-                'Failed asserting that actual value is null'
+                'Failed asserting that actual value is null',
             );
         }
     }
@@ -260,15 +261,15 @@ abstract class AbstractDependencyInjectionTestCase extends TestCase
      */
     public static function assertThrowsClassNotFoundException(
         string $expectedClassName,
-        callable $codeUnderTest
+        callable $codeUnderTest,
     ): void {
         self::assertThrowsThrowable(
             ClassNotFoundException::class,
-            static fn (ClassNotFoundException $exception) => self::assertClassNotFoundException(
+            static fn(ClassNotFoundException $exception) => self::assertClassNotFoundException(
                 $expectedClassName,
-                $exception
+                $exception,
             ),
-            $codeUnderTest
+            $codeUnderTest,
         );
     }
 
@@ -278,12 +279,12 @@ abstract class AbstractDependencyInjectionTestCase extends TestCase
      */
     public static function assertClassNotFoundException(
         string $expectedClassName,
-        ClassNotFoundException $actualException
+        ClassNotFoundException $actualException,
     ): void {
         self::assertSame(
             $expectedClassName,
             $actualException->getClassName(),
-            'Failed asserting that class name is identical'
+            'Failed asserting that class name is identical',
         );
     }
 
@@ -293,16 +294,16 @@ abstract class AbstractDependencyInjectionTestCase extends TestCase
     public static function assertThrowsClassResolutionException(
         string $expectedClassName,
         ?callable $previousExceptionTest,
-        callable $codeUnderTest
+        callable $codeUnderTest,
     ): void {
         self::assertThrowsThrowable(
             ClassResolutionException::class,
-            static fn (ClassResolutionException $exception) => self::assertClassResolutionException(
+            static fn(ClassResolutionException $exception) => self::assertClassResolutionException(
                 $expectedClassName,
                 $previousExceptionTest,
-                $exception
+                $exception,
             ),
-            $codeUnderTest
+            $codeUnderTest,
         );
     }
 
@@ -313,12 +314,12 @@ abstract class AbstractDependencyInjectionTestCase extends TestCase
     public static function assertClassResolutionException(
         string $expectedClassName,
         ?callable $previousExceptionTest,
-        ClassResolutionException $actualException
+        ClassResolutionException $actualException,
     ): void {
         self::assertSame(
             $expectedClassName,
             $actualException->getClassName(),
-            'Failed asserting that class name is identical'
+            'Failed asserting that class name is identical',
         );
 
         if ($previousExceptionTest !== null) {
@@ -330,17 +331,17 @@ abstract class AbstractDependencyInjectionTestCase extends TestCase
         string $exFunctionName,
         string $exParameterName,
         ?callable $previousTest,
-        callable $codeUnderTest
+        callable $codeUnderTest,
     ): void {
         self::assertThrowsThrowable(
             ParameterResolutionException::class,
-            static fn (ParameterResolutionException $exception) => self::assertParameterResolutionException(
+            static fn(ParameterResolutionException $exception) => self::assertParameterResolutionException(
                 $exFunctionName,
                 $exParameterName,
                 $previousTest,
-                $exception
+                $exception,
             ),
-            $codeUnderTest
+            $codeUnderTest,
         );
     }
 
@@ -348,7 +349,7 @@ abstract class AbstractDependencyInjectionTestCase extends TestCase
         string $exFunctionName,
         string $exParameterName,
         ?callable $previousTest,
-        ParameterResolutionException $actualException
+        ParameterResolutionException $actualException,
     ): void {
         $actualFunctionName = $actualException->getReflectionParameter()->getDeclaringFunction()->getName();
 
@@ -358,19 +359,19 @@ abstract class AbstractDependencyInjectionTestCase extends TestCase
             self::assertStringContainsString(
                 '{closure',
                 $actualFunctionName,
-                'Failed asserting that function is a closure'
+                'Failed asserting that function is a closure',
             );
         } else {
             self::assertSame(
                 $exFunctionName,
                 $actualFunctionName,
-                'Failed asserting that function name is identical'
+                'Failed asserting that function name is identical',
             );
         }
         self::assertSame(
             $exParameterName,
             $actualException->getReflectionParameter()->getName(),
-            'Failed asserting that parameter name is identical'
+            'Failed asserting that parameter name is identical',
         );
 
         if ($previousTest !== null) {

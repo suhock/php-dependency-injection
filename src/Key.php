@@ -53,7 +53,7 @@ final class Key
         return match (true) {
             $key instanceof BackedEnum && is_string($key->value) => $key->value,
             $key instanceof UnitEnum => $key->name,
-            default => $key
+            default => $key,
         };
     }
 }

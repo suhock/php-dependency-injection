@@ -28,7 +28,7 @@ trait ContainerScopedBuilderTrait
         string $className,
         LifetimeStrategy $lifetimeStrategy,
         InstanceProviderInterface $instanceProvider,
-        bool $shouldDispose = true
+        bool $shouldDispose = true,
     ): static;
 
     abstract private function addKeyed(
@@ -36,7 +36,7 @@ trait ContainerScopedBuilderTrait
         string|UnitEnum $key,
         LifetimeStrategy $lifetimeStrategy,
         InstanceProviderInterface $instanceProvider,
-        bool $shouldDispose = true
+        bool $shouldDispose = true,
     ): static;
 
     /**
@@ -46,7 +46,7 @@ trait ContainerScopedBuilderTrait
     {
         $this->addScopedInstanceProvider(
             $className,
-            InstanceProviderFactory::createInstanceProvider($className, $source)
+            InstanceProviderFactory::createInstanceProvider($className, $source),
         );
 
         return $this;
@@ -58,12 +58,12 @@ trait ContainerScopedBuilderTrait
     public function addKeyedScoped(
         string $className,
         string|UnitEnum $key,
-        string|object|null $source = null
+        string|object|null $source = null,
     ): static {
         return $this->addKeyedScopedInstanceProvider(
             $className,
             $key,
-            InstanceProviderFactory::createInstanceProvider($className, $source)
+            InstanceProviderFactory::createInstanceProvider($className, $source),
         );
     }
 
@@ -74,7 +74,7 @@ trait ContainerScopedBuilderTrait
     {
         $this->addScopedInstanceProvider(
             $className,
-            InstanceProviderFactory::createClassInstanceProvider($className, $mutator)
+            InstanceProviderFactory::createClassInstanceProvider($className, $mutator),
         );
 
         return $this;
@@ -86,12 +86,12 @@ trait ContainerScopedBuilderTrait
     public function addKeyedScopedClass(
         string $className,
         string|UnitEnum $key,
-        ?callable $mutator = null
+        ?callable $mutator = null,
     ): static {
         return $this->addKeyedScopedInstanceProvider(
             $className,
             $key,
-            InstanceProviderFactory::createClassInstanceProvider($className, $mutator)
+            InstanceProviderFactory::createClassInstanceProvider($className, $mutator),
         );
     }
 
@@ -102,7 +102,7 @@ trait ContainerScopedBuilderTrait
     {
         $this->addScopedInstanceProvider(
             $className,
-            InstanceProviderFactory::createImplementationInstanceProvider($className, $implementationClassName)
+            InstanceProviderFactory::createImplementationInstanceProvider($className, $implementationClassName),
         );
 
         return $this;
@@ -114,12 +114,12 @@ trait ContainerScopedBuilderTrait
     public function addKeyedScopedImplementation(
         string $className,
         string|UnitEnum $key,
-        string $implementationClassName
+        string $implementationClassName,
     ): static {
         return $this->addKeyedScopedInstanceProvider(
             $className,
             $key,
-            InstanceProviderFactory::createImplementationInstanceProvider($className, $implementationClassName)
+            InstanceProviderFactory::createImplementationInstanceProvider($className, $implementationClassName),
         );
     }
 
@@ -130,7 +130,7 @@ trait ContainerScopedBuilderTrait
     {
         $this->addScopedInstanceProvider(
             $className,
-            InstanceProviderFactory::createClosureInstanceProvider($className, $factory(...))
+            InstanceProviderFactory::createClosureInstanceProvider($className, $factory(...)),
         );
 
         return $this;
@@ -144,7 +144,7 @@ trait ContainerScopedBuilderTrait
         return $this->addKeyedScopedInstanceProvider(
             $className,
             $key,
-            InstanceProviderFactory::createClosureInstanceProvider($className, $factory(...))
+            InstanceProviderFactory::createClosureInstanceProvider($className, $factory(...)),
         );
     }
 
@@ -174,7 +174,7 @@ trait ContainerScopedBuilderTrait
     private function addKeyedScopedInstanceProvider(
         string $className,
         string|UnitEnum $key,
-        InstanceProviderInterface $instanceProvider
+        InstanceProviderInterface $instanceProvider,
     ): static {
         return $this->addKeyed($className, $key, new ScopedStrategy($className), $instanceProvider);
     }

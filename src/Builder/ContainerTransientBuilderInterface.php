@@ -60,7 +60,7 @@ interface ContainerTransientBuilderInterface
     public function addKeyedTransient(
         string $className,
         string|UnitEnum $key,
-        string|Closure|null $source = null
+        string|Closure|null $source = null,
     ): static;
 
     /**
@@ -72,8 +72,9 @@ interface ContainerTransientBuilderInterface
      * @param Closure|callable-string|null $mutator [optional] This function will be called after an instance of the class has been
      * created. The class instance will be provided as the first parameter. Any additional parameters will be injected.
      *
-     * @return $this
      * @throws ImplementationException
+     *
+     * @return $this
      */
     public function addTransientClass(string $className, ?callable $mutator = null): static;
 
@@ -87,13 +88,14 @@ interface ContainerTransientBuilderInterface
      * @param Closure|callable-string|null $mutator [optional] This function will be called after an instance of the class has been
      * created. The class instance will be provided as the first parameter. Any additional parameters will be injected.
      *
-     * @return $this
      * @throws ImplementationException
+     *
+     * @return $this
      */
     public function addKeyedTransientClass(
         string $className,
         string|UnitEnum $key,
-        ?callable $mutator = null
+        ?callable $mutator = null,
     ): static;
 
     /**
@@ -107,8 +109,9 @@ interface ContainerTransientBuilderInterface
      * @param class-string<TClass> $implementationClassName The fully qualified name of a class that implements
      * or extends {@see $className}.
      *
-     * @return $this
      * @throws ImplementationException If the implementation class is not a subclass of the class being added
+     *
+     * @return $this
      */
     public function addTransientImplementation(string $className, string $implementationClassName): static;
 
@@ -124,13 +127,14 @@ interface ContainerTransientBuilderInterface
      * @param class-string<TClass> $implementationClassName The fully qualified name of a class that
      * implements or extends {@see $className}.
      *
-     * @return $this
      * @throws ImplementationException If the implementation class is not a subclass of the class being added
+     *
+     * @return $this
      */
     public function addKeyedTransientImplementation(
         string $className,
         string|UnitEnum $key,
-        string $implementationClassName
+        string $implementationClassName,
     ): static;
 
     /**

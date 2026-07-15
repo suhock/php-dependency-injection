@@ -17,6 +17,7 @@ use Suhock\DependencyInjection\ResolutionContext;
  * Manages the lifetime of a transient object.
  *
  * @template TClass of object
+ *
  * @extends LifetimeStrategy<TClass>
  *
  * @internal

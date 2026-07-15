@@ -17,7 +17,6 @@ namespace Suhock\DependencyInjection\Fakes;
 final class FakeClassWithUnionDependency
 {
     public function __construct(
-        public readonly FakeInterfaceOne|FakeInterfaceTwo $obj
-    ) {
-    }
+        public readonly FakeInterfaceOne|FakeInterfaceTwo $obj,
+    ) {}
 }

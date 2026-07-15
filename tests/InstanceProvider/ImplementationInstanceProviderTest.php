@@ -23,32 +23,32 @@ final class ImplementationInstanceProviderTest extends AbstractDependencyInjecti
     public function testConstruct_WhenImplementationSameAsInterface_ThrowsImplementationException(): void
     {
         // Arrange & Act
-        $fn = fn () => new ImplementationInstanceProvider(
+        $fn = fn() => new ImplementationInstanceProvider(
             FakeClassNoConstructor::class,
-            FakeClassNoConstructor::class
+            FakeClassNoConstructor::class,
         );
 
         // Assert
         self::assertThrowsImplementationException(
             FakeClassNoConstructor::class,
             FakeClassNoConstructor::class,
-            $fn
+            $fn,
         );
     }
 
     public function testConstruct_WhenImplementationNotSubclassOfInterface_ThrowsImplementationException(): void
     {
         // Arrange & Act
-        $fn = fn () => new ImplementationInstanceProvider(
+        $fn = fn() => new ImplementationInstanceProvider(
             FakeClassExtendsBaseClass::class,
-            FakeClassNoConstructor::class
+            FakeClassNoConstructor::class,
         );
 
         // Assert
         self::assertThrowsImplementationException(
             FakeClassExtendsBaseClass::class,
             FakeClassNoConstructor::class,
-            $fn
+            $fn,
         );
     }
 }

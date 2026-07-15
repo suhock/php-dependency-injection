@@ -36,7 +36,7 @@ abstract class DependencyInjectionException extends RuntimeException implements 
         if ($previous instanceof DependencyInjectionExceptionInterface) {
             parent::__construct(
                 ($message !== '' ? "$message\n=> " : '') . $previous->getMessage(),
-                previous: $previous->getPrevious()
+                previous: $previous->getPrevious(),
             );
             $this->consolidatedException = $previous;
         } else {

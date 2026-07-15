@@ -29,13 +29,13 @@ final class ContainerValidationExceptionTest extends TestCase
                 FakeClassNoConstructor::class,
                 null,
                 ValidationIssueKind::MissingDependency,
-                'required parameter $a (Foo) is not resolvable'
+                'required parameter $a (Foo) is not resolvable',
             ),
             new ValidationIssue(
                 FakeInterfaceOne::class,
                 'admin',
                 ValidationIssueKind::CaptiveDependency,
-                'singleton requires the scoped service Bar'
+                'singleton requires the scoped service Bar',
             ),
         ];
 
@@ -45,11 +45,11 @@ final class ContainerValidationExceptionTest extends TestCase
         self::assertStringContainsString('Container validation found 2 issues:', $exception->getMessage());
         self::assertStringContainsString(
             '[MissingDependency] ' . FakeClassNoConstructor::class . ': required parameter $a (Foo) is not resolvable',
-            $exception->getMessage()
+            $exception->getMessage(),
         );
         self::assertStringContainsString(
             '[CaptiveDependency] ' . FakeInterfaceOne::class . '#admin: singleton requires the scoped service Bar',
-            $exception->getMessage()
+            $exception->getMessage(),
         );
         self::assertNull($exception->getPrevious());
     }
@@ -61,7 +61,7 @@ final class ContainerValidationExceptionTest extends TestCase
                 FakeClassNoConstructor::class,
                 null,
                 ValidationIssueKind::NonInstantiableClass,
-                'not instantiable'
+                'not instantiable',
             ),
         ]);
 
@@ -75,7 +75,7 @@ final class ContainerValidationExceptionTest extends TestCase
                 FakeClassNoConstructor::class,
                 null,
                 ValidationIssueKind::MissingDependency,
-                'message'
+                'message',
             ),
         ]);
 
@@ -88,7 +88,7 @@ final class ContainerValidationExceptionTest extends TestCase
             FakeClassNoConstructor::class,
             FakeStringBackedEnum::Test,
             ValidationIssueKind::MissingKeyedDependency,
-            'message'
+            'message',
         );
 
         self::assertSame(FakeClassNoConstructor::class . '#' . FakeStringBackedEnum::Test->value, $issue->serviceId());

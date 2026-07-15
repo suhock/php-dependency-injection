@@ -26,8 +26,9 @@ interface ContainerInterface
      * @param class-string<TClass> $className The fully qualified class name of the service to retrieve.
      * @param string|UnitEnum|null $key [optional] The key of the service to retrieve.
      *
-     * @return TClass An instance of {@see $className}
      * @throws ClassNotFoundException If the container could not resolve a service for the specified class
+     *
+     * @return TClass An instance of {@see $className}
      */
     public function get(string $className, string|UnitEnum|null $key = null): object;
 

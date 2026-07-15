@@ -16,6 +16,4 @@ namespace Suhock\DependencyInjection;
  * active (including a scoped dependency reached from a singleton's dependency graph), or a service was requested from a
  * scope that has been disposed.
  */
-class ScopeException extends ContainerException
-{
-}
+class ScopeException extends ContainerException {}

@@ -67,7 +67,7 @@ final class MetadataCacheTest extends TestCase
         $cache = new MetadataCache($shared);
 
         // Act
-        $result = $cache->get('id', static fn (): string => 'computed');
+        $result = $cache->get('id', static fn(): string => 'computed');
 
         // Assert: the computed value is returned and written through to the shared tier.
         self::assertSame('computed', $result);
@@ -81,7 +81,7 @@ final class MetadataCacheTest extends TestCase
         $cache = new MetadataCache();
 
         // Act
-        $result = $cache->get('id', static fn (): string => 'computed');
+        $result = $cache->get('id', static fn(): string => 'computed');
 
         // Assert
         self::assertSame('computed', $result);

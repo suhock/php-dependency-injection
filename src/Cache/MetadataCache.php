@@ -27,9 +27,8 @@ final class MetadataCache
     private array $inProcess = [];
 
     public function __construct(
-        private readonly ?CacheInterface $shared = null
-    ) {
-    }
+        private readonly ?CacheInterface $shared = null,
+    ) {}
 
     /**
      * Returns the value stored under the id, computing and populating both tiers on a miss.

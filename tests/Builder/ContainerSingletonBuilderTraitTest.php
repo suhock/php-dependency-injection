@@ -45,7 +45,7 @@ final class ContainerSingletonBuilderTraitTest extends AbstractDependencyInjecti
                 FakeClassNoConstructor::class,
                 function (FakeClassNoConstructor $obj) {
                     $obj->string = 'test';
-                }
+                },
             )
             ->build();
 
@@ -79,16 +79,16 @@ final class ContainerSingletonBuilderTraitTest extends AbstractDependencyInjecti
         $builder = self::createBuilder();
 
         // Act
-        $fn = static fn () => $builder->addSingletonImplementation(
+        $fn = static fn() => $builder->addSingletonImplementation(
             FakeClassNoConstructor::class,
-            FakeClassNoConstructor::class
+            FakeClassNoConstructor::class,
         );
 
         // Assert
         self::assertThrowsImplementationException(
             FakeClassNoConstructor::class,
             FakeClassNoConstructor::class,
-            $fn
+            $fn,
         );
     }
 
@@ -98,16 +98,16 @@ final class ContainerSingletonBuilderTraitTest extends AbstractDependencyInjecti
         $builder = self::createBuilder();
 
         // Act
-        $fn = static fn () => $builder->addSingletonImplementation(
+        $fn = static fn() => $builder->addSingletonImplementation(
             FakeClassExtendsBaseClass::class,
-            FakeClassNoConstructor::class
+            FakeClassNoConstructor::class,
         );
 
         // Assert
         self::assertThrowsImplementationException(
             FakeClassExtendsBaseClass::class,
             FakeClassNoConstructor::class,
-            $fn
+            $fn,
         );
     }
 
@@ -117,7 +117,7 @@ final class ContainerSingletonBuilderTraitTest extends AbstractDependencyInjecti
         $container = self::createBuilder()
             ->addSingletonFactory(
                 FakeBaseClass::class,
-                fn () => new FakeClassExtendsBaseClass()
+                fn() => new FakeClassExtendsBaseClass(),
             )
             ->build();
 
@@ -134,21 +134,21 @@ final class ContainerSingletonBuilderTraitTest extends AbstractDependencyInjecti
     {
         // Arrange
         $container = self::createBuilder()
-            ->addSingletonFactory(FakeClassNoConstructor::class, fn () => null)
+            ->addSingletonFactory(FakeClassNoConstructor::class, fn() => null)
             ->build();
 
         // Act
-        $fn = static fn () => $container->get(FakeClassNoConstructor::class);
+        $fn = static fn() => $container->get(FakeClassNoConstructor::class);
 
         // Assert
         self::assertThrowsClassResolutionException(
             FakeClassNoConstructor::class,
-            static fn (InstanceTypeException $exception) => self::assertInstanceTypeException(
+            static fn(InstanceTypeException $exception) => self::assertInstanceTypeException(
                 FakeClassNoConstructor::class,
                 null,
-                $exception
+                $exception,
             ),
-            $fn
+            $fn,
         );
     }
 
@@ -158,22 +158,22 @@ final class ContainerSingletonBuilderTraitTest extends AbstractDependencyInjecti
         $container = self::createBuilder()
             ->addSingletonFactory(
                 FakeClassNoConstructor::class,
-                fn () => new LogicException()
+                fn() => new LogicException(),
             )
             ->build();
 
         // Act
-        $fn = static fn () => $container->get(FakeClassNoConstructor::class);
+        $fn = static fn() => $container->get(FakeClassNoConstructor::class);
 
         // Assert
         self::assertThrowsClassResolutionException(
             FakeClassNoConstructor::class,
-            static fn (InstanceTypeException $exception) => self::assertInstanceTypeException(
+            static fn(InstanceTypeException $exception) => self::assertInstanceTypeException(
                 FakeClassNoConstructor::class,
                 LogicException::class,
-                $exception
+                $exception,
             ),
-            $fn
+            $fn,
         );
     }
 
@@ -199,16 +199,16 @@ final class ContainerSingletonBuilderTraitTest extends AbstractDependencyInjecti
         $builder = self::createBuilder();
 
         // Act
-        $fn = static fn () => $builder->addSingletonInstance(
+        $fn = static fn() => $builder->addSingletonInstance(
             FakeClassExtendsBaseClass::class,
-            new FakeClassNoConstructor()
+            new FakeClassNoConstructor(),
         );
 
         // Assert
         self::assertThrowsInstanceTypeException(
             FakeClassExtendsBaseClass::class,
             FakeClassNoConstructor::class,
-            $fn
+            $fn,
         );
     }
 
@@ -220,7 +220,7 @@ final class ContainerSingletonBuilderTraitTest extends AbstractDependencyInjecti
             ->addSingletonInstance(FakeBaseClass::class, new FakeClassExtendsBaseClass())
             ->addSingleton(
                 FakeClassExtendsBaseClass::class,
-                fn (FakeBaseClass $inner) => $expectedInstance
+                fn(FakeBaseClass $inner) => $expectedInstance,
             )
             ->build();
 
@@ -269,7 +269,7 @@ final class ContainerSingletonBuilderTraitTest extends AbstractDependencyInjecti
             ->addKeyedSingleton(
                 FakeBaseClass::class,
                 'key1',
-                fn () => new FakeClassExtendsBaseClass()
+                fn() => new FakeClassExtendsBaseClass(),
             )
             ->build();
 
@@ -297,7 +297,6 @@ final class ContainerSingletonBuilderTraitTest extends AbstractDependencyInjecti
         self::assertSame($expectedInstance, $result);
     }
 
-
     public function testAddKeyedSingletonClass_WithMutator_GetByKeyReturnsMutatedInstance(): void
     {
         // Arrange
@@ -307,7 +306,7 @@ final class ContainerSingletonBuilderTraitTest extends AbstractDependencyInjecti
                 'key1',
                 function (FakeClassNoConstructor $obj) {
                     $obj->string = 'test';
-                }
+                },
             )
             ->build();
 
@@ -344,7 +343,7 @@ final class ContainerSingletonBuilderTraitTest extends AbstractDependencyInjecti
             ->addKeyedSingletonFactory(
                 FakeBaseClass::class,
                 'key1',
-                fn () => new FakeClassExtendsBaseClass()
+                fn() => new FakeClassExtendsBaseClass(),
             )
             ->build();
 
@@ -378,17 +377,17 @@ final class ContainerSingletonBuilderTraitTest extends AbstractDependencyInjecti
         $builder = self::createBuilder();
 
         // Act
-        $fn = static fn () => $builder->addKeyedSingletonInstance(
+        $fn = static fn() => $builder->addKeyedSingletonInstance(
             FakeClassExtendsBaseClass::class,
             'key1',
-            new FakeClassNoConstructor()
+            new FakeClassNoConstructor(),
         );
 
         // Assert
         self::assertThrowsInstanceTypeException(
             FakeClassExtendsBaseClass::class,
             FakeClassNoConstructor::class,
-            $fn
+            $fn,
         );
     }
 }

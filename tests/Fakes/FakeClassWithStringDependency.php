@@ -16,7 +16,5 @@ namespace Suhock\DependencyInjection\Fakes;
  */
 final class FakeClassWithStringDependency
 {
-    public function __construct(public readonly string $string)
-    {
-    }
+    public function __construct(public readonly string $string) {}
 }

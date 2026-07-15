@@ -42,7 +42,7 @@ final class Scope implements ScopeInterface
     public function __construct(
         private readonly Container $rootContainer,
         ResolutionContext $rootContext,
-        callable $resolve
+        callable $resolve,
     ) {
         $this->resolve = $resolve(...);
         $this->resolutionContext = new ResolutionContext($this, new InstanceStore(), $rootContext);
@@ -50,6 +50,7 @@ final class Scope implements ScopeInterface
 
     /**
      * @inheritDoc
+     *
      * @throws ScopeException If the scope has been disposed
      */
     public function get(string $className, string|UnitEnum|null $key = null): object
@@ -62,6 +63,7 @@ final class Scope implements ScopeInterface
 
     /**
      * @inheritDoc
+     *
      * @throws ScopeException If the scope has been disposed
      */
     public function has(string $className, string|UnitEnum|null $key = null): bool

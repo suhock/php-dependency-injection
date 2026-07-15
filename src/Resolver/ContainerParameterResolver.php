@@ -30,9 +30,8 @@ use UnitEnum;
 final class ContainerParameterResolver implements ParameterResolverInterface
 {
     public function __construct(
-        private readonly ContainerInterface $container
-    ) {
-    }
+        private readonly ContainerInterface $container,
+    ) {}
 
     public function resolveParameter(ReflectionParameter $rParam): mixed
     {

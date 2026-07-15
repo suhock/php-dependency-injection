@@ -26,9 +26,8 @@ abstract class LifetimeStrategy
      * @param class-string<TClass> $className
      */
     public function __construct(
-        protected readonly string $className
-    ) {
-    }
+        protected readonly string $className,
+    ) {}
 
     /**
      * Returns an instance of this strategy's class by invoking the given factory, based on the strategy's rules.
@@ -39,6 +38,7 @@ abstract class LifetimeStrategy
      * @param ResolutionContext $context The context of the resolution root requesting the instance
      * @param callable $factory A factory function that should be called when an instance of the class is needed,
      * resolving the instance's dependencies from the context it is given
+     *
      * @phpstan-param callable(ResolutionContext):TClass $factory
      *
      * @return TClass An instance of the class

@@ -24,12 +24,12 @@ final class FakeContainer implements ContainerInterface
 {
     /**
      * @param array<callable> $classMapping
+     *
      * @phpstan-param array<class-string, callable():object> $classMapping
      */
     public function __construct(
-        public array $classMapping = []
-    ) {
-    }
+        public array $classMapping = [],
+    ) {}
 
     public function get(string $className, string|UnitEnum|null $key = null): object
     {
@@ -43,6 +43,7 @@ final class FakeContainer implements ContainerInterface
 
     /**
      * @template TClass of object
+     *
      * @param class-string<TClass> $className The name of the class to test
      */
     public function has(string $className, string|UnitEnum|null $key = null): bool

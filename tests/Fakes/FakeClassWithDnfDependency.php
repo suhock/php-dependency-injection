@@ -17,7 +17,6 @@ namespace Suhock\DependencyInjection\Fakes;
 final class FakeClassWithDnfDependency
 {
     public function __construct(
-        public readonly (FakeInterfaceOne&FakeInterfaceTwo)|FakeInterfaceThree $obj
-    ) {
-    }
+        public readonly (FakeInterfaceOne&FakeInterfaceTwo)|FakeInterfaceThree $obj,
+    ) {}
 }

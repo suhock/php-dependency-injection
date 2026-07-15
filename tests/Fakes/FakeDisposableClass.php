@@ -23,9 +23,8 @@ final class FakeDisposableClass implements DisposableInterface
 
     public function __construct(
         private readonly ?FakeDisposalLog $log = null,
-        private readonly string $name = 'dependency'
-    ) {
-    }
+        private readonly string $name = 'dependency',
+    ) {}
 
     public function dispose(): void
     {

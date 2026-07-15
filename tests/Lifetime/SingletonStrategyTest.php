@@ -35,7 +35,7 @@ final class SingletonStrategyTest extends AbstractDependencyInjectionTestCase
         $context = self::createResolutionContext();
 
         // Act
-        $instance = $strategy->get($context, fn () => new FakeClassNoConstructor());
+        $instance = $strategy->get($context, fn() => new FakeClassNoConstructor());
 
         // Assert
         self::assertInstanceOf(FakeClassNoConstructor::class, $instance);
@@ -48,8 +48,8 @@ final class SingletonStrategyTest extends AbstractDependencyInjectionTestCase
         $context = self::createResolutionContext();
 
         // Act
-        $firstInstance = $strategy->get($context, fn () => new FakeClassNoConstructor());
-        $secondInstance = $strategy->get($context, fn () => new FakeClassNoConstructor());
+        $firstInstance = $strategy->get($context, fn() => new FakeClassNoConstructor());
+        $secondInstance = $strategy->get($context, fn() => new FakeClassNoConstructor());
 
         // Assert
         self::assertSame($firstInstance, $secondInstance);
@@ -63,8 +63,8 @@ final class SingletonStrategyTest extends AbstractDependencyInjectionTestCase
         $secondContext = self::createResolutionContext();
 
         // Act
-        $firstInstance = $strategy->get($firstContext, fn () => new FakeClassNoConstructor());
-        $secondInstance = $strategy->get($secondContext, fn () => new FakeClassNoConstructor());
+        $firstInstance = $strategy->get($firstContext, fn() => new FakeClassNoConstructor());
+        $secondInstance = $strategy->get($secondContext, fn() => new FakeClassNoConstructor());
 
         // Assert
         self::assertNotSame($firstInstance, $secondInstance);
@@ -78,8 +78,8 @@ final class SingletonStrategyTest extends AbstractDependencyInjectionTestCase
         $scopeContext = self::createScopeResolutionContext($rootContext);
 
         // Act
-        $scopeInstance = $strategy->get($scopeContext, fn () => new FakeClassNoConstructor());
-        $rootInstance = $strategy->get($rootContext, fn () => new FakeClassNoConstructor());
+        $scopeInstance = $strategy->get($scopeContext, fn() => new FakeClassNoConstructor());
+        $rootInstance = $strategy->get($rootContext, fn() => new FakeClassNoConstructor());
 
         // Assert
         self::assertSame($scopeInstance, $rootInstance);
@@ -100,5 +100,4 @@ final class SingletonStrategyTest extends AbstractDependencyInjectionTestCase
             return new FakeClassNoConstructor();
         });
     }
-
 }

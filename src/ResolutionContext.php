@@ -33,9 +33,8 @@ final class ResolutionContext
     public function __construct(
         public readonly ContainerInterface $container,
         public readonly InstanceStore $store,
-        public readonly ?ResolutionContext $root = null
-    ) {
-    }
+        public readonly ?ResolutionContext $root = null,
+    ) {}
 
     /**
      * Returns the context of the root container.

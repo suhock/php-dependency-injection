@@ -14,6 +14,4 @@ namespace Suhock\DependencyInjection\Fakes;
 /**
  * Fakes a simple abstract class.
  */
-abstract class FakeAbstractClass
-{
-}
+abstract class FakeAbstractClass {}

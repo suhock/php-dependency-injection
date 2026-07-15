@@ -29,7 +29,6 @@ final class DependencyGraphEdge
         public readonly string $sourceId,
         public readonly string $targetId,
         public readonly bool $required,
-        public readonly string $injectionPoint
-    ) {
-    }
+        public readonly string $injectionPoint,
+    ) {}
 }

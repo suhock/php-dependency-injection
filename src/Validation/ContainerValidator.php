@@ -52,9 +52,8 @@ final class ContainerValidator
      * keyed by descriptor id
      */
     public function __construct(
-        private readonly array $descriptors
-    ) {
-    }
+        private readonly array $descriptors,
+    ) {}
 
     /**
      * @param array<string, ResolutionPlan> $plans The compiled plans, keyed by descriptor id
@@ -130,7 +129,7 @@ final class ContainerValidator
                     $sourceId,
                     DescriptorId::display($plan->implementationTarget),
                     required: true,
-                    injectionPoint: 'the implementation class'
+                    injectionPoint: 'the implementation class',
                 );
             }
 
@@ -142,7 +141,7 @@ final class ContainerValidator
                         $sourceId,
                         DescriptorId::display($target),
                         required: !$edge->soft,
-                        injectionPoint: $description
+                        injectionPoint: $description,
                     );
                 }
             }
@@ -198,7 +197,7 @@ final class ContainerValidator
                 $descriptor->className,
                 $key,
                 ValidationIssueKind::NonInstantiableClass,
-                $plan->nonInstantiableMessage
+                $plan->nonInstantiableMessage,
             );
         }
 
@@ -207,20 +206,20 @@ final class ContainerValidator
                 $descriptor->className,
                 $key,
                 ValidationIssueKind::InvalidInjectMember,
-                $message
+                $message,
             );
         }
 
         if (
-            $plan->declaredFactoryReturnType !== null &&
-            self::returnTypeCanNeverSatisfy($plan->declaredFactoryReturnType, $descriptor->className)
+            $plan->declaredFactoryReturnType !== null
+            && self::returnTypeCanNeverSatisfy($plan->declaredFactoryReturnType, $descriptor->className)
         ) {
             $issues[] = new ValidationIssue(
                 $descriptor->className,
                 $key,
                 ValidationIssueKind::FactoryReturnTypeMismatch,
-                "the factory declares return type $plan->declaredFactoryReturnType, which can never be an" .
-                    " instance of $descriptor->className"
+                "the factory declares return type $plan->declaredFactoryReturnType, which can never be an"
+                    . " instance of $descriptor->className",
             );
         }
 
@@ -229,7 +228,7 @@ final class ContainerValidator
                 $descriptor->className,
                 $key,
                 ValidationIssueKind::MissingImplementation,
-                "the implementation class $plan->implementationTarget is not itself a resolvable service"
+                "the implementation class $plan->implementationTarget is not itself a resolvable service",
             );
         }
 
@@ -238,21 +237,21 @@ final class ContainerValidator
                 continue;
             }
 
-            $issues[] = $edge->dependency === null ?
-                new ValidationIssue(
+            $issues[] = $edge->dependency === null
+                ? new ValidationIssue(
                     $descriptor->className,
                     $key,
                     ValidationIssueKind::UnresolvableParameter,
-                    "required $description ($edge->declaredType) has a type the container is never consulted for" .
-                        ' and no default value'
-                ) :
-                new ValidationIssue(
+                    "required $description ($edge->declaredType) has a type the container is never consulted for"
+                        . ' and no default value',
+                )
+                : new ValidationIssue(
                     $descriptor->className,
                     $key,
-                    $edge->dependency->key !== null ?
-                        ValidationIssueKind::MissingKeyedDependency :
-                        ValidationIssueKind::MissingDependency,
-                    "required $description (" . self::describeAlternatives($edge) . ') is not resolvable'
+                    $edge->dependency->key !== null
+                        ? ValidationIssueKind::MissingKeyedDependency
+                        : ValidationIssueKind::MissingDependency,
+                    "required $description (" . self::describeAlternatives($edge) . ') is not resolvable',
                 );
         }
 
@@ -297,7 +296,7 @@ final class ContainerValidator
         array &$visited,
         array &$stack,
         array &$reported,
-        array &$issues
+        array &$issues,
     ): void {
         $visited[$id] = true;
         $stack[] = $id;
@@ -371,7 +370,7 @@ final class ContainerValidator
             $descriptor->className,
             DescriptorId::keyOf($first),
             ValidationIssueKind::CircularDependency,
-            "every service on the dependency cycle $path requires the next, so none can ever be constructed"
+            "every service on the dependency cycle $path requires the next, so none can ever be constructed",
         );
     }
 
@@ -424,8 +423,8 @@ final class ContainerValidator
                     }
 
                     if (
-                        $targetDescriptor->lifetimeStrategy instanceof SingletonStrategy ||
-                        $targetDescriptor->lifetimeStrategy instanceof TransientStrategy
+                        $targetDescriptor->lifetimeStrategy instanceof SingletonStrategy
+                        || $targetDescriptor->lifetimeStrategy instanceof TransientStrategy
                     ) {
                         $queue[] = $target;
                     }
@@ -444,7 +443,7 @@ final class ContainerValidator
         string $singletonId,
         Descriptor $descriptor,
         string $scopedId,
-        array $parents
+        array $parents,
     ): ValidationIssue {
         $path = [];
 
@@ -456,8 +455,8 @@ final class ContainerValidator
             $descriptor->className,
             DescriptorId::keyOf($singletonId),
             ValidationIssueKind::CaptiveDependency,
-            'singleton requires the scoped service ' . DescriptorId::display($scopedId) . ' via ' .
-                implode(' -> ', $path) . ', which always resolves outside of a scope'
+            'singleton requires the scoped service ' . DescriptorId::display($scopedId) . ' via '
+                . implode(' -> ', $path) . ', which always resolves outside of a scope',
         );
     }
 
@@ -519,12 +518,12 @@ final class ContainerValidator
 
         $types = implode(
             '|',
-            array_map(static fn (array $alternative) => implode('&', $alternative), $edge->dependency->alternatives)
+            array_map(static fn(array $alternative) => implode('&', $alternative), $edge->dependency->alternatives),
         );
 
-        return $edge->dependency->key === null ?
-            $types :
-            "$types with key '" . Key::getKeyFromStringOrEnum($edge->dependency->key) . "'";
+        return $edge->dependency->key === null
+            ? $types
+            : "$types with key '" . Key::getKeyFromStringOrEnum($edge->dependency->key) . "'";
     }
 
     /**
@@ -558,5 +557,4 @@ final class ContainerValidator
 
         return false;
     }
-
 }

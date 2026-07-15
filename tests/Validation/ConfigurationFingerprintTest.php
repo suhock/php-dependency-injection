@@ -47,7 +47,7 @@ final class ConfigurationFingerprintTest extends TestCase
             $className,
             new TransientStrategy($className),
             new ObjectInstanceProvider($className, $instance),
-            $shouldDispose
+            $shouldDispose,
         );
     }
 
@@ -61,7 +61,7 @@ final class ConfigurationFingerprintTest extends TestCase
         return new Descriptor(
             $className,
             new SingletonStrategy($className),
-            new ObjectInstanceProvider($className, $instance)
+            new ObjectInstanceProvider($className, $instance),
         );
     }
 
@@ -75,7 +75,7 @@ final class ConfigurationFingerprintTest extends TestCase
         return new Descriptor(
             $className,
             new TransientStrategy($className),
-            new ClosureInstanceProvider($className, $factory)
+            new ClosureInstanceProvider($className, $factory),
         );
     }
 
@@ -100,12 +100,12 @@ final class ConfigurationFingerprintTest extends TestCase
     {
         // Arrange
         $descriptorsA = [
-            FakeClassNoConstructor::class =>
-                self::transientClosure(FakeClassNoConstructor::class, self::makeCapturingFactory(1)),
+            FakeClassNoConstructor::class
+                => self::transientClosure(FakeClassNoConstructor::class, self::makeCapturingFactory(1)),
         ];
         $descriptorsB = [
-            FakeClassNoConstructor::class =>
-                self::transientClosure(FakeClassNoConstructor::class, self::makeCapturingFactory(2)),
+            FakeClassNoConstructor::class
+                => self::transientClosure(FakeClassNoConstructor::class, self::makeCapturingFactory(2)),
         ];
 
         // Act
@@ -123,7 +123,7 @@ final class ConfigurationFingerprintTest extends TestCase
         $descriptorOne = self::transientObject(FakeClassNoConstructor::class, new FakeClassNoConstructor());
         $descriptorTwo = self::transientObject(
             FakeInterfaceOne::class,
-            new FakeClassWithConstructor(new FakeClassNoConstructor())
+            new FakeClassWithConstructor(new FakeClassNoConstructor()),
         );
 
         $forwardOrder = [
@@ -147,8 +147,8 @@ final class ConfigurationFingerprintTest extends TestCase
     public function testCompute_WithFactoryClosuresOnDifferentLines_ProducesDifferentFingerprints(): void
     {
         // Arrange
-        $factoryOne = static fn (): FakeClassNoConstructor => new FakeClassNoConstructor();
-        $factoryTwo = static fn (): FakeClassNoConstructor => new FakeClassNoConstructor();
+        $factoryOne = static fn(): FakeClassNoConstructor => new FakeClassNoConstructor();
+        $factoryTwo = static fn(): FakeClassNoConstructor => new FakeClassNoConstructor();
 
         $descriptorsA = [
             FakeClassNoConstructor::class => self::transientClosure(FakeClassNoConstructor::class, $factoryOne),
@@ -192,12 +192,12 @@ final class ConfigurationFingerprintTest extends TestCase
     {
         // Arrange
         $descriptorsA = [
-            FakeClassNoConstructor::class =>
-                self::transientObject(FakeClassNoConstructor::class, new FakeClassNoConstructor()),
+            FakeClassNoConstructor::class
+                => self::transientObject(FakeClassNoConstructor::class, new FakeClassNoConstructor()),
         ];
         $descriptorsB = [
-            FakeClassNoConstructor::class =>
-                self::transientObject(FakeClassNoConstructor::class, new FakeClassNoConstructor()),
+            FakeClassNoConstructor::class
+                => self::transientObject(FakeClassNoConstructor::class, new FakeClassNoConstructor()),
         ];
 
         // Act
@@ -234,8 +234,8 @@ final class ConfigurationFingerprintTest extends TestCase
     {
         // Arrange
         $descriptors = [
-            FakeClassNoConstructor::class =>
-                self::transientClosure(FakeClassNoConstructor::class, strlen(...)),
+            FakeClassNoConstructor::class
+                => self::transientClosure(FakeClassNoConstructor::class, strlen(...)),
         ];
 
         // Act
@@ -276,7 +276,7 @@ final class ConfigurationFingerprintTest extends TestCase
         return new Descriptor(
             $className,
             new TransientStrategy($className),
-            new ClassInstanceProvider($className, $mutator)
+            new ClassInstanceProvider($className, $mutator),
         );
     }
 
@@ -291,7 +291,7 @@ final class ConfigurationFingerprintTest extends TestCase
         return new Descriptor(
             $className,
             new TransientStrategy($className),
-            new ImplementationInstanceProvider($className, $implementationClassName)
+            new ImplementationInstanceProvider($className, $implementationClassName),
         );
     }
 
@@ -303,7 +303,7 @@ final class ConfigurationFingerprintTest extends TestCase
      */
     private static function makeStringKeyedFactory(): Closure
     {
-        return static fn (#[Key('key1')] FakeClassNoConstructor $dependency): FakeClassNoConstructor => $dependency;
+        return static fn(#[Key('key1')] FakeClassNoConstructor $dependency): FakeClassNoConstructor => $dependency;
     }
 
     /**
@@ -314,8 +314,9 @@ final class ConfigurationFingerprintTest extends TestCase
      */
     private static function makeEnumKeyedFactory(): Closure
     {
-        return static fn (
-            #[Key(FakeUnitEnum::Test)] FakeClassNoConstructor $dependency
+        return static fn(
+            #[Key(FakeUnitEnum::Test)]
+            FakeClassNoConstructor $dependency,
         ): FakeClassNoConstructor => $dependency;
     }
 
@@ -326,8 +327,7 @@ final class ConfigurationFingerprintTest extends TestCase
         $withMutator = [
             FakeClassNoConstructor::class => self::autowireClass(
                 FakeClassNoConstructor::class,
-                static function (FakeClassNoConstructor $instance): void {
-                }
+                static function (FakeClassNoConstructor $instance): void {},
             ),
         ];
 
@@ -361,12 +361,12 @@ final class ConfigurationFingerprintTest extends TestCase
     {
         // Arrange: two factories from the same site whose parameter carries the same string key.
         $descriptorsA = [
-            FakeClassNoConstructor::class =>
-                self::transientClosure(FakeClassNoConstructor::class, self::makeStringKeyedFactory()),
+            FakeClassNoConstructor::class
+                => self::transientClosure(FakeClassNoConstructor::class, self::makeStringKeyedFactory()),
         ];
         $descriptorsB = [
-            FakeClassNoConstructor::class =>
-                self::transientClosure(FakeClassNoConstructor::class, self::makeStringKeyedFactory()),
+            FakeClassNoConstructor::class
+                => self::transientClosure(FakeClassNoConstructor::class, self::makeStringKeyedFactory()),
         ];
 
         // Act
@@ -382,12 +382,12 @@ final class ConfigurationFingerprintTest extends TestCase
     {
         // Arrange
         $descriptorsA = [
-            FakeClassNoConstructor::class =>
-                self::transientClosure(FakeClassNoConstructor::class, self::makeEnumKeyedFactory()),
+            FakeClassNoConstructor::class
+                => self::transientClosure(FakeClassNoConstructor::class, self::makeEnumKeyedFactory()),
         ];
         $descriptorsB = [
-            FakeClassNoConstructor::class =>
-                self::transientClosure(FakeClassNoConstructor::class, self::makeEnumKeyedFactory()),
+            FakeClassNoConstructor::class
+                => self::transientClosure(FakeClassNoConstructor::class, self::makeEnumKeyedFactory()),
         ];
 
         // Act

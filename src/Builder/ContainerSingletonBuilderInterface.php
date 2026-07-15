@@ -63,7 +63,7 @@ interface ContainerSingletonBuilderInterface
     public function addKeyedSingleton(
         string $className,
         string|UnitEnum $key,
-        string|object|null $source = null
+        string|object|null $source = null,
     ): static;
 
     /**
@@ -77,8 +77,9 @@ interface ContainerSingletonBuilderInterface
      * @param Closure|callable-string|null $mutator [optional] This function will be called after an instance of the class has been
      * created. The class instance will be provided as the first parameter. Any additional parameters will be injected.
      *
-     * @return $this
      * @throws ImplementationException
+     *
+     * @return $this
      */
     public function addSingletonClass(string $className, ?callable $mutator = null): static;
 
@@ -94,13 +95,14 @@ interface ContainerSingletonBuilderInterface
      * @param Closure|callable-string|null $mutator [optional] This function will be called after an instance of the class has been
      * created. The class instance will be provided as the first parameter. Any additional parameters will be injected.
      *
-     * @return $this
      * @throws ImplementationException
+     *
+     * @return $this
      */
     public function addKeyedSingletonClass(
         string $className,
         string|UnitEnum $key,
-        ?callable $mutator = null
+        ?callable $mutator = null,
     ): static;
 
     /**
@@ -115,8 +117,9 @@ interface ContainerSingletonBuilderInterface
      * @param class-string<TImplementation> $implementationClassName The fully qualified name of a class that implements
      * or extends {@see $className}.
      *
-     * @return $this
      * @throws ImplementationException If the implementation class is not a subclass of the class being added
+     *
+     * @return $this
      */
     public function addSingletonImplementation(string $className, string $implementationClassName): static;
 
@@ -133,13 +136,14 @@ interface ContainerSingletonBuilderInterface
      * @param class-string<TImplementation> $implementationClassName The fully qualified name of a class that
      * implements or extends {@see $className}.
      *
-     * @return $this
      * @throws ImplementationException If the implementation class is not a subclass of the class being added
+     *
+     * @return $this
      */
     public function addKeyedSingletonImplementation(
         string $className,
         string|UnitEnum $key,
-        string $implementationClassName
+        string $implementationClassName,
     ): static;
 
     /**
@@ -182,8 +186,9 @@ interface ContainerSingletonBuilderInterface
      * {@see \Suhock\DependencyInjection\DisposableInterface}, when the container is disposed. Pass false to retain
      * disposal responsibility yourself, e.g. when the instance is shared with code outside the container.
      *
-     * @return $this
      * @throws InstanceTypeException
+     *
+     * @return $this
      */
     public function addSingletonInstance(string $className, object $instance, bool $shouldDispose = true): static;
 
@@ -200,13 +205,14 @@ interface ContainerSingletonBuilderInterface
      * {@see \Suhock\DependencyInjection\DisposableInterface}, when the container is disposed. Pass false to retain
      * disposal responsibility yourself, e.g. when the instance is shared with code outside the container.
      *
-     * @return $this
      * @throws InstanceTypeException
+     *
+     * @return $this
      */
     public function addKeyedSingletonInstance(
         string $className,
         string|UnitEnum $key,
         object $instance,
-        bool $shouldDispose = true
+        bool $shouldDispose = true,
     ): static;
 }

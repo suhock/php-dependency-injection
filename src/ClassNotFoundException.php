@@ -30,7 +30,7 @@ final class ClassNotFoundException extends ContainerException
      */
     public function __construct(
         private readonly string $className,
-        ?Throwable $previous = null
+        ?Throwable $previous = null,
     ) {
         parent::__construct("The container does not contain the class $className", $previous);
     }

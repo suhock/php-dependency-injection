@@ -23,7 +23,7 @@ final class ContainerDisposeTest extends AbstractDependencyInjectionTestCase
     public function testContainer_ImplementsDisposableInterface(): void
     {
         // Arrange & Act
-        $container = self::buildContainer(static fn (ContainerBuilder $builder) => null);
+        $container = self::buildContainer(static fn(ContainerBuilder $builder) => null);
 
         // Assert
         self::assertInstanceOf(DisposableInterface::class, $container);
@@ -33,7 +33,7 @@ final class ContainerDisposeTest extends AbstractDependencyInjectionTestCase
     {
         // Arrange
         $container = self::buildContainer(
-            static fn (ContainerBuilder $builder) => $builder->addSingleton(FakeDisposableClass::class)
+            static fn(ContainerBuilder $builder) => $builder->addSingleton(FakeDisposableClass::class),
         );
         $instance = $container->get(FakeDisposableClass::class);
 
@@ -49,10 +49,10 @@ final class ContainerDisposeTest extends AbstractDependencyInjectionTestCase
         // Arrange
         $log = new FakeDisposalLog();
         $container = self::buildContainer(
-            static fn (ContainerBuilder $builder) => $builder
+            static fn(ContainerBuilder $builder) => $builder
                 ->addSingletonInstance(FakeDisposalLog::class, $log)
                 ->addSingleton(FakeDisposableClass::class)
-                ->addSingleton(FakeDisposableClassWithDependency::class)
+                ->addSingleton(FakeDisposableClassWithDependency::class),
         );
         $container->get(FakeDisposableClassWithDependency::class);
 
@@ -68,7 +68,7 @@ final class ContainerDisposeTest extends AbstractDependencyInjectionTestCase
         // Arrange
         $instance = new FakeDisposableClass();
         $container = self::buildContainer(
-            static fn (ContainerBuilder $builder) => $builder->addSingletonInstance(FakeDisposableClass::class, $instance)
+            static fn(ContainerBuilder $builder) => $builder->addSingletonInstance(FakeDisposableClass::class, $instance),
         );
         $container->get(FakeDisposableClass::class);
 
@@ -84,8 +84,8 @@ final class ContainerDisposeTest extends AbstractDependencyInjectionTestCase
         // Arrange
         $instance = new FakeDisposableClass();
         $container = self::buildContainer(
-            static fn (ContainerBuilder $builder) =>
-                $builder->addSingletonInstance(FakeDisposableClass::class, $instance, shouldDispose: false)
+            static fn(ContainerBuilder $builder)
+                => $builder->addSingletonInstance(FakeDisposableClass::class, $instance, shouldDispose: false),
         );
         $container->get(FakeDisposableClass::class);
 
@@ -103,7 +103,7 @@ final class ContainerDisposeTest extends AbstractDependencyInjectionTestCase
             FakeDisposableClass::class => self::classDescriptor(
                 FakeDisposableClass::class,
                 'singleton',
-                shouldDispose: false
+                shouldDispose: false,
             ),
         ]);
         $instance = $container->get(FakeDisposableClass::class);
@@ -119,9 +119,9 @@ final class ContainerDisposeTest extends AbstractDependencyInjectionTestCase
     {
         // Arrange
         $container = self::buildContainer(
-            static fn (ContainerBuilder $builder) => $builder
+            static fn(ContainerBuilder $builder) => $builder
                 ->addKeyedSingleton(FakeDisposableClass::class, 'first')
-                ->addKeyedSingleton(FakeDisposableClass::class, 'second')
+                ->addKeyedSingleton(FakeDisposableClass::class, 'second'),
         );
         $first = $container->get(FakeDisposableClass::class, 'first');
         $second = $container->get(FakeDisposableClass::class, 'second');
@@ -139,7 +139,7 @@ final class ContainerDisposeTest extends AbstractDependencyInjectionTestCase
     {
         // Arrange
         $container = self::buildContainer(
-            static fn (ContainerBuilder $builder) => $builder->addTransient(FakeDisposableClass::class)
+            static fn(ContainerBuilder $builder) => $builder->addTransient(FakeDisposableClass::class),
         );
         $instance = $container->get(FakeDisposableClass::class);
 
@@ -154,7 +154,7 @@ final class ContainerDisposeTest extends AbstractDependencyInjectionTestCase
     {
         // Arrange
         $container = self::buildContainer(
-            static fn (ContainerBuilder $builder) => $builder->addSingleton(FakeDisposableClass::class)
+            static fn(ContainerBuilder $builder) => $builder->addSingleton(FakeDisposableClass::class),
         );
 
         // Act
@@ -169,7 +169,7 @@ final class ContainerDisposeTest extends AbstractDependencyInjectionTestCase
     {
         // Arrange
         $container = self::buildContainer(
-            static fn (ContainerBuilder $builder) => $builder->addSingleton(FakeDisposableClass::class)
+            static fn(ContainerBuilder $builder) => $builder->addSingleton(FakeDisposableClass::class),
         );
 
         // Act
@@ -183,7 +183,7 @@ final class ContainerDisposeTest extends AbstractDependencyInjectionTestCase
     public function testDispose_ThenCreateScope_ThrowsContainerException(): void
     {
         // Arrange
-        $container = self::buildContainer(static fn (ContainerBuilder $builder) => null);
+        $container = self::buildContainer(static fn(ContainerBuilder $builder) => null);
 
         // Act
         $container->dispose();
@@ -197,7 +197,7 @@ final class ContainerDisposeTest extends AbstractDependencyInjectionTestCase
     {
         // Arrange
         $container = self::buildContainer(
-            static fn (ContainerBuilder $builder) => $builder->addScoped(FakeDisposableClass::class)
+            static fn(ContainerBuilder $builder) => $builder->addScoped(FakeDisposableClass::class),
         );
         $scope = $container->createScope();
 
@@ -213,7 +213,7 @@ final class ContainerDisposeTest extends AbstractDependencyInjectionTestCase
     {
         // Arrange
         $container = self::buildContainer(
-            static fn (ContainerBuilder $builder) => $builder->addScoped(FakeDisposableClass::class)
+            static fn(ContainerBuilder $builder) => $builder->addScoped(FakeDisposableClass::class),
         );
         $scope = $container->createScope();
         $instance = $scope->get(FakeDisposableClass::class);
@@ -230,7 +230,7 @@ final class ContainerDisposeTest extends AbstractDependencyInjectionTestCase
     {
         // Arrange
         $container = self::buildContainer(
-            static fn (ContainerBuilder $builder) => $builder->addSingleton(FakeDisposableClass::class)
+            static fn(ContainerBuilder $builder) => $builder->addSingleton(FakeDisposableClass::class),
         );
         $instance = $container->get(FakeDisposableClass::class);
 

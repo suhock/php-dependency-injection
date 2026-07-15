@@ -23,7 +23,7 @@ final class FakeClassWithDependencies
 
     public function __construct(
         Throwable $throwable,
-        public readonly RuntimeException $runtimeException
+        public readonly RuntimeException $runtimeException,
     ) {
         $this->throwable = $throwable;
     }

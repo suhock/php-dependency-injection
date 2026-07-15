@@ -20,7 +20,6 @@ final class FakeClassWithKeyedDependency
 {
     public function __construct(
         #[Key('key1')]
-        public readonly FakeClassNoConstructor $dependency
-    ) {
-    }
+        public readonly FakeClassNoConstructor $dependency,
+    ) {}
 }

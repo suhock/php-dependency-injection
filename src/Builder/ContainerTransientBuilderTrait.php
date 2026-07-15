@@ -29,7 +29,7 @@ trait ContainerTransientBuilderTrait
         string $className,
         LifetimeStrategy $lifetimeStrategy,
         InstanceProviderInterface $instanceProvider,
-        bool $shouldDispose = true
+        bool $shouldDispose = true,
     ): static;
 
     abstract private function addKeyed(
@@ -37,7 +37,7 @@ trait ContainerTransientBuilderTrait
         string|UnitEnum $key,
         LifetimeStrategy $lifetimeStrategy,
         InstanceProviderInterface $instanceProvider,
-        bool $shouldDispose = true
+        bool $shouldDispose = true,
     ): static;
 
     /**
@@ -47,7 +47,7 @@ trait ContainerTransientBuilderTrait
     {
         $this->addTransientInstanceProvider(
             $className,
-            InstanceProviderFactory::createInstanceProvider($className, $source)
+            InstanceProviderFactory::createInstanceProvider($className, $source),
         );
 
         return $this;
@@ -59,12 +59,12 @@ trait ContainerTransientBuilderTrait
     public function addKeyedTransient(
         string $className,
         string|UnitEnum $key,
-        string|Closure|null $source = null
+        string|Closure|null $source = null,
     ): static {
         return $this->addKeyedTransientInstanceProvider(
             $className,
             $key,
-            InstanceProviderFactory::createInstanceProvider($className, $source)
+            InstanceProviderFactory::createInstanceProvider($className, $source),
         );
     }
 
@@ -75,7 +75,7 @@ trait ContainerTransientBuilderTrait
     {
         $this->addTransientInstanceProvider(
             $className,
-            InstanceProviderFactory::createClassInstanceProvider($className, $mutator)
+            InstanceProviderFactory::createClassInstanceProvider($className, $mutator),
         );
 
         return $this;
@@ -87,12 +87,12 @@ trait ContainerTransientBuilderTrait
     public function addKeyedTransientClass(
         string $className,
         string|UnitEnum $key,
-        ?callable $mutator = null
+        ?callable $mutator = null,
     ): static {
         return $this->addKeyedTransientInstanceProvider(
             $className,
             $key,
-            InstanceProviderFactory::createClassInstanceProvider($className, $mutator)
+            InstanceProviderFactory::createClassInstanceProvider($className, $mutator),
         );
     }
 
@@ -103,7 +103,7 @@ trait ContainerTransientBuilderTrait
     {
         $this->addTransientInstanceProvider(
             $className,
-            InstanceProviderFactory::createImplementationInstanceProvider($className, $implementationClassName)
+            InstanceProviderFactory::createImplementationInstanceProvider($className, $implementationClassName),
         );
 
         return $this;
@@ -115,12 +115,12 @@ trait ContainerTransientBuilderTrait
     public function addKeyedTransientImplementation(
         string $className,
         string|UnitEnum $key,
-        string $implementationClassName
+        string $implementationClassName,
     ): static {
         return $this->addKeyedTransientInstanceProvider(
             $className,
             $key,
-            InstanceProviderFactory::createImplementationInstanceProvider($className, $implementationClassName)
+            InstanceProviderFactory::createImplementationInstanceProvider($className, $implementationClassName),
         );
     }
 
@@ -131,7 +131,7 @@ trait ContainerTransientBuilderTrait
     {
         $this->addTransientInstanceProvider(
             $className,
-            InstanceProviderFactory::createClosureInstanceProvider($className, $factory(...))
+            InstanceProviderFactory::createClosureInstanceProvider($className, $factory(...)),
         );
 
         return $this;
@@ -145,7 +145,7 @@ trait ContainerTransientBuilderTrait
         return $this->addKeyedTransientInstanceProvider(
             $className,
             $key,
-            InstanceProviderFactory::createClosureInstanceProvider($className, $factory(...))
+            InstanceProviderFactory::createClosureInstanceProvider($className, $factory(...)),
         );
     }
 
@@ -175,7 +175,7 @@ trait ContainerTransientBuilderTrait
     private function addKeyedTransientInstanceProvider(
         string $className,
         string|UnitEnum $key,
-        InstanceProviderInterface $instanceProvider
+        InstanceProviderInterface $instanceProvider,
     ): static {
         return $this->addKeyed($className, $key, new TransientStrategy($className), $instanceProvider);
     }

@@ -30,11 +30,11 @@ final class ImplementationException extends ContainerException
     public function __construct(
         private readonly string $expectedClassName,
         private readonly string $actualClassName,
-        ?Throwable $previous = null
+        ?Throwable $previous = null,
     ) {
         parent::__construct(
             "Class $this->actualClassName is not a subclass of $this->expectedClassName",
-            $previous
+            $previous,
         );
     }
 

@@ -60,7 +60,7 @@ final class Injector implements InjectorInterface
      *
      * @param ContainerInterface $container The container to resolve parameter values from
      * @param CacheInterface|null $cache [optional] Optional shared (L2) metadata cache; supply an
-     * {@see Cache\CacheInterface} to share the {@see InjectAttributeMemberInjector}'s reflected member metadata across
+     * {@see CacheInterface} to share the {@see InjectAttributeMemberInjector}'s reflected member metadata across
      * requests
      */
     public static function createDefault(ContainerInterface $container, ?CacheInterface $cache = null): self
@@ -77,7 +77,7 @@ final class Injector implements InjectorInterface
         $rFunction = new ReflectionFunction($function(...));
 
         return $rFunction->invokeArgs(
-            $this->argumentResolver->resolve($rFunction->getParameters(), $params)
+            $this->argumentResolver->resolve($rFunction->getParameters(), $params),
         );
     }
 

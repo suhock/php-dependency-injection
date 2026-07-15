@@ -21,6 +21,7 @@ use Suhock\DependencyInjection\ResolutionContext;
  * to add them.
  *
  * @template TClass of object
+ *
  * @template-implements InstanceProviderInterface<TClass>
  *
  * @internal
@@ -34,8 +35,7 @@ final class ContextInstanceProvider implements InstanceProviderInterface
      */
     public function __construct(
         public readonly string $className,
-        public readonly Closure $select
-    ) {
-    }
+        public readonly Closure $select,
+    ) {}
 
 }

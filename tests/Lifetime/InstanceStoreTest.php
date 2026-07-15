@@ -33,7 +33,6 @@ final class InstanceStoreTest extends TestCase
         return new SingletonStrategy(FakeClassNoConstructor::class);
     }
 
-
     public function testDispose_WithRegisteredDisposables_DisposesInReverseRegistrationOrder(): void
     {
         // Arrange
@@ -80,9 +79,7 @@ final class InstanceStoreTest extends TestCase
         $store = new InstanceStore();
         $first = new FakeDisposableClass($log, 'first');
         $throwing = new class ($log) implements DisposableInterface {
-            public function __construct(private readonly FakeDisposalLog $log)
-            {
-            }
+            public function __construct(private readonly FakeDisposalLog $log) {}
 
             public function dispose(): void
             {
@@ -165,5 +162,4 @@ final class InstanceStoreTest extends TestCase
         self::assertSame(1, $shared->disposeCount);
         self::assertSame(['later', 'shared'], $log->entries);
     }
-
 }

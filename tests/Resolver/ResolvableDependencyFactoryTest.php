@@ -24,33 +24,19 @@ use Suhock\DependencyInjection\Key;
  */
 final class ResolvableDependencyFactoryTest extends TestCase
 {
-    private function fakeNamedParam(FakeClassNoConstructor $namedParam): void
-    {
-    }
+    private function fakeNamedParam(FakeClassNoConstructor $namedParam): void {}
 
-    private function fakeNullableParam(?FakeClassNoConstructor $nullableParam): void
-    {
-    }
+    private function fakeNullableParam(?FakeClassNoConstructor $nullableParam): void {}
 
-    private function fakeDefaultedParam(FakeClassNoConstructor $defaultedParam = new FakeClassNoConstructor()): void
-    {
-    }
+    private function fakeDefaultedParam(FakeClassNoConstructor $defaultedParam = new FakeClassNoConstructor()): void {}
 
-    private function fakeBuiltinParam(string $builtinParam): void
-    {
-    }
+    private function fakeBuiltinParam(string $builtinParam): void {}
 
-    private function fakeUnionParam(FakeInterfaceOne|FakeInterfaceTwo $unionParam): void
-    {
-    }
+    private function fakeUnionParam(FakeInterfaceOne|FakeInterfaceTwo $unionParam): void {}
 
-    private function fakeIntersectionParam(FakeInterfaceOne&FakeInterfaceTwo $intersectionParam): void
-    {
-    }
+    private function fakeIntersectionParam(FakeInterfaceOne&FakeInterfaceTwo $intersectionParam): void {}
 
-    private function fakeKeyedParam(#[Key('key1')] FakeClassNoConstructor $keyedParam): void
-    {
-    }
+    private function fakeKeyedParam(#[Key('key1')] FakeClassNoConstructor $keyedParam): void {}
 
     private function createParameter(Closure $fakeMethod, string $parameterName): ReflectionParameter
     {
@@ -112,8 +98,7 @@ final class ResolvableDependencyFactoryTest extends TestCase
     public function testCreateFromParameter_UntypedParam_ReturnsNull(): void
     {
         // Arrange: an untyped parameter has no ReflectionType at all, unlike a builtin type.
-        $fakeFunction = static function ($untypedParam): void {
-        };
+        $fakeFunction = static function ($untypedParam): void {};
         $rParam = $this->createParameter($fakeFunction, 'untypedParam');
 
         // Act

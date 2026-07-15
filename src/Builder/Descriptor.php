@@ -19,6 +19,7 @@ use Suhock\DependencyInjection\Lifetime\LifetimeStrategy;
  * multiple resolution roots.
  *
  * @template TClass as object
+ *
  * @internal
  */
 final class Descriptor
@@ -34,7 +35,6 @@ final class Descriptor
         public readonly string $className,
         public readonly LifetimeStrategy $lifetimeStrategy,
         public readonly InstanceProviderInterface $instanceProvider,
-        public readonly bool $shouldDispose = true
-    ) {
-    }
+        public readonly bool $shouldDispose = true,
+    ) {}
 }

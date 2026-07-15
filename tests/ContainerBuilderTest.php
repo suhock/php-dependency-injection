@@ -81,7 +81,7 @@ final class ContainerBuilderTest extends AbstractDependencyInjectionTestCase
         // Assert
         self::assertNotSame(
             $container->get(FakeClassNoConstructor::class),
-            $container->get(FakeClassNoConstructor::class, 'key1')
+            $container->get(FakeClassNoConstructor::class, 'key1'),
         );
     }
 
@@ -183,8 +183,8 @@ final class ContainerBuilderTest extends AbstractDependencyInjectionTestCase
         } catch (ContainerValidationException $exception) {
             // Assert
             $kinds = array_map(
-                static fn (ValidationIssue $issue) => $issue->kind,
-                $exception->getIssues()
+                static fn(ValidationIssue $issue) => $issue->kind,
+                $exception->getIssues(),
             );
             self::assertContains(ValidationIssueKind::MissingDependency, $kinds);
             self::assertContains(ValidationIssueKind::UnresolvableParameter, $kinds);
@@ -205,14 +205,14 @@ final class ContainerBuilderTest extends AbstractDependencyInjectionTestCase
 
         // Act
         $container = $builder
-            ->addSingletonFactory(Throwable::class, static fn (): RuntimeException => new RuntimeException())
-            ->addSingletonFactory(RuntimeException::class, static fn (): RuntimeException => new RuntimeException())
+            ->addSingletonFactory(Throwable::class, static fn(): RuntimeException => new RuntimeException())
+            ->addSingletonFactory(RuntimeException::class, static fn(): RuntimeException => new RuntimeException())
             ->build();
 
         // Assert
         self::assertInstanceOf(
             FakeClassWithDependencies::class,
-            $container->get(FakeClassWithDependencies::class)
+            $container->get(FakeClassWithDependencies::class),
         );
     }
 
@@ -229,7 +229,7 @@ final class ContainerBuilderTest extends AbstractDependencyInjectionTestCase
         self::assertNotSame($first, $second);
         self::assertNotSame(
             $first->get(FakeClassNoConstructor::class),
-            $second->get(FakeClassNoConstructor::class)
+            $second->get(FakeClassNoConstructor::class),
         );
     }
 
@@ -395,8 +395,8 @@ final class ContainerBuilderTest extends AbstractDependencyInjectionTestCase
         $builder = self::createBuilder()
             ->addSingletonFactory(
                 FakeClassWithConstructor::class,
-                static fn (?FakeClassNoConstructor $obj): FakeClassWithConstructor =>
-                    new FakeClassWithConstructor($obj ?? new FakeClassNoConstructor())
+                static fn(?FakeClassNoConstructor $obj): FakeClassWithConstructor
+                    => new FakeClassWithConstructor($obj ?? new FakeClassNoConstructor()),
             )
             ->addSingletonClass(FakeClassNoConstructor::class);
 
@@ -454,7 +454,7 @@ final class ContainerBuilderTest extends AbstractDependencyInjectionTestCase
 
         // Act
         $graph = $builder->exportDependencyGraph();
-        $targets = array_map(static fn (DependencyGraphEdge $edge) => $edge->targetId, $graph->edges);
+        $targets = array_map(static fn(DependencyGraphEdge $edge) => $edge->targetId, $graph->edges);
         $roots = array_values(array_diff($graph->serviceIds, $targets));
 
         // Assert: the auto-bindings surface as roots too; the user's root is the chain head.

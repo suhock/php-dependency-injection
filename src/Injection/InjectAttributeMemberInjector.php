@@ -42,7 +42,7 @@ final class InjectAttributeMemberInjector implements PostInstantiationHookInterf
      */
     public function __construct(
         private readonly ParameterResolverInterface $resolver,
-        ?CacheInterface $sharedCache = null
+        ?CacheInterface $sharedCache = null,
     ) {
         $this->cache = new MetadataCache($sharedCache);
         $this->argumentResolver = new ArgumentResolver($resolver);
@@ -75,7 +75,7 @@ final class InjectAttributeMemberInjector implements PostInstantiationHookInterf
     {
         return $this->cache->get(
             self::INJECTION_PLAN_CACHE_PREFIX . $className,
-            static fn () => InjectionPlanFactory::create($className)
+            static fn() => InjectionPlanFactory::create($className),
         );
     }
 }

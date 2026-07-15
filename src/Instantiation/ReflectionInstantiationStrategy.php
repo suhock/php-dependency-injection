@@ -38,8 +38,9 @@ final class ReflectionInstantiationStrategy implements InstantiationStrategyInte
      * @param class-string<TClass> $className
      * @param array<mixed> $params
      *
-     * @return TClass
      * @throws InjectorException If the class does not exist, is not instantiable, or cannot be constructed
+     *
+     * @return TClass
      */
     public function tryInstantiate(string $className, array $params): object
     {
@@ -57,7 +58,7 @@ final class ReflectionInstantiationStrategy implements InstantiationStrategyInte
         try {
             /** @var TClass $instance */
             $instance = $rClass->newInstanceArgs(
-                $this->argumentResolver->resolve($rClass->getConstructor()?->getParameters() ?? [], $params)
+                $this->argumentResolver->resolve($rClass->getConstructor()?->getParameters() ?? [], $params),
             );
         } catch (ReflectionException $e) {
             // The check for !isInstantiable() should make this unreachable

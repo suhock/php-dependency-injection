@@ -15,6 +15,4 @@ namespace Suhock\DependencyInjection;
  * Exception that indicates an error occurred as part of the dependency injection process (i.e. while resolving or
  * injecting dependencies when calling a function or building an object).
  */
-class InjectorException extends DependencyInjectionException
-{
-}
+class InjectorException extends DependencyInjectionException {}

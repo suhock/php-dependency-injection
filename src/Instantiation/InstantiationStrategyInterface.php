@@ -30,8 +30,9 @@ interface InstantiationStrategyInterface
      * @param class-string<TClass> $className The name of the class to instantiate
      * @param array<mixed> $params Explicit parameter values, matched by position then by name
      *
-     * @return TClass|null A new instance, or <code>null</code> if this strategy does not apply
      * @throws InjectorException If the strategy applies but instantiation fails
+     *
+     * @return TClass|null A new instance, or <code>null</code> if this strategy does not apply
      */
     public function tryInstantiate(string $className, array $params): ?object;
 }

@@ -44,7 +44,7 @@ final class ApcuCache implements CacheInterface
     {
         $value = apcu_fetch($id, $success);
 
-        return (bool)$success;
+        return (bool) $success;
     }
 
     /**

@@ -29,7 +29,6 @@ final class DependencyGraph
      */
     public function __construct(
         public readonly array $serviceIds,
-        public readonly array $edges
-    ) {
-    }
+        public readonly array $edges,
+    ) {}
 }

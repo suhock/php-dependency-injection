@@ -32,7 +32,6 @@ final class ResolvableDependency
      */
     public function __construct(
         public readonly array $alternatives,
-        public readonly string|UnitEnum|null $key = null
-    ) {
-    }
+        public readonly string|UnitEnum|null $key = null,
+    ) {}
 }

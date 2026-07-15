@@ -54,9 +54,8 @@ final class ContainerBuilder implements ContainerBuilderInterface
      * compiled graph across builds of an unchanged configuration
      */
     public function __construct(
-        private readonly ?CacheInterface $cache = null
-    ) {
-    }
+        private readonly ?CacheInterface $cache = null,
+    ) {}
 
     /**
      * Creates a builder with the default configuration.
@@ -85,7 +84,7 @@ final class ContainerBuilder implements ContainerBuilderInterface
         string $className,
         LifetimeStrategy $lifetimeStrategy,
         InstanceProviderInterface $instanceProvider,
-        bool $shouldDispose = true
+        bool $shouldDispose = true,
     ): static {
         $this->addDescriptor(new Descriptor($className, $lifetimeStrategy, $instanceProvider, $shouldDispose));
 
@@ -111,11 +110,11 @@ final class ContainerBuilder implements ContainerBuilderInterface
         string|UnitEnum $key,
         LifetimeStrategy $lifetimeStrategy,
         InstanceProviderInterface $instanceProvider,
-        bool $shouldDispose = true
+        bool $shouldDispose = true,
     ): static {
         $this->addKeyedDescriptor(
             new Descriptor($className, $lifetimeStrategy, $instanceProvider, $shouldDispose),
-            $key
+            $key,
         );
 
         return $this;
@@ -240,14 +239,14 @@ final class ContainerBuilder implements ContainerBuilderInterface
         if (!isset($descriptors[ContainerInterface::class])) {
             $descriptors[ContainerInterface::class] = self::contextDescriptor(
                 ContainerInterface::class,
-                static fn (ResolutionContext $context): object => $context->container
+                static fn(ResolutionContext $context): object => $context->container,
             );
         }
 
         if (!isset($descriptors[ScopeFactoryInterface::class])) {
             $descriptors[ScopeFactoryInterface::class] = self::contextDescriptor(
                 ScopeFactoryInterface::class,
-                static fn (ResolutionContext $context): object => $context->rootContext()->container
+                static fn(ResolutionContext $context): object => $context->rootContext()->container,
             );
         }
     }
@@ -266,7 +265,7 @@ final class ContainerBuilder implements ContainerBuilderInterface
             $className,
             new TransientStrategy($className),
             new ContextInstanceProvider($className, $select),
-            shouldDispose: false
+            shouldDispose: false,
         );
     }
 
@@ -306,10 +305,10 @@ final class ContainerBuilder implements ContainerBuilderInterface
         $id = DescriptorId::compute($descriptor->className, $key);
 
         if (isset($this->descriptors[$id])) {
-            throw new ContainerException($key === null ?
-                'Class already in container: ' . $descriptor->className :
-                "Class already in container for key '" . Key::getKeyFromStringOrEnum($key) . "': " .
-                    $descriptor->className);
+            throw new ContainerException($key === null
+                ? 'Class already in container: ' . $descriptor->className
+                : "Class already in container for key '" . Key::getKeyFromStringOrEnum($key) . "': "
+                    . $descriptor->className);
         }
 
         $this->descriptors[$id] = $descriptor;

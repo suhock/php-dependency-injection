@@ -16,6 +16,7 @@ namespace Suhock\DependencyInjection\InstanceProvider;
  * the resolution root's container.
  *
  * @template TClass of object
+ *
  * @template-implements InstanceProviderInterface<TClass>
  *
  * @internal
@@ -31,7 +32,7 @@ final class ImplementationInstanceProvider implements InstanceProviderInterface
      */
     public function __construct(
         string $className,
-        public readonly string $implementationClassName
+        public readonly string $implementationClassName,
     ) {
         if (!is_subclass_of($implementationClassName, $className)) {
             throw new ImplementationException($className, $this->implementationClassName);

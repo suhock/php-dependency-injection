@@ -47,7 +47,7 @@ final class ContainerParameterResolverTest extends AbstractDependencyInjectionTe
         $injector = new Injector(
             $resolver,
             new ReflectionInstantiationStrategy($resolver),
-            new InjectAttributeMemberInjector($resolver)
+            new InjectAttributeMemberInjector($resolver),
         );
 
         return [$container, $injector];
@@ -58,12 +58,12 @@ final class ContainerParameterResolverTest extends AbstractDependencyInjectionTe
         // Arrange
         $expectedInstance = new FakeClassNoConstructor();
         [$container, $injector] = $this->createContainerAndInjector(
-            static fn (ContainerBuilder $builder) =>
-                $builder->addKeyedSingleton(FakeClassNoConstructor::class, 'key1', $expectedInstance)
+            static fn(ContainerBuilder $builder)
+                => $builder->addKeyedSingleton(FakeClassNoConstructor::class, 'key1', $expectedInstance),
         );
 
         // Act
-        $result = $injector->call(fn (#[Key('key1')] FakeClassNoConstructor $obj) => $obj);
+        $result = $injector->call(fn(#[Key('key1')] FakeClassNoConstructor $obj) => $obj);
 
         // Assert
         self::assertSame($expectedInstance, $result);
@@ -74,12 +74,12 @@ final class ContainerParameterResolverTest extends AbstractDependencyInjectionTe
         // Arrange
         $expectedInstance = new FakeClassNoConstructor();
         [$container, $injector] = $this->createContainerAndInjector(
-            static fn (ContainerBuilder $builder) =>
-                $builder->addKeyedSingleton(FakeClassNoConstructor::class, FakeUnitEnum::Test, $expectedInstance)
+            static fn(ContainerBuilder $builder)
+                => $builder->addKeyedSingleton(FakeClassNoConstructor::class, FakeUnitEnum::Test, $expectedInstance),
         );
 
         // Act
-        $result = $injector->call(fn (#[Key(FakeUnitEnum::Test)] FakeClassNoConstructor $obj) => $obj);
+        $result = $injector->call(fn(#[Key(FakeUnitEnum::Test)] FakeClassNoConstructor $obj) => $obj);
 
         // Assert
         self::assertSame($expectedInstance, $result);
@@ -90,12 +90,12 @@ final class ContainerParameterResolverTest extends AbstractDependencyInjectionTe
         // Arrange
         $expectedInstance = new FakeClassNoConstructor();
         [$container, $injector] = $this->createContainerAndInjector(
-            static fn (ContainerBuilder $builder) =>
-                $builder->addSingletonInstance(FakeClassNoConstructor::class, $expectedInstance)
+            static fn(ContainerBuilder $builder)
+                => $builder->addSingletonInstance(FakeClassNoConstructor::class, $expectedInstance),
         );
 
         // Act
-        $result = $injector->call(fn (FakeClassNoConstructor $obj) => $obj);
+        $result = $injector->call(fn(FakeClassNoConstructor $obj) => $obj);
 
         // Assert
         self::assertSame($expectedInstance, $result);
@@ -107,10 +107,9 @@ final class ContainerParameterResolverTest extends AbstractDependencyInjectionTe
         [, $injector] = $this->createContainerAndInjector();
 
         // Act
-        $fn = static fn () => $injector->call(fn (#[Key('key1')] FakeClassNoConstructor $obj) => $obj);
+        $fn = static fn() => $injector->call(fn(#[Key('key1')] FakeClassNoConstructor $obj) => $obj);
 
         // Assert
         self::assertThrowsParameterResolutionException('{closure}', 'obj', null, $fn);
     }
-
 }

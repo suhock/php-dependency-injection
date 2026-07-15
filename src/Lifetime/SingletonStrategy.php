@@ -19,6 +19,7 @@ use Suhock\DependencyInjection\ResolutionContext;
  * context, so its dependencies never come from a shorter-lived scope.
  *
  * @template TClass of object
+ *
  * @extends LifetimeStrategy<TClass>
  *
  * @internal
@@ -32,6 +33,6 @@ final class SingletonStrategy extends LifetimeStrategy
     {
         $home = $context->rootContext();
 
-        return $home->store->getOrCreate($this, static fn () => $factory($home));
+        return $home->store->getOrCreate($this, static fn() => $factory($home));
     }
 }

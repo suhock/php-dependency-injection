@@ -20,6 +20,7 @@ use Suhock\DependencyInjection\ScopeException;
  * singleton's dependency graph, which always resolves in the root context) throws a {@see ScopeException}.
  *
  * @template TClass of object
+ *
  * @extends LifetimeStrategy<TClass>
  *
  * @internal
@@ -28,6 +29,7 @@ final class ScopedStrategy extends LifetimeStrategy
 {
     /**
      * @inheritDoc
+     *
      * @throws ScopeException If no scope is active in the given context
      */
     public function get(ResolutionContext $context, callable $factory): object
@@ -36,6 +38,6 @@ final class ScopedStrategy extends LifetimeStrategy
             throw new ScopeException("Cannot resolve scoped service $this->className outside of a scope");
         }
 
-        return $context->store->getOrCreate($this, static fn () => $factory($context));
+        return $context->store->getOrCreate($this, static fn() => $factory($context));
     }
 }

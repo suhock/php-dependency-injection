@@ -46,9 +46,9 @@ final class ScopeTest extends AbstractDependencyInjectionTestCase
                 }
             }
 
-            $exception = $exception instanceof DependencyInjectionException ?
-                $exception->getConsolidatedException() ?? $exception->getPrevious() :
-                $exception->getPrevious();
+            $exception = $exception instanceof DependencyInjectionException
+                ? $exception->getConsolidatedException() ?? $exception->getPrevious()
+                : $exception->getPrevious();
         }
 
         self::fail('Failed asserting that the exception was caused by ' . implode(' or ', $expectedClasses));
@@ -65,7 +65,7 @@ final class ScopeTest extends AbstractDependencyInjectionTestCase
     public function testCreateScope_ReturnsNewScopeEachTime(): void
     {
         // Arrange
-        $container = self::buildContainer(static fn (ContainerBuilder $builder) => null);
+        $container = self::buildContainer(static fn(ContainerBuilder $builder) => null);
 
         // Act
         $firstScope = $container->createScope();
@@ -78,7 +78,7 @@ final class ScopeTest extends AbstractDependencyInjectionTestCase
     public function testContainer_ImplementsScopeFactoryInterface(): void
     {
         // Arrange & Act
-        $container = self::buildContainer(static fn (ContainerBuilder $builder) => null);
+        $container = self::buildContainer(static fn(ContainerBuilder $builder) => null);
 
         // Assert
         self::assertInstanceOf(ScopeFactoryInterface::class, $container);
@@ -88,7 +88,7 @@ final class ScopeTest extends AbstractDependencyInjectionTestCase
     {
         // Arrange
         $container = self::buildContainer(
-            static fn (ContainerBuilder $builder) => $builder->addScoped(FakeClassNoConstructor::class)
+            static fn(ContainerBuilder $builder) => $builder->addScoped(FakeClassNoConstructor::class),
         );
         $scope = $container->createScope();
 
@@ -104,7 +104,7 @@ final class ScopeTest extends AbstractDependencyInjectionTestCase
     {
         // Arrange
         $container = self::buildContainer(
-            static fn (ContainerBuilder $builder) => $builder->addScoped(FakeClassNoConstructor::class)
+            static fn(ContainerBuilder $builder) => $builder->addScoped(FakeClassNoConstructor::class),
         );
         $firstScope = $container->createScope();
         $secondScope = $container->createScope();
@@ -121,17 +121,17 @@ final class ScopeTest extends AbstractDependencyInjectionTestCase
     {
         // Arrange
         $container = self::buildContainer(
-            static fn (ContainerBuilder $builder) => $builder->addScoped(FakeClassNoConstructor::class)
+            static fn(ContainerBuilder $builder) => $builder->addScoped(FakeClassNoConstructor::class),
         );
 
         // Act
-        $fn = static fn () => $container->get(FakeClassNoConstructor::class);
+        $fn = static fn() => $container->get(FakeClassNoConstructor::class);
 
         // Assert
         self::assertThrowsClassResolutionException(
             FakeClassNoConstructor::class,
-            static fn (Throwable $cause) => self::assertHasScopeExceptionCause($cause),
-            $fn
+            static fn(Throwable $cause) => self::assertHasScopeExceptionCause($cause),
+            $fn,
         );
     }
 
@@ -139,7 +139,7 @@ final class ScopeTest extends AbstractDependencyInjectionTestCase
     {
         // Arrange
         $container = self::buildContainer(
-            static fn (ContainerBuilder $builder) => $builder->addSingleton(FakeClassNoConstructor::class)
+            static fn(ContainerBuilder $builder) => $builder->addSingleton(FakeClassNoConstructor::class),
         );
         $scope = $container->createScope();
 
@@ -155,7 +155,7 @@ final class ScopeTest extends AbstractDependencyInjectionTestCase
     {
         // Arrange
         $container = self::buildContainer(
-            static fn (ContainerBuilder $builder) => $builder->addSingleton(FakeClassNoConstructor::class)
+            static fn(ContainerBuilder $builder) => $builder->addSingleton(FakeClassNoConstructor::class),
         );
 
         // Act
@@ -170,9 +170,9 @@ final class ScopeTest extends AbstractDependencyInjectionTestCase
     {
         // Arrange
         $container = self::buildContainer(
-            static fn (ContainerBuilder $builder) => $builder
+            static fn(ContainerBuilder $builder) => $builder
                 ->addScoped(FakeClassNoConstructor::class)
-                ->addTransient(FakeClassWithConstructor::class)
+                ->addTransient(FakeClassWithConstructor::class),
         );
         $scope = $container->createScope();
 
@@ -188,9 +188,9 @@ final class ScopeTest extends AbstractDependencyInjectionTestCase
     {
         // Arrange
         $container = self::buildContainer(
-            static fn (ContainerBuilder $builder) => $builder
+            static fn(ContainerBuilder $builder) => $builder
                 ->addScoped(FakeClassNoConstructor::class)
-                ->addTransient(FakeClassWithConstructor::class)
+                ->addTransient(FakeClassWithConstructor::class),
         );
         $firstScope = $container->createScope();
         $secondScope = $container->createScope();
@@ -222,8 +222,8 @@ final class ScopeTest extends AbstractDependencyInjectionTestCase
         } catch (ContainerValidationException $exception) {
             // Assert
             $kinds = array_map(
-                static fn (ValidationIssue $issue) => $issue->kind,
-                $exception->getIssues()
+                static fn(ValidationIssue $issue) => $issue->kind,
+                $exception->getIssues(),
             );
             self::assertContains(ValidationIssueKind::CaptiveDependency, $kinds);
         }
@@ -233,7 +233,7 @@ final class ScopeTest extends AbstractDependencyInjectionTestCase
     {
         // Arrange
         $container = self::buildContainer(
-            static fn (ContainerBuilder $builder) => $builder->addSingleton(FakeClassNoConstructor::class)
+            static fn(ContainerBuilder $builder) => $builder->addSingleton(FakeClassNoConstructor::class),
         );
         $scope = $container->createScope();
         $scopeInstance = $scope->get(FakeClassNoConstructor::class);
@@ -250,7 +250,7 @@ final class ScopeTest extends AbstractDependencyInjectionTestCase
     {
         // Arrange
         $container = self::buildContainer(
-            static fn (ContainerBuilder $builder) => $builder->addKeyedScoped(FakeClassNoConstructor::class, 'key1')
+            static fn(ContainerBuilder $builder) => $builder->addKeyedScoped(FakeClassNoConstructor::class, 'key1'),
         );
         $scope = $container->createScope();
 
@@ -266,7 +266,7 @@ final class ScopeTest extends AbstractDependencyInjectionTestCase
     {
         // Arrange
         $container = self::buildContainer(
-            static fn (ContainerBuilder $builder) => $builder->addKeyedScoped(FakeClassNoConstructor::class, 'key1')
+            static fn(ContainerBuilder $builder) => $builder->addKeyedScoped(FakeClassNoConstructor::class, 'key1'),
         );
 
         // Act
@@ -281,7 +281,7 @@ final class ScopeTest extends AbstractDependencyInjectionTestCase
     {
         // Arrange
         $container = self::buildContainer(
-            static fn (ContainerBuilder $builder) => $builder->addScoped(FakeClassNoConstructor::class)
+            static fn(ContainerBuilder $builder) => $builder->addScoped(FakeClassNoConstructor::class),
         );
         $scope = $container->createScope();
 
@@ -294,7 +294,7 @@ final class ScopeTest extends AbstractDependencyInjectionTestCase
     {
         // Arrange
         $container = self::buildContainer(
-            static fn (ContainerBuilder $builder) => $builder->addScoped(FakeClassNoConstructor::class)
+            static fn(ContainerBuilder $builder) => $builder->addScoped(FakeClassNoConstructor::class),
         );
         $scope = $container->createScope();
 
@@ -310,7 +310,7 @@ final class ScopeTest extends AbstractDependencyInjectionTestCase
     {
         // Arrange
         $container = self::buildContainer(
-            static fn (ContainerBuilder $builder) => $builder->addScoped(FakeClassNoConstructor::class)
+            static fn(ContainerBuilder $builder) => $builder->addScoped(FakeClassNoConstructor::class),
         );
         $scope = $container->createScope();
 
@@ -325,7 +325,7 @@ final class ScopeTest extends AbstractDependencyInjectionTestCase
     public function testDispose_CalledTwice_HasNoEffect(): void
     {
         // Arrange
-        $container = self::buildContainer(static fn (ContainerBuilder $builder) => null);
+        $container = self::buildContainer(static fn(ContainerBuilder $builder) => null);
         $scope = $container->createScope();
 
         // Act
@@ -341,7 +341,7 @@ final class ScopeTest extends AbstractDependencyInjectionTestCase
     {
         // Arrange
         $container = self::buildContainer(
-            static fn (ContainerBuilder $builder) => $builder->addScoped(FakeClassNoConstructor::class)
+            static fn(ContainerBuilder $builder) => $builder->addScoped(FakeClassNoConstructor::class),
         );
         $disposedScope = $container->createScope();
         $liveScope = $container->createScope();
@@ -365,30 +365,30 @@ final class ScopeTest extends AbstractDependencyInjectionTestCase
         // failure (a CircularDependencyException from the shared in-progress tracker, or a ScopeException from
         // re-entering the scoped service at the root) rather than recursing.
         $container = self::buildContainer(
-            static fn (ContainerBuilder $builder) => $builder
+            static fn(ContainerBuilder $builder) => $builder
                 ->addScopedFactory(
                     FakeClassNoConstructor::class,
-                    fn (FakeClassWithConstructor $dependency) => new FakeClassNoConstructor()
+                    fn(FakeClassWithConstructor $dependency) => new FakeClassNoConstructor(),
                 )
                 ->addSingletonFactory(
                     FakeClassWithConstructor::class,
-                    static fn (ContainerInterface $c): FakeClassWithConstructor =>
-                        new FakeClassWithConstructor($c->get(FakeClassNoConstructor::class))
-                )
+                    static fn(ContainerInterface $c): FakeClassWithConstructor
+                        => new FakeClassWithConstructor($c->get(FakeClassNoConstructor::class)),
+                ),
         );
         $scope = $container->createScope();
 
         // Act
-        $fn = static fn () => $scope->get(FakeClassNoConstructor::class);
+        $fn = static fn() => $scope->get(FakeClassNoConstructor::class);
 
         // Assert
         self::assertThrowsClassResolutionException(
             FakeClassNoConstructor::class,
-            static fn (Throwable $cause) => self::assertHasCauseOfType(
+            static fn(Throwable $cause) => self::assertHasCauseOfType(
                 [ScopeException::class, CircularDependencyException::class],
-                $cause
+                $cause,
             ),
-            $fn
+            $fn,
         );
     }
 
@@ -396,7 +396,7 @@ final class ScopeTest extends AbstractDependencyInjectionTestCase
     {
         // Arrange
         $container = self::buildContainer(
-            static fn (ContainerBuilder $builder) => $builder->addScoped(FakeDisposableClass::class)
+            static fn(ContainerBuilder $builder) => $builder->addScoped(FakeDisposableClass::class),
         );
         $scope = $container->createScope();
         $instance = $scope->get(FakeDisposableClass::class);
@@ -413,10 +413,10 @@ final class ScopeTest extends AbstractDependencyInjectionTestCase
         // Arrange
         $log = new FakeDisposalLog();
         $container = self::buildContainer(
-            static fn (ContainerBuilder $builder) => $builder
+            static fn(ContainerBuilder $builder) => $builder
                 ->addSingletonInstance(FakeDisposalLog::class, $log)
                 ->addScoped(FakeDisposableClass::class)
-                ->addScoped(FakeDisposableClassWithDependency::class)
+                ->addScoped(FakeDisposableClassWithDependency::class),
         );
         $scope = $container->createScope();
         $scope->get(FakeDisposableClassWithDependency::class);
@@ -432,7 +432,7 @@ final class ScopeTest extends AbstractDependencyInjectionTestCase
     {
         // Arrange
         $container = self::buildContainer(
-            static fn (ContainerBuilder $builder) => $builder->addTransient(FakeDisposableClass::class)
+            static fn(ContainerBuilder $builder) => $builder->addTransient(FakeDisposableClass::class),
         );
         $scope = $container->createScope();
         $instance = $scope->get(FakeDisposableClass::class);
@@ -449,9 +449,9 @@ final class ScopeTest extends AbstractDependencyInjectionTestCase
         // Arrange
         $log = new FakeDisposalLog();
         $container = self::buildContainer(
-            static fn (ContainerBuilder $builder) => $builder
+            static fn(ContainerBuilder $builder) => $builder
                 ->addSingletonInstance(FakeDisposalLog::class, $log)
-                ->addTransient(FakeDisposableClass::class)
+                ->addTransient(FakeDisposableClass::class),
         );
         $scope = $container->createScope();
         $instance = $scope->get(FakeDisposableClass::class);
@@ -469,7 +469,7 @@ final class ScopeTest extends AbstractDependencyInjectionTestCase
     {
         // Arrange
         $container = self::buildContainer(
-            static fn (ContainerBuilder $builder) => $builder->addSingleton(FakeDisposableClass::class)
+            static fn(ContainerBuilder $builder) => $builder->addSingleton(FakeDisposableClass::class),
         );
         $scope = $container->createScope();
         $instance = $scope->get(FakeDisposableClass::class);
@@ -488,7 +488,7 @@ final class ScopeTest extends AbstractDependencyInjectionTestCase
             FakeDisposableClass::class => self::classDescriptor(
                 FakeDisposableClass::class,
                 'scoped',
-                shouldDispose: false
+                shouldDispose: false,
             ),
         ]);
         $scope = $container->createScope();
@@ -505,7 +505,7 @@ final class ScopeTest extends AbstractDependencyInjectionTestCase
     {
         // Arrange
         $container = self::buildContainer(
-            static fn (ContainerBuilder $builder) => $builder->addScoped(FakeDisposableClass::class)
+            static fn(ContainerBuilder $builder) => $builder->addScoped(FakeDisposableClass::class),
         );
         $scope = $container->createScope();
         $instance = $scope->get(FakeDisposableClass::class);
@@ -522,15 +522,15 @@ final class ScopeTest extends AbstractDependencyInjectionTestCase
     {
         // Arrange
         $container = self::buildContainer(
-            static fn (ContainerBuilder $builder) => $builder->addScopedFactory(
+            static fn(ContainerBuilder $builder) => $builder->addScopedFactory(
                 DisposableInterface::class,
-                static fn () => new class () implements DisposableInterface {
+                static fn() => new class implements DisposableInterface {
                     public function dispose(): void
                     {
                         throw new RuntimeException('dispose failed');
                     }
-                }
-            )
+                },
+            ),
         );
         $scope = $container->createScope();
         $scope->get(DisposableInterface::class);

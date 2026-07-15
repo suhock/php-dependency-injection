@@ -19,9 +19,7 @@ use ReflectionParameter;
  */
 final class ParameterResolutionExceptionTest extends TestCase
 {
-    private function fakeFunction(string $fakeParameter): void
-    {
-    }
+    private function fakeFunction(string $fakeParameter): void {}
 
     private function createException(): ParameterResolutionException
     {

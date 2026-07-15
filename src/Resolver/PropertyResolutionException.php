@@ -28,13 +28,13 @@ final class PropertyResolutionException extends InjectorException
      */
     public function __construct(
         private readonly ReflectionProperty $reflectionProperty,
-        ?Throwable $previous = null
+        ?Throwable $previous = null,
     ) {
         $className = $reflectionProperty->getDeclaringClass()->getName();
 
         parent::__construct(
             "Could not provide a value for property $className::\$" . $reflectionProperty->getName(),
-            $previous
+            $previous,
         );
     }
 

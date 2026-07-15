@@ -31,9 +31,9 @@ final class ContainerTest extends AbstractDependencyInjectionTestCase
     {
         // Arrange
         $container = self::buildContainer(
-            static fn (ContainerBuilder $builder) => $builder
+            static fn(ContainerBuilder $builder) => $builder
                 ->addSingletonClass(FakeClassNoConstructor::class)
-                ->addSingletonClass(FakeClassWithInjectFunction::class)
+                ->addSingletonClass(FakeClassWithInjectFunction::class),
         );
 
         // Act: resolving the class executes its compiled plan, including the #[Inject] method edge.
@@ -47,10 +47,10 @@ final class ContainerTest extends AbstractDependencyInjectionTestCase
     {
         // Arrange: the required properties resolve by type and key; the nullable one is left to its soft fallback.
         $container = self::buildContainer(
-            static fn (ContainerBuilder $builder) => $builder
+            static fn(ContainerBuilder $builder) => $builder
                 ->addSingletonClass(FakeClassNoConstructor::class)
                 ->addKeyedSingletonClass(FakeClassNoConstructor::class, 'key1')
-                ->addSingletonClass(FakeClassWithInjectedProperties::class)
+                ->addSingletonClass(FakeClassWithInjectedProperties::class),
         );
 
         // Act
@@ -75,17 +75,17 @@ final class ContainerTest extends AbstractDependencyInjectionTestCase
         return new Descriptor(
             $className,
             new TransientStrategy($className),
-            new ContextInstanceProvider($className, $select)
+            new ContextInstanceProvider($className, $select),
         );
     }
 
     public function testGet_WhenClassNotInContainer_ThrowsClassNotFoundException(): void
     {
         // Arrange
-        $container = self::buildContainer(static fn (ContainerBuilder $builder) => null);
+        $container = self::buildContainer(static fn(ContainerBuilder $builder) => null);
 
         // Act
-        $fn = static fn () => $container->get(FakeClassNoConstructor::class);
+        $fn = static fn() => $container->get(FakeClassNoConstructor::class);
 
         // Assert
         self::assertThrowsClassNotFoundException(FakeClassNoConstructor::class, $fn);
@@ -96,24 +96,24 @@ final class ContainerTest extends AbstractDependencyInjectionTestCase
         // Arrange: build-time validation cannot see inside a factory body, so the runtime $resolving guard is
         // the backstop for a factory that resolves its own service.
         $container = self::buildContainer(
-            static fn (ContainerBuilder $builder) => $builder->addSingletonFactory(
+            static fn(ContainerBuilder $builder) => $builder->addSingletonFactory(
                 FakeClassNoConstructor::class,
-                static fn (ContainerInterface $c): FakeClassNoConstructor =>
-                    $c->get(FakeClassNoConstructor::class)
-            )
+                static fn(ContainerInterface $c): FakeClassNoConstructor
+                    => $c->get(FakeClassNoConstructor::class),
+            ),
         );
 
         // Act
-        $fn = static fn () => $container->get(FakeClassNoConstructor::class);
+        $fn = static fn() => $container->get(FakeClassNoConstructor::class);
 
         // Assert
         self::assertThrowsClassResolutionException(
             FakeClassNoConstructor::class,
-            static fn (CircularDependencyException $exception) => self::assertCircularDependencyException(
+            static fn(CircularDependencyException $exception) => self::assertCircularDependencyException(
                 FakeClassNoConstructor::class,
-                $exception
+                $exception,
             ),
-            $fn
+            $fn,
         );
     }
 
@@ -124,21 +124,21 @@ final class ContainerTest extends AbstractDependencyInjectionTestCase
         $container = self::buildRawContainer([
             FakeInterfaceOne::class => self::contextDescriptor(
                 FakeInterfaceOne::class,
-                static fn (ResolutionContext $context): object => new FakeClassNoConstructor()
+                static fn(ResolutionContext $context): object => new FakeClassNoConstructor(),
             ),
         ]);
 
         // Act
-        $fn = static fn () => $container->get(FakeInterfaceOne::class);
+        $fn = static fn() => $container->get(FakeInterfaceOne::class);
 
         // Assert
         self::assertThrowsClassResolutionException(
             FakeInterfaceOne::class,
-            static fn (InstanceTypeException $exception) => self::assertInstanceOf(
+            static fn(InstanceTypeException $exception) => self::assertInstanceOf(
                 InstanceTypeException::class,
-                $exception
+                $exception,
             ),
-            $fn
+            $fn,
         );
     }
 
@@ -147,8 +147,8 @@ final class ContainerTest extends AbstractDependencyInjectionTestCase
         // Arrange
         $expectedInstance = new FakeClassNoConstructor();
         $container = self::buildContainer(
-            static fn (ContainerBuilder $builder) =>
-                $builder->addKeyedSingleton(FakeClassNoConstructor::class, 'key1', $expectedInstance)
+            static fn(ContainerBuilder $builder)
+                => $builder->addKeyedSingleton(FakeClassNoConstructor::class, 'key1', $expectedInstance),
         );
 
         // Act
@@ -162,12 +162,12 @@ final class ContainerTest extends AbstractDependencyInjectionTestCase
     {
         // Arrange
         $container = self::buildContainer(
-            static fn (ContainerBuilder $builder) =>
-                $builder->addSingletonInstance(FakeClassNoConstructor::class, new FakeClassNoConstructor())
+            static fn(ContainerBuilder $builder)
+                => $builder->addSingletonInstance(FakeClassNoConstructor::class, new FakeClassNoConstructor()),
         );
 
         // Act
-        $fn = static fn () => $container->get(FakeClassNoConstructor::class, 'key1');
+        $fn = static fn() => $container->get(FakeClassNoConstructor::class, 'key1');
 
         // Assert
         self::assertThrowsClassNotFoundException(FakeClassNoConstructor::class, $fn);
@@ -177,12 +177,12 @@ final class ContainerTest extends AbstractDependencyInjectionTestCase
     {
         // Arrange
         $container = self::buildContainer(
-            static fn (ContainerBuilder $builder) =>
-                $builder->addKeyedSingleton(FakeClassNoConstructor::class, 'key1', new FakeClassNoConstructor())
+            static fn(ContainerBuilder $builder)
+                => $builder->addKeyedSingleton(FakeClassNoConstructor::class, 'key1', new FakeClassNoConstructor()),
         );
 
         // Act
-        $fn = static fn () => $container->get(FakeClassNoConstructor::class);
+        $fn = static fn() => $container->get(FakeClassNoConstructor::class);
 
         // Assert
         self::assertThrowsClassNotFoundException(FakeClassNoConstructor::class, $fn);
@@ -191,7 +191,7 @@ final class ContainerTest extends AbstractDependencyInjectionTestCase
     public function testHas_WhenClassNotInContainer_ReturnsFalse(): void
     {
         // Arrange
-        $container = self::buildContainer(static fn (ContainerBuilder $builder) => null);
+        $container = self::buildContainer(static fn(ContainerBuilder $builder) => null);
 
         // Act
         $result = $container->has(FakeClassNoConstructor::class);
@@ -204,8 +204,8 @@ final class ContainerTest extends AbstractDependencyInjectionTestCase
     {
         // Arrange
         $container = self::buildContainer(
-            static fn (ContainerBuilder $builder) =>
-                $builder->addSingletonInstance(FakeClassNoConstructor::class, new FakeClassNoConstructor())
+            static fn(ContainerBuilder $builder)
+                => $builder->addSingletonInstance(FakeClassNoConstructor::class, new FakeClassNoConstructor()),
         );
 
         // Act
@@ -219,8 +219,8 @@ final class ContainerTest extends AbstractDependencyInjectionTestCase
     {
         // Arrange
         $container = self::buildContainer(
-            static fn (ContainerBuilder $builder) =>
-                $builder->addSingletonFactory(FakeClassNoConstructor::class, fn () => new FakeClassNoConstructor())
+            static fn(ContainerBuilder $builder)
+                => $builder->addSingletonFactory(FakeClassNoConstructor::class, fn() => new FakeClassNoConstructor()),
         );
 
         // Act
@@ -234,8 +234,8 @@ final class ContainerTest extends AbstractDependencyInjectionTestCase
     {
         // Arrange
         $container = self::buildContainer(
-            static fn (ContainerBuilder $builder) =>
-                $builder->addKeyedSingleton(FakeClassNoConstructor::class, 'key1', new FakeClassNoConstructor())
+            static fn(ContainerBuilder $builder)
+                => $builder->addKeyedSingleton(FakeClassNoConstructor::class, 'key1', new FakeClassNoConstructor()),
         );
 
         // Act
@@ -249,8 +249,8 @@ final class ContainerTest extends AbstractDependencyInjectionTestCase
     {
         // Arrange
         $container = self::buildContainer(
-            static fn (ContainerBuilder $builder) =>
-                $builder->addSingletonInstance(FakeClassNoConstructor::class, new FakeClassNoConstructor())
+            static fn(ContainerBuilder $builder)
+                => $builder->addSingletonInstance(FakeClassNoConstructor::class, new FakeClassNoConstructor()),
         );
 
         // Act
@@ -264,8 +264,8 @@ final class ContainerTest extends AbstractDependencyInjectionTestCase
     {
         // Arrange
         $container = self::buildContainer(
-            static fn (ContainerBuilder $builder) =>
-                $builder->addKeyedSingleton(FakeClassNoConstructor::class, 'key1', new FakeClassNoConstructor())
+            static fn(ContainerBuilder $builder)
+                => $builder->addKeyedSingleton(FakeClassNoConstructor::class, 'key1', new FakeClassNoConstructor()),
         );
 
         // Act

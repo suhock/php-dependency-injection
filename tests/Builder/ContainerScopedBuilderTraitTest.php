@@ -47,7 +47,7 @@ final class ContainerScopedBuilderTraitTest extends AbstractDependencyInjectionT
                 FakeClassNoConstructor::class,
                 function (FakeClassNoConstructor $obj) {
                     $obj->string = 'test';
-                }
+                },
             )
             ->build();
 
@@ -81,16 +81,16 @@ final class ContainerScopedBuilderTraitTest extends AbstractDependencyInjectionT
         $builder = self::createBuilder();
 
         // Act
-        $fn = static fn () => $builder->addScopedImplementation(
+        $fn = static fn() => $builder->addScopedImplementation(
             FakeClassExtendsBaseClass::class,
-            FakeClassNoConstructor::class
+            FakeClassNoConstructor::class,
         );
 
         // Assert
         self::assertThrowsImplementationException(
             FakeClassExtendsBaseClass::class,
             FakeClassNoConstructor::class,
-            $fn
+            $fn,
         );
     }
 
@@ -101,7 +101,7 @@ final class ContainerScopedBuilderTraitTest extends AbstractDependencyInjectionT
             ->addScoped(FakeClassNoConstructor::class)
             ->addScopedFactory(
                 FakeClassWithConstructor::class,
-                fn (FakeClassNoConstructor $obj) => new FakeClassWithConstructor($obj)
+                fn(FakeClassNoConstructor $obj) => new FakeClassWithConstructor($obj),
             )
             ->build();
         $scope = $container->createScope();
@@ -127,7 +127,6 @@ final class ContainerScopedBuilderTraitTest extends AbstractDependencyInjectionT
         self::assertFalse($scope->has(FakeClassNoConstructor::class));
     }
 
-
     public function testAddKeyedScopedClass_WithMutator_GetByKeyReturnsMutatedPerScopeInstance(): void
     {
         // Arrange
@@ -137,7 +136,7 @@ final class ContainerScopedBuilderTraitTest extends AbstractDependencyInjectionT
                 'key1',
                 function (FakeClassNoConstructor $obj) {
                     $obj->string = 'test';
-                }
+                },
             )
             ->build();
         $scope = $container->createScope();
@@ -174,7 +173,7 @@ final class ContainerScopedBuilderTraitTest extends AbstractDependencyInjectionT
             ->addKeyedScopedFactory(
                 FakeBaseClass::class,
                 'key1',
-                fn () => new FakeClassExtendsBaseClass()
+                fn() => new FakeClassExtendsBaseClass(),
             )
             ->build();
         $scope = $container->createScope();

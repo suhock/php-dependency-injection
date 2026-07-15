@@ -53,7 +53,6 @@ final class ResolutionPlan
         public readonly ?string $implementationTarget = null,
         public readonly ?string $nonInstantiableMessage = null,
         public readonly array $invalidInjectMemberMessages = [],
-        public readonly ?string $declaredFactoryReturnType = null
-    ) {
-    }
+        public readonly ?string $declaredFactoryReturnType = null,
+    ) {}
 }

@@ -68,9 +68,9 @@ final class InjectorTest extends AbstractDependencyInjectionTestCase
 
         // Act
         $instance = $this->createInjector([
-            Throwable::class => fn () => $logicException,
-            LogicException::class => fn () => $logicException,
-            RuntimeException::class => fn () => new RuntimeException('test')
+            Throwable::class => fn() => $logicException,
+            LogicException::class => fn() => $logicException,
+            RuntimeException::class => fn() => new RuntimeException('test'),
         ])->instantiate(FakeClassWithDependencies::class);
 
         // Assert
@@ -106,7 +106,7 @@ final class InjectorTest extends AbstractDependencyInjectionTestCase
     {
         // Arrange
         $obj = new FakeClassNoConstructor();
-        $injector = $this->createInjector([FakeClassNoConstructor::class => fn () => $obj]);
+        $injector = $this->createInjector([FakeClassNoConstructor::class => fn() => $obj]);
 
         // Act
         $instance = $injector->instantiate(FakeClassWithVariadicConstructor::class);
@@ -120,7 +120,7 @@ final class InjectorTest extends AbstractDependencyInjectionTestCase
     {
         // Arrange
         $injector = $this->createInjector([
-            FakeClassNoConstructor::class => fn () => throw new ClassResolutionException(FakeClassNoConstructor::class)
+            FakeClassNoConstructor::class => fn() => throw new ClassResolutionException(FakeClassNoConstructor::class),
         ]);
 
         // Act & Assert
@@ -158,14 +158,14 @@ final class InjectorTest extends AbstractDependencyInjectionTestCase
     {
         // Arrange
         $injector = $this->createInjector([
-            Throwable::class => fn () => new LogicException(),
-            RuntimeException::class => fn () => new RuntimeException()
+            Throwable::class => fn() => new LogicException(),
+            RuntimeException::class => fn() => new RuntimeException(),
         ]);
         $override = new RuntimeException();
 
         // Act
         $result = $injector->instantiate(FakeClassWithDependencies::class, [
-            'runtimeException' => $override
+            'runtimeException' => $override,
         ])->runtimeException;
 
         // Assert
@@ -176,14 +176,14 @@ final class InjectorTest extends AbstractDependencyInjectionTestCase
     {
         // Arrange
         $injector = $this->createInjector([
-            Throwable::class => fn () => new LogicException(),
-            RuntimeException::class => fn () => new RuntimeException()
+            Throwable::class => fn() => new LogicException(),
+            RuntimeException::class => fn() => new RuntimeException(),
         ]);
         $override = new RuntimeException();
 
         // Act
         $result = $injector->instantiate(FakeClassWithDependencies::class, [
-            1 => $override
+            1 => $override,
         ])->runtimeException;
 
         // Assert
@@ -207,7 +207,7 @@ final class InjectorTest extends AbstractDependencyInjectionTestCase
         // Arrange
         $obj = new FakeClassNoConstructor();
         $injector = $this->createInjector([
-            FakeClassNoConstructor::class => fn () => $obj
+            FakeClassNoConstructor::class => fn() => $obj,
         ]);
 
         // Act
@@ -221,7 +221,7 @@ final class InjectorTest extends AbstractDependencyInjectionTestCase
     {
         // Arrange
         $obj = new FakeClassNoConstructor();
-        $injector = $this->createInjector([FakeClassNoConstructor::class => fn () => $obj]);
+        $injector = $this->createInjector([FakeClassNoConstructor::class => fn() => $obj]);
 
         // Act
         $instance = $injector->instantiate(FakeClassWithInjectedProperties::class);
@@ -234,7 +234,7 @@ final class InjectorTest extends AbstractDependencyInjectionTestCase
     {
         // Arrange
         $obj = new FakeClassNoConstructor();
-        $injector = $this->createInjector([FakeClassNoConstructor::class => fn () => $obj]);
+        $injector = $this->createInjector([FakeClassNoConstructor::class => fn() => $obj]);
 
         // Act
         $instance = $injector->instantiate(FakeClassWithInjectedProperties::class);
@@ -247,7 +247,7 @@ final class InjectorTest extends AbstractDependencyInjectionTestCase
     {
         // Arrange
         $obj = new FakeClassNoConstructor();
-        $injector = $this->createInjector([FakeClassNoConstructor::class => fn () => $obj]);
+        $injector = $this->createInjector([FakeClassNoConstructor::class => fn() => $obj]);
 
         // Act
         $instance = $injector->instantiate(FakeClassWithInjectedProperties::class);
@@ -261,9 +261,9 @@ final class InjectorTest extends AbstractDependencyInjectionTestCase
         // Arrange
         $keyed = new FakeClassNoConstructor();
         $container = self::buildContainer(
-            static fn (ContainerBuilder $builder) => $builder
+            static fn(ContainerBuilder $builder) => $builder
                 ->addSingletonInstance(FakeClassNoConstructor::class, new FakeClassNoConstructor())
-                ->addKeyedSingleton(FakeClassNoConstructor::class, 'key1', $keyed)
+                ->addKeyedSingleton(FakeClassNoConstructor::class, 'key1', $keyed),
         );
         $injector = Injector::createDefault($container);
 
@@ -278,7 +278,7 @@ final class InjectorTest extends AbstractDependencyInjectionTestCase
     {
         // Arrange: FakeInterfaceOne is not registered, so the nullable property falls back to null.
         $injector = $this->createInjector([
-            FakeClassNoConstructor::class => fn () => new FakeClassNoConstructor()
+            FakeClassNoConstructor::class => fn() => new FakeClassNoConstructor(),
         ]);
 
         // Act
@@ -292,7 +292,7 @@ final class InjectorTest extends AbstractDependencyInjectionTestCase
     {
         // Arrange
         $obj = new FakeClassNoConstructor();
-        $injector = $this->createInjector([FakeClassNoConstructor::class => fn () => $obj]);
+        $injector = $this->createInjector([FakeClassNoConstructor::class => fn() => $obj]);
 
         // Act
         $instance = $injector->instantiate(FakeClassWithNonPublicInjectMethods::class);
@@ -305,7 +305,7 @@ final class InjectorTest extends AbstractDependencyInjectionTestCase
     {
         // Arrange
         $obj = new FakeClassNoConstructor();
-        $injector = $this->createInjector([FakeClassNoConstructor::class => fn () => $obj]);
+        $injector = $this->createInjector([FakeClassNoConstructor::class => fn() => $obj]);
 
         // Act
         $instance = $injector->instantiate(FakeClassWithNonPublicInjectMethods::class);
@@ -317,7 +317,7 @@ final class InjectorTest extends AbstractDependencyInjectionTestCase
     public function testInstantiate_WithCustomPostInstantiationHook_AppliesHookToInstance(): void
     {
         // Arrange: a spy hook records the instances it is applied to.
-        $spy = new class () implements PostInstantiationHookInterface {
+        $spy = new class implements PostInstantiationHookInterface {
             /** @var list<object> */
             public array $injected = [];
 
@@ -340,7 +340,7 @@ final class InjectorTest extends AbstractDependencyInjectionTestCase
     {
         // Arrange: the fake has #[Inject] on a static method, which is always a misconfiguration.
         $injector = $this->createInjector([
-            FakeClassNoConstructor::class => fn () => new FakeClassNoConstructor()
+            FakeClassNoConstructor::class => fn() => new FakeClassNoConstructor(),
         ]);
 
         // Act & Assert
@@ -373,9 +373,7 @@ final class InjectorTest extends AbstractDependencyInjectionTestCase
         // Arrange: a plain resolver (not a TypeParameterResolverInterface) still works via reflection.
         $dependency = new FakeClassNoConstructor();
         $resolver = new class ($dependency) implements ParameterResolverInterface {
-            public function __construct(private readonly FakeClassNoConstructor $dependency)
-            {
-            }
+            public function __construct(private readonly FakeClassNoConstructor $dependency) {}
 
             public function resolveParameter(ReflectionParameter $rParam): mixed
             {
@@ -390,7 +388,7 @@ final class InjectorTest extends AbstractDependencyInjectionTestCase
         $injector = new Injector(
             $resolver,
             new ReflectionInstantiationStrategy($resolver),
-            new InjectAttributeMemberInjector($resolver)
+            new InjectAttributeMemberInjector($resolver),
         );
 
         // Act
@@ -400,11 +398,10 @@ final class InjectorTest extends AbstractDependencyInjectionTestCase
         self::assertSame($dependency, $instance->obj);
     }
 
-
     public function testInstantiate_WithCustomProducingStrategy_UsesItsInstance(): void
     {
         // Arrange: a lone custom strategy that produces the instance itself.
-        $strategy = new class () implements InstantiationStrategyInterface {
+        $strategy = new class implements InstantiationStrategyInterface {
             public int $calls = 0;
 
             public function tryInstantiate(string $className, array $params): object
@@ -428,7 +425,7 @@ final class InjectorTest extends AbstractDependencyInjectionTestCase
     public function testInstantiate_WithNoApplicableStrategy_ThrowsInjectorException(): void
     {
         // Arrange: a lone strategy that declines everything.
-        $declining = new class () implements InstantiationStrategyInterface {
+        $declining = new class implements InstantiationStrategyInterface {
             public function tryInstantiate(string $className, array $params): ?object
             {
                 return null;
@@ -447,7 +444,7 @@ final class InjectorTest extends AbstractDependencyInjectionTestCase
         // Arrange: only the second alternative of the union is registered.
         $instance = new FakeClassImplementsInterfaces();
         $injector = $this->createInjector([
-            FakeInterfaceTwo::class => fn () => $instance
+            FakeInterfaceTwo::class => fn() => $instance,
         ]);
 
         // Act
@@ -462,7 +459,7 @@ final class InjectorTest extends AbstractDependencyInjectionTestCase
         // Arrange: a service implementing both interfaces, registered under the first.
         $instance = new FakeClassImplementsInterfaces();
         $injector = $this->createInjector([
-            FakeInterfaceOne::class => fn () => $instance
+            FakeInterfaceOne::class => fn() => $instance,
         ]);
 
         // Act
@@ -479,7 +476,7 @@ final class InjectorTest extends AbstractDependencyInjectionTestCase
         // intersection alternative under its first member.
         $instance = new FakeClassImplementsInterfaces();
         $injector = $this->createInjector([
-            FakeInterfaceOne::class => fn () => $instance
+            FakeInterfaceOne::class => fn() => $instance,
         ]);
 
         // Act
@@ -495,12 +492,12 @@ final class InjectorTest extends AbstractDependencyInjectionTestCase
         $throwable = new LogicException();
         $override = new RuntimeException();
         $injector = $this->createInjector([
-            Throwable::class => fn () => $throwable
+            Throwable::class => fn() => $throwable,
         ]);
 
         // Act
         $instance = $injector->instantiate(FakeClassWithDependencies::class, [
-            'runtimeException' => $override
+            'runtimeException' => $override,
         ]);
 
         // Assert
@@ -514,9 +511,9 @@ final class InjectorTest extends AbstractDependencyInjectionTestCase
         $unkeyed = new FakeClassNoConstructor();
         $keyed = new FakeClassNoConstructor();
         $container = self::buildContainer(
-            static fn (ContainerBuilder $builder) => $builder
+            static fn(ContainerBuilder $builder) => $builder
                 ->addSingletonInstance(FakeClassNoConstructor::class, $unkeyed)
-                ->addKeyedSingleton(FakeClassNoConstructor::class, 'key1', $keyed)
+                ->addKeyedSingleton(FakeClassNoConstructor::class, 'key1', $keyed),
         );
         $injector = Injector::createDefault($container);
 
@@ -534,20 +531,20 @@ final class InjectorTest extends AbstractDependencyInjectionTestCase
         $logicException = new LogicException('Message 1');
         $runtimeException = new RuntimeException('Message 2');
         $injector = $this->createInjector([
-            Throwable::class => fn () => $logicException,
-            LogicException::class => fn () => $logicException,
-            RuntimeException::class => fn () => $runtimeException
+            Throwable::class => fn() => $logicException,
+            LogicException::class => fn() => $logicException,
+            RuntimeException::class => fn() => $runtimeException,
         ]);
 
         // Act
-        $result = $injector->call(fn (
+        $result = $injector->call(fn(
             Throwable $e1,
             RuntimeException $e2,
             string $a,
-            $b
+            $b,
         ) => [$e1, $e2, $a, $b], [
             'a' => 'a',
-            'b' => 2
+            'b' => 2,
         ]);
 
         // Assert
@@ -560,7 +557,7 @@ final class InjectorTest extends AbstractDependencyInjectionTestCase
         $injector = $this->createInjector();
 
         // Act
-        $result = $injector->call(fn (?FakeClassNoConstructor $obj) => $obj);
+        $result = $injector->call(fn(?FakeClassNoConstructor $obj) => $obj);
 
         // Assert
         self::assertNull($result);
@@ -572,7 +569,7 @@ final class InjectorTest extends AbstractDependencyInjectionTestCase
         $injector = $this->createInjector();
 
         // Act
-        $result = $injector->call(fn ($var) => $var);
+        $result = $injector->call(fn($var) => $var);
 
         // Assert
         self::assertNull($result);
@@ -585,7 +582,7 @@ final class InjectorTest extends AbstractDependencyInjectionTestCase
 
         // Act & Assert
         $this->expectException(InjectorException::class);
-        $injector->call(fn (FakeClassNoConstructor $obj) => $obj);
+        $injector->call(fn(FakeClassNoConstructor $obj) => $obj);
     }
 
     public function testCall_WithDependencyWithUnresolvableDependency_ThrowsInjectorException(): void
@@ -599,7 +596,7 @@ final class InjectorTest extends AbstractDependencyInjectionTestCase
 
         // Act & Assert
         $this->expectException(InjectorException::class);
-        $injector->call(fn (FakeClassWithConstructor $obj) => $obj);
+        $injector->call(fn(FakeClassWithConstructor $obj) => $obj);
     }
 
     public function testCall_WithBuiltinType_ThrowsParameterResolutionException(): void
@@ -608,14 +605,14 @@ final class InjectorTest extends AbstractDependencyInjectionTestCase
         $injector = $this->createInjector();
 
         // Act
-        $fn = static fn () => $injector->call(fn (string $a) => $a);
+        $fn = static fn() => $injector->call(fn(string $a) => $a);
 
         // Assert
         self::assertThrowsParameterResolutionException(
             __NAMESPACE__ . '\\{closure}',
             'a',
             null,
-            $fn
+            $fn,
         );
     }
 
@@ -626,13 +623,13 @@ final class InjectorTest extends AbstractDependencyInjectionTestCase
         $instance2 = new FakeClassImplementsInterfaces();
 
         $injector = $this->createInjector([
-            FakeInterfaceOne::class => fn () => $instance1,
-            FakeInterfaceTwo::class => fn () => $instance2
+            FakeInterfaceOne::class => fn() => $instance1,
+            FakeInterfaceTwo::class => fn() => $instance2,
         ]);
 
         // Act
-        $result1 = $injector->call(fn (FakeInterfaceOne|FakeInterfaceTwo $obj) => $obj);
-        $result2 = $injector->call(fn (FakeInterfaceTwo|FakeInterfaceOne $obj) => $obj);
+        $result1 = $injector->call(fn(FakeInterfaceOne|FakeInterfaceTwo $obj) => $obj);
+        $result2 = $injector->call(fn(FakeInterfaceTwo|FakeInterfaceOne $obj) => $obj);
 
         // Assert
         self::assertSame($instance1, $result1);
@@ -644,11 +641,11 @@ final class InjectorTest extends AbstractDependencyInjectionTestCase
         // Arrange
         $instance = new FakeClassImplementsInterfaces();
         $injector = $this->createInjector([
-            FakeInterfaceOne::class => fn () => $instance
+            FakeInterfaceOne::class => fn() => $instance,
         ]);
 
         // Act
-        $result = $injector->call(fn (string|FakeInterfaceOne $obj) => $obj);
+        $result = $injector->call(fn(string|FakeInterfaceOne $obj) => $obj);
 
         // Assert
         self::assertSame($instance, $result);
@@ -658,18 +655,18 @@ final class InjectorTest extends AbstractDependencyInjectionTestCase
     {
         // Arrange
         $injector = $this->createInjector([
-            FakeClassImplementsInterfaces::class => fn () => new FakeClassImplementsInterfaces()
+            FakeClassImplementsInterfaces::class => fn() => new FakeClassImplementsInterfaces(),
         ]);
 
         // Act
-        $fn = static fn () => $injector->call(fn (FakeInterfaceOne|FakeInterfaceTwo $obj) => $obj);
+        $fn = static fn() => $injector->call(fn(FakeInterfaceOne|FakeInterfaceTwo $obj) => $obj);
 
         // Assert
         self::assertThrowsParameterResolutionException(
             __NAMESPACE__ . '\\{closure}',
             'obj',
             null,
-            $fn
+            $fn,
         );
     }
 
@@ -677,10 +674,10 @@ final class InjectorTest extends AbstractDependencyInjectionTestCase
     {
         // Arrange
         $expectedInstance = new FakeClassImplementsInterfaces();
-        $injector = $this->createInjector([FakeInterfaceOne::class => fn () => $expectedInstance]);
+        $injector = $this->createInjector([FakeInterfaceOne::class => fn() => $expectedInstance]);
 
         // Act
-        $result = $injector->call(fn (FakeInterfaceOne&FakeInterfaceTwo $obj) => $obj);
+        $result = $injector->call(fn(FakeInterfaceOne&FakeInterfaceTwo $obj) => $obj);
 
         // Assert
         self::assertSame($expectedInstance, $result);
@@ -690,10 +687,10 @@ final class InjectorTest extends AbstractDependencyInjectionTestCase
     {
         // Arrange
         $expectedInstance = new FakeClassImplementsInterfaces();
-        $injector = $this->createInjector([FakeInterfaceTwo::class => fn () => $expectedInstance]);
+        $injector = $this->createInjector([FakeInterfaceTwo::class => fn() => $expectedInstance]);
 
         // Act
-        $result = $injector->call(fn (FakeInterfaceOne&FakeInterfaceTwo $obj) => $obj);
+        $result = $injector->call(fn(FakeInterfaceOne&FakeInterfaceTwo $obj) => $obj);
 
         // Assert
         self::assertSame($expectedInstance, $result);
@@ -705,13 +702,13 @@ final class InjectorTest extends AbstractDependencyInjectionTestCase
         $instance1 = new FakeClassImplementsInterfaces();
         $instance2 = new FakeClassImplementsInterfaces();
         $injector = $this->createInjector([
-            FakeInterfaceOne::class => fn () => $instance1,
-            FakeInterfaceTwo::class => fn () => $instance2
+            FakeInterfaceOne::class => fn() => $instance1,
+            FakeInterfaceTwo::class => fn() => $instance2,
         ]);
 
         // Act
-        $result1 = $injector->call(fn (FakeInterfaceOne&FakeInterfaceTwo $obj) => $obj);
-        $result2 = $injector->call(fn (FakeInterfaceTwo&FakeInterfaceOne $obj) => $obj);
+        $result1 = $injector->call(fn(FakeInterfaceOne&FakeInterfaceTwo $obj) => $obj);
+        $result2 = $injector->call(fn(FakeInterfaceTwo&FakeInterfaceOne $obj) => $obj);
 
         // Assert
         self::assertSame($instance1, $result1);
@@ -721,17 +718,17 @@ final class InjectorTest extends AbstractDependencyInjectionTestCase
     public function testCall_WithIntersectionTypeNotImplementingOneType_ThrowsParameterResolutionException(): void
     {
         // Arrange
-        $injector = $this->createInjector([FakeInterfaceOne::class => fn () => new FakeClassImplementsInterfaces()]);
+        $injector = $this->createInjector([FakeInterfaceOne::class => fn() => new FakeClassImplementsInterfaces()]);
 
         // Act
-        $fn = static fn () => $injector->call(fn (FakeInterfaceOne&FakeInterfaceThree $obj) => $obj);
+        $fn = static fn() => $injector->call(fn(FakeInterfaceOne&FakeInterfaceThree $obj) => $obj);
 
         // Assert
         self::assertThrowsParameterResolutionException(
             __NAMESPACE__ . '\\{closure}',
             'obj',
             null,
-            $fn
+            $fn,
         );
     }
 
@@ -740,33 +737,33 @@ final class InjectorTest extends AbstractDependencyInjectionTestCase
         // Arrange: a self-referential factory *parameter* is a cycle build-time validation proves and rejects, so
         // the cycle hides in the factory body instead: invisible to the validator, caught by the runtime guard.
         $container = self::buildContainer(
-            static fn (ContainerBuilder $builder) => $builder->addSingletonFactory(
+            static fn(ContainerBuilder $builder) => $builder->addSingletonFactory(
                 FakeClassNoConstructor::class,
-                static fn (ContainerInterface $c): FakeClassNoConstructor =>
-                    $c->get(FakeClassNoConstructor::class)
-            )
+                static fn(ContainerInterface $c): FakeClassNoConstructor
+                    => $c->get(FakeClassNoConstructor::class),
+            ),
         );
 
         $injector = Injector::createDefault($container);
 
         // Act
-        $fn = static fn () => $injector->call(fn (FakeClassNoConstructor $obj) => $obj);
+        $fn = static fn() => $injector->call(fn(FakeClassNoConstructor $obj) => $obj);
 
         // Assert
         self::assertThrowsParameterResolutionException(
             __NAMESPACE__ . '\\{closure}',
             'obj',
             /** @param ClassResolutionException<FakeClassNoConstructor> $exception */
-            static fn (ClassResolutionException $exception) => self::assertClassResolutionException(
+            static fn(ClassResolutionException $exception) => self::assertClassResolutionException(
                 FakeClassNoConstructor::class,
                 /** @param CircularDependencyException<FakeClassNoConstructor> $exception */
-                static fn (CircularDependencyException $exception) => self::assertCircularDependencyException(
+                static fn(CircularDependencyException $exception) => self::assertCircularDependencyException(
                     FakeClassNoConstructor::class,
-                    $exception
+                    $exception,
                 ),
-                $exception
+                $exception,
             ),
-            $fn
+            $fn,
         );
     }
 }

@@ -42,7 +42,6 @@ final class ResolutionPlanEdge
         public readonly bool $soft,
         public readonly bool $hasDefault = false,
         public readonly mixed $defaultValue = null,
-        public readonly ?string $declaredType = null
-    ) {
-    }
+        public readonly ?string $declaredType = null,
+    ) {}
 }

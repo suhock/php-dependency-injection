@@ -73,7 +73,7 @@ final class ContainerValidatorTest extends TestCase
         string $className,
         Closure $factory,
         string $lifetime = 'transient',
-        ?string $key = null
+        ?string $key = null,
     ): void {
         $this->add($className, new ClosureInstanceProvider($className, $factory), $lifetime, $key);
     }
@@ -88,7 +88,7 @@ final class ContainerValidatorTest extends TestCase
             $className,
             new ImplementationInstanceProvider($className, $implementationClassName),
             'transient',
-            null
+            null,
         );
     }
 
@@ -100,7 +100,7 @@ final class ContainerValidatorTest extends TestCase
         string $className,
         InstanceProviderInterface $provider,
         string $lifetime,
-        ?string $key
+        ?string $key,
     ): void {
         $strategy = match ($lifetime) {
             'singleton' => new SingletonStrategy($className),
@@ -152,7 +152,7 @@ final class ContainerValidatorTest extends TestCase
     {
         // Throwable is added; RuntimeException is not.
         $this->addClass(FakeClassWithDependencies::class);
-        $this->addFactory(Throwable::class, static fn (): RuntimeException => new RuntimeException());
+        $this->addFactory(Throwable::class, static fn(): RuntimeException => new RuntimeException());
 
         $issue = $this->assertSoleIssueKind(ValidationIssueKind::MissingDependency);
         self::assertSame(FakeClassWithDependencies::class, $issue->className);
@@ -162,8 +162,8 @@ final class ContainerValidatorTest extends TestCase
     public function testValidate_WithAllDependenciesAdded_ReportsNothing(): void
     {
         $this->addClass(FakeClassWithDependencies::class);
-        $this->addFactory(Throwable::class, static fn (): RuntimeException => new RuntimeException());
-        $this->addFactory(RuntimeException::class, static fn (): RuntimeException => new RuntimeException());
+        $this->addFactory(Throwable::class, static fn(): RuntimeException => new RuntimeException());
+        $this->addFactory(RuntimeException::class, static fn(): RuntimeException => new RuntimeException());
 
         $this->assertNoIssues();
     }
@@ -173,7 +173,7 @@ final class ContainerValidatorTest extends TestCase
         // The factory's parameter is nullable, so a missing dependency self-heals to null.
         $this->addFactory(
             FakeClassNoConstructor::class,
-            static fn (?FakeInterfaceOne $missing): FakeClassNoConstructor => new FakeClassNoConstructor()
+            static fn(?FakeInterfaceOne $missing): FakeClassNoConstructor => new FakeClassNoConstructor(),
         );
 
         $this->assertNoIssues();
@@ -229,8 +229,8 @@ final class ContainerValidatorTest extends TestCase
     {
         $this->addFactory(
             FakeClassWithVariadicConstructor::class,
-            static fn (FakeClassNoConstructor ...$items): FakeClassWithVariadicConstructor =>
-                new FakeClassWithVariadicConstructor()
+            static fn(FakeClassNoConstructor ...$items): FakeClassWithVariadicConstructor
+                => new FakeClassWithVariadicConstructor(),
         );
 
         $this->assertSoleIssueKind(ValidationIssueKind::MissingDependency);
@@ -248,7 +248,7 @@ final class ContainerValidatorTest extends TestCase
     {
         $this->addFactory(
             FakeClassNoConstructor::class,
-            static fn (string $name = 'default'): FakeClassNoConstructor => new FakeClassNoConstructor()
+            static fn(string $name = 'default'): FakeClassNoConstructor => new FakeClassNoConstructor(),
         );
 
         $this->assertNoIssues();
@@ -298,7 +298,7 @@ final class ContainerValidatorTest extends TestCase
         // FakeClassNoConstructor is final and does not implement FakeInterfaceOne.
         $this->addFactory(
             FakeInterfaceOne::class,
-            static fn (): FakeClassNoConstructor => new FakeClassNoConstructor()
+            static fn(): FakeClassNoConstructor => new FakeClassNoConstructor(),
         );
 
         $this->assertSoleIssueKind(ValidationIssueKind::FactoryReturnTypeMismatch);
@@ -308,7 +308,7 @@ final class ContainerValidatorTest extends TestCase
     {
         $this->addFactory(
             FakeInterfaceOne::class,
-            static fn (): FakeClassImplementsInterfaces => new FakeClassImplementsInterfaces()
+            static fn(): FakeClassImplementsInterfaces => new FakeClassImplementsInterfaces(),
         );
 
         $this->assertNoIssues();
@@ -316,7 +316,7 @@ final class ContainerValidatorTest extends TestCase
 
     public function testValidate_WithUndeclaredFactoryReturnType_ReportsNothing(): void
     {
-        $this->addFactory(FakeInterfaceOne::class, static fn () => new FakeClassImplementsInterfaces());
+        $this->addFactory(FakeInterfaceOne::class, static fn() => new FakeClassImplementsInterfaces());
 
         $this->assertNoIssues();
     }
@@ -358,8 +358,8 @@ final class ContainerValidatorTest extends TestCase
     {
         $this->addFactory(
             FakeInterfaceOne::class,
-            static fn (FakeInterfaceOne $self): FakeClassImplementsInterfaces =>
-                new FakeClassImplementsInterfaces()
+            static fn(FakeInterfaceOne $self): FakeClassImplementsInterfaces
+                => new FakeClassImplementsInterfaces(),
         );
 
         $this->assertSoleIssueKind(ValidationIssueKind::CircularDependency);
@@ -370,14 +370,14 @@ final class ContainerValidatorTest extends TestCase
         // Singleton -> (required) transient -> (required) scoped: guaranteed ScopeException from the root context.
         $this->addFactory(
             FakeInterfaceOne::class,
-            static fn (FakeInterfaceTwo $transient): FakeClassImplementsInterfaces =>
-                new FakeClassImplementsInterfaces(),
-            'singleton'
+            static fn(FakeInterfaceTwo $transient): FakeClassImplementsInterfaces
+                => new FakeClassImplementsInterfaces(),
+            'singleton',
         );
         $this->addFactory(
             FakeInterfaceTwo::class,
-            static fn (FakeClassNoConstructor $scoped): FakeClassImplementsInterfaces =>
-                new FakeClassImplementsInterfaces()
+            static fn(FakeClassNoConstructor $scoped): FakeClassImplementsInterfaces
+                => new FakeClassImplementsInterfaces(),
         );
         $this->addClass(FakeClassNoConstructor::class, 'scoped');
 
@@ -390,14 +390,14 @@ final class ContainerValidatorTest extends TestCase
     {
         $this->addFactory(
             FakeInterfaceOne::class,
-            static fn (FakeInterfaceTwo $transient): FakeClassImplementsInterfaces =>
-                new FakeClassImplementsInterfaces(),
-            'singleton'
+            static fn(FakeInterfaceTwo $transient): FakeClassImplementsInterfaces
+                => new FakeClassImplementsInterfaces(),
+            'singleton',
         );
         $this->addFactory(
             FakeInterfaceTwo::class,
-            static fn (?FakeClassNoConstructor $scoped): FakeClassImplementsInterfaces =>
-                new FakeClassImplementsInterfaces()
+            static fn(?FakeClassNoConstructor $scoped): FakeClassImplementsInterfaces
+                => new FakeClassImplementsInterfaces(),
         );
         $this->addClass(FakeClassNoConstructor::class, 'scoped');
 
@@ -409,15 +409,14 @@ final class ContainerValidatorTest extends TestCase
         // Scoped-to-scoped is legal from a live scope; only a singleton root makes a scoped target captive.
         $this->addFactory(
             FakeInterfaceOne::class,
-            static fn (FakeClassNoConstructor $other): FakeClassImplementsInterfaces =>
-                new FakeClassImplementsInterfaces(),
-            'scoped'
+            static fn(FakeClassNoConstructor $other): FakeClassImplementsInterfaces
+                => new FakeClassImplementsInterfaces(),
+            'scoped',
         );
         $this->addClass(FakeClassNoConstructor::class, 'scoped');
 
         $this->assertNoIssues();
     }
-
 
     public function testValidate_WithMultipleDefects_AggregatesAllIssues(): void
     {
@@ -428,7 +427,7 @@ final class ContainerValidatorTest extends TestCase
 
         $issues = $this->collectIssues();
 
-        $kinds = array_map(static fn (ValidationIssue $issue) => $issue->kind, $issues);
+        $kinds = array_map(static fn(ValidationIssue $issue) => $issue->kind, $issues);
         self::assertContains(ValidationIssueKind::MissingDependency, $kinds);
         self::assertContains(ValidationIssueKind::UnresolvableParameter, $kinds);
         self::assertContains(ValidationIssueKind::CircularDependency, $kinds);

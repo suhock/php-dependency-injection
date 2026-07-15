@@ -17,7 +17,5 @@ namespace Suhock\DependencyInjection\Fakes;
  */
 final class FakeNullableCycleB
 {
-    public function __construct(public readonly ?FakeNullableCycleA $a)
-    {
-    }
+    public function __construct(public readonly ?FakeNullableCycleA $a) {}
 }

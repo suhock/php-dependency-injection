@@ -39,17 +39,15 @@ final class InstanceTypeException extends InjectorException
     public function __construct(
         private readonly string $expectedClassName,
         private readonly mixed $actualValue,
-        ?Throwable $previous = null
+        ?Throwable $previous = null,
     ) {
         parent::__construct(
             "Expected object of type $this->expectedClassName, got " . (
                 is_object($actualValue)
-                ?
-                'object of type ' . get_class($actualValue)
-                :
-                gettype($this->actualValue)
+                ? 'object of type ' . get_class($actualValue)
+                : gettype($this->actualValue)
             ),
-            $previous
+            $previous,
         );
     }
 

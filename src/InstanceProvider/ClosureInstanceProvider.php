@@ -17,6 +17,7 @@ use Closure;
  * Factory that provides instances of a class by using a factory method.
  *
  * @template TClass of object
+ *
  * @template-implements InstanceProviderInterface<TClass>
  *
  * @internal
@@ -29,8 +30,7 @@ final class ClosureInstanceProvider implements InstanceProviderInterface
      */
     public function __construct(
         public readonly string $className,
-        public readonly Closure $factory
-    ) {
-    }
+        public readonly Closure $factory,
+    ) {}
 
 }

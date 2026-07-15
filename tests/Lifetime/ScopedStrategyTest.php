@@ -37,7 +37,7 @@ final class ScopedStrategyTest extends AbstractDependencyInjectionTestCase
 
         // Act & Assert
         $this->expectException(ScopeException::class);
-        $strategy->get($context, fn () => new FakeClassNoConstructor());
+        $strategy->get($context, fn() => new FakeClassNoConstructor());
     }
 
     public function testGet_WhenCalledMultipleTimesInScope_ReturnsSameInstance(): void
@@ -47,8 +47,8 @@ final class ScopedStrategyTest extends AbstractDependencyInjectionTestCase
         $scopeContext = self::createScopeResolutionContext(self::createResolutionContext());
 
         // Act
-        $firstInstance = $strategy->get($scopeContext, fn () => new FakeClassNoConstructor());
-        $secondInstance = $strategy->get($scopeContext, fn () => new FakeClassNoConstructor());
+        $firstInstance = $strategy->get($scopeContext, fn() => new FakeClassNoConstructor());
+        $secondInstance = $strategy->get($scopeContext, fn() => new FakeClassNoConstructor());
 
         // Assert
         self::assertSame($firstInstance, $secondInstance);
@@ -63,8 +63,8 @@ final class ScopedStrategyTest extends AbstractDependencyInjectionTestCase
         $secondScopeContext = self::createScopeResolutionContext($rootContext);
 
         // Act
-        $firstInstance = $strategy->get($firstScopeContext, fn () => new FakeClassNoConstructor());
-        $secondInstance = $strategy->get($secondScopeContext, fn () => new FakeClassNoConstructor());
+        $firstInstance = $strategy->get($firstScopeContext, fn() => new FakeClassNoConstructor());
+        $secondInstance = $strategy->get($secondScopeContext, fn() => new FakeClassNoConstructor());
 
         // Assert
         self::assertNotSame($firstInstance, $secondInstance);

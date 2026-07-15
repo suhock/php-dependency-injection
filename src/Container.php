@@ -112,6 +112,7 @@ final class Container implements ContainerInterface, DisposableInterface, ScopeF
 
     /**
      * @inheritDoc
+     *
      * @throws ContainerException If the container has been disposed
      */
     public function createScope(): ScopeInterface
@@ -121,8 +122,8 @@ final class Container implements ContainerInterface, DisposableInterface, ScopeF
         return new Scope(
             $this,
             $this->resolutionContext,
-            fn (string $className, string|UnitEnum|null $key, ResolutionContext $context): object =>
-                $this->getForContext($className, $key, $context)
+            fn(string $className, string|UnitEnum|null $key, ResolutionContext $context): object
+                => $this->getForContext($className, $key, $context),
         );
     }
 
@@ -162,10 +163,13 @@ final class Container implements ContainerInterface, DisposableInterface, ScopeF
 
     /**
      * @template TClass of object
+     *
      * @param class-string<TClass> $className
-     * @return TClass
+     *
      * @throws CircularDependencyException
      * @throws ClassNotFoundException
+     *
+     * @return TClass
      */
     public function get(string $className, string|UnitEnum|null $key = null): object
     {
@@ -176,12 +180,15 @@ final class Container implements ContainerInterface, DisposableInterface, ScopeF
      * Resolves a service on behalf of a resolution root (the container itself or one of its scopes).
      *
      * @template TClass of object
+     *
      * @param class-string<TClass> $className
      * @param ResolutionContext $context The context of the resolution root the service is being resolved for
-     * @return TClass
+     *
      * @throws CircularDependencyException
      * @throws ClassNotFoundException
      * @throws ContainerException If the container has been disposed
+     *
+     * @return TClass
      */
     private function getForContext(string $className, string|UnitEnum|null $key, ResolutionContext $context): object
     {
@@ -199,6 +206,7 @@ final class Container implements ContainerInterface, DisposableInterface, ScopeF
 
     /**
      * @inheritDoc
+     *
      * @throws ContainerException If the container has been disposed
      */
     public function has(string $className, string|UnitEnum|null $key = null): bool
@@ -213,8 +221,9 @@ final class Container implements ContainerInterface, DisposableInterface, ScopeF
      *
      * @param Descriptor<TClass> $descriptor
      *
-     * @return TClass
      * @throws CircularDependencyException
+     *
+     * @return TClass
      */
     private function resolveDescriptor(string $id, Descriptor $descriptor, ResolutionContext $context): object
     {
@@ -245,7 +254,7 @@ final class Container implements ContainerInterface, DisposableInterface, ScopeF
                     }
 
                     return $instance;
-                }
+                },
             );
         } catch (DependencyInjectionException $e) {
             throw new ClassResolutionException($descriptor->className, previous: $e);
@@ -304,7 +313,7 @@ final class Container implements ContainerInterface, DisposableInterface, ScopeF
         foreach ($plan->injectMethodEdges as $methodName => $edges) {
             (new ReflectionMethod($instance, $methodName))->invokeArgs(
                 $instance,
-                $this->resolveArguments($edges, $ctx, [$className, $methodName])
+                $this->resolveArguments($edges, $ctx, [$className, $methodName]),
             );
         }
 
@@ -362,7 +371,7 @@ final class Container implements ContainerInterface, DisposableInterface, ScopeF
         array $edges,
         ResolutionContext $ctx,
         array|Closure $functionRef,
-        int $skip = 0
+        int $skip = 0,
     ): array {
         $args = [];
 
@@ -374,7 +383,7 @@ final class Container implements ContainerInterface, DisposableInterface, ScopeF
             } catch (ClassResolutionException $exception) {
                 throw new ParameterResolutionException(
                     new ReflectionParameter($functionRef, $index + $skip),
-                    $exception
+                    $exception,
                 );
             }
 
@@ -407,8 +416,9 @@ final class Container implements ContainerInterface, DisposableInterface, ScopeF
      *
      * @param mixed $value Receives the resolved value or the soft fallback
      *
-     * @return bool Whether a value was produced; <code>false</code> only for a required edge that cannot be satisfied
      * @throws ClassResolutionException If a required edge's candidate failed while resolving its own dependencies
+     *
+     * @return bool Whether a value was produced; <code>false</code> only for a required edge that cannot be satisfied
      */
     private function tryResolveEdge(ResolutionPlanEdge $edge, ResolutionContext $ctx, mixed &$value): bool
     {

@@ -15,6 +15,7 @@ namespace Suhock\DependencyInjection\InstanceProvider;
  * Factory that provides a previously constructed instance of the class.
  *
  * @template TClass of object
+ *
  * @template-implements InstanceProviderInterface<TClass>
  *
  * @internal
@@ -29,7 +30,7 @@ final class ObjectInstanceProvider implements InstanceProviderInterface
      */
     public function __construct(
         string $className,
-        public readonly object $instance
+        public readonly object $instance,
     ) {
         if (!$instance instanceof $className) {
             throw new InstanceTypeException($className, $instance);

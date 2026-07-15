@@ -14,6 +14,4 @@ namespace Suhock\DependencyInjection\Fakes;
 /**
  * Fake for a simple interface.
  */
-interface FakeInterfaceThree
-{
-}
+interface FakeInterfaceThree {}

@@ -30,7 +30,7 @@ final class ClassResolutionException extends ContainerException
      */
     public function __construct(
         private readonly string $className,
-        ?Throwable $previous = null
+        ?Throwable $previous = null,
     ) {
         parent::__construct("The container encountered an error while resolving a value for $className", $previous);
     }

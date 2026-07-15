@@ -26,7 +26,7 @@ final class ContainerValidationException extends DependencyInjectionException
      * @param non-empty-list<ValidationIssue> $issues The defects found, in discovery order
      */
     public function __construct(
-        private readonly array $issues
+        private readonly array $issues,
     ) {
         parent::__construct(self::buildMessage($issues));
     }
