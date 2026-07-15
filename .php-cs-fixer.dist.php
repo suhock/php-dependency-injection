@@ -10,6 +10,7 @@
 declare(strict_types=1);
 
 return (new PhpCsFixer\Config())
+    ->setRiskyAllowed(true)
     ->setRules([
         '@PER-CS3x0' => true,
 
@@ -59,12 +60,16 @@ return (new PhpCsFixer\Config())
         'no_extra_blank_lines' => true,
 
         // Language constructs & cleanup
+        'get_class_to_class_keyword' => true, // RISKY
+        'no_alias_functions' => true, // RISKY
         'no_empty_statement' => true,
         'no_unneeded_braces' => true,
         'no_unneeded_control_parentheses' => true,
         'no_useless_else' => true,
         'no_useless_return' => true,
+        'nullable_type_declaration' => true, // RISKY
         'nullable_type_declaration_for_default_null_value' => true,
+        'self_accessor' => true, // RISKY
         'self_static_accessor' => true,
         'ternary_to_null_coalescing' => true,
 
