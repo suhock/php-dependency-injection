@@ -33,11 +33,11 @@ final class FakeContainer implements ContainerInterface
 
     public function get(string $className, string|UnitEnum|null $key = null): object
     {
-        if (!$this->has($className)) {
+        if (!array_key_exists($className, $this->classMapping)) {
             throw new ClassNotFoundException($className);
         }
 
-        /** @phpstan-ignore offsetAccess.notFound, return.type (test fake does not model array class mappings) */
+        /** @phpstan-ignore return.type (test fake does not model array class mappings) */
         return ($this->classMapping[$className])();
     }
 

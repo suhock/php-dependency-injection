@@ -56,7 +56,7 @@ final class InjectorTest extends AbstractDependencyInjectionTestCase
      *
      * @phpstan-param array<class-string, callable():object> $classMapping
      */
-    protected function createInjector(array $classMapping = []): Injector
+    private function createInjector(array $classMapping = []): Injector
     {
         return Injector::createDefault(new FakeContainer($classMapping));
     }

@@ -29,7 +29,7 @@ trait ContainerSingletonBuilderTrait
         LifetimeStrategy $lifetimeStrategy,
         InstanceProviderInterface $instanceProvider,
         bool $shouldDispose = true,
-    ): static;
+    ): self;
 
     abstract private function addKeyed(
         string $className,
@@ -37,12 +37,12 @@ trait ContainerSingletonBuilderTrait
         LifetimeStrategy $lifetimeStrategy,
         InstanceProviderInterface $instanceProvider,
         bool $shouldDispose = true,
-    ): static;
+    ): self;
 
     /**
      * @inheritDoc
      */
-    public function addSingleton(string $className, string|object|null $source = null): static
+    public function addSingleton(string $className, string|object|null $source = null): self
     {
         $this->addSingletonInstanceProvider(
             $className,
@@ -59,7 +59,7 @@ trait ContainerSingletonBuilderTrait
         string $className,
         string|UnitEnum $key,
         string|object|null $source = null,
-    ): static {
+    ): self {
         return $this->addKeyedSingletonInstanceProvider(
             $className,
             $key,
@@ -70,7 +70,7 @@ trait ContainerSingletonBuilderTrait
     /**
      * @inheritDoc
      */
-    public function addSingletonClass(string $className, ?callable $mutator = null): static
+    public function addSingletonClass(string $className, ?callable $mutator = null): self
     {
         $this->addSingletonInstanceProvider(
             $className,
@@ -87,7 +87,7 @@ trait ContainerSingletonBuilderTrait
         string $className,
         string|UnitEnum $key,
         ?callable $mutator = null,
-    ): static {
+    ): self {
         return $this->addKeyedSingletonInstanceProvider(
             $className,
             $key,
@@ -98,7 +98,7 @@ trait ContainerSingletonBuilderTrait
     /**
      * @inheritDoc
      */
-    public function addSingletonImplementation(string $className, string $implementationClassName): static
+    public function addSingletonImplementation(string $className, string $implementationClassName): self
     {
         $this->addSingletonInstanceProvider(
             $className,
@@ -115,7 +115,7 @@ trait ContainerSingletonBuilderTrait
         string $className,
         string|UnitEnum $key,
         string $implementationClassName,
-    ): static {
+    ): self {
         return $this->addKeyedSingletonInstanceProvider(
             $className,
             $key,
@@ -126,7 +126,7 @@ trait ContainerSingletonBuilderTrait
     /**
      * @inheritDoc
      */
-    public function addSingletonFactory(string $className, callable $factory): static
+    public function addSingletonFactory(string $className, callable $factory): self
     {
         $this->addSingletonInstanceProvider(
             $className,
@@ -139,7 +139,7 @@ trait ContainerSingletonBuilderTrait
     /**
      * @inheritDoc
      */
-    public function addKeyedSingletonFactory(string $className, string|UnitEnum $key, callable $factory): static
+    public function addKeyedSingletonFactory(string $className, string|UnitEnum $key, callable $factory): self
     {
         return $this->addKeyedSingletonInstanceProvider(
             $className,
@@ -151,7 +151,7 @@ trait ContainerSingletonBuilderTrait
     /**
      * @inheritDoc
      */
-    public function addSingletonInstance(string $className, object $instance, bool $shouldDispose = true): static
+    public function addSingletonInstance(string $className, object $instance, bool $shouldDispose = true): self
     {
         return $this->addSingletonInstanceProvider(
             $className,
@@ -168,7 +168,7 @@ trait ContainerSingletonBuilderTrait
         string|UnitEnum $key,
         object $instance,
         bool $shouldDispose = true,
-    ): static {
+    ): self {
         return $this->addKeyedSingletonInstanceProvider(
             $className,
             $key,
@@ -183,7 +183,7 @@ trait ContainerSingletonBuilderTrait
      * @param class-string<TClass> $className
      * @param InstanceProviderInterface<TClass> $instanceProvider
      * @param bool $shouldDispose Whether the container should dispose the disposable instances it creates for this
-     * service
+     *     service
      *
      * @return $this
      */
@@ -191,7 +191,7 @@ trait ContainerSingletonBuilderTrait
         string $className,
         InstanceProviderInterface $instanceProvider,
         bool $shouldDispose = true,
-    ): static {
+    ): self {
         $this->add($className, new SingletonStrategy($className), $instanceProvider, $shouldDispose);
 
         return $this;
@@ -203,7 +203,7 @@ trait ContainerSingletonBuilderTrait
      * @param class-string<TClass> $className
      * @param InstanceProviderInterface<TClass> $instanceProvider
      * @param bool $shouldDispose Whether the container should dispose the disposable instances it creates for this
-     * service
+     *     service
      *
      * @return $this
      */
@@ -212,7 +212,7 @@ trait ContainerSingletonBuilderTrait
         string|UnitEnum $key,
         InstanceProviderInterface $instanceProvider,
         bool $shouldDispose = true,
-    ): static {
+    ): self {
         return $this->addKeyed($className, $key, new SingletonStrategy($className), $instanceProvider, $shouldDispose);
     }
 }

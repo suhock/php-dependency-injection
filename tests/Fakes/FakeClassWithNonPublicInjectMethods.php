@@ -15,8 +15,10 @@ use Suhock\DependencyInjection\Inject;
 
 /**
  * Fakes a class with protected and private inject methods.
+ *
+ * @phpstan-ignore ergebnis.final (Test fake intentionally left extensible to test #[Inject] on protected methods)
  */
-final class FakeClassWithNonPublicInjectMethods
+class FakeClassWithNonPublicInjectMethods
 {
     public ?FakeClassNoConstructor $protectedSetterValue = null;
 

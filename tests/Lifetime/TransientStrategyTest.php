@@ -23,7 +23,7 @@ final class TransientStrategyTest extends AbstractDependencyInjectionTestCase
     /**
      * @return TransientStrategy<FakeClassNoConstructor>
      */
-    protected function createStrategy(): TransientStrategy
+    private function createStrategy(): TransientStrategy
     {
         return new TransientStrategy(FakeClassNoConstructor::class);
     }

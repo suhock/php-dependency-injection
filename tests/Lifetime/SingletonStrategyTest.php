@@ -23,7 +23,7 @@ final class SingletonStrategyTest extends AbstractDependencyInjectionTestCase
     /**
      * @return SingletonStrategy<FakeClassNoConstructor>
      */
-    protected function createStrategy(): SingletonStrategy
+    private function createStrategy(): SingletonStrategy
     {
         return new SingletonStrategy(FakeClassNoConstructor::class);
     }

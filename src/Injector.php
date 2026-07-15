@@ -41,7 +41,7 @@ final class Injector implements InjectorInterface
      * @param ParameterResolverInterface $resolver The resolver to use for resolving parameters
      * @param InstantiationStrategyInterface $strategy The instantiation strategy to use
      * @param PostInstantiationHookInterface $postInstantiationHook The hook applied to each new instance after
-     * construction
+     *     construction
      */
     public function __construct(
         ParameterResolverInterface $resolver,
@@ -59,9 +59,8 @@ final class Injector implements InjectorInterface
      * resolver, instantiation strategy, or post-instantiation hook.
      *
      * @param ContainerInterface $container The container to resolve parameter values from
-     * @param CacheInterface|null $cache [optional] Optional shared (L2) metadata cache; supply an
-     * {@see CacheInterface} to share the {@see InjectAttributeMemberInjector}'s reflected member metadata across
-     * requests
+     * @param CacheInterface|null $cache [optional] Optional shared (L2) metadata cache; supply an {@see CacheInterface}
+     *     to share the {@see InjectAttributeMemberInjector}'s reflected member metadata across requests
      */
     public static function createDefault(ContainerInterface $container, ?CacheInterface $cache = null): self
     {
@@ -71,6 +70,9 @@ final class Injector implements InjectorInterface
         return new self($resolver, $strategy, new InjectAttributeMemberInjector($resolver, $cache));
     }
 
+    /**
+     * @inheritDoc
+     */
     public function call(callable $function, array $params = []): mixed
     {
         // A callable normalized to a closure is always reflectable, so this cannot throw ReflectionException.
@@ -83,13 +85,6 @@ final class Injector implements InjectorInterface
 
     /**
      * @inheritDoc
-     *
-     * @template TClass of object
-     *
-     * @param class-string<TClass> $className
-     * @param array<mixed> $params
-     *
-     * @return TClass
      */
     public function instantiate(string $className, array $params = []): object
     {

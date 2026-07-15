@@ -24,7 +24,7 @@ final class ScopedStrategyTest extends AbstractDependencyInjectionTestCase
     /**
      * @return ScopedStrategy<FakeClassNoConstructor>
      */
-    protected function createStrategy(): ScopedStrategy
+    private function createStrategy(): ScopedStrategy
     {
         return new ScopedStrategy(FakeClassNoConstructor::class);
     }

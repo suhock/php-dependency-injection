@@ -51,7 +51,7 @@ final class ContainerBuilder implements ContainerBuilderInterface
 
     /**
      * @param CacheInterface|null $cache [optional] Cache used to memoize reflected metadata and to reuse the
-     * compiled graph across builds of an unchanged configuration
+     *     compiled graph across builds of an unchanged configuration
      */
     public function __construct(
         private readonly ?CacheInterface $cache = null,
@@ -76,7 +76,7 @@ final class ContainerBuilder implements ContainerBuilderInterface
      * @param LifetimeStrategy<TClass> $lifetimeStrategy The lifetime strategy to use to manage instances
      * @param InstanceProviderInterface<TClass> $instanceProvider The instance provider to use to create new instances
      * @param bool $shouldDispose Whether the container should dispose the disposable instances it creates for this
-     * service; pass false when their disposal is the responsibility of something outside the container
+     *     service; pass false when their disposal is the responsibility of something outside the container
      *
      * @return $this
      */
@@ -85,7 +85,7 @@ final class ContainerBuilder implements ContainerBuilderInterface
         LifetimeStrategy $lifetimeStrategy,
         InstanceProviderInterface $instanceProvider,
         bool $shouldDispose = true,
-    ): static {
+    ): self {
         $this->addDescriptor(new Descriptor($className, $lifetimeStrategy, $instanceProvider, $shouldDispose));
 
         return $this;
@@ -101,7 +101,7 @@ final class ContainerBuilder implements ContainerBuilderInterface
      * @param LifetimeStrategy<TClass> $lifetimeStrategy The lifetime strategy to use to manage instances
      * @param InstanceProviderInterface<TClass> $instanceProvider The instance provider to use to create new instances
      * @param bool $shouldDispose Whether the container should dispose the disposable instances it creates for this
-     * service; pass false when their disposal is the responsibility of something outside the container
+     *     service; pass false when their disposal is the responsibility of something outside the container
      *
      * @return $this
      */
@@ -111,7 +111,7 @@ final class ContainerBuilder implements ContainerBuilderInterface
         LifetimeStrategy $lifetimeStrategy,
         InstanceProviderInterface $instanceProvider,
         bool $shouldDispose = true,
-    ): static {
+    ): self {
         $this->addKeyedDescriptor(
             new Descriptor($className, $lifetimeStrategy, $instanceProvider, $shouldDispose),
             $key,
@@ -126,7 +126,7 @@ final class ContainerBuilder implements ContainerBuilderInterface
      *
      * @return $this
      */
-    public function remove(string $className, string|UnitEnum|null $key = null): static
+    public function remove(string $className, string|UnitEnum|null $key = null): self
     {
         $this->removeDescriptor($className, $key);
 
@@ -138,7 +138,7 @@ final class ContainerBuilder implements ContainerBuilderInterface
      *
      * @return $this
      */
-    public function configure(callable $configure): static
+    public function configure(callable $configure): self
     {
         $configure($this);
 
@@ -276,7 +276,7 @@ final class ContainerBuilder implements ContainerBuilderInterface
      *
      * @return $this
      */
-    protected function addDescriptor(Descriptor $descriptor): static
+    private function addDescriptor(Descriptor $descriptor): self
     {
         return $this->store($descriptor, null);
     }
@@ -288,7 +288,7 @@ final class ContainerBuilder implements ContainerBuilderInterface
      *
      * @return $this
      */
-    protected function addKeyedDescriptor(Descriptor $descriptor, string|UnitEnum $key): static
+    private function addKeyedDescriptor(Descriptor $descriptor, string|UnitEnum $key): self
     {
         return $this->store($descriptor, $key);
     }
@@ -300,7 +300,7 @@ final class ContainerBuilder implements ContainerBuilderInterface
      *
      * @return $this
      */
-    private function store(Descriptor $descriptor, string|UnitEnum|null $key): static
+    private function store(Descriptor $descriptor, string|UnitEnum|null $key): self
     {
         $id = DescriptorId::compute($descriptor->className, $key);
 
@@ -319,7 +319,7 @@ final class ContainerBuilder implements ContainerBuilderInterface
     /**
      * @param class-string $className
      */
-    protected function removeDescriptor(string $className, string|UnitEnum|null $key): void
+    private function removeDescriptor(string $className, string|UnitEnum|null $key): void
     {
         unset($this->descriptors[DescriptorId::compute($className, $key)]);
     }

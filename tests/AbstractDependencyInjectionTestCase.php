@@ -30,7 +30,7 @@ use Throwable;
  */
 abstract class AbstractDependencyInjectionTestCase extends TestCase
 {
-    protected static function createBuilder(): ContainerBuilder
+    final protected static function createBuilder(): ContainerBuilder
     {
         return ContainerBuilder::createDefault();
     }
@@ -42,7 +42,7 @@ abstract class AbstractDependencyInjectionTestCase extends TestCase
      *
      * @return Descriptor<object>
      */
-    protected static function classDescriptor(
+    final protected static function classDescriptor(
         string $className,
         string $lifetime,
         bool $shouldDispose = true,
@@ -63,7 +63,7 @@ abstract class AbstractDependencyInjectionTestCase extends TestCase
      *
      * @param array<string, Descriptor<object>> $descriptors
      */
-    protected static function buildRawContainer(array $descriptors): Container
+    final protected static function buildRawContainer(array $descriptors): Container
     {
         return new Container($descriptors, (new ResolutionPlanFactory())->compile($descriptors));
     }
@@ -74,7 +74,7 @@ abstract class AbstractDependencyInjectionTestCase extends TestCase
      *
      * @param callable(ContainerBuilder):mixed $configure
      */
-    protected static function buildContainer(callable $configure): Container
+    final protected static function buildContainer(callable $configure): Container
     {
         $builder = ContainerBuilder::createDefault();
         $configure($builder);
@@ -85,7 +85,7 @@ abstract class AbstractDependencyInjectionTestCase extends TestCase
     /**
      * Creates a root resolution context for exercising lifetime strategies and instance providers directly.
      */
-    protected static function createResolutionContext(?ContainerInterface $container = null): ResolutionContext
+    final protected static function createResolutionContext(?ContainerInterface $container = null): ResolutionContext
     {
         return new ResolutionContext(
             $container ?? self::createStub(ContainerInterface::class),
@@ -96,7 +96,7 @@ abstract class AbstractDependencyInjectionTestCase extends TestCase
     /**
      * Creates a scope resolution context whose root is the given context, for exercising lifetime strategies directly.
      */
-    protected static function createScopeResolutionContext(ResolutionContext $rootContext): ResolutionContext
+    final protected static function createScopeResolutionContext(ResolutionContext $rootContext): ResolutionContext
     {
         return new ResolutionContext(
             self::createStub(ContainerInterface::class),
@@ -132,7 +132,7 @@ abstract class AbstractDependencyInjectionTestCase extends TestCase
     /**
      * @param class-string $exClassName
      */
-    public static function assertThrowsCircularDependencyException(
+    final public static function assertThrowsCircularDependencyException(
         string $exClassName,
         callable $codeUnderTest,
     ): void {
@@ -150,7 +150,7 @@ abstract class AbstractDependencyInjectionTestCase extends TestCase
      * @param class-string $exClassName
      * @param CircularDependencyException<object> $actualException
      */
-    public static function assertCircularDependencyException(
+    final public static function assertCircularDependencyException(
         string $exClassName,
         CircularDependencyException $actualException,
     ): void {
@@ -165,7 +165,7 @@ abstract class AbstractDependencyInjectionTestCase extends TestCase
      * @param class-string $exExpectedClassName
      * @param class-string $exActualClassName
      */
-    public static function assertThrowsImplementationException(
+    final public static function assertThrowsImplementationException(
         string $exExpectedClassName,
         string $exActualClassName,
         callable $codeUnderTest,
@@ -189,7 +189,7 @@ abstract class AbstractDependencyInjectionTestCase extends TestCase
      * @param class-string<TActual> $exActualClassName
      * @param ImplementationException<TExpected, TActual> $actualException
      */
-    public static function assertImplementationException(
+    final public static function assertImplementationException(
         string $exExpectedClassName,
         string $exActualClassName,
         ImplementationException $actualException,
@@ -210,7 +210,7 @@ abstract class AbstractDependencyInjectionTestCase extends TestCase
      * @param class-string $exExpectedClassName
      * @param class-string|null $exActualClassName
      */
-    public static function assertThrowsInstanceTypeException(
+    final public static function assertThrowsInstanceTypeException(
         string $exExpectedClassName,
         ?string $exActualClassName,
         callable $codeUnderTest,
@@ -231,7 +231,7 @@ abstract class AbstractDependencyInjectionTestCase extends TestCase
      * @param class-string|null $exActualClassName
      * @param InstanceTypeException<object> $actualException
      */
-    public static function assertInstanceTypeException(
+    final public static function assertInstanceTypeException(
         string $exExpectedClassName,
         ?string $exActualClassName,
         InstanceTypeException $actualException,
@@ -259,7 +259,7 @@ abstract class AbstractDependencyInjectionTestCase extends TestCase
     /**
      * @param class-string $expectedClassName
      */
-    public static function assertThrowsClassNotFoundException(
+    final public static function assertThrowsClassNotFoundException(
         string $expectedClassName,
         callable $codeUnderTest,
     ): void {
@@ -277,7 +277,7 @@ abstract class AbstractDependencyInjectionTestCase extends TestCase
      * @param class-string $expectedClassName
      * @param ClassNotFoundException<object> $actualException
      */
-    public static function assertClassNotFoundException(
+    final public static function assertClassNotFoundException(
         string $expectedClassName,
         ClassNotFoundException $actualException,
     ): void {
@@ -291,7 +291,7 @@ abstract class AbstractDependencyInjectionTestCase extends TestCase
     /**
      * @param class-string $expectedClassName
      */
-    public static function assertThrowsClassResolutionException(
+    final public static function assertThrowsClassResolutionException(
         string $expectedClassName,
         ?callable $previousExceptionTest,
         callable $codeUnderTest,
@@ -311,7 +311,7 @@ abstract class AbstractDependencyInjectionTestCase extends TestCase
      * @param class-string $expectedClassName
      * @param ClassResolutionException<object> $actualException
      */
-    public static function assertClassResolutionException(
+    final public static function assertClassResolutionException(
         string $expectedClassName,
         ?callable $previousExceptionTest,
         ClassResolutionException $actualException,
@@ -327,7 +327,7 @@ abstract class AbstractDependencyInjectionTestCase extends TestCase
         }
     }
 
-    public static function assertThrowsParameterResolutionException(
+    final public static function assertThrowsParameterResolutionException(
         string $exFunctionName,
         string $exParameterName,
         ?callable $previousTest,
@@ -345,7 +345,7 @@ abstract class AbstractDependencyInjectionTestCase extends TestCase
         );
     }
 
-    public static function assertParameterResolutionException(
+    final public static function assertParameterResolutionException(
         string $exFunctionName,
         string $exParameterName,
         ?callable $previousTest,

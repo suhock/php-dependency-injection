@@ -22,22 +22,20 @@ use UnitEnum;
  * requests them.
  *
  * @internal Obtain instances through {@see ScopeFactoryInterface::createScope()}; see {@see ScopeInterface} for the
- * public contract.
+ *     public contract.
  */
 final class Scope implements ScopeInterface
 {
     private readonly ResolutionContext $resolutionContext;
-
     /** @var Closure(class-string, string|UnitEnum|null, ResolutionContext):object */
     private readonly Closure $resolve;
-
     private bool $disposed = false;
 
     /**
      * @param Container $rootContainer The container the scope was created from
      * @param ResolutionContext $rootContext The resolution context of the root container
      * @param callable(class-string, string|UnitEnum|null, ResolutionContext):object $resolve Resolves a service from
-     * the root container for this scope's resolution context
+     *     the root container for this scope's resolution context
      */
     public function __construct(
         private readonly Container $rootContainer,
@@ -57,7 +55,7 @@ final class Scope implements ScopeInterface
     {
         $this->ensureNotDisposed();
 
-        // @phpstan-ignore return.type (resolver returns the requested TClass, widened to object through the stored closure)
+        // @phpstan-ignore return.type (phpstan does not support generics on Closures)
         return ($this->resolve)($className, $key, $this->resolutionContext);
     }
 

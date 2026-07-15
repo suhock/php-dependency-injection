@@ -28,8 +28,8 @@ abstract class DependencyInjectionException extends RuntimeException implements 
     /**
      * @param string $message [optional] The Exception message to throw.
      * @param Throwable|null $previous [optional] The previous throwable used for exception chaining. If the throwable
-     * is a {@see DependencyInjectionExceptionInterface} then its message and previous exception will be consolidated
-     * into the new instance.
+     *     is a {@see DependencyInjectionExceptionInterface} then its message and previous exception will be consolidated
+     *     into the new instance.
      */
     public function __construct(string $message = '', ?Throwable $previous = null)
     {
@@ -46,9 +46,9 @@ abstract class DependencyInjectionException extends RuntimeException implements 
 
     /**
      * @return DependencyInjectionExceptionInterface|null The {@see DependencyInjectionExceptionInterface} that was
-     * passed in as previous, but was consolidated into this instance, or <code>null</code>
+     *     passed in as previous, but was consolidated into this instance, or <code>null</code>
      */
-    public function getConsolidatedException(): ?DependencyInjectionExceptionInterface
+    final public function getConsolidatedException(): ?DependencyInjectionExceptionInterface
     {
         return $this->consolidatedException;
     }
