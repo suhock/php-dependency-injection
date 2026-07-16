@@ -12,9 +12,7 @@ declare(strict_types=1);
 namespace Suhock\DependencyInjection;
 
 use Closure;
-use ReflectionMethod;
 use ReflectionParameter;
-use ReflectionProperty;
 use Suhock\DependencyInjection\Builder\Descriptor;
 use Suhock\DependencyInjection\InstanceProvider\ClassInstanceProvider;
 use Suhock\DependencyInjection\InstanceProvider\ClosureInstanceProvider;
@@ -25,7 +23,6 @@ use Suhock\DependencyInjection\InstanceProvider\ObjectInstanceProvider;
 use Suhock\DependencyInjection\Lifetime\InstanceStore;
 use Suhock\DependencyInjection\Resolver\DependencyResolver;
 use Suhock\DependencyInjection\Resolver\ParameterResolutionException;
-use Suhock\DependencyInjection\Resolver\PropertyResolutionException;
 use Suhock\DependencyInjection\Resolver\ResolutionPlan;
 use Suhock\DependencyInjection\Resolver\ResolutionPlanEdge;
 use Suhock\DependencyInjection\Resolver\ResolutionPlanKind;
@@ -310,18 +307,6 @@ final class Container implements ContainerInterface, DisposableInterface, ScopeF
         $args = $this->resolveArguments($plan->argumentEdges, $ctx, [$className, '__construct']);
         $instance = new $className(...$args);
 
-        foreach ($plan->injectMethodEdges as $methodName => $edges) {
-            (new ReflectionMethod($instance, $methodName))->invokeArgs(
-                $instance,
-                $this->resolveArguments($edges, $ctx, [$className, $methodName]),
-            );
-        }
-
-        foreach ($plan->injectPropertyEdges as $propertyName => $edge) {
-            (new ReflectionProperty($className, $propertyName))
-                ->setValue($instance, $this->resolvePropertyEdge($edge, $ctx, $className));
-        }
-
         $mutator = $this->closures[$id] ?? null;
 
         if ($mutator !== null) {
@@ -391,22 +376,6 @@ final class Container implements ContainerInterface, DisposableInterface, ScopeF
         }
 
         return $args;
-    }
-
-    /**
-     * @param class-string $className
-     */
-    private function resolvePropertyEdge(ResolutionPlanEdge $edge, ResolutionContext $ctx, string $className): mixed
-    {
-        try {
-            if (!$this->tryResolveEdge($edge, $ctx, $value)) {
-                throw new PropertyResolutionException(new ReflectionProperty($className, $edge->name));
-            }
-        } catch (ClassResolutionException $exception) {
-            throw new PropertyResolutionException(new ReflectionProperty($className, $edge->name), $exception);
-        }
-
-        return $value;
     }
 
     /**

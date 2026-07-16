@@ -168,7 +168,7 @@ final class ContainerBuilder implements ContainerBuilderInterface
             }
         }
 
-        $plans = (new ResolutionPlanFactory($this->cache))->compile($descriptors);
+        $plans = (new ResolutionPlanFactory())->compile($descriptors);
         (new ContainerValidator($descriptors))->validate($plans);
 
         if ($cacheKey !== null) {
@@ -213,7 +213,7 @@ final class ContainerBuilder implements ContainerBuilderInterface
     {
         $descriptors = $this->descriptors;
         self::addAutoBindings($descriptors);
-        $plans = (new ResolutionPlanFactory($this->cache))->compile($descriptors);
+        $plans = (new ResolutionPlanFactory())->compile($descriptors);
 
         return (new ContainerValidator($descriptors))->exportGraph($plans);
     }

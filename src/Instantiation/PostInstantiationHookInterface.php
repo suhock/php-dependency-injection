@@ -14,13 +14,14 @@ namespace Suhock\DependencyInjection\Instantiation;
 use Suhock\DependencyInjection\InjectorException;
 
 /**
- * A hook applied to every instance an injector creates, after the instantiation strategy has constructed it and before
- * it is returned to the caller.
+ * The member-injection step an injector applies through {@see \Suhock\DependencyInjection\Injector::injectMembers()}:
+ * given a constructed instance, populate its dependencies (by default its {@see \Suhock\DependencyInjection\Inject}
+ * members).
  */
 interface PostInstantiationHookInterface
 {
     /**
-     * Applies the hook to a newly constructed instance.
+     * Populates the dependencies of the given instance.
      *
      * @param object $instance The new instance
      *

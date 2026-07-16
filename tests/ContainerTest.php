@@ -15,7 +15,6 @@ use Closure;
 use Suhock\DependencyInjection\Builder\Descriptor;
 use Suhock\DependencyInjection\Fakes\FakeClassNoConstructor;
 use Suhock\DependencyInjection\Fakes\FakeClassWithInjectedProperties;
-use Suhock\DependencyInjection\Fakes\FakeClassWithInjectFunction;
 use Suhock\DependencyInjection\Fakes\FakeInterfaceOne;
 use Suhock\DependencyInjection\InstanceProvider\ContextInstanceProvider;
 use Suhock\DependencyInjection\InstanceProvider\InstanceTypeException;
@@ -27,41 +26,45 @@ use Suhock\DependencyInjection\Lifetime\TransientStrategy;
  */
 final class ContainerTest extends AbstractDependencyInjectionTestCase
 {
-    public function testGet_AutowiredClassWithInjectMethod_InvokesMethodWithResolvedArguments(): void
+    public function testGet_AutowiredClass_DoesNotInjectMembers(): void
     {
-        // Arrange
+        // Arrange: autowiring is constructor-only; #[Inject] members are not resolved from the container.
         $container = self::buildContainer(
             static fn(ContainerBuilder $builder) => $builder
                 ->addSingletonClass(FakeClassNoConstructor::class)
-                ->addSingletonClass(FakeClassWithInjectFunction::class),
-        );
-
-        // Act: resolving the class executes its compiled plan, including the #[Inject] method edge.
-        $instance = $container->get(FakeClassWithInjectFunction::class);
-
-        // Assert
-        self::assertInstanceOf(FakeClassNoConstructor::class, $instance->obj);
-    }
-
-    public function testGet_AutowiredClassWithInjectProperties_SetsPropertiesFromContainer(): void
-    {
-        // Arrange: the required properties resolve by type and key; the nullable one is left to its soft fallback.
-        $container = self::buildContainer(
-            static fn(ContainerBuilder $builder) => $builder
-                ->addSingletonClass(FakeClassNoConstructor::class)
-                ->addKeyedSingletonClass(FakeClassNoConstructor::class, 'key1')
                 ->addSingletonClass(FakeClassWithInjectedProperties::class),
         );
 
         // Act
         $instance = $container->get(FakeClassWithInjectedProperties::class);
 
-        // Assert: public, protected, private, and keyed properties are all injected via the compiled plan.
-        self::assertInstanceOf(FakeClassNoConstructor::class, $instance->publicProperty);
-        self::assertInstanceOf(FakeClassNoConstructor::class, $instance->getProtectedProperty());
-        self::assertInstanceOf(FakeClassNoConstructor::class, $instance->getPrivateProperty());
-        self::assertInstanceOf(FakeClassNoConstructor::class, $instance->keyedProperty);
-        self::assertNull($instance->optionalProperty, 'The unregistered nullable property falls back to null');
+        // Assert: the property keeps what the constructor set, not the container's service.
+        self::assertNotSame($container->get(FakeClassNoConstructor::class), $instance->publicProperty);
+    }
+
+    public function testGet_AutowiredClassWithInjectMembersMutator_InjectsMembers(): void
+    {
+        // Arrange: member injection is opt-in via a mutator that calls the injector's injectMembers().
+        $container = self::buildContainer(
+            static fn(ContainerBuilder $builder) => $builder
+                ->addSingletonClass(FakeClassNoConstructor::class)
+                ->addKeyedSingletonClass(FakeClassNoConstructor::class, 'key1')
+                ->addSingletonFactory(
+                    InjectorInterface::class,
+                    static fn(ContainerInterface $container) => Injector::createDefault($container),
+                )
+                ->addSingletonClass(
+                    FakeClassWithInjectedProperties::class,
+                    static fn(FakeClassWithInjectedProperties $instance, InjectorInterface $injector)
+                        => $injector->injectMembers($instance),
+                ),
+        );
+
+        // Act
+        $instance = $container->get(FakeClassWithInjectedProperties::class);
+
+        // Assert
+        self::assertSame($container->get(FakeClassNoConstructor::class), $instance->publicProperty);
     }
 
     /**

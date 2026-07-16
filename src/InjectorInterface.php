@@ -45,4 +45,18 @@ interface InjectorInterface
      * @return TClass A new instance of the specified class
      */
     public function instantiate(string $className, array $params = []): object;
+
+    /**
+     * Populates the {@see Inject} members of an already-constructed instance, resolving each the same way
+     * {@see instantiate()} does. Lets a caller wire an object it constructed itself.
+     *
+     * @template TClass of object
+     *
+     * @param TClass $instance The instance to populate
+     *
+     * @throws InjectorException If a member value cannot be resolved
+     *
+     * @return TClass The same instance, with its Inject members populated
+     */
+    public function injectMembers(object $instance): object;
 }

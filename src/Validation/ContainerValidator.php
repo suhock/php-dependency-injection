@@ -164,24 +164,14 @@ final class ContainerValidator
             yield [sprintf('parameter $%s of %s', $edge->name, $argumentLocation), $edge];
         }
 
-        foreach ($plan->injectMethodEdges as $methodName => $edges) {
-            foreach ($edges as $edge) {
-                yield [sprintf('parameter $%s of %s()', $edge->name, $methodName), $edge];
-            }
-        }
-
-        foreach ($plan->injectPropertyEdges as $edge) {
-            yield [sprintf('property $%s', $edge->name), $edge];
-        }
-
         foreach ($plan->mutatorEdges as $edge) {
             yield [sprintf('parameter $%s of the mutator', $edge->name), $edge];
         }
     }
 
     /**
-     * The defects local to one service: non-instantiable classes, invalid #[Inject] members, factory return-type
-     * mismatches, an unresolvable implementation target, and unsatisfiable required edges.
+     * The defects local to one service: non-instantiable classes, factory return-type mismatches, an unresolvable
+     * implementation target, and unsatisfiable required edges.
      *
      * @param Descriptor<object> $descriptor
      *
@@ -198,15 +188,6 @@ final class ContainerValidator
                 $key,
                 ValidationIssueKind::NonInstantiableClass,
                 $plan->nonInstantiableMessage,
-            );
-        }
-
-        foreach ($plan->invalidInjectMemberMessages as $message) {
-            $issues[] = new ValidationIssue(
-                $descriptor->className,
-                $key,
-                ValidationIssueKind::InvalidInjectMember,
-                $message,
             );
         }
 

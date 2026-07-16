@@ -44,11 +44,6 @@ enum ValidationIssueKind
     case FactoryReturnTypeMismatch;
 
     /**
-     * A #[Inject] or #[Key] member is invalid, so resolution throws before member injection.
-     */
-    case InvalidInjectMember;
-
-    /**
      * The service class can never be instantiated (missing, abstract, or an interface).
      */
     case NonInstantiableClass;

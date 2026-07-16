@@ -24,10 +24,10 @@ use Suhock\DependencyInjection\Resolver\ParameterResolverInterface;
 /**
  * Default implementation for {@see InjectorInterface} that resolves missing parameter values using a
  * {@see ParameterResolverInterface}. Instantiation is delegated to an {@see InstantiationStrategyInterface} (by
- * default a {@see ReflectionInstantiationStrategy}), and the new instance is then passed to a
- * {@see PostInstantiationHookInterface} (by default an {@see InjectAttributeMemberInjector} that fills its
- * {@see Inject} members). {@see InstantiationStrategyInterface} remains
- * available for callers who need to compose or supply a custom strategy.
+ * default a {@see ReflectionInstantiationStrategy}); {@see instantiate()} only constructs. Member injection is a
+ * separate step: {@see injectMembers()} applies a {@see PostInstantiationHookInterface} (by default an
+ * {@see InjectAttributeMemberInjector} that fills {@see Inject} members). {@see InstantiationStrategyInterface}
+ * remains available for callers who need to compose or supply a custom strategy.
  */
 final class Injector implements InjectorInterface
 {
@@ -94,6 +94,14 @@ final class Injector implements InjectorInterface
             throw new InjectorException("No instantiation strategy could instantiate $className");
         }
 
+        return $instance;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function injectMembers(object $instance): object
+    {
         $this->postInstantiationHook->postInstantiate($instance);
 
         return $instance;

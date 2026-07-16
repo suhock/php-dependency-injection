@@ -19,11 +19,8 @@ use Suhock\DependencyInjection\Fakes\FakeAbstractClass;
 use Suhock\DependencyInjection\Fakes\FakeClassImplementsInterfaces;
 use Suhock\DependencyInjection\Fakes\FakeClassNoConstructor;
 use Suhock\DependencyInjection\Fakes\FakeClassWithDependencies;
-use Suhock\DependencyInjection\Fakes\FakeClassWithInjectedProperties;
-use Suhock\DependencyInjection\Fakes\FakeClassWithInjectFunction;
 use Suhock\DependencyInjection\Fakes\FakeClassWithIntersectionDependency;
 use Suhock\DependencyInjection\Fakes\FakeClassWithKeyedDependency;
-use Suhock\DependencyInjection\Fakes\FakeClassWithStaticInjectMethod;
 use Suhock\DependencyInjection\Fakes\FakeClassWithStringDependency;
 use Suhock\DependencyInjection\Fakes\FakeClassWithUnionDependency;
 use Suhock\DependencyInjection\Fakes\FakeClassWithVariadicConstructor;
@@ -231,47 +228,6 @@ final class ResolutionPlanFactoryTest extends TestCase
         self::assertTrue($edge->soft);
         self::assertTrue($edge->hasDefault);
         self::assertSame('preset', $edge->defaultValue);
-    }
-
-    public function testCompile_WithInjectMethod_ProducesMethodParameterEdges(): void
-    {
-        $plan = self::compileSingle([
-            FakeClassWithInjectFunction::class => self::autowireDescriptor(FakeClassWithInjectFunction::class),
-        ]);
-
-        self::assertArrayHasKey('setObj', $plan->injectMethodEdges);
-        $edges = $plan->injectMethodEdges['setObj'] ?? [];
-        self::assertCount(1, $edges);
-        self::assertSame('obj', self::edgeAt($edges, 0)->name);
-        self::assertSame([[FakeClassNoConstructor::class]], self::edgeAt($edges, 0)->dependency?->alternatives);
-    }
-
-    public function testCompile_WithInjectedProperties_ProducesPropertyEdges(): void
-    {
-        $plan = self::compileSingle([
-            FakeClassWithInjectedProperties::class
-                => self::autowireDescriptor(FakeClassWithInjectedProperties::class),
-        ]);
-
-        $keyed = $plan->injectPropertyEdges['keyedProperty'] ?? null;
-        $optional = $plan->injectPropertyEdges['optionalProperty'] ?? null;
-
-        self::assertSame('key1', $keyed?->dependency?->key);
-        self::assertFalse($keyed->soft);
-        self::assertTrue($optional?->soft);
-    }
-
-    public function testCompile_WithStaticInjectMethod_RecordsInvalidInjectMemberAndOmitsMemberEdges(): void
-    {
-        $plan = self::compileSingle([
-            FakeClassWithStaticInjectMethod::class
-                => self::autowireDescriptor(FakeClassWithStaticInjectMethod::class),
-        ]);
-
-        self::assertCount(1, $plan->invalidInjectMemberMessages);
-        self::assertStringContainsString('setObj', $plan->invalidInjectMemberMessages[0] ?? '');
-        self::assertSame([], $plan->injectMethodEdges);
-        self::assertSame([], $plan->injectPropertyEdges);
     }
 
     public function testCompile_WithAbstractClass_RecordsNonInstantiable(): void

@@ -29,17 +29,11 @@ final class ResolutionPlan
      * @param ResolutionPlanKind $kind How the instance is produced
      * @param list<ResolutionPlanEdge> $argumentEdges Constructor arguments ({@see ResolutionPlanKind::AutowiredClass})
      *     or factory arguments ({@see ResolutionPlanKind::Factory}), in call order
-     * @param array<string, list<ResolutionPlanEdge>> $injectMethodEdges Per #[Inject] method, its parameter edges in
-     *     call order, keyed by method name
-     * @param array<string, ResolutionPlanEdge> $injectPropertyEdges Per #[Inject] property, its edge, keyed by
-     *     property name
      * @param list<ResolutionPlanEdge> $mutatorEdges The mutator's parameter edges after the instance parameter, in
      *     call order
      * @param class-string|null $implementationTarget The service the container resolves in this service's place
      *     ({@see ResolutionPlanKind::Implementation})
      * @param string|null $nonInstantiableMessage Why the autowired class can never be instantiated, if it cannot
-     * @param list<string> $invalidInjectMemberMessages Defects in the class's #[Inject] members that make plan
-     *     computation itself throw; when present, member edges are omitted
      * @param string|null $declaredFactoryReturnType The factory's declared return class, when it declares a single
      *     existing class or interface
      */
@@ -47,12 +41,9 @@ final class ResolutionPlan
         public readonly string $className,
         public readonly ResolutionPlanKind $kind,
         public readonly array $argumentEdges = [],
-        public readonly array $injectMethodEdges = [],
-        public readonly array $injectPropertyEdges = [],
         public readonly array $mutatorEdges = [],
         public readonly ?string $implementationTarget = null,
         public readonly ?string $nonInstantiableMessage = null,
-        public readonly array $invalidInjectMemberMessages = [],
         public readonly ?string $declaredFactoryReturnType = null,
     ) {}
 }

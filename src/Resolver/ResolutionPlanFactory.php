@@ -14,16 +14,9 @@ namespace Suhock\DependencyInjection\Resolver;
 use Closure;
 use ReflectionClass;
 use ReflectionFunction;
-use ReflectionMethod;
 use ReflectionNamedType;
 use ReflectionParameter;
-use ReflectionProperty;
 use Suhock\DependencyInjection\Builder\Descriptor;
-use Suhock\DependencyInjection\Cache\CacheInterface;
-use Suhock\DependencyInjection\Cache\MetadataCache;
-use Suhock\DependencyInjection\Injection\InjectionPlan;
-use Suhock\DependencyInjection\Injection\InjectionPlanFactory;
-use Suhock\DependencyInjection\InjectorException;
 use Suhock\DependencyInjection\InstanceProvider\ClassInstanceProvider;
 use Suhock\DependencyInjection\InstanceProvider\ClosureInstanceProvider;
 use Suhock\DependencyInjection\InstanceProvider\ImplementationInstanceProvider;
@@ -37,39 +30,20 @@ use function interface_exists;
  * dependency edges resolution will satisfy, and the guaranteed-failure defects) from reflection and the closed set
  * of instance providers, without instantiating anything.
  *
- * #[Inject] member plans are fetched through a {@see MetadataCache} under the same key prefix the runtime member
- * injector uses, so compilation and the standalone injector share the cached computation.
- *
  * @internal
  */
 final class ResolutionPlanFactory
 {
-    private const INJECTION_PLAN_KEY_PREFIX = 'sdi:injectionPlan:';
-
-    private readonly MetadataCache $metadataCache;
-
     /**
      * Per-compilation memo of the class-derived parts of autowired plans, keyed by class name, since the same class
      * may back several descriptors (e.g. added under multiple keys).
      *
      * @var array<class-string, array{
      *     argumentEdges: list<ResolutionPlanEdge>,
-     *     injectMethodEdges: array<string, list<ResolutionPlanEdge>>,
-     *     injectPropertyEdges: array<string, ResolutionPlanEdge>,
-     *     nonInstantiableMessage: string|null,
-     *     invalidInjectMemberMessages: list<string>
+     *     nonInstantiableMessage: string|null
      *     }>
      */
     private array $classParts = [];
-
-    /**
-     * @param CacheInterface|null $cache [optional] A shared cache for reflected metadata, ideally the same instance
-     *     the runtime injector uses so compiled #[Inject] plans are shared with the standalone injector
-     */
-    public function __construct(?CacheInterface $cache = null)
-    {
-        $this->metadataCache = new MetadataCache($cache);
-    }
 
     /**
      * Compiles a plan for every descriptor, keyed by the descriptor's id.
@@ -137,11 +111,8 @@ final class ResolutionPlanFactory
             $className,
             ResolutionPlanKind::AutowiredClass,
             argumentEdges: $parts['argumentEdges'],
-            injectMethodEdges: $parts['injectMethodEdges'],
-            injectPropertyEdges: $parts['injectPropertyEdges'],
             mutatorEdges: $mutatorEdges,
             nonInstantiableMessage: $parts['nonInstantiableMessage'],
-            invalidInjectMemberMessages: $parts['invalidInjectMemberMessages'],
         );
     }
 
@@ -166,18 +137,12 @@ final class ResolutionPlanFactory
     }
 
     /**
-     * The class-derived parts of an autowired plan (constructor and #[Inject] member edges plus guaranteed-failure
-     * defects), independent of the descriptor's mutator.
+     * The class-derived parts of an autowired plan (constructor edges plus any guaranteed-failure defect),
+     * independent of the descriptor's mutator.
      *
      * @param class-string $className
      *
-     * @return array{
-     *     argumentEdges: list<ResolutionPlanEdge>,
-     *     injectMethodEdges: array<string, list<ResolutionPlanEdge>>,
-     *     injectPropertyEdges: array<string, ResolutionPlanEdge>,
-     *     nonInstantiableMessage: string|null,
-     *     invalidInjectMemberMessages: list<string>
-     *     }
+     * @return array{argumentEdges: list<ResolutionPlanEdge>, nonInstantiableMessage: string|null}
      */
     private function classParts(string $className): array
     {
@@ -187,79 +152,27 @@ final class ResolutionPlanFactory
     /**
      * @param class-string $className
      *
-     * @return array{
-     *     argumentEdges: list<ResolutionPlanEdge>,
-     *     injectMethodEdges: array<string, list<ResolutionPlanEdge>>,
-     *     injectPropertyEdges: array<string, ResolutionPlanEdge>,
-     *     nonInstantiableMessage: string|null,
-     *     invalidInjectMemberMessages: list<string>
-     *     }
+     * @return array{argumentEdges: list<ResolutionPlanEdge>, nonInstantiableMessage: string|null}
      */
     private function computeClassParts(string $className): array
     {
-        $parts = [
-            'argumentEdges' => [],
-            'injectMethodEdges' => [],
-            'injectPropertyEdges' => [],
-            'nonInstantiableMessage' => null,
-            'invalidInjectMemberMessages' => [],
-        ];
-
         if (!class_exists($className)) {
-            $parts['nonInstantiableMessage'] = "Class $className does not exist";
-
-            return $parts;
+            return ['argumentEdges' => [], 'nonInstantiableMessage' => "Class $className does not exist"];
         }
 
         $rClass = new ReflectionClass($className);
 
         if (!$rClass->isInstantiable()) {
-            $parts['nonInstantiableMessage'] = "Class $className is not instantiable";
-
-            return $parts;
+            return ['argumentEdges' => [], 'nonInstantiableMessage' => "Class $className is not instantiable"];
         }
+
+        $argumentEdges = [];
 
         foreach ($rClass->getConstructor()?->getParameters() ?? [] as $rParam) {
-            $parts['argumentEdges'][] = self::parameterEdge($rParam);
+            $argumentEdges[] = self::parameterEdge($rParam);
         }
 
-        try {
-            /** @var InjectionPlan $injectionPlan */
-            $injectionPlan = $this->metadataCache->get(
-                self::INJECTION_PLAN_KEY_PREFIX . $className,
-                static fn() => InjectionPlanFactory::create($className),
-            );
-        } catch (InjectorException $exception) {
-            // The class's #[Inject] members are invalid; resolution throws before member injection, so member
-            // edges are moot.
-            $parts['invalidInjectMemberMessages'][] = $exception->getMessage();
-
-            return $parts;
-        }
-
-        foreach ($injectionPlan->methods as $methodName) {
-            $edges = [];
-
-            foreach ((new ReflectionMethod($className, $methodName))->getParameters() as $rParam) {
-                $edges[] = self::parameterEdge($rParam);
-            }
-
-            $parts['injectMethodEdges'][$methodName] = $edges;
-        }
-
-        foreach ($injectionPlan->properties as $propertyName => $key) {
-            $rType = (new ReflectionProperty($className, $propertyName))->getType();
-            $dependency = ResolvableDependencyFactory::createFromType($rType, $key);
-
-            $parts['injectPropertyEdges'][$propertyName] = new ResolutionPlanEdge(
-                $propertyName,
-                $dependency,
-                soft: $rType === null || $rType->allowsNull(),
-                declaredType: $dependency === null && $rType !== null ? (string) $rType : null,
-            );
-        }
-
-        return $parts;
+        return ['argumentEdges' => $argumentEdges, 'nonInstantiableMessage' => null];
     }
 
     private static function parameterEdge(ReflectionParameter $rParam): ResolutionPlanEdge

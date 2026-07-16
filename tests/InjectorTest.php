@@ -117,7 +117,7 @@ final class InjectorTest extends AbstractDependencyInjectionTestCase
         self::assertSame([$obj], $instance->items);
     }
 
-    public function testInstantiate_WhenInjectedPropertyResolutionThrows_ThrowsPropertyResolutionException(): void
+    public function testInjectMembers_WhenInjectedPropertyResolutionThrows_ThrowsPropertyResolutionException(): void
     {
         // Arrange
         $injector = $this->createInjector([
@@ -126,7 +126,7 @@ final class InjectorTest extends AbstractDependencyInjectionTestCase
 
         // Act & Assert
         try {
-            $injector->instantiate(FakeClassWithInjectedProperties::class);
+            $injector->injectMembers($injector->instantiate(FakeClassWithInjectedProperties::class));
             self::fail('Expected a PropertyResolutionException to be thrown');
         } catch (PropertyResolutionException $exception) {
             self::assertSame('publicProperty', $exception->getReflectionProperty()->getName());
@@ -203,7 +203,7 @@ final class InjectorTest extends AbstractDependencyInjectionTestCase
         self::assertInstanceOf(FakeClassNoConstructor::class, $instance);
     }
 
-    public function testInstantiate_WithAutowireFunction_CallsAutowireFunction(): void
+    public function testInjectMembers_WithAutowireFunction_CallsAutowireFunction(): void
     {
         // Arrange
         $obj = new FakeClassNoConstructor();
@@ -212,52 +212,52 @@ final class InjectorTest extends AbstractDependencyInjectionTestCase
         ]);
 
         // Act
-        $instance = $injector->instantiate(FakeClassWithInjectFunction::class);
+        $instance = $injector->injectMembers($injector->instantiate(FakeClassWithInjectFunction::class));
 
         // Assert
         self::assertSame($obj, $instance->obj);
     }
 
-    public function testInstantiate_WithPublicInjectedProperty_AssignsProperty(): void
+    public function testInjectMembers_WithPublicInjectedProperty_AssignsProperty(): void
     {
         // Arrange
         $obj = new FakeClassNoConstructor();
         $injector = $this->createInjector([FakeClassNoConstructor::class => fn() => $obj]);
 
         // Act
-        $instance = $injector->instantiate(FakeClassWithInjectedProperties::class);
+        $instance = $injector->injectMembers($injector->instantiate(FakeClassWithInjectedProperties::class));
 
         // Assert
         self::assertSame($obj, $instance->publicProperty);
     }
 
-    public function testInstantiate_WithProtectedInjectedProperty_AssignsProperty(): void
+    public function testInjectMembers_WithProtectedInjectedProperty_AssignsProperty(): void
     {
         // Arrange
         $obj = new FakeClassNoConstructor();
         $injector = $this->createInjector([FakeClassNoConstructor::class => fn() => $obj]);
 
         // Act
-        $instance = $injector->instantiate(FakeClassWithInjectedProperties::class);
+        $instance = $injector->injectMembers($injector->instantiate(FakeClassWithInjectedProperties::class));
 
         // Assert
         self::assertSame($obj, $instance->getProtectedProperty());
     }
 
-    public function testInstantiate_WithPrivateInjectedProperty_AssignsProperty(): void
+    public function testInjectMembers_WithPrivateInjectedProperty_AssignsProperty(): void
     {
         // Arrange
         $obj = new FakeClassNoConstructor();
         $injector = $this->createInjector([FakeClassNoConstructor::class => fn() => $obj]);
 
         // Act
-        $instance = $injector->instantiate(FakeClassWithInjectedProperties::class);
+        $instance = $injector->injectMembers($injector->instantiate(FakeClassWithInjectedProperties::class));
 
         // Assert
         self::assertSame($obj, $instance->getPrivateProperty());
     }
 
-    public function testInstantiate_WithKeyedInjectedProperty_AssignsKeyedService(): void
+    public function testInjectMembers_WithKeyedInjectedProperty_AssignsKeyedService(): void
     {
         // Arrange
         $keyed = new FakeClassNoConstructor();
@@ -269,13 +269,13 @@ final class InjectorTest extends AbstractDependencyInjectionTestCase
         $injector = Injector::createDefault($container);
 
         // Act
-        $instance = $injector->instantiate(FakeClassWithInjectedProperties::class);
+        $instance = $injector->injectMembers($injector->instantiate(FakeClassWithInjectedProperties::class));
 
         // Assert
         self::assertSame($keyed, $instance->keyedProperty);
     }
 
-    public function testInstantiate_WithUnresolvableNullableInjectedProperty_AssignsNull(): void
+    public function testInjectMembers_WithUnresolvableNullableInjectedProperty_AssignsNull(): void
     {
         // Arrange: FakeInterfaceOne is not registered, so the nullable property falls back to null.
         $injector = $this->createInjector([
@@ -283,39 +283,39 @@ final class InjectorTest extends AbstractDependencyInjectionTestCase
         ]);
 
         // Act
-        $instance = $injector->instantiate(FakeClassWithInjectedProperties::class);
+        $instance = $injector->injectMembers($injector->instantiate(FakeClassWithInjectedProperties::class));
 
         // Assert
         self::assertNull($instance->optionalProperty);
     }
 
-    public function testInstantiate_WithProtectedInjectMethod_CallsMethod(): void
+    public function testInjectMembers_WithProtectedInjectMethod_CallsMethod(): void
     {
         // Arrange
         $obj = new FakeClassNoConstructor();
         $injector = $this->createInjector([FakeClassNoConstructor::class => fn() => $obj]);
 
         // Act
-        $instance = $injector->instantiate(FakeClassWithNonPublicInjectMethods::class);
+        $instance = $injector->injectMembers($injector->instantiate(FakeClassWithNonPublicInjectMethods::class));
 
         // Assert
         self::assertSame($obj, $instance->protectedSetterValue);
     }
 
-    public function testInstantiate_WithPrivateInjectMethod_CallsMethod(): void
+    public function testInjectMembers_WithPrivateInjectMethod_CallsMethod(): void
     {
         // Arrange
         $obj = new FakeClassNoConstructor();
         $injector = $this->createInjector([FakeClassNoConstructor::class => fn() => $obj]);
 
         // Act
-        $instance = $injector->instantiate(FakeClassWithNonPublicInjectMethods::class);
+        $instance = $injector->injectMembers($injector->instantiate(FakeClassWithNonPublicInjectMethods::class));
 
         // Assert
         self::assertSame($obj, $instance->privateSetterValue);
     }
 
-    public function testInstantiate_WithCustomPostInstantiationHook_AppliesHookToInstance(): void
+    public function testInjectMembers_WithCustomPostInstantiationHook_AppliesHookToInstance(): void
     {
         // Arrange: a spy hook records the instances it is applied to.
         $spy = new class implements PostInstantiationHookInterface {
@@ -331,13 +331,35 @@ final class InjectorTest extends AbstractDependencyInjectionTestCase
         $injector = new Injector($resolver, new ReflectionInstantiationStrategy($resolver), $spy);
 
         // Act
-        $instance = $injector->instantiate(FakeClassNoConstructor::class);
+        $instance = $injector->injectMembers($injector->instantiate(FakeClassNoConstructor::class));
 
         // Assert
         self::assertSame([$instance], $spy->injected);
     }
 
-    public function testInstantiate_WithStaticInjectMethod_ThrowsInjectorException(): void
+    public function testInstantiate_WithCustomPostInstantiationHook_DoesNotApplyHook(): void
+    {
+        // Arrange: instantiate only constructs; member injection is the separate injectMembers() step.
+        $spy = new class implements PostInstantiationHookInterface {
+            /** @var list<object> */
+            public array $injected = [];
+
+            public function postInstantiate(object $instance): void
+            {
+                $this->injected[] = $instance;
+            }
+        };
+        $resolver = new ContainerParameterResolver(new FakeContainer());
+        $injector = new Injector($resolver, new ReflectionInstantiationStrategy($resolver), $spy);
+
+        // Act
+        $injector->instantiate(FakeClassNoConstructor::class);
+
+        // Assert
+        self::assertSame([], $spy->injected);
+    }
+
+    public function testInjectMembers_WithStaticInjectMethod_ThrowsInjectorException(): void
     {
         // Arrange: the fake has #[Inject] on a static method, which is always a misconfiguration.
         $injector = $this->createInjector([
@@ -346,30 +368,30 @@ final class InjectorTest extends AbstractDependencyInjectionTestCase
 
         // Act & Assert
         $this->expectException(InjectorException::class);
-        $injector->instantiate(FakeClassWithStaticInjectMethod::class);
+        $injector->injectMembers($injector->instantiate(FakeClassWithStaticInjectMethod::class));
     }
 
-    public function testInstantiate_WithKeyOnPropertyWithoutInject_ThrowsInjectorException(): void
+    public function testInjectMembers_WithKeyOnPropertyWithoutInject_ThrowsInjectorException(): void
     {
         // Arrange: the fake has a #[Key] property that is missing #[Inject], which is always a misconfiguration.
         $injector = $this->createInjector();
 
         // Act & Assert
         $this->expectException(InjectorException::class);
-        $injector->instantiate(FakeClassWithDanglingKeyProperty::class);
+        $injector->injectMembers($injector->instantiate(FakeClassWithDanglingKeyProperty::class));
     }
 
-    public function testInstantiate_WithUnresolvableInjectedProperty_ThrowsPropertyResolutionException(): void
+    public function testInjectMembers_WithUnresolvableInjectedProperty_ThrowsPropertyResolutionException(): void
     {
         // Arrange: nothing is registered, so the first required injected property cannot be resolved.
         $injector = $this->createInjector();
 
         // Act & Assert
         $this->expectException(PropertyResolutionException::class);
-        $injector->instantiate(FakeClassWithInjectedProperties::class);
+        $injector->injectMembers($injector->instantiate(FakeClassWithInjectedProperties::class));
     }
 
-    public function testInstantiate_WithUnresolvableInjectPropertyType_ThrowsInjectorException(): void
+    public function testInjectMembers_WithUnresolvableInjectPropertyType_ThrowsInjectorException(): void
     {
         // Arrange: a scalar #[Inject] property can never resolve to a service, so instantiation must fail rather
         // than silently assign a value.
@@ -377,7 +399,7 @@ final class InjectorTest extends AbstractDependencyInjectionTestCase
 
         // Act & Assert
         $this->expectException(InjectorException::class);
-        $injector->instantiate(FakeClassWithScalarInjectProperty::class);
+        $injector->injectMembers($injector->instantiate(FakeClassWithScalarInjectProperty::class));
     }
 
     public function testInstantiate_WithPlainParameterResolver_UsesReflection(): void
