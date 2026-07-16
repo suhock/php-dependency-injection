@@ -230,7 +230,6 @@ independent `Container`.
  - A required parameter with a builtin type and no default value.
  - A factory whose declared return type can never satisfy the service class it
    was added for.
- - An invalid `#[Inject]` or `#[Key]` member.
  - A service class that can never be instantiated: missing, abstract, or an
    interface.
  - A dependency cycle in which every edge is required, so no member of the
@@ -563,7 +562,7 @@ $builder->addSingletonInstance(ConnectionPool::class, $pool, shouldDispose: fals
    so discarded transients never accumulate.
  - Disposal proceeds in **reverse creation order**. This relies on
    dependencies being constructed before their dependents, which holds for
-   constructor, `Inject`-attribute, and mutator injection. A service that
+   constructor and mutator injection. A service that
    resolves further dependencies lazily (for example by holding the container
    or a `ScopeFactoryInterface` and calling `get()` after construction) can
    invert that order for the pair involved.
@@ -586,11 +585,9 @@ There are a number of built-in ways to specify how services should be resolved:
 
 The container will construct the named class by calling the class's constructor,
 automatically resolving any dependencies in the constructor's parameter list.
-
-If the class has any methods with an `Inject` attribute, the container will
-call those methods, resolving and injecting any dependencies listed in the
-parameter list. Any property with the `Inject` attribute will be resolved
-automatically from the container.
+That is the only injection the container performs on an autowired class; to fill
+a class's `Inject` members, apply the injector's
+[`injectMembers()`](#dependency-injector) as a separate step.
 
 The optional `$mutator` callback allows additional configuration of the object
 after the container has initialized it. The callback must take an instance of
@@ -634,38 +631,20 @@ instance.
 $builder->addSingletonClass(MyService::class);
 ```
 
-###### Using mutators to set optional properties
+###### Using a mutator for post-construction configuration
 
-When the container provides instances of `CurlHttpClient`, after injecting the
-constructor dependencies, it will also set its `logger` property.
+A mutator runs after the constructor to perform initialization the constructor
+cannot express — configuring the instance, or adapting a class whose constructor
+you do not control. Its additional parameters are injected from the container.
+Prefer constructor parameters for a class's own dependencies.
 
 ```php
 $builder->addTransientClass(
     CurlHttpClient::class,
-    function (CurlHttpClient $obj, Logger $logger): void {
-        $obj->setLogger($logger);
+    function (CurlHttpClient $client, Logger $logger): void {
+        $client->setLogger($logger);
     }
 );
-```
-
-###### Using attributes to set optional properties
-
-When the container provides an instance of `CurlHttpClient`, it will see that
-`setLogger()` has an `Inject` attribute and call it passing in a `Logger`
-instance resolved from the container.
-
-```php
-use Suhock\DependencyInjection\Inject;
-
-class CurlHttpClient
-{
-    #[Inject]
-    public function setLogger(Logger $logger): void {
-        $this->logger = $logger;
-    }
-    
-    // ...
-}
 ```
 
 #### Specify an implementing class name
@@ -977,7 +956,8 @@ class AdminController
 The library also provides a dependency injector, `Injector` that can be used for
 directly calling constructors and functions, injecting any dependencies from a
 container. The injector also lets you directly inject specific values for named
-or indexed parameters.
+or indexed parameters, and fills a class's `Inject` members on an
+already-constructed instance via `injectMembers()`.
 
 ```php
 class Injector
@@ -997,6 +977,13 @@ class Injector
      * @return TClass
      */
     public function instantiate(string $className, array $params = []): object;
+
+    /**
+     * @template TClass of object
+     * @param TClass $instance
+     * @return TClass
+     */
+    public function injectMembers(object $instance): object;
 }
 ```
 
