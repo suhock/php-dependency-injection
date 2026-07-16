@@ -37,9 +37,7 @@ use Suhock\DependencyInjection\Fakes\FakeContainer;
 use Suhock\DependencyInjection\Fakes\FakeInterfaceOne;
 use Suhock\DependencyInjection\Fakes\FakeInterfaceThree;
 use Suhock\DependencyInjection\Fakes\FakeInterfaceTwo;
-use Suhock\DependencyInjection\Injection\InjectAttributeMemberInjector;
 use Suhock\DependencyInjection\Instantiation\InstantiationStrategyInterface;
-use Suhock\DependencyInjection\Instantiation\PostInstantiationHookInterface;
 use Suhock\DependencyInjection\Instantiation\ReflectionInstantiationStrategy;
 use Suhock\DependencyInjection\Resolver\ContainerParameterResolver;
 use Suhock\DependencyInjection\Resolver\ParameterResolverInterface;
@@ -315,50 +313,6 @@ final class InjectorTest extends AbstractDependencyInjectionTestCase
         self::assertSame($obj, $instance->privateSetterValue);
     }
 
-    public function testInjectMembers_WithCustomPostInstantiationHook_AppliesHookToInstance(): void
-    {
-        // Arrange: a spy hook records the instances it is applied to.
-        $spy = new class implements PostInstantiationHookInterface {
-            /** @var list<object> */
-            public array $injected = [];
-
-            public function postInstantiate(object $instance): void
-            {
-                $this->injected[] = $instance;
-            }
-        };
-        $resolver = new ContainerParameterResolver(new FakeContainer());
-        $injector = new Injector($resolver, new ReflectionInstantiationStrategy($resolver), $spy);
-
-        // Act
-        $instance = $injector->injectMembers($injector->instantiate(FakeClassNoConstructor::class));
-
-        // Assert
-        self::assertSame([$instance], $spy->injected);
-    }
-
-    public function testInstantiate_WithCustomPostInstantiationHook_DoesNotApplyHook(): void
-    {
-        // Arrange: instantiate only constructs; member injection is the separate injectMembers() step.
-        $spy = new class implements PostInstantiationHookInterface {
-            /** @var list<object> */
-            public array $injected = [];
-
-            public function postInstantiate(object $instance): void
-            {
-                $this->injected[] = $instance;
-            }
-        };
-        $resolver = new ContainerParameterResolver(new FakeContainer());
-        $injector = new Injector($resolver, new ReflectionInstantiationStrategy($resolver), $spy);
-
-        // Act
-        $injector->instantiate(FakeClassNoConstructor::class);
-
-        // Assert
-        self::assertSame([], $spy->injected);
-    }
-
     public function testInjectMembers_WithStaticInjectMethod_ThrowsInjectorException(): void
     {
         // Arrange: the fake has #[Inject] on a static method, which is always a misconfiguration.
@@ -419,11 +373,7 @@ final class InjectorTest extends AbstractDependencyInjectionTestCase
                 return $this->dependency;
             }
         };
-        $injector = new Injector(
-            $resolver,
-            new ReflectionInstantiationStrategy($resolver),
-            new InjectAttributeMemberInjector($resolver),
-        );
+        $injector = new Injector($resolver, new ReflectionInstantiationStrategy($resolver));
 
         // Act
         $instance = $injector->instantiate(FakeClassWithConstructor::class);
@@ -446,7 +396,7 @@ final class InjectorTest extends AbstractDependencyInjectionTestCase
             }
         };
         $resolver = new ContainerParameterResolver(new FakeContainer());
-        $injector = new Injector($resolver, $strategy, new InjectAttributeMemberInjector($resolver));
+        $injector = new Injector($resolver, $strategy);
 
         // Act
         $instance = $injector->instantiate(FakeClassNoConstructor::class);
@@ -466,7 +416,7 @@ final class InjectorTest extends AbstractDependencyInjectionTestCase
             }
         };
         $resolver = new ContainerParameterResolver(new FakeContainer());
-        $injector = new Injector($resolver, $declining, new InjectAttributeMemberInjector($resolver));
+        $injector = new Injector($resolver, $declining);
 
         // Act & Assert
         $this->expectException(InjectorException::class);

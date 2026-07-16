@@ -16,7 +16,6 @@ use Suhock\DependencyInjection\Container;
 use Suhock\DependencyInjection\ContainerBuilder;
 use Suhock\DependencyInjection\Fakes\FakeClassNoConstructor;
 use Suhock\DependencyInjection\Fakes\FakeUnitEnum;
-use Suhock\DependencyInjection\Injection\InjectAttributeMemberInjector;
 use Suhock\DependencyInjection\Injector;
 use Suhock\DependencyInjection\Instantiation\ReflectionInstantiationStrategy;
 use Suhock\DependencyInjection\Key;
@@ -44,11 +43,7 @@ final class ContainerParameterResolverTest extends AbstractDependencyInjectionTe
 
         $container = $builder->build();
         $resolver = new ContainerParameterResolver($container);
-        $injector = new Injector(
-            $resolver,
-            new ReflectionInstantiationStrategy($resolver),
-            new InjectAttributeMemberInjector($resolver),
-        );
+        $injector = new Injector($resolver, new ReflectionInstantiationStrategy($resolver));
 
         return [$container, $injector];
     }

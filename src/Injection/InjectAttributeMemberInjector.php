@@ -16,17 +16,15 @@ use ReflectionProperty;
 use Suhock\DependencyInjection\Cache\CacheInterface;
 use Suhock\DependencyInjection\Cache\MetadataCache;
 use Suhock\DependencyInjection\Inject;
-use Suhock\DependencyInjection\Instantiation\PostInstantiationHookInterface;
 use Suhock\DependencyInjection\Resolver\ArgumentResolver;
 use Suhock\DependencyInjection\Resolver\ParameterResolverInterface;
 
 /**
- * Post-instantiation hook that fills the {@see Inject} injection points on a new instance, invoking its Inject methods
- * and assigning its Inject properties, resolving values through a {@see ParameterResolverInterface}. The injection
- * points are computed via reflection once per class and cached as an {@see InjectionPlan}, so subsequent injections
- * skip the scan.
+ * Fills the {@see Inject} injection points on an instance, invoking its Inject methods and assigning its Inject
+ * properties, resolving values through a {@see ParameterResolverInterface}. The injection points are computed via
+ * reflection once per class and cached as an {@see InjectionPlan}, so subsequent injections skip the scan.
  */
-final class InjectAttributeMemberInjector implements PostInstantiationHookInterface
+final class InjectAttributeMemberInjector
 {
     /** Cache id prefix for the {@see InjectionPlan} of a class. */
     private const INJECTION_PLAN_CACHE_PREFIX = 'sdi:injectionPlan:';
@@ -48,7 +46,7 @@ final class InjectAttributeMemberInjector implements PostInstantiationHookInterf
         $this->argumentResolver = new ArgumentResolver($resolver);
     }
 
-    public function postInstantiate(object $instance): void
+    public function inject(object $instance): void
     {
         $plan = $this->getInjectionPlan($instance::class);
 
