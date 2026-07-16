@@ -77,18 +77,14 @@ final class ContainerBuilder implements ContainerBuilderInterface
      * @param InstanceProviderInterface<TClass> $instanceProvider The instance provider to use to create new instances
      * @param bool $shouldDispose Whether the container should dispose the disposable instances it creates for this
      *     service; pass false when their disposal is the responsibility of something outside the container
-     *
-     * @return $this
      */
     private function add(
         string $className,
         LifetimeStrategy $lifetimeStrategy,
         InstanceProviderInterface $instanceProvider,
         bool $shouldDispose = true,
-    ): self {
+    ): void {
         $this->addDescriptor(new Descriptor($className, $lifetimeStrategy, $instanceProvider, $shouldDispose));
-
-        return $this;
     }
 
     /**
@@ -102,8 +98,6 @@ final class ContainerBuilder implements ContainerBuilderInterface
      * @param InstanceProviderInterface<TClass> $instanceProvider The instance provider to use to create new instances
      * @param bool $shouldDispose Whether the container should dispose the disposable instances it creates for this
      *     service; pass false when their disposal is the responsibility of something outside the container
-     *
-     * @return $this
      */
     private function addKeyed(
         string $className,
@@ -111,13 +105,11 @@ final class ContainerBuilder implements ContainerBuilderInterface
         LifetimeStrategy $lifetimeStrategy,
         InstanceProviderInterface $instanceProvider,
         bool $shouldDispose = true,
-    ): self {
+    ): void {
         $this->addKeyedDescriptor(
             new Descriptor($className, $lifetimeStrategy, $instanceProvider, $shouldDispose),
             $key,
         );
-
-        return $this;
     }
 
     /**
@@ -126,7 +118,7 @@ final class ContainerBuilder implements ContainerBuilderInterface
      *
      * @return $this
      */
-    public function remove(string $className, string|UnitEnum|null $key = null): self
+    public function remove(string $className, string|UnitEnum|null $key = null): static
     {
         $this->removeDescriptor($className, $key);
 
@@ -138,7 +130,7 @@ final class ContainerBuilder implements ContainerBuilderInterface
      *
      * @return $this
      */
-    public function configure(callable $configure): self
+    public function configure(callable $configure): static
     {
         $configure($this);
 
