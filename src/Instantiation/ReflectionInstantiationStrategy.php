@@ -55,15 +55,10 @@ final class ReflectionInstantiationStrategy implements InstantiationStrategyInte
             throw new InjectorException("Class $className is not instantiable");
         }
 
-        try {
-            /** @var TClass $instance */
-            $instance = $rClass->newInstanceArgs(
-                $this->argumentResolver->resolve($rClass->getConstructor()?->getParameters() ?? [], $params),
-            );
-        } catch (ReflectionException $e) {
-            // The check for !isInstantiable() should make this unreachable
-            throw new InjectorException("Could not instantiate $className", $e);
-        }
+        /** @var TClass $instance */
+        $instance = $rClass->newInstanceArgs(
+            $this->argumentResolver->resolve($rClass->getConstructor()?->getParameters() ?? [], $params),
+        );
 
         return $instance;
     }
