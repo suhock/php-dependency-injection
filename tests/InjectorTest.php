@@ -606,7 +606,7 @@ final class InjectorTest extends AbstractDependencyInjectionTestCase
 
     public function testInstantiate_WithLazyInterfaceDependency_ThrowsInjectorException(): void
     {
-        // Arrange: without a compiled plan the injector cannot discover the concrete class behind the interface.
+        // Arrange: a container that cannot report concrete classes (only has/get) leaves the interface unresolvable.
         $injector = $this->createInjector([
             FakeLazyInterface::class => static fn(): FakeLazyInterface => new FakeLazyService(new FakeLazyCounter()),
         ]);
@@ -614,5 +614,27 @@ final class InjectorTest extends AbstractDependencyInjectionTestCase
         // Act / Assert
         $this->expectException(InjectorException::class);
         $injector->instantiate(FakeLazyInterfaceConsumer::class);
+    }
+
+    public function testInstantiate_WithLazyInterfaceDependency_BackedByContainer_DefersUntilFirstUse(): void
+    {
+        // Arrange: a real container reports the concrete class behind the interface, so the injector can proxy it.
+        $counter = new FakeLazyCounter();
+        $container = self::buildContainer(
+            static fn(ContainerBuilder $builder) => $builder
+                ->addSingletonInstance(FakeLazyCounter::class, $counter)
+                ->addTransientClass(FakeLazyService::class)
+                ->addTransientImplementation(FakeLazyInterface::class, FakeLazyService::class),
+        );
+        $injector = Injector::createDefault($container);
+
+        // Act
+        $consumer = $injector->instantiate(FakeLazyInterfaceConsumer::class);
+
+        // Assert
+        self::assertInstanceOf(FakeLazyInterface::class, $consumer->service);
+        self::assertSame(0, $counter->constructions);
+        self::assertSame('pong', $consumer->service->ping());
+        self::assertSame(1, $counter->constructions);
     }
 }

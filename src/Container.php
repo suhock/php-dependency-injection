@@ -38,7 +38,11 @@ use function spl_object_id;
  * the resolution plans compiled at build time. The descriptor map and plan set never change after construction; no
  * dependency graph knowledge is derived at resolution time.
  */
-final class Container implements ContainerInterface, DisposableInterface, ScopeFactoryInterface
+final class Container implements
+    ContainerInterface,
+    DisposableInterface,
+    ScopeFactoryInterface,
+    ConcreteClassNameProviderInterface
 {
     /** @var array<string, Descriptor<object>> */
     private readonly array $descriptors;
@@ -218,6 +222,70 @@ final class Container implements ContainerInterface, DisposableInterface, ScopeF
         $this->ensureNotDisposed();
 
         return isset($this->descriptors[DescriptorId::compute($className, $key)]);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getConcreteClassName(string $className, string|UnitEnum|null $key = null): ?string
+    {
+        return $this->concreteClassName(DescriptorId::compute($className, $key), []);
+    }
+
+    /**
+     * Walks a service's compiled plan to the concrete class it produces, following implementation targets. Reads
+     * only the plan, so it never constructs anything.
+     *
+     * @param array<string, true> $seen Descriptor ids already visited, to break an implementation cycle
+     *
+     * @return class-string|null
+     */
+    private function concreteClassName(string $id, array $seen): ?string
+    {
+        if (isset($seen[$id]) || !isset($this->plans[$id])) {
+            return null;
+        }
+
+        $seen[$id] = true;
+        $plan = $this->plans[$id];
+
+        return match ($plan->kind) {
+            ResolutionPlanKind::AutowiredClass => self::concreteClass($plan->className),
+            ResolutionPlanKind::Factory => self::concreteClass($plan->declaredFactoryReturnType)
+                ?? self::concreteClass($plan->className),
+            ResolutionPlanKind::Implementation => $plan->implementationTarget === null
+                ? null
+                : $this->concreteClassName(DescriptorId::compute($plan->implementationTarget, null), $seen),
+            ResolutionPlanKind::Leaf => self::leafConcreteClass($this->descriptors[$id] ?? null),
+        };
+    }
+
+    /**
+     * The given name when it is a concrete, instantiable class; <code>null</code> for interfaces, abstract classes,
+     * and absent or non-class names.
+     *
+     * @return class-string|null
+     */
+    private static function concreteClass(?string $className): ?string
+    {
+        return $className !== null && class_exists($className) && new ReflectionClass($className)->isInstantiable()
+            ? $className
+            : null;
+    }
+
+    /**
+     * The concrete class of a leaf service: the held instance's class, known without constructing it. A
+     * context-dependent selector produces its instance only at resolution time, so its class is not statically known.
+     *
+     * @param Descriptor<object>|null $descriptor
+     *
+     * @return class-string|null
+     */
+    private static function leafConcreteClass(?Descriptor $descriptor): ?string
+    {
+        $provider = $descriptor?->instanceProvider;
+
+        return $provider instanceof ObjectInstanceProvider ? $provider->instance::class : null;
     }
 
     /**

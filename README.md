@@ -1198,10 +1198,13 @@ registered class or its declared return type is a concrete class. When neither
 holds, `build()` reports the `#[Lazy]` parameter as a build error rather than
 resolving it eagerly.
 
-The standalone [Dependency Injector](#dependency-injector) also honors `#[Lazy]`,
-but without a compiled plan it can only build a proxy for a parameter whose
-declared type is itself a concrete class; a `#[Lazy]` parameter typed as an
-interface throws an `InjectorException`.
+The standalone [Dependency Injector](#dependency-injector) also honors `#[Lazy]`.
+A proxy needs a concrete class up front, so the injector takes it from the
+parameter's own type when it is a concrete class. For an interface-typed
+parameter it asks the backing container for the concrete class it resolves to.
+If the backing container cannot report it, or the service has no
+statically known concrete class, the `#[Lazy]` parameter throws an
+`InjectorException`.
 
 ## Error handling
 

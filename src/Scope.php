@@ -24,7 +24,7 @@ use UnitEnum;
  * @internal Obtain instances through {@see ScopeFactoryInterface::createScope()}; see {@see ScopeInterface} for the
  *     public contract.
  */
-final class Scope implements ScopeInterface
+final class Scope implements ScopeInterface, ConcreteClassNameProviderInterface
 {
     private readonly ResolutionContext $resolutionContext;
     /** @var Closure(class-string, string|UnitEnum|null, ResolutionContext):object */
@@ -69,6 +69,15 @@ final class Scope implements ScopeInterface
         $this->ensureNotDisposed();
 
         return $this->rootContainer->has($className, $key);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getConcreteClassName(string $className, string|UnitEnum|null $key = null): ?string
+    {
+        // A service's concrete class is fixed by the shared configuration, independent of the resolving scope.
+        return $this->rootContainer->getConcreteClassName($className, $key);
     }
 
     public function dispose(): void

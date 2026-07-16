@@ -12,14 +12,14 @@ declare(strict_types=1);
 namespace Suhock\DependencyInjection\Resolver;
 
 use ReflectionClass;
-use ReflectionNamedType;
 use ReflectionParameter;
-use ReflectionType;
 use Suhock\DependencyInjection\ClassResolutionException;
+use Suhock\DependencyInjection\ConcreteClassNameProviderInterface;
 use Suhock\DependencyInjection\ContainerInterface;
 use Suhock\DependencyInjection\InjectorException;
 use Suhock\DependencyInjection\Key;
 use Suhock\DependencyInjection\Lazy;
+use UnitEnum;
 
 use function class_exists;
 use function count;
@@ -30,9 +30,10 @@ use function count;
  * itself is inspected. The parameter's type maps to a single {@see ResolvableDependency}, resolved through
  * {@see DependencyResolver}.
  *
- * A {@see Lazy} parameter is satisfied with a native lazy proxy that defers resolution until first use. Without a
- * compiled plan the injector can only proxy a parameter whose declared type is itself a concrete class; a
- * {@see Lazy} parameter typed as an interface or abstract class cannot be built here and is rejected.
+ * A {@see Lazy} parameter is satisfied with a native lazy proxy that defers resolution until first use. A proxy needs
+ * a concrete class up front: the injector takes it from the parameter's own type when that is a concrete class, or,
+ * when the type is an interface, from a container that implements {@see ConcreteClassNameProviderInterface}. When
+ * neither yields a lazy-able concrete class, the {@see Lazy} parameter is rejected.
  *
  * @internal
  */
@@ -68,11 +69,10 @@ final class ContainerParameterResolver implements ParameterResolverInterface
     }
 
     /**
-     * Resolves the parameter's dependency to an instance lazily when the parameter carries {@see Lazy} or
+     * Resolves the parameter's dependency to an instance lazily when the parameter carries {@see Lazy}, or
      * <code>null</code> when the dependency is absent, leaving the soft fallback to {@see resolveParameter()}.
      *
-     * @throws InjectorException If a {@see Lazy} parameter's declared type is not a concrete class the injector can
-     *     construct lazily
+     * @throws InjectorException If a {@see Lazy} parameter cannot be built as a lazy object
      * @throws ClassResolutionException If a candidate fails while resolving its own graph
      */
     private function tryResolve(ReflectionParameter $rParam): ?object
@@ -95,17 +95,16 @@ final class ContainerParameterResolver implements ParameterResolverInterface
      * (its presence is tested without constructing anything, so a soft parameter still falls back to its default or
      * <code>null</code>). The proxy resolves the real instance from the container on first use.
      *
-     * @throws InjectorException If the declared type is not a single concrete class a lazy proxy can be built for
+     * @throws InjectorException If the dependency cannot be built as a lazy object
      */
     private function resolveLazy(ReflectionParameter $rParam, ResolvableDependency $dependency): ?object
     {
-        $className = self::lazyProxyClass($rParam->getType());
+        $className = self::singleType($dependency);
 
         if ($className === null) {
             throw new InjectorException(
-                'Cannot lazily inject parameter $' . $rParam->getName() . ': its declared type is not a single'
-                    . ' concrete class the injector can construct lazily. Resolve it through the container or declare'
-                    . ' a concrete type.',
+                'Cannot lazily inject parameter $' . $rParam->getName()
+                    . ': #[Lazy] requires a single class or interface type.',
             );
         }
 
@@ -113,27 +112,88 @@ final class ContainerParameterResolver implements ParameterResolverInterface
             return null;
         }
 
-        return new ReflectionClass($className)->newLazyProxy(
+        $proxyClass = $this->lazyProxyClass($className, $dependency->key);
+
+        if ($proxyClass === null) {
+            throw new InjectorException(
+                'Cannot lazily inject parameter $' . $rParam->getName() . " ($className): the injector cannot"
+                    . ' determine a concrete class with properties to defer. Resolve it through a container that'
+                    . ' provides concrete class names, or declare a concrete type.',
+            );
+        }
+
+        return new ReflectionClass($proxyClass)->newLazyProxy(
             fn(object $proxy): object => DependencyResolver::resolve($dependency, $this->container)
                 ?? throw new ParameterResolutionException($rParam),
         );
     }
 
     /**
-     * The parameter's declared type when it is a single, non-builtin, concrete, instantiable class a lazy proxy can
-     * reflect; <code>null</code> for interfaces, abstract classes, unions, intersections, builtins, and untyped
-     * parameters.
+     * The single class-or-interface type the dependency resolves by, or <code>null</code> for a union or
+     * intersection (which cannot map to one lazy object).
      *
      * @return class-string|null
      */
-    private static function lazyProxyClass(?ReflectionType $rType): ?string
+    private static function singleType(ResolvableDependency $dependency): ?string
     {
-        if (!$rType instanceof ReflectionNamedType || $rType->isBuiltin()) {
+        if (count($dependency->alternatives) !== 1) {
             return null;
         }
 
-        $className = $rType->getName();
+        $alternative = $dependency->alternatives[0];
 
-        return class_exists($className) && new ReflectionClass($className)->isInstantiable() ? $className : null;
+        return count($alternative) === 1 ? $alternative[0] : null;
+    }
+
+    /**
+     * The concrete, lazy-able class a proxy of the dependency can reflect: the type itself when it is such a class,
+     * otherwise the concrete class a {@see ConcreteClassNameProviderInterface} container reports for it.
+     *
+     * @param class-string $className
+     *
+     * @return class-string|null
+     */
+    private function lazyProxyClass(string $className, string|UnitEnum|null $key): ?string
+    {
+        if (self::classCanBeLazy($className)) {
+            return $className;
+        }
+
+        if ($this->container instanceof ConcreteClassNameProviderInterface) {
+            $concrete = $this->container->getConcreteClassName($className, $key);
+
+            if ($concrete !== null && self::classCanBeLazy($concrete)) {
+                return $concrete;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Whether a class can be represented as a PHP native lazy object: a concrete, instantiable class that declares at
+     * least one non-static property (PHP has no state to defer for a property-less class).
+     *
+     * @param class-string $className
+     */
+    private static function classCanBeLazy(string $className): bool
+    {
+        if (!class_exists($className)) {
+            return false;
+        }
+
+        $rClass = new ReflectionClass($className);
+
+        if (!$rClass->isInstantiable()) {
+            return false;
+        }
+
+        foreach ($rClass->getProperties() as $property) {
+            if (!$property->isStatic()) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

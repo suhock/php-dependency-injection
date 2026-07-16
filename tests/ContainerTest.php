@@ -14,6 +14,7 @@ namespace Suhock\DependencyInjection;
 use Closure;
 use Suhock\DependencyInjection\Builder\Descriptor;
 use Suhock\DependencyInjection\Fakes\FakeClassNoConstructor;
+use Suhock\DependencyInjection\Fakes\FakeClassWithConstructor;
 use Suhock\DependencyInjection\Fakes\FakeInterfaceOne;
 use Suhock\DependencyInjection\InstanceProvider\ContextInstanceProvider;
 use Suhock\DependencyInjection\InstanceProvider\InstanceTypeException;
@@ -234,5 +235,70 @@ final class ContainerTest extends AbstractDependencyInjectionTestCase
 
         // Assert
         self::assertFalse($result);
+    }
+
+    public function testGetConcreteClassName_WithAutowiredClass_ReturnsTheClass(): void
+    {
+        $container = self::buildContainer(
+            static fn(ContainerBuilder $builder) => $builder->addTransientClass(FakeClassNoConstructor::class),
+        );
+
+        self::assertSame(
+            FakeClassNoConstructor::class,
+            $container->getConcreteClassName(FakeClassNoConstructor::class),
+        );
+    }
+
+    public function testGetConcreteClassName_WithImplementation_ReturnsConcreteTarget(): void
+    {
+        $container = self::buildContainer(
+            static fn(ContainerBuilder $builder) => $builder
+                ->addTransientClass(FakeClassNoConstructor::class)
+                ->addTransientClass(FakeClassWithConstructor::class)
+                ->addTransientImplementation(FakeInterfaceOne::class, FakeClassWithConstructor::class),
+        );
+
+        self::assertSame(FakeClassWithConstructor::class, $container->getConcreteClassName(FakeInterfaceOne::class));
+    }
+
+    public function testGetConcreteClassName_WithFactoryConcreteReturnType_ReturnsIt(): void
+    {
+        $container = self::buildContainer(
+            static fn(ContainerBuilder $builder) => $builder->addTransientFactory(
+                FakeInterfaceOne::class,
+                static fn(): FakeClassWithConstructor => new FakeClassWithConstructor(new FakeClassNoConstructor()),
+            ),
+        );
+
+        self::assertSame(FakeClassWithConstructor::class, $container->getConcreteClassName(FakeInterfaceOne::class));
+    }
+
+    public function testGetConcreteClassName_WithFactoryInterfaceReturnType_ReturnsNull(): void
+    {
+        $container = self::buildContainer(
+            static fn(ContainerBuilder $builder) => $builder->addTransientFactory(
+                FakeInterfaceOne::class,
+                static fn(): FakeInterfaceOne => new FakeClassWithConstructor(new FakeClassNoConstructor()),
+            ),
+        );
+
+        self::assertNull($container->getConcreteClassName(FakeInterfaceOne::class));
+    }
+
+    public function testGetConcreteClassName_WithHeldInstance_ReturnsTheInstanceClass(): void
+    {
+        $instance = new FakeClassWithConstructor(new FakeClassNoConstructor());
+        $container = self::buildContainer(
+            static fn(ContainerBuilder $builder) => $builder->addSingletonInstance(FakeInterfaceOne::class, $instance),
+        );
+
+        self::assertSame(FakeClassWithConstructor::class, $container->getConcreteClassName(FakeInterfaceOne::class));
+    }
+
+    public function testGetConcreteClassName_WhenNotRegistered_ReturnsNull(): void
+    {
+        $container = self::buildContainer(static fn(ContainerBuilder $builder) => null);
+
+        self::assertNull($container->getConcreteClassName(FakeClassNoConstructor::class));
     }
 }
