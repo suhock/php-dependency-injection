@@ -22,8 +22,8 @@ use UnitEnum;
  * Resolves function parameters and injected properties from a {@see ContainerInterface}, honoring the {@see Key}
  * attribute on a parameter. A keyed injection point is resolved absolutely against that key; an unkeyed one is
  * resolved by type. Only the injection point itself is inspected. No scope is tracked and the declaring function and
- * class are not traversed. Every path resolves through a single {@see ResolvableDependency} plan, so the resolution
- * algorithm lives in one place.
+ * class are not traversed. Each path builds a single {@see ResolvableDependency} and resolves it through
+ * {@see DependencyResolver}, so parameter and property resolution share one algorithm with the container.
  *
  * @internal
  */
@@ -41,7 +41,7 @@ final class ContainerParameterResolver implements ParameterResolverInterface
             $dependency = ResolvableDependencyFactory::createFromParameter($rParam);
 
             if ($dependency !== null) {
-                $instance = $this->tryResolveDependency($dependency);
+                $instance = DependencyResolver::resolve($dependency, $this->container);
 
                 if ($instance !== null) {
                     return $instance;
@@ -70,7 +70,7 @@ final class ContainerParameterResolver implements ParameterResolverInterface
 
         if ($dependency !== null) {
             try {
-                $instance = $this->tryResolveDependency($dependency);
+                $instance = DependencyResolver::resolve($dependency, $this->container);
 
                 if ($instance !== null) {
                     return $instance;
@@ -85,60 +85,5 @@ final class ContainerParameterResolver implements ParameterResolverInterface
         }
 
         throw new PropertyResolutionException($rProperty, $deferredException);
-    }
-
-    /**
-     * The single resolution algorithm shared by every path: tries each alternative in priority order and returns the
-     * first that resolves, or <code>null</code> if none do (so the caller can apply its fallbacks).
-     */
-    private function tryResolveDependency(ResolvableDependency $dependency): ?object
-    {
-        foreach ($dependency->alternatives as $alternative) {
-            $instance = $this->resolveAlternative($alternative, $dependency->key);
-
-            if ($instance !== null) {
-                return $instance;
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * Resolves a single conjunction: the first available member whose instance satisfies every member type. For a
-     * lone class that is simply "resolve it if the container has it"; for an intersection it enforces the is-a-all
-     * check.
-     *
-     * @param non-empty-list<class-string> $alternative
-     */
-    private function resolveAlternative(array $alternative, string|UnitEnum|null $key): ?object
-    {
-        foreach ($alternative as $className) {
-            if (!$this->container->has($className, $key)) {
-                continue;
-            }
-
-            $instance = $this->container->get($className, $key);
-
-            if ($this->instanceSatisfiesAll($instance, $alternative)) {
-                return $instance;
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * @param non-empty-list<class-string> $classNames
-     */
-    private function instanceSatisfiesAll(object $instance, array $classNames): bool
-    {
-        foreach ($classNames as $className) {
-            if (!$instance instanceof $className) {
-                return false;
-            }
-        }
-
-        return true;
     }
 }

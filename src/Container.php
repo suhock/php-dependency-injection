@@ -23,6 +23,7 @@ use Suhock\DependencyInjection\InstanceProvider\InstanceProviderInterface;
 use Suhock\DependencyInjection\InstanceProvider\InstanceTypeException;
 use Suhock\DependencyInjection\InstanceProvider\ObjectInstanceProvider;
 use Suhock\DependencyInjection\Lifetime\InstanceStore;
+use Suhock\DependencyInjection\Resolver\DependencyResolver;
 use Suhock\DependencyInjection\Resolver\ParameterResolutionException;
 use Suhock\DependencyInjection\Resolver\PropertyResolutionException;
 use Suhock\DependencyInjection\Resolver\ResolutionPlan;
@@ -425,20 +426,12 @@ final class Container implements ContainerInterface, DisposableInterface, ScopeF
 
         if ($dependency !== null) {
             try {
-                foreach ($dependency->alternatives as $alternative) {
-                    foreach ($alternative as $candidate) {
-                        if (!isset($this->descriptors[DescriptorId::compute($candidate, $dependency->key)])) {
-                            continue;
-                        }
+                $instance = DependencyResolver::resolve($dependency, $ctx->container);
 
-                        $instance = $ctx->container->get($candidate, $dependency->key);
+                if ($instance !== null) {
+                    $value = $instance;
 
-                        if (self::satisfiesAll($instance, $alternative)) {
-                            $value = $instance;
-
-                            return true;
-                        }
-                    }
+                    return true;
                 }
             } catch (ClassResolutionException $exception) {
                 // A candidate failed while resolving its own graph: a soft edge self-heals; a required edge defers
@@ -456,19 +449,5 @@ final class Container implements ContainerInterface, DisposableInterface, ScopeF
         }
 
         return false;
-    }
-
-    /**
-     * @param non-empty-list<class-string> $conjunction
-     */
-    private static function satisfiesAll(object $instance, array $conjunction): bool
-    {
-        foreach ($conjunction as $className) {
-            if (!$instance instanceof $className) {
-                return false;
-            }
-        }
-
-        return true;
     }
 }
