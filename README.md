@@ -1267,9 +1267,9 @@ exceptions into their PSR-11 counterparts.
 
 ### PHPStan extensions
 
-The [`suhock/dependency-injection-phpstan`](https://github.com/suhock/php-dependency-injection-phpstan) package provides
-[PHPStan](https://phpstan.org/) extensions that provide analyses relvant to this
-library. Add it to `require-dev` in projects that use these attributes.
+[PHPStan](https://phpstan.org/) extensions for this library are published in the separate
+[`suhock/dependency-injection-phpstan`](https://github.com/suhock/php-dependency-injection-phpstan)
+package. Add it to `require-dev`:
 
 ```json
 {
