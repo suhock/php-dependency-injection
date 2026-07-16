@@ -29,6 +29,7 @@ use Suhock\DependencyInjection\Fakes\FakeClassWithInjectFunction;
 use Suhock\DependencyInjection\Fakes\FakeClassWithIntersectionDependency;
 use Suhock\DependencyInjection\Fakes\FakeClassWithKeyedDependency;
 use Suhock\DependencyInjection\Fakes\FakeClassWithNonPublicInjectMethods;
+use Suhock\DependencyInjection\Fakes\FakeClassWithScalarInjectProperty;
 use Suhock\DependencyInjection\Fakes\FakeClassWithStaticInjectMethod;
 use Suhock\DependencyInjection\Fakes\FakeClassWithUnionDependency;
 use Suhock\DependencyInjection\Fakes\FakeClassWithVariadicConstructor;
@@ -366,6 +367,17 @@ final class InjectorTest extends AbstractDependencyInjectionTestCase
         // Act & Assert
         $this->expectException(PropertyResolutionException::class);
         $injector->instantiate(FakeClassWithInjectedProperties::class);
+    }
+
+    public function testInstantiate_WithUnresolvableInjectPropertyType_ThrowsInjectorException(): void
+    {
+        // Arrange: a scalar #[Inject] property can never resolve to a service, so instantiation must fail rather
+        // than silently assign a value.
+        $injector = $this->createInjector();
+
+        // Act & Assert
+        $this->expectException(InjectorException::class);
+        $injector->instantiate(FakeClassWithScalarInjectProperty::class);
     }
 
     public function testInstantiate_WithPlainParameterResolver_UsesReflection(): void

@@ -15,7 +15,10 @@ use PHPUnit\Framework\TestCase;
 use Suhock\DependencyInjection\Fakes\FakeClassWithDanglingKeyProperty;
 use Suhock\DependencyInjection\Fakes\FakeClassWithInjectedProperties;
 use Suhock\DependencyInjection\Fakes\FakeClassWithInjectFunction;
+use Suhock\DependencyInjection\Fakes\FakeClassWithObjectInjectProperty;
+use Suhock\DependencyInjection\Fakes\FakeClassWithScalarInjectProperty;
 use Suhock\DependencyInjection\Fakes\FakeClassWithStaticInjectMethod;
+use Suhock\DependencyInjection\Fakes\FakeClassWithUntypedInjectProperty;
 use Suhock\DependencyInjection\InjectorException;
 
 /**
@@ -75,6 +78,25 @@ final class InjectionPlanFactoryTest extends TestCase
             self::fail('Expected ' . InjectorException::class);
         } catch (InjectorException $exception) {
             self::assertStringContainsString('dependency', $exception->getMessage());
+        }
+    }
+
+    public function testCreate_WithUnresolvableInjectPropertyType_ThrowsInjectorException(): void
+    {
+        $classNames = [
+            FakeClassWithUntypedInjectProperty::class,
+            FakeClassWithScalarInjectProperty::class,
+            FakeClassWithObjectInjectProperty::class,
+        ];
+
+        // Act & Assert
+        foreach ($classNames as $className) {
+            try {
+                InjectionPlanFactory::create($className);
+                self::fail('Expected ' . InjectorException::class . " for $className");
+            } catch (InjectorException $exception) {
+                self::assertStringContainsString('cannot be resolved', $exception->getMessage());
+            }
         }
     }
 }

@@ -15,6 +15,7 @@ use ReflectionClass;
 use Suhock\DependencyInjection\Inject;
 use Suhock\DependencyInjection\InjectorException;
 use Suhock\DependencyInjection\Key;
+use Suhock\DependencyInjection\Resolver\ResolvableDependencyFactory;
 
 use function count;
 
@@ -28,8 +29,9 @@ final class InjectionPlanFactory
     /**
      * @param class-string $className
      *
-     * @throws InjectorException if a method with an {@see Inject} attribute is static, or a property has a
-     *     {@see Key} attribute but no {@see Inject} attribute
+     * @throws InjectorException if a method with an {@see Inject} attribute is static, if a property has a
+     *     {@see Key} attribute but no {@see Inject} attribute, or if an {@see Inject} property has a type that can
+     *     never resolve to a service (untyped, scalar, or object)
      */
     public static function create(string $className): InjectionPlan
     {
@@ -72,9 +74,17 @@ final class InjectionPlanFactory
                 continue;
             }
 
-            $properties[$rProperty->getName()] = count($rKeyAttributes) > 0
-                ? $rKeyAttributes[0]->newInstance()->getKey()
-                : null;
+            $key = count($rKeyAttributes) > 0 ? $rKeyAttributes[0]->newInstance()->getKey() : null;
+
+            if (ResolvableDependencyFactory::createFromType($rProperty->getType(), $key) === null) {
+                throw new InjectorException(
+                    "Property $className::\$" . $rProperty->getName()
+                        . ' has an #[Inject] attribute but its type cannot be resolved from the container;'
+                        . ' #[Inject] requires a class or interface type',
+                );
+            }
+
+            $properties[$rProperty->getName()] = $key;
         }
 
         return new InjectionPlan($methods, $properties);

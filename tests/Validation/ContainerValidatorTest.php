@@ -23,6 +23,7 @@ use Suhock\DependencyInjection\Fakes\FakeClassWithDependencies;
 use Suhock\DependencyInjection\Fakes\FakeClassWithDnfDependency;
 use Suhock\DependencyInjection\Fakes\FakeClassWithIntersectionDependency;
 use Suhock\DependencyInjection\Fakes\FakeClassWithKeyedDependency;
+use Suhock\DependencyInjection\Fakes\FakeClassWithScalarInjectProperty;
 use Suhock\DependencyInjection\Fakes\FakeClassWithStaticInjectMethod;
 use Suhock\DependencyInjection\Fakes\FakeClassWithStringDependency;
 use Suhock\DependencyInjection\Fakes\FakeClassWithUnionDependency;
@@ -324,6 +325,13 @@ final class ContainerValidatorTest extends TestCase
     public function testValidate_WithStaticInjectMethod_ReportsInvalidInjectMember(): void
     {
         $this->addClass(FakeClassWithStaticInjectMethod::class);
+
+        $this->assertSoleIssueKind(ValidationIssueKind::InvalidInjectMember);
+    }
+
+    public function testValidate_WithUnresolvableInjectPropertyType_ReportsInvalidInjectMember(): void
+    {
+        $this->addClass(FakeClassWithScalarInjectProperty::class);
 
         $this->assertSoleIssueKind(ValidationIssueKind::InvalidInjectMember);
     }
