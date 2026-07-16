@@ -19,7 +19,7 @@ namespace Suhock\DependencyInjection\Resolver;
 enum ResolutionPlanKind
 {
     /**
-     * Construct the class, injecting constructor arguments, #[Inject] members, and the mutator's arguments.
+     * Construct the class, injecting constructor arguments and the mutator's arguments.
      */
     case AutowiredClass;
 

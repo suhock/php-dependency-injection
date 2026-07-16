@@ -585,9 +585,6 @@ There are a number of built-in ways to specify how services should be resolved:
 
 The container will construct the named class by calling the class's constructor,
 automatically resolving any dependencies in the constructor's parameter list.
-That is the only injection the container performs on an autowired class; to fill
-a class's `Inject` members, apply the injector's
-[`injectMembers()`](#dependency-injector) as a separate step.
 
 The optional `$mutator` callback allows additional configuration of the object
 after the container has initialized it. The callback must take an instance of
@@ -956,8 +953,7 @@ class AdminController
 The library also provides a dependency injector, `Injector` that can be used for
 directly calling constructors and functions, injecting any dependencies from a
 container. The injector also lets you directly inject specific values for named
-or indexed parameters, and fills a class's `Inject` members on an
-already-constructed instance via `injectMembers()`.
+or indexed parameters.
 
 ```php
 class Injector
@@ -977,13 +973,6 @@ class Injector
      * @return TClass
      */
     public function instantiate(string $className, array $params = []): object;
-
-    /**
-     * @template TClass of object
-     * @param TClass $instance
-     * @return TClass
-     */
-    public function injectMembers(object $instance): object;
 }
 ```
 
@@ -1196,8 +1185,7 @@ The base class is `DependencyInjectionException`. Notable subclasses include:
    disposed scope was used.
  - `ImplementationException`: a mapped implementation is not a subtype of the
    class it is mapped to.
- - `ParameterResolutionException` / `PropertyResolutionException`: the
-   injector could not resolve a parameter or property.
+ - `ParameterResolutionException`: the injector could not resolve a parameter.
 
 When dependency-injection exceptions are chained through a resolution graph,
 they are consolidated into a single message; the original exception remains

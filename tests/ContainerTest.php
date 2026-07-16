@@ -14,7 +14,6 @@ namespace Suhock\DependencyInjection;
 use Closure;
 use Suhock\DependencyInjection\Builder\Descriptor;
 use Suhock\DependencyInjection\Fakes\FakeClassNoConstructor;
-use Suhock\DependencyInjection\Fakes\FakeClassWithInjectedProperties;
 use Suhock\DependencyInjection\Fakes\FakeInterfaceOne;
 use Suhock\DependencyInjection\InstanceProvider\ContextInstanceProvider;
 use Suhock\DependencyInjection\InstanceProvider\InstanceTypeException;
@@ -26,47 +25,6 @@ use Suhock\DependencyInjection\Lifetime\TransientStrategy;
  */
 final class ContainerTest extends AbstractDependencyInjectionTestCase
 {
-    public function testGet_AutowiredClass_DoesNotInjectMembers(): void
-    {
-        // Arrange: autowiring is constructor-only; #[Inject] members are not resolved from the container.
-        $container = self::buildContainer(
-            static fn(ContainerBuilder $builder) => $builder
-                ->addSingletonClass(FakeClassNoConstructor::class)
-                ->addSingletonClass(FakeClassWithInjectedProperties::class),
-        );
-
-        // Act
-        $instance = $container->get(FakeClassWithInjectedProperties::class);
-
-        // Assert: the property keeps what the constructor set, not the container's service.
-        self::assertNotSame($container->get(FakeClassNoConstructor::class), $instance->publicProperty);
-    }
-
-    public function testGet_AutowiredClassWithInjectMembersMutator_InjectsMembers(): void
-    {
-        // Arrange: member injection is opt-in via a mutator that calls the injector's injectMembers().
-        $container = self::buildContainer(
-            static fn(ContainerBuilder $builder) => $builder
-                ->addSingletonClass(FakeClassNoConstructor::class)
-                ->addKeyedSingletonClass(FakeClassNoConstructor::class, 'key1')
-                ->addSingletonFactory(
-                    InjectorInterface::class,
-                    static fn(ContainerInterface $container) => Injector::createDefault($container),
-                )
-                ->addSingletonClass(
-                    FakeClassWithInjectedProperties::class,
-                    static fn(FakeClassWithInjectedProperties $instance, InjectorInterface $injector)
-                        => $injector->injectMembers($instance),
-                ),
-        );
-
-        // Act
-        $instance = $container->get(FakeClassWithInjectedProperties::class);
-
-        // Assert
-        self::assertSame($container->get(FakeClassNoConstructor::class), $instance->publicProperty);
-    }
-
     /**
      * @param class-string $className
      * @param Closure(ResolutionContext):object $select

@@ -12,18 +12,15 @@ declare(strict_types=1);
 namespace Suhock\DependencyInjection\Resolver;
 
 use ReflectionParameter;
-use ReflectionProperty;
 use Suhock\DependencyInjection\ClassResolutionException;
 use Suhock\DependencyInjection\ContainerInterface;
 use Suhock\DependencyInjection\Key;
-use UnitEnum;
 
 /**
- * Resolves function parameters and injected properties from a {@see ContainerInterface}, honoring the {@see Key}
- * attribute on a parameter. A keyed injection point is resolved absolutely against that key; an unkeyed one is
- * resolved by type. Only the injection point itself is inspected. No scope is tracked and the declaring function and
- * class are not traversed. Each path builds a single {@see ResolvableDependency} and resolves it through
- * {@see DependencyResolver}, so parameter and property resolution share one algorithm with the container.
+ * Resolves a function parameter from a {@see ContainerInterface}, honoring the {@see Key} attribute on the parameter.
+ * A keyed parameter is resolved absolutely against that key; an unkeyed one is resolved by type. Only the parameter
+ * itself is inspected. The parameter's type maps to a single {@see ResolvableDependency}, resolved through
+ * {@see DependencyResolver}.
  *
  * @internal
  */
@@ -60,30 +57,5 @@ final class ContainerParameterResolver implements ParameterResolverInterface
         }
 
         throw new ParameterResolutionException($rParam, $deferredException);
-    }
-
-    public function resolveProperty(ReflectionProperty $rProperty, string|UnitEnum|null $key): mixed
-    {
-        $deferredException = null;
-        $rType = $rProperty->getType();
-        $dependency = ResolvableDependencyFactory::createFromType($rType, $key);
-
-        if ($dependency !== null) {
-            try {
-                $instance = DependencyResolver::resolve($dependency, $this->container);
-
-                if ($instance !== null) {
-                    return $instance;
-                }
-            } catch (ClassResolutionException $e) {
-                $deferredException = $e;
-            }
-        }
-
-        if ($rType !== null && $rType->allowsNull()) {
-            return null;
-        }
-
-        throw new PropertyResolutionException($rProperty, $deferredException);
     }
 }
