@@ -30,6 +30,11 @@ use Suhock\DependencyInjection\Fakes\FakeContainer;
 use Suhock\DependencyInjection\Fakes\FakeInterfaceOne;
 use Suhock\DependencyInjection\Fakes\FakeInterfaceThree;
 use Suhock\DependencyInjection\Fakes\FakeInterfaceTwo;
+use Suhock\DependencyInjection\Fakes\FakeLazyConsumer;
+use Suhock\DependencyInjection\Fakes\FakeLazyCounter;
+use Suhock\DependencyInjection\Fakes\FakeLazyInterface;
+use Suhock\DependencyInjection\Fakes\FakeLazyInterfaceConsumer;
+use Suhock\DependencyInjection\Fakes\FakeLazyService;
 use Suhock\DependencyInjection\Instantiation\InstantiationStrategyInterface;
 use Suhock\DependencyInjection\Instantiation\ReflectionInstantiationStrategy;
 use Suhock\DependencyInjection\Resolver\ContainerParameterResolver;
@@ -563,5 +568,51 @@ final class InjectorTest extends AbstractDependencyInjectionTestCase
             ),
             $fn,
         );
+    }
+
+    public function testInstantiate_WithLazyConcreteDependency_DefersConstructionUntilFirstUse(): void
+    {
+        // Arrange
+        $counter = new FakeLazyCounter();
+        $injector = $this->createInjector([
+            FakeLazyService::class => static fn(): FakeLazyService => new FakeLazyService($counter),
+        ]);
+
+        // Act
+        $consumer = $injector->instantiate(FakeLazyConsumer::class);
+
+        // Assert
+        self::assertInstanceOf(FakeLazyService::class, $consumer->service);
+        self::assertSame(0, $counter->constructions);
+        self::assertSame('pong', $consumer->service->ping());
+        self::assertSame(1, $counter->constructions);
+    }
+
+    public function testCall_WithLazyConcreteParameter_DefersConstructionUntilFirstUse(): void
+    {
+        // Arrange
+        $counter = new FakeLazyCounter();
+        $injector = $this->createInjector([
+            FakeLazyService::class => static fn(): FakeLazyService => new FakeLazyService($counter),
+        ]);
+
+        // Act
+        $service = $injector->call(static fn(#[Lazy] FakeLazyService $service): FakeLazyService => $service);
+
+        // Assert: the proxy was injected without constructing the real service.
+        self::assertInstanceOf(FakeLazyService::class, $service);
+        self::assertSame(0, $counter->constructions);
+    }
+
+    public function testInstantiate_WithLazyInterfaceDependency_ThrowsInjectorException(): void
+    {
+        // Arrange: without a compiled plan the injector cannot discover the concrete class behind the interface.
+        $injector = $this->createInjector([
+            FakeLazyInterface::class => static fn(): FakeLazyInterface => new FakeLazyService(new FakeLazyCounter()),
+        ]);
+
+        // Act / Assert
+        $this->expectException(InjectorException::class);
+        $injector->instantiate(FakeLazyInterfaceConsumer::class);
     }
 }

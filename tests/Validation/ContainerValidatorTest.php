@@ -30,6 +30,16 @@ use Suhock\DependencyInjection\Fakes\FakeCycleA;
 use Suhock\DependencyInjection\Fakes\FakeCycleB;
 use Suhock\DependencyInjection\Fakes\FakeInterfaceOne;
 use Suhock\DependencyInjection\Fakes\FakeInterfaceTwo;
+use Suhock\DependencyInjection\Fakes\FakeLazyBuiltinConsumer;
+use Suhock\DependencyInjection\Fakes\FakeLazyConsumer;
+use Suhock\DependencyInjection\Fakes\FakeLazyCounter;
+use Suhock\DependencyInjection\Fakes\FakeLazyCycleA;
+use Suhock\DependencyInjection\Fakes\FakeLazyCycleB;
+use Suhock\DependencyInjection\Fakes\FakeLazyInterface;
+use Suhock\DependencyInjection\Fakes\FakeLazyInterfaceConsumer;
+use Suhock\DependencyInjection\Fakes\FakeLazyService;
+use Suhock\DependencyInjection\Fakes\FakeLazyStatelessConsumer;
+use Suhock\DependencyInjection\Fakes\FakeLazyStatelessService;
 use Suhock\DependencyInjection\Fakes\FakeNullableCycleA;
 use Suhock\DependencyInjection\Fakes\FakeNullableCycleB;
 use Suhock\DependencyInjection\InstanceProvider\ClassInstanceProvider;
@@ -424,5 +434,65 @@ final class ContainerValidatorTest extends TestCase
         self::assertContains(ValidationIssueKind::UnresolvableParameter, $kinds);
         self::assertContains(ValidationIssueKind::CircularDependency, $kinds);
         self::assertCount(4, $issues);
+    }
+
+    public function testValidate_WithLazyDependencyBackedByAutowiredClass_ReportsNothing(): void
+    {
+        // The lazy dependency resolves to an autowired class, which the container can build as a ghost.
+        $this->addClass(FakeLazyConsumer::class);
+        $this->addClass(FakeLazyService::class);
+        $this->addClass(FakeLazyCounter::class);
+
+        $this->assertNoIssues();
+    }
+
+    public function testValidate_WithLazyDependencyBackedByConcreteFactory_ReportsNothing(): void
+    {
+        // The lazy dependency resolves to a factory with a concrete return type, which the container can proxy.
+        $this->addClass(FakeLazyConsumer::class);
+        $this->addFactory(
+            FakeLazyService::class,
+            static fn(): FakeLazyService => new FakeLazyService(new FakeLazyCounter()),
+        );
+
+        $this->assertNoIssues();
+    }
+
+    public function testValidate_WithLazyDependencyBackedByInterfaceFactory_ReportsUnbuildableLazyDependency(): void
+    {
+        // The factory declares an interface return type, so no concrete class is statically known to proxy.
+        $this->addClass(FakeLazyInterfaceConsumer::class);
+        $this->addFactory(
+            FakeLazyInterface::class,
+            static fn(): FakeLazyInterface => new FakeLazyService(new FakeLazyCounter()),
+        );
+
+        $issue = $this->assertSoleIssueKind(ValidationIssueKind::UnbuildableLazyDependency);
+        self::assertSame(FakeLazyInterfaceConsumer::class, $issue->className);
+    }
+
+    public function testValidate_WithLazyBuiltinParameter_ReportsUnbuildableLazyDependency(): void
+    {
+        $this->addClass(FakeLazyBuiltinConsumer::class);
+
+        $this->assertSoleIssueKind(ValidationIssueKind::UnbuildableLazyDependency);
+    }
+
+    public function testValidate_WithLazyDependencyOnPropertylessClass_ReportsUnbuildableLazyDependency(): void
+    {
+        // A property-less class has no state to defer, so PHP cannot build a lazy object for it.
+        $this->addClass(FakeLazyStatelessConsumer::class);
+        $this->addClass(FakeLazyStatelessService::class);
+
+        $this->assertSoleIssueKind(ValidationIssueKind::UnbuildableLazyDependency);
+    }
+
+    public function testValidate_WithLazyEdgeOnDependencyCycle_ReportsNothing(): void
+    {
+        // The A -> B edge is lazy, so it does not construct B while A is built: the cycle is not a guaranteed failure.
+        $this->addClass(FakeLazyCycleA::class);
+        $this->addClass(FakeLazyCycleB::class);
+
+        $this->assertNoIssues();
     }
 }

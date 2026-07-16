@@ -88,7 +88,11 @@ final class ContainerValidator
                 continue;
             }
 
-            $issues = [...$issues, ...$this->planIssues($id, $descriptor, $plan)];
+            $issues = [
+                ...$issues,
+                ...$this->planIssues($id, $descriptor, $plan),
+                ...$this->lazyIssues($id, $descriptor, $plan, $plans),
+            ];
             $adjacency[$id] = $this->chosenEdges($plan);
         }
 
@@ -237,6 +241,147 @@ final class ContainerValidator
         }
 
         return $issues;
+    }
+
+    /**
+     * The lazy-injection defects of one service: a #[Lazy] parameter the container cannot construct lazily, because
+     * it has no class type, or resolves to a factory-produced service whose concrete class is not statically known.
+     * A lazy edge that is simply unresolvable is not a lazy defect: a required one is reported as a missing
+     * dependency, a soft one self-heals, and neither ever builds a lazy object.
+     *
+     * @param Descriptor<object> $descriptor
+     * @param array<string, ResolutionPlan> $plans
+     *
+     * @return list<ValidationIssue>
+     */
+    private function lazyIssues(string $id, Descriptor $descriptor, ResolutionPlan $plan, array $plans): array
+    {
+        $issues = [];
+        $key = DescriptorId::keyOf($id);
+
+        foreach (self::describedEdges($plan) as [$description, $edge]) {
+            if (!$edge->lazy) {
+                continue;
+            }
+
+            $message = $this->lazyDefect($edge, $description, $plans);
+
+            if ($message !== null) {
+                $issues[] = new ValidationIssue(
+                    $descriptor->className,
+                    $key,
+                    ValidationIssueKind::UnbuildableLazyDependency,
+                    $message,
+                );
+            }
+        }
+
+        return $issues;
+    }
+
+    /**
+     * The reason a lazy edge cannot be built, or <code>null</code> if it can (or is unresolvable, handled elsewhere).
+     *
+     * @param array<string, ResolutionPlan> $plans
+     */
+    private function lazyDefect(ResolutionPlanEdge $edge, string $description, array $plans): ?string
+    {
+        if ($edge->dependency === null) {
+            return "lazy $description (" . ($edge->declaredType ?? 'untyped')
+                . ') has no class type the container can construct lazily';
+        }
+
+        $target = $this->chosenTarget($edge);
+
+        if ($target === null || $this->targetIsLazyBuildable($target, $plans, [])) {
+            return null;
+        }
+
+        return "lazy $description resolves to " . DescriptorId::display($target)
+            . ', which the container cannot construct as a lazy object: a factory-produced service with no'
+            . ' statically-known concrete class, or a class with no properties to defer';
+    }
+
+    /**
+     * Whether the container can build a native lazy object for a service: an autowired class (ghost) or a held
+     * instance (already constructed) always can; a factory (proxy) can only when its concrete class is statically
+     * known; an implementation defers to its target. Guards against an implementation cycle.
+     *
+     * @param array<string, ResolutionPlan> $plans
+     * @param array<string, true> $seen
+     */
+    private function targetIsLazyBuildable(string $targetId, array $plans, array $seen): bool
+    {
+        if (isset($seen[$targetId])) {
+            return false;
+        }
+
+        $seen[$targetId] = true;
+        $plan = $plans[$targetId] ?? null;
+
+        if ($plan === null) {
+            return false;
+        }
+
+        return match ($plan->kind) {
+            // A held instance already exists, so a lazy edge to it is a harmless no-op rather than a defect.
+            ResolutionPlanKind::Leaf => true,
+            ResolutionPlanKind::AutowiredClass => self::classCanBeLazy($plan->className),
+            ResolutionPlanKind::Factory => self::factoryTargetCanBeLazy($plan),
+            ResolutionPlanKind::Implementation => $plan->implementationTarget !== null
+                && isset($this->descriptors[$plan->implementationTarget])
+                && $this->targetIsLazyBuildable($plan->implementationTarget, $plans, $seen),
+        };
+    }
+
+    /**
+     * Whether a factory-produced service can be proxied lazily: a concrete class must be statically known (the
+     * declared return class if concrete, otherwise the service's own class) and that class must itself be lazy-able.
+     */
+    private static function factoryTargetCanBeLazy(ResolutionPlan $plan): bool
+    {
+        $className = self::factoryLazyClass($plan);
+
+        return $className !== null && self::classCanBeLazy($className);
+    }
+
+    /**
+     * The statically-known concrete, instantiable class a lazy proxy of a factory-produced service can reflect, or
+     * <code>null</code> when neither the declared return type nor the service class is a concrete class.
+     *
+     * @return class-string|null
+     */
+    private static function factoryLazyClass(ResolutionPlan $plan): ?string
+    {
+        foreach ([$plan->declaredFactoryReturnType, $plan->className] as $candidate) {
+            if ($candidate !== null && class_exists($candidate) && (new ReflectionClass($candidate))->isInstantiable()) {
+                return $candidate;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Whether a class can be represented as a PHP native lazy object. It must declare at least one non-static
+     * property: PHP has no state to defer for a property-less class, so it creates such an object eagerly and never
+     * runs the ghost initializer or proxy factory, which would silently skip the constructor.
+     *
+     * @param class-string $className
+     */
+    private static function classCanBeLazy(string $className): bool
+    {
+        if (!class_exists($className)) {
+            return false;
+        }
+
+        foreach ((new ReflectionClass($className))->getProperties() as $property) {
+            if (!$property->isStatic()) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -460,7 +605,9 @@ final class ContainerValidator
             $target = $this->chosenTarget($edge);
 
             if ($target !== null) {
-                $edges[] = [$target, !$edge->soft];
+                // A lazy edge does not construct its target while the service itself is built, so it can neither
+                // form an all-required construction cycle nor drag a scoped service captive into a singleton.
+                $edges[] = [$target, !$edge->soft && !$edge->lazy];
             }
         }
 

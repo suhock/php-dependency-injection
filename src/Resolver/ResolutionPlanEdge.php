@@ -11,6 +11,8 @@ declare(strict_types=1);
 
 namespace Suhock\DependencyInjection\Resolver;
 
+use Suhock\DependencyInjection\Lazy;
+
 /**
  * One dependency edge of a {@see ResolutionPlan}: an injection point the container satisfies when the service
  * resolves. Immutable and free of reflection objects.
@@ -21,12 +23,15 @@ namespace Suhock\DependencyInjection\Resolver;
  * builtin, or an unsupported composite type); if such an edge is not soft, resolution is guaranteed to throw, which
  * validation reports at build time.
  *
+ * A {@see $lazy} edge (its parameter carries {@see Lazy}) is satisfied with a PHP native lazy object of the resolved
+ * type, deferring the dependency's construction until first use.
+ *
  * @internal
  */
 final class ResolutionPlanEdge
 {
     /**
-     * @param string $name The parameter or property name of the injection point
+     * @param string $name The parameter name of the injection point
      * @param ResolvableDependency|null $dependency The container-resolvable description, or <code>null</code> if the
      *     container is never consulted for this injection point
      * @param bool $soft Whether resolution failure self-heals via the default value or <code>null</code>
@@ -35,6 +40,7 @@ final class ResolutionPlanEdge
      *     {@see $hasDefault}
      * @param string|null $declaredType The raw declared type, populated only when {@see $dependency} is
      *     <code>null</code> and the injection point has a type, for diagnostics
+     * @param bool $lazy Whether the dependency is injected lazily (the parameter carries {@see Lazy})
      */
     public function __construct(
         public readonly string $name,
@@ -43,5 +49,6 @@ final class ResolutionPlanEdge
         public readonly bool $hasDefault = false,
         public readonly mixed $defaultValue = null,
         public readonly ?string $declaredType = null,
+        public readonly bool $lazy = false,
     ) {}
 }

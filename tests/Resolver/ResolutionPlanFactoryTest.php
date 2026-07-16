@@ -26,11 +26,13 @@ use Suhock\DependencyInjection\Fakes\FakeClassWithUnionDependency;
 use Suhock\DependencyInjection\Fakes\FakeClassWithVariadicConstructor;
 use Suhock\DependencyInjection\Fakes\FakeInterfaceOne;
 use Suhock\DependencyInjection\Fakes\FakeInterfaceTwo;
+use Suhock\DependencyInjection\Fakes\FakeLazyConsumer;
 use Suhock\DependencyInjection\InstanceProvider\ClassInstanceProvider;
 use Suhock\DependencyInjection\InstanceProvider\ClosureInstanceProvider;
 use Suhock\DependencyInjection\InstanceProvider\ImplementationInstanceProvider;
 use Suhock\DependencyInjection\InstanceProvider\InstanceProviderInterface;
 use Suhock\DependencyInjection\InstanceProvider\ObjectInstanceProvider;
+use Suhock\DependencyInjection\Lazy;
 use Suhock\DependencyInjection\Lifetime\TransientStrategy;
 use Throwable;
 
@@ -239,6 +241,48 @@ final class ResolutionPlanFactoryTest extends TestCase
         self::assertNotNull($plan->nonInstantiableMessage);
         self::assertStringContainsString(FakeAbstractClass::class, $plan->nonInstantiableMessage ?? '');
         self::assertSame([], $plan->argumentEdges);
+    }
+
+    public function testCompile_WithLazyConstructorParameter_MarksArgumentEdgeLazy(): void
+    {
+        $plan = self::compileSingle([
+            FakeLazyConsumer::class => self::autowireDescriptor(FakeLazyConsumer::class),
+        ]);
+
+        self::assertTrue(self::edgeAt($plan->argumentEdges, 0)->lazy);
+    }
+
+    public function testCompile_WithNonLazyConstructorParameter_LeavesArgumentEdgeNotLazy(): void
+    {
+        $plan = self::compileSingle([
+            FakeClassWithDependencies::class => self::autowireDescriptor(FakeClassWithDependencies::class),
+        ]);
+
+        self::assertFalse(self::edgeAt($plan->argumentEdges, 0)->lazy);
+    }
+
+    public function testCompile_WithLazyFactoryParameter_MarksArgumentEdgeLazy(): void
+    {
+        $plan = self::compileSingle([
+            FakeClassNoConstructor::class => self::closureDescriptor(
+                FakeClassNoConstructor::class,
+                static fn(#[Lazy] FakeInterfaceOne $dep): FakeClassNoConstructor => new FakeClassNoConstructor(),
+            ),
+        ]);
+
+        self::assertTrue(self::edgeAt($plan->argumentEdges, 0)->lazy);
+    }
+
+    public function testCompile_WithLazyMutatorParameter_MarksMutatorEdgeLazy(): void
+    {
+        $plan = self::compileSingle([
+            FakeClassNoConstructor::class => self::autowireDescriptor(
+                FakeClassNoConstructor::class,
+                static fn(FakeClassNoConstructor $instance, #[Lazy] FakeInterfaceOne $extra) => $instance,
+            ),
+        ]);
+
+        self::assertTrue(self::edgeAt($plan->mutatorEdges, 0)->lazy);
     }
 
     public function testCompile_WithMutator_ProducesEdgesForParametersAfterTheInstance(): void

@@ -1,7 +1,7 @@
 # Dependency Injection Library for PHP
 
 The PHP Dependency Injection library provides a customizable dependency
-injection framework for projects running on PHP 8.1 or later.
+injection framework for projects running on PHP 8.4 or later.
 
 ```php
 $container = Suhock\DependencyInjection\ContainerBuilder::createDefault()
@@ -57,6 +57,7 @@ constructor.
   - [Builtin types with default values](#builtin-types-with-default-values)
   - [Union types](#union-types)
   - [Intersection types](#intersection-types)
+  - [Lazy dependencies](#lazy-dependencies)
 - [Error handling](#error-handling)
 - [Caching reflected metadata](#caching-reflected-metadata)
 - [Appendix](#appendix)
@@ -84,8 +85,7 @@ composer require "suhock/dependency-injection"
 
 ## Compatibility
 
-The library requires PHP 8.1 or later and is tested on PHP 8.1, 8.2, 8.3, 8.4,
-and 8.5.
+The library requires PHP 8.4 or later and is tested on PHP 8.4 and 8.5.
 
 There are no required runtime dependencies. The optional `ext-apcu` extension
 enables persistent caching of reflected metadata; see
@@ -236,6 +236,8 @@ independent `Container`.
    cycle can ever construct.
  - A singleton that reaches a scoped service through required edges: a
    captive dependency (see [Scopes](#scopes)).
+ - A `#[Lazy]` parameter the container cannot construct as a lazy object (see
+   [Lazy dependencies](#lazy-dependencies)).
 
 #### Build performance
 
@@ -600,9 +602,9 @@ class ContainerBuilder
      * @return $this
      */
     public function addSingletonClass(string $className, ?callable $mutator = null): self;
-    
+
     public function addScopedClass(string $className, ?callable $mutator = null): self;
-    
+
     public function addTransientClass(string $className, ?callable $mutator = null): self;
 }
 ```
@@ -664,9 +666,9 @@ class ContainerBuilder
      * @return $this
      */
     public function addSingletonImplementation(string $className, string $implementationClassName): self;
-    
+
     public function addScopedImplementation(string $className, string $implementationClassName): self;
-    
+
     public function addTransientImplementation(string $className, string $implementationClassName): self;
 }
 ```
@@ -733,7 +735,7 @@ class ContainerBuilder
      * @return $this
      */
     public function addSingletonFactory(string $className, callable $factory): static;
-    
+
     public function addScopedFactory(string $className, callable $factory): static;
 
     public function addTransientFactory(string $className, callable $factory): static;
@@ -1117,7 +1119,7 @@ class MyApplication
 }
 ```
 
-In the example above, the container will attempt to resolve an instance of 
+In the example above, the container will attempt to resolve an instance of
 `HttpClient` first. If it cannot resolve `HttpClient`, it will attempt to
 resolve an instance of `GopherClient`. If it cannot resolve `GopherClient`, it
 will ignore `string` and then throw an `ParameterResolutionException`.
@@ -1147,6 +1149,59 @@ In the example above, the container will first attempt to resolve an instance of
 `Serializable` and check whether that instance is also an `HttpClient`. If
 neither candidate satisfies both types, it will throw a
 `ParameterResolutionException`.
+
+### Lazy dependencies
+
+Marking a parameter with the `#[Lazy]` attribute defers construction of that
+dependency until the injected object is first used, rather than when the
+consuming service is built. The injected value is a PHP
+[lazy object](https://www.php.net/manual/en/language.oop5.lazy-objects.php) of
+the resolved type, so it is `instanceof` the declared type and otherwise
+indistinguishable from an eagerly resolved instance. Its lifetime, identity, and
+disposal are those of the underlying service; a lazy singleton is still a single
+shared instance.
+
+```php
+use Suhock\DependencyInjection\Lazy;
+
+class ReportController
+{
+    public function __construct(
+        #[Lazy]
+        private readonly PdfRenderer $renderer,
+    ) {
+    }
+}
+```
+
+Here `PdfRenderer` (and everything it depends on) is not constructed when
+`ReportController` is resolved, but the first time a property or method of
+`$renderer` is accessed. `#[Lazy]` applies to constructor, factory, and mutator
+parameters.
+
+Because a lazy dependency is not constructed while its consumer is, `#[Lazy]`
+also breaks an otherwise-fatal construction cycle between two services: mark one
+edge of the cycle lazy and both services resolve.
+
+The container constructs the lazy object in one of two ways, chosen
+automatically:
+
+- a **ghost** when it constructs the service itself (an autowired class), which
+  it initializes in place on first use;
+- a **proxy** when a factory produces the service, which invokes the factory on
+  first use and forwards to its result.
+
+For the container to build either, the dependency's concrete class must be known
+at build time and must declare at least one property (PHP has no state to defer
+for a property-less class). A factory-produced service qualifies when its
+registered class or its declared return type is a concrete class. When neither
+holds, `build()` reports the `#[Lazy]` parameter as a build error rather than
+resolving it eagerly.
+
+The standalone [Dependency Injector](#dependency-injector) also honors `#[Lazy]`,
+but without a compiled plan it can only build a proxy for a parameter whose
+declared type is itself a concrete class; a `#[Lazy]` parameter typed as an
+interface throws an `InjectorException`.
 
 ## Error handling
 

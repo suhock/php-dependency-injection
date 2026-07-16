@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace Suhock\DependencyInjection\Lifetime;
 
+use ReflectionClass;
 use Suhock\DependencyInjection\DisposableInterface;
 use Throwable;
 use WeakMap;
@@ -113,6 +114,10 @@ final class InstanceStore
         $firstException = null;
 
         foreach ($ordered as $instance) {
+            if (new ReflectionClass($instance)->isUninitializedLazyObject($instance)) {
+                continue;
+            }
+
             try {
                 $instance->dispose();
             } catch (Throwable $exception) {

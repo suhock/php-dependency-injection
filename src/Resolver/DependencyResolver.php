@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace Suhock\DependencyInjection\Resolver;
 
+use Closure;
 use Suhock\DependencyInjection\ClassResolutionException;
 use Suhock\DependencyInjection\ContainerInterface;
 use UnitEnum;
@@ -26,12 +27,21 @@ use UnitEnum;
 final class DependencyResolver
 {
     /**
+     * @param (Closure(class-string, string|UnitEnum|null): object)|null $get Produces the instance for a present
+     *     candidate; defaults to {@see ContainerInterface::get()}. The container supplies a lazy-producing closure to
+     *     satisfy a {@see \Suhock\DependencyInjection\Lazy} edge without eagerly constructing the dependency. The
+     *     candidate's presence is always tested with {@see ContainerInterface::has()}, so a missing candidate never
+     *     invokes it.
+     *
      * @throws ClassResolutionException If a candidate fails while resolving its own graph
      */
-    public static function resolve(ResolvableDependency $dependency, ContainerInterface $container): ?object
-    {
+    public static function resolve(
+        ResolvableDependency $dependency,
+        ContainerInterface $container,
+        ?Closure $get = null,
+    ): ?object {
         foreach ($dependency->alternatives as $alternative) {
-            $instance = self::resolveAlternative($alternative, $dependency->key, $container);
+            $instance = self::resolveAlternative($alternative, $dependency->key, $container, $get);
 
             if ($instance !== null) {
                 return $instance;
@@ -43,18 +53,20 @@ final class DependencyResolver
 
     /**
      * @param non-empty-list<class-string> $alternative
+     * @param (Closure(class-string, string|UnitEnum|null): object)|null $get
      */
     private static function resolveAlternative(
         array $alternative,
         string|UnitEnum|null $key,
         ContainerInterface $container,
+        ?Closure $get,
     ): ?object {
         foreach ($alternative as $className) {
             if (!$container->has($className, $key)) {
                 continue;
             }
 
-            $instance = $container->get($className, $key);
+            $instance = $get === null ? $container->get($className, $key) : $get($className, $key);
 
             if (self::satisfiesAll($instance, $alternative)) {
                 return $instance;

@@ -57,4 +57,10 @@ enum ValidationIssueKind
      * A singleton reaches a scoped service through required edges, which always resolves outside a scope.
      */
     case CaptiveDependency;
+
+    /**
+     * A #[Lazy] parameter the container cannot construct lazily: it has no class type, or it resolves to a
+     * factory-produced service whose concrete class is not statically known.
+     */
+    case UnbuildableLazyDependency;
 }

@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace Suhock\DependencyInjection;
 
 use Closure;
+use ReflectionClass;
 use ReflectionParameter;
 use Suhock\DependencyInjection\Builder\Descriptor;
 use Suhock\DependencyInjection\InstanceProvider\ClassInstanceProvider;
@@ -29,6 +30,7 @@ use Suhock\DependencyInjection\Resolver\ResolutionPlanKind;
 use Throwable;
 use UnitEnum;
 
+use function class_exists;
 use function spl_object_id;
 
 /**
@@ -180,6 +182,7 @@ final class Container implements ContainerInterface, DisposableInterface, ScopeF
      *
      * @param class-string<TClass> $className
      * @param ResolutionContext $context The context of the resolution root the service is being resolved for
+     * @param bool $lazy Whether to produce a lazy object that defers the service's construction until first use
      *
      * @throws CircularDependencyException
      * @throws ClassNotFoundException
@@ -187,15 +190,19 @@ final class Container implements ContainerInterface, DisposableInterface, ScopeF
      *
      * @return TClass
      */
-    private function getForContext(string $className, string|UnitEnum|null $key, ResolutionContext $context): object
-    {
+    private function getForContext(
+        string $className,
+        string|UnitEnum|null $key,
+        ResolutionContext $context,
+        bool $lazy = false,
+    ): object {
         $this->ensureNotDisposed();
 
         $id = DescriptorId::compute($className, $key);
 
         if (isset($this->descriptors[$id])) {
             /** @var TClass */
-            return $this->resolveDescriptor($id, $this->descriptors[$id], $context);
+            return $this->resolveDescriptor($id, $this->descriptors[$id], $context, $lazy);
         }
 
         throw new ClassNotFoundException($className);
@@ -217,13 +224,18 @@ final class Container implements ContainerInterface, DisposableInterface, ScopeF
      * @template TClass of object
      *
      * @param Descriptor<TClass> $descriptor
+     * @param bool $lazy Whether to produce a lazy object that defers the service's construction until first use
      *
      * @throws CircularDependencyException
      *
      * @return TClass
      */
-    private function resolveDescriptor(string $id, Descriptor $descriptor, ResolutionContext $context): object
-    {
+    private function resolveDescriptor(
+        string $id,
+        Descriptor $descriptor,
+        ResolutionContext $context,
+        bool $lazy = false,
+    ): object {
         $descriptorId = spl_object_id($descriptor);
 
         if (isset($this->resolving[$descriptorId])) {
@@ -240,8 +252,8 @@ final class Container implements ContainerInterface, DisposableInterface, ScopeF
                 // classes, by instanceof guard for factories and held instances), but the generic cannot flow
                 // through the compiled plan.
                 // @phpstan-ignore argument.type (executed plan yields the descriptor's TClass)
-                function (ResolutionContext $ctx) use ($id, $descriptor): object {
-                    $instance = $this->executePlan($id, $descriptor, $ctx);
+                function (ResolutionContext $ctx) use ($id, $descriptor, $lazy): object {
+                    $instance = $this->executePlan($id, $descriptor, $ctx, $lazy);
 
                     // The strategy invokes this factory with the context whose store bounds the instance's lifetime
                     // (root store for singletons, scope store for scoped, requesting root's store for transients), so
@@ -261,18 +273,21 @@ final class Container implements ContainerInterface, DisposableInterface, ScopeF
     }
 
     /**
-     * Produces a service's instance by executing its compiled plan against the given resolution context.
+     * Produces a service's instance by executing its compiled plan against the given resolution context. When
+     * <code>$lazy</code>, autowired classes and factories yield a native lazy object (a ghost the container
+     * initializes itself, or a proxy backed by the factory) that defers construction until first use; an
+     * implementation forwards laziness to its target; a leaf is already constructed and is returned as-is.
      *
      * @param Descriptor<object> $descriptor
      */
-    private function executePlan(string $id, Descriptor $descriptor, ResolutionContext $ctx): object
+    private function executePlan(string $id, Descriptor $descriptor, ResolutionContext $ctx, bool $lazy): object
     {
         $plan = $this->plans[$id] ?? throw new ContainerException("No compiled plan exists for service $id");
 
         return match ($plan->kind) {
-            ResolutionPlanKind::AutowiredClass => $this->executeAutowiredClass($id, $plan, $ctx),
-            ResolutionPlanKind::Factory => $this->executeFactory($id, $plan, $ctx),
-            ResolutionPlanKind::Implementation => $this->executeImplementation($plan, $ctx),
+            ResolutionPlanKind::AutowiredClass => $this->executeAutowiredClass($id, $plan, $ctx, $lazy),
+            ResolutionPlanKind::Factory => $this->executeFactory($id, $plan, $ctx, $lazy),
+            ResolutionPlanKind::Implementation => $this->executeImplementation($plan, $ctx, $lazy),
             ResolutionPlanKind::Leaf => self::executeLeaf($descriptor->instanceProvider, $ctx),
         };
     }
@@ -301,29 +316,66 @@ final class Container implements ContainerInterface, DisposableInterface, ScopeF
         throw new ContainerException('Unknown leaf instance provider ' . $provider::class);
     }
 
-    private function executeAutowiredClass(string $id, ResolutionPlan $plan, ResolutionContext $ctx): object
+    private function executeAutowiredClass(string $id, ResolutionPlan $plan, ResolutionContext $ctx, bool $lazy): object
     {
-        $className = $plan->className;
-        $args = $this->resolveArguments($plan->argumentEdges, $ctx, [$className, '__construct']);
-        $instance = new $className(...$args);
+        if ($lazy) {
+            $rClass = new ReflectionClass($plan->className);
 
+            return $rClass->newLazyGhost(function (object $ghost) use ($id, $plan, $ctx, $rClass): void {
+                $rClass->getConstructor()?->invokeArgs(
+                    $ghost,
+                    $this->resolveArguments($plan->argumentEdges, $ctx, [$plan->className, '__construct']),
+                );
+                $this->applyMutator($id, $plan, $ctx, $ghost);
+            });
+        }
+
+        $className = $plan->className;
+        $instance = new $className(...$this->resolveArguments($plan->argumentEdges, $ctx, [$className, '__construct']));
+        $this->applyMutator($id, $plan, $ctx, $instance);
+
+        return $instance;
+    }
+
+    /**
+     * Applies the descriptor's configuration mutator to a newly produced instance, if one is paired with the plan.
+     */
+    private function applyMutator(string $id, ResolutionPlan $plan, ResolutionContext $ctx, object $instance): void
+    {
         $mutator = $this->closures[$id] ?? null;
 
         if ($mutator !== null) {
             $mutator($instance, ...$this->resolveArguments($plan->mutatorEdges, $ctx, $mutator, skip: 1));
         }
-
-        return $instance;
     }
 
-    private function executeFactory(string $id, ResolutionPlan $plan, ResolutionContext $ctx): object
+    private function executeFactory(string $id, ResolutionPlan $plan, ResolutionContext $ctx, bool $lazy): object
     {
-        $factory = $this->closures[$id] ?? null;
+        $factory = $this->closures[$id]
+            ?? throw new ContainerException("No factory closure is paired with the plan for $plan->className");
 
-        if ($factory === null) {
-            throw new ContainerException("No factory closure is paired with the plan for $plan->className");
+        if ($lazy) {
+            // A factory produces the object opaquely, so the container cannot construct it in place; it wraps the
+            // factory in a proxy of the statically-known concrete class, forwarding to the factory's result on first
+            // use. Build-time validation guarantees a concrete class exists here.
+            $className = self::lazyProxyClass($plan)
+                ?? throw new ContainerException(
+                    "Cannot lazily resolve $plan->className: its concrete class is not statically known",
+                );
+
+            return (new ReflectionClass($className))->newLazyProxy(
+                fn(object $proxy): object => $this->invokeFactory($plan, $factory, $ctx),
+            );
         }
 
+        return $this->invokeFactory($plan, $factory, $ctx);
+    }
+
+    /**
+     * Invokes a factory with its resolved arguments and verifies the result is an instance of the service class.
+     */
+    private function invokeFactory(ResolutionPlan $plan, Closure $factory, ResolutionContext $ctx): object
+    {
         $result = $factory(...$this->resolveArguments($plan->argumentEdges, $ctx, $factory));
 
         if (!$result instanceof $plan->className) {
@@ -333,13 +385,33 @@ final class Container implements ContainerInterface, DisposableInterface, ScopeF
         return $result;
     }
 
-    private function executeImplementation(ResolutionPlan $plan, ResolutionContext $ctx): object
+    /**
+     * The statically-known concrete, instantiable class a lazy proxy of a factory-produced service can reflect: the
+     * factory's declared return class if concrete, otherwise the service's own class if concrete. <code>null</code>
+     * when neither is known, which build-time validation rejects.
+     *
+     * @return class-string|null
+     */
+    private static function lazyProxyClass(ResolutionPlan $plan): ?string
+    {
+        foreach ([$plan->declaredFactoryReturnType, $plan->className] as $candidate) {
+            if ($candidate !== null && class_exists($candidate) && (new ReflectionClass($candidate))->isInstantiable()) {
+                return $candidate;
+            }
+        }
+
+        return null;
+    }
+
+    private function executeImplementation(ResolutionPlan $plan, ResolutionContext $ctx, bool $lazy): object
     {
         if ($plan->implementationTarget === null) {
             throw new ContainerException("The plan for $plan->className names no implementation");
         }
 
-        return $ctx->container->get($plan->implementationTarget);
+        return $lazy
+            ? $this->getForContext($plan->implementationTarget, null, $ctx, lazy: true)
+            : $ctx->container->get($plan->implementationTarget);
     }
 
     /**
@@ -395,7 +467,16 @@ final class Container implements ContainerInterface, DisposableInterface, ScopeF
 
         if ($dependency !== null) {
             try {
-                $instance = DependencyResolver::resolve($dependency, $ctx->container);
+                // A lazy edge produces the winning candidate as a native lazy object; the fetcher routes through the
+                // container's own plan execution so the lazy instance is still cached under the target's lifetime.
+                $instance = $edge->lazy
+                    ? DependencyResolver::resolve(
+                        $dependency,
+                        $ctx->container,
+                        fn(string $className, string|UnitEnum|null $key): object
+                            => $this->getForContext($className, $key, $ctx, lazy: true),
+                    )
+                    : DependencyResolver::resolve($dependency, $ctx->container);
 
                 if ($instance !== null) {
                     $value = $instance;

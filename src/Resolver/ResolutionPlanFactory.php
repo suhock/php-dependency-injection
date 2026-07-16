@@ -20,9 +20,11 @@ use Suhock\DependencyInjection\Builder\Descriptor;
 use Suhock\DependencyInjection\InstanceProvider\ClassInstanceProvider;
 use Suhock\DependencyInjection\InstanceProvider\ClosureInstanceProvider;
 use Suhock\DependencyInjection\InstanceProvider\ImplementationInstanceProvider;
+use Suhock\DependencyInjection\Lazy;
 
 use function array_slice;
 use function class_exists;
+use function count;
 use function interface_exists;
 
 /**
@@ -188,6 +190,7 @@ final class ResolutionPlanFactory
             hasDefault: $hasDefault,
             defaultValue: $hasDefault ? $rParam->getDefaultValue() : null,
             declaredType: $dependency === null && $rType !== null ? (string) $rType : null,
+            lazy: count($rParam->getAttributes(Lazy::class)) > 0,
         );
     }
 
