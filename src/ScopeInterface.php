@@ -11,6 +11,8 @@ declare(strict_types=1);
 
 namespace Suhock\DependencyInjection;
 
+use Suhock\Disposable\DisposableInterface;
+
 /**
  * Interface for a scope: a resolution root with a bounded lifetime, created by a {@see ScopeFactoryInterface}. A scope
  * resolves the same services as the container that created it, but services added with a scoped lifetime are

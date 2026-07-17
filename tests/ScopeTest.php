@@ -20,6 +20,7 @@ use Suhock\DependencyInjection\Fakes\FakeDisposalLog;
 use Suhock\DependencyInjection\Validation\ContainerValidationException;
 use Suhock\DependencyInjection\Validation\ValidationIssue;
 use Suhock\DependencyInjection\Validation\ValidationIssueKind;
+use Suhock\Disposable\DisposableInterface;
 use Throwable;
 
 use function array_map;

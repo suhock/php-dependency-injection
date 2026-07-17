@@ -87,8 +87,9 @@ composer require "suhock/dependency-injection"
 
 The library requires PHP 8.4 or later and is tested on PHP 8.4 and 8.5.
 
-There are no required runtime dependencies. The optional `ext-apcu` extension
-enables persistent caching of reflected metadata; see
+The only required runtime dependency is the first-party `suhock/disposable`
+package; there are no third-party runtime dependencies. The optional `ext-apcu`
+extension enables persistent caching of reflected metadata; see
 [Caching reflected metadata](#caching-reflected-metadata).
 
 ## Basic Usage
@@ -483,7 +484,7 @@ rather than waiting for garbage collection. A service can implement
 `DisposableInterface` to be notified:
 
 ```php
-use Suhock\DependencyInjection\DisposableInterface;
+use Suhock\Disposable\DisposableInterface;
 
 final class UnitOfWork implements DisposableInterface
 {

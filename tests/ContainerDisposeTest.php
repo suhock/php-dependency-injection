@@ -14,6 +14,7 @@ namespace Suhock\DependencyInjection;
 use Suhock\DependencyInjection\Fakes\FakeDisposableClass;
 use Suhock\DependencyInjection\Fakes\FakeDisposableClassWithDependency;
 use Suhock\DependencyInjection\Fakes\FakeDisposalLog;
+use Suhock\Disposable\DisposableInterface;
 
 /**
  * Test suite for {@see Container::dispose()} and container-owned disposal.

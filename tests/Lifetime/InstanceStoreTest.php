@@ -13,10 +13,10 @@ namespace Suhock\DependencyInjection\Lifetime;
 
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
-use Suhock\DependencyInjection\DisposableInterface;
 use Suhock\DependencyInjection\Fakes\FakeClassNoConstructor;
 use Suhock\DependencyInjection\Fakes\FakeDisposableClass;
 use Suhock\DependencyInjection\Fakes\FakeDisposalLog;
+use Suhock\Disposable\DisposableInterface;
 
 use function gc_collect_cycles;
 

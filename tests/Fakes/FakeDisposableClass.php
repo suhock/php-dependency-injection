@@ -11,7 +11,7 @@ declare(strict_types=1);
 
 namespace Suhock\DependencyInjection\Fakes;
 
-use Suhock\DependencyInjection\DisposableInterface;
+use Suhock\Disposable\DisposableInterface;
 
 /**
  * Fakes a disposable class. Counts how many times it has been disposed and, if given a log, records its disposal in

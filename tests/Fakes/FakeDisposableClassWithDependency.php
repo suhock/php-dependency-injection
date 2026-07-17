@@ -11,7 +11,7 @@ declare(strict_types=1);
 
 namespace Suhock\DependencyInjection\Fakes;
 
-use Suhock\DependencyInjection\DisposableInterface;
+use Suhock\Disposable\DisposableInterface;
 
 /**
  * Fakes a disposable class that depends on another disposable class, so tests can assert that a dependent is disposed

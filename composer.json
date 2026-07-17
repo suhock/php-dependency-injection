@@ -36,7 +36,8 @@
         }
     ],
     "require": {
-        "php": "^8.4"
+        "php": "^8.4",
+        "suhock/disposable": "^1.0"
     },
     "require-dev": {
         "ergebnis/phpstan-rules": "^2",

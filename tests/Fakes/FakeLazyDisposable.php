@@ -11,7 +11,7 @@ declare(strict_types=1);
 
 namespace Suhock\DependencyInjection\Fakes;
 
-use Suhock\DependencyInjection\DisposableInterface;
+use Suhock\Disposable\DisposableInterface;
 
 /**
  * A disposable dependency that records its construction and disposal in a {@see FakeDisposalLog}, so a test can prove

@@ -12,7 +12,7 @@ declare(strict_types=1);
 namespace Suhock\DependencyInjection\Lifetime;
 
 use ReflectionClass;
-use Suhock\DependencyInjection\DisposableInterface;
+use Suhock\Disposable\DisposableInterface;
 use Throwable;
 use WeakMap;
 

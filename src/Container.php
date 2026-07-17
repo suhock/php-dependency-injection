@@ -27,6 +27,7 @@ use Suhock\DependencyInjection\Resolver\ParameterResolutionException;
 use Suhock\DependencyInjection\Resolver\ResolutionPlan;
 use Suhock\DependencyInjection\Resolver\ResolutionPlanEdge;
 use Suhock\DependencyInjection\Resolver\ResolutionPlanKind;
+use Suhock\Disposable\DisposableInterface;
 use Throwable;
 use UnitEnum;
 
