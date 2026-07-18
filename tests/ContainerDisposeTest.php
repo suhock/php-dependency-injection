@@ -151,7 +151,7 @@ final class ContainerDisposeTest extends AbstractDependencyInjectionTestCase
         self::assertSame(1, $instance->disposeCount);
     }
 
-    public function testDispose_ThenGet_ThrowsContainerException(): void
+    public function testDispose_ThenGet_ThrowsContainerDisposedException(): void
     {
         // Arrange
         $container = self::buildContainer(
@@ -162,11 +162,11 @@ final class ContainerDisposeTest extends AbstractDependencyInjectionTestCase
         $container->dispose();
 
         // Assert
-        $this->expectException(ContainerException::class);
+        $this->expectException(ContainerDisposedException::class);
         $container->get(FakeDisposableClass::class);
     }
 
-    public function testDispose_ThenHas_ThrowsContainerException(): void
+    public function testDispose_ThenHas_ThrowsContainerDisposedException(): void
     {
         // Arrange
         $container = self::buildContainer(
@@ -177,11 +177,11 @@ final class ContainerDisposeTest extends AbstractDependencyInjectionTestCase
         $container->dispose();
 
         // Assert
-        $this->expectException(ContainerException::class);
+        $this->expectException(ContainerDisposedException::class);
         $container->has(FakeDisposableClass::class);
     }
 
-    public function testDispose_ThenCreateScope_ThrowsContainerException(): void
+    public function testDispose_ThenCreateScope_ThrowsContainerDisposedException(): void
     {
         // Arrange
         $container = self::buildContainer(static fn(ContainerBuilder $builder) => null);
@@ -190,11 +190,11 @@ final class ContainerDisposeTest extends AbstractDependencyInjectionTestCase
         $container->dispose();
 
         // Assert
-        $this->expectException(ContainerException::class);
+        $this->expectException(ContainerDisposedException::class);
         $container->createScope();
     }
 
-    public function testDispose_ThenGetFromLiveScope_ThrowsContainerException(): void
+    public function testDispose_ThenGetFromLiveScope_ThrowsContainerDisposedException(): void
     {
         // Arrange
         $container = self::buildContainer(
@@ -206,7 +206,7 @@ final class ContainerDisposeTest extends AbstractDependencyInjectionTestCase
         $container->dispose();
 
         // Assert
-        $this->expectException(ContainerException::class);
+        $this->expectException(ContainerDisposedException::class);
         $scope->get(FakeDisposableClass::class);
     }
 

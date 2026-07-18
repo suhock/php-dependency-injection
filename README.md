@@ -537,8 +537,8 @@ $container->dispose();
 ```
 
 After a container is disposed, any further `get()`, `has()`, or `createScope()`
-call throws a `ContainerException`. Disposing a container or scope more than
-once has no effect.
+call throws a `ContainerDisposedException`. Disposing a container or scope more
+than once has no effect.
 
 #### Opting out of disposal
 

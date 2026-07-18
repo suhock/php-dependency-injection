@@ -117,7 +117,7 @@ final class Container implements
     /**
      * @inheritDoc
      *
-     * @throws ContainerException If the container has been disposed
+     * @throws ContainerDisposedException If the container has been disposed
      */
     public function createScope(): ScopeInterface
     {
@@ -135,7 +135,7 @@ final class Container implements
      * Disposes the container. Container-owned disposable singletons (and any container-owned disposable transients
      * still referenced that were resolved directly from the container) are disposed in reverse creation order
      * (dependents before their dependencies). Any subsequent request to the container ({@see get()}, {@see has()},
-     * {@see createScope()}) throws a {@see ContainerException}. Disposing an already disposed container has no effect.
+     * {@see createScope()}) throws a {@see ContainerDisposedException}. Disposing an already disposed container has no effect.
      *
      * Scopes created by this container are managed by their own caller and are not disposed here; dispose them before
      * disposing the container, otherwise their scoped instances are not swept. If a disposed instance throws, disposal
@@ -156,12 +156,12 @@ final class Container implements
     }
 
     /**
-     * @throws ContainerException If the container has been disposed
+     * @throws ContainerDisposedException If the container has been disposed
      */
     private function ensureNotDisposed(): void
     {
         if ($this->disposed) {
-            throw new ContainerException('Container has been disposed');
+            throw new ContainerDisposedException('Container has been disposed');
         }
     }
 
@@ -191,7 +191,7 @@ final class Container implements
      *
      * @throws CircularDependencyException
      * @throws ClassNotFoundException
-     * @throws ContainerException If the container has been disposed
+     * @throws ContainerDisposedException If the container has been disposed
      *
      * @return TClass
      */
@@ -216,7 +216,7 @@ final class Container implements
     /**
      * @inheritDoc
      *
-     * @throws ContainerException If the container has been disposed
+     * @throws ContainerDisposedException If the container has been disposed
      */
     public function has(string $className, string|UnitEnum|null $key = null): bool
     {
