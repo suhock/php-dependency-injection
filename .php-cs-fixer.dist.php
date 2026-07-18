@@ -12,7 +12,7 @@ declare(strict_types=1);
 return (new PhpCsFixer\Config())
     ->setRiskyAllowed(true)
     ->registerCustomFixers([
-        new \Suhock\PhpCsFixer\PhpdocTagDescriptionIndentFixer(),
+        new \Suhock\PhpCsFixer\PhpdocTagHangingIndentFixer(),
     ])
     ->setRules([
         '@PER-CS3x0' => true,
