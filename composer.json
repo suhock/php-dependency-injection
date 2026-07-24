@@ -19,34 +19,18 @@
             "email": "matt@suhock.net"
         }
     ],
-    "repositories": [
-        {
-            "type": "path",
-            "url": "../phpstan-rules",
-            "options": {
-                "symlink": false
-            }
-        },
-        {
-            "type": "path",
-            "url": "../php-cs-fixer-rules",
-            "options": {
-                "symlink": false
-            }
-        }
-    ],
     "require": {
         "php": "^8.4",
         "suhock/disposable": "^1.0"
     },
     "require-dev": {
-        "ergebnis/phpstan-rules": "^2",
-        "friendsofphp/php-cs-fixer": "^v3",
+        "ergebnis/phpstan-rules": "^2.13",
+        "friendsofphp/php-cs-fixer": "^v3.95",
         "phpstan/phpstan": "^2.2",
-        "phpstan/phpstan-strict-rules": "^2",
-        "phpunit/phpunit": "^10.5 || ^11.0 || ^12.0 || ^13.0",
-        "suhock/php-cs-fixer-rules": "@dev",
-        "suhock/phpstan-rules": "@dev"
+        "phpstan/phpstan-strict-rules": "^2.0",
+        "phpunit/phpunit": "^13.2",
+        "suhock/php-cs-fixer-rules": "^1.0.0",
+        "suhock/phpstan-rules": "^1.0.0"
     },
     "suggest": {
         "ext-apcu": "To cache resolved dependencies with ApcuCache"
