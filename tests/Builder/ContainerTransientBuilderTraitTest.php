@@ -41,13 +41,12 @@ final class ContainerTransientBuilderTraitTest extends AbstractDependencyInjecti
     public function testAddTransientClass_WithMutator_GetReturnsMutatedInstance(): void
     {
         // Arrange
-        $container = self::createBuilder()
-            ->addTransientClass(
-                FakeClassNoConstructor::class,
-                function (FakeClassNoConstructor $obj) {
-                    $obj->string = 'test';
-                },
-            )
+        $container = self::createBuilder()->addTransientClass(
+            FakeClassNoConstructor::class,
+            function (FakeClassNoConstructor $obj) {
+                $obj->string = 'test';
+            },
+        )
             ->build();
 
         // Act
@@ -60,8 +59,7 @@ final class ContainerTransientBuilderTraitTest extends AbstractDependencyInjecti
     public function testAddTransientImplementation_WithSubclass_GetReturnsInstanceOfSubclass(): void
     {
         // Arrange
-        $container = self::createBuilder()
-            ->addTransientClass(FakeClassExtendsBaseClass::class)
+        $container = self::createBuilder()->addTransientClass(FakeClassExtendsBaseClass::class)
             ->addTransientImplementation(FakeBaseClass::class, FakeClassExtendsBaseClass::class)
             ->build();
 
@@ -116,11 +114,10 @@ final class ContainerTransientBuilderTraitTest extends AbstractDependencyInjecti
     public function testAddTransientFactory_WithFactory_GetReturnsValueFromFactory(): void
     {
         // Arrange
-        $container = self::createBuilder()
-            ->addTransientFactory(
-                FakeBaseClass::class,
-                fn() => new FakeClassExtendsBaseClass(),
-            )
+        $container = self::createBuilder()->addTransientFactory(
+            FakeBaseClass::class,
+            fn() => new FakeClassExtendsBaseClass(),
+        )
             ->build();
 
         // Act
@@ -136,8 +133,7 @@ final class ContainerTransientBuilderTraitTest extends AbstractDependencyInjecti
     public function testAddTransientFactory_WhenFactoryReturnsNull_GetThrowsWrappedInstanceTypeException(): void
     {
         // Arrange
-        $container = self::createBuilder()
-            ->addTransientFactory(FakeClassNoConstructor::class, fn() => null)
+        $container = self::createBuilder()->addTransientFactory(FakeClassNoConstructor::class, fn() => null)
             ->build();
 
         // Act
@@ -158,11 +154,10 @@ final class ContainerTransientBuilderTraitTest extends AbstractDependencyInjecti
     public function testAddTransientFactory_WhenReturnTypeIsWrong_GetThrowsWrappedInstanceTypeException(): void
     {
         // Arrange
-        $container = self::createBuilder()
-            ->addTransientFactory(
-                FakeClassNoConstructor::class,
-                fn() => new LogicException(),
-            )
+        $container = self::createBuilder()->addTransientFactory(
+            FakeClassNoConstructor::class,
+            fn() => new LogicException(),
+        )
             ->build();
 
         // Act
@@ -198,8 +193,7 @@ final class ContainerTransientBuilderTraitTest extends AbstractDependencyInjecti
     public function testAddKeyedTransient_WithImplementation_GetReturnsInstanceOfSubclass(): void
     {
         // Arrange
-        $container = self::createBuilder()
-            ->addTransientClass(FakeClassExtendsBaseClass::class)
+        $container = self::createBuilder()->addTransientClass(FakeClassExtendsBaseClass::class)
             ->addKeyedTransient(FakeBaseClass::class, 'key1', FakeClassExtendsBaseClass::class)
             ->build();
 
@@ -216,12 +210,11 @@ final class ContainerTransientBuilderTraitTest extends AbstractDependencyInjecti
     public function testAddKeyedTransient_WithFactory_GetReturnsValueFromFactory(): void
     {
         // Arrange
-        $container = self::createBuilder()
-            ->addKeyedTransient(
-                FakeBaseClass::class,
-                'key1',
-                fn() => new FakeClassExtendsBaseClass(),
-            )
+        $container = self::createBuilder()->addKeyedTransient(
+            FakeBaseClass::class,
+            'key1',
+            fn() => new FakeClassExtendsBaseClass(),
+        )
             ->build();
 
         // Act
@@ -237,14 +230,13 @@ final class ContainerTransientBuilderTraitTest extends AbstractDependencyInjecti
     public function testAddKeyedTransientClass_WithMutator_GetByKeyReturnsMutatedInstance(): void
     {
         // Arrange
-        $container = self::createBuilder()
-            ->addKeyedTransientClass(
-                FakeClassNoConstructor::class,
-                'key1',
-                function (FakeClassNoConstructor $obj) {
-                    $obj->string = 'test';
-                },
-            )
+        $container = self::createBuilder()->addKeyedTransientClass(
+            FakeClassNoConstructor::class,
+            'key1',
+            function (FakeClassNoConstructor $obj) {
+                $obj->string = 'test';
+            },
+        )
             ->build();
 
         // Act
@@ -259,8 +251,7 @@ final class ContainerTransientBuilderTraitTest extends AbstractDependencyInjecti
     public function testAddKeyedTransientImplementation_WithSubclass_GetByKeyReturnsInstanceOfSubclass(): void
     {
         // Arrange
-        $container = self::createBuilder()
-            ->addTransientClass(FakeClassExtendsBaseClass::class)
+        $container = self::createBuilder()->addTransientClass(FakeClassExtendsBaseClass::class)
             ->addKeyedTransientImplementation(FakeBaseClass::class, 'key1', FakeClassExtendsBaseClass::class)
             ->build();
 
@@ -276,12 +267,11 @@ final class ContainerTransientBuilderTraitTest extends AbstractDependencyInjecti
     public function testAddKeyedTransientFactory_WithFactory_GetByKeyReturnsNewValueFromFactory(): void
     {
         // Arrange
-        $container = self::createBuilder()
-            ->addKeyedTransientFactory(
-                FakeBaseClass::class,
-                'key1',
-                fn() => new FakeClassExtendsBaseClass(),
-            )
+        $container = self::createBuilder()->addKeyedTransientFactory(
+            FakeBaseClass::class,
+            'key1',
+            fn() => new FakeClassExtendsBaseClass(),
+        )
             ->build();
 
         // Act

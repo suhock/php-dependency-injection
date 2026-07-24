@@ -252,8 +252,7 @@ final class ContainerTest extends AbstractDependencyInjectionTestCase
     public function testGetConcreteClassName_WithImplementation_ReturnsConcreteTarget(): void
     {
         $container = self::buildContainer(
-            static fn(ContainerBuilder $builder) => $builder
-                ->addTransientClass(FakeClassNoConstructor::class)
+            static fn(ContainerBuilder $builder) => $builder->addTransientClass(FakeClassNoConstructor::class)
                 ->addTransientClass(FakeClassWithConstructor::class)
                 ->addTransientImplementation(FakeInterfaceOne::class, FakeClassWithConstructor::class),
         );

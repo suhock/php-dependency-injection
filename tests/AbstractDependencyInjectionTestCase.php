@@ -351,7 +351,9 @@ abstract class AbstractDependencyInjectionTestCase extends TestCase
         ?callable $previousTest,
         ParameterResolutionException $actualException,
     ): void {
-        $actualFunctionName = $actualException->getReflectionParameter()->getDeclaringFunction()->getName();
+        $actualFunctionName = $actualException->getReflectionParameter()
+            ->getDeclaringFunction()
+            ->getName();
 
         // Closures generate a runtime-defined, PHP-version-dependent name (e.g. "{closure:File.php:42}" as of
         // PHP 8.4), so only assert that the declaring function is a closure rather than matching an exact name.

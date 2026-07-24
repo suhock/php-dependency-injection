@@ -33,8 +33,7 @@ final class LazyTest extends AbstractDependencyInjectionTestCase
         // Arrange
         $counter = new FakeLazyCounter();
         $container = self::buildContainer(
-            static fn(ContainerBuilder $builder) => $builder
-                ->addSingletonInstance(FakeLazyCounter::class, $counter)
+            static fn(ContainerBuilder $builder) => $builder->addSingletonInstance(FakeLazyCounter::class, $counter)
                 ->addTransientClass(FakeLazyService::class)
                 ->addTransientClass(FakeLazyConsumer::class),
         );
@@ -52,8 +51,7 @@ final class LazyTest extends AbstractDependencyInjectionTestCase
         // Arrange
         $counter = new FakeLazyCounter();
         $container = self::buildContainer(
-            static fn(ContainerBuilder $builder) => $builder
-                ->addSingletonInstance(FakeLazyCounter::class, $counter)
+            static fn(ContainerBuilder $builder) => $builder->addSingletonInstance(FakeLazyCounter::class, $counter)
                 ->addTransientClass(FakeLazyService::class)
                 ->addTransientClass(FakeLazyConsumer::class),
         );
@@ -74,8 +72,7 @@ final class LazyTest extends AbstractDependencyInjectionTestCase
         // Arrange
         $counter = new FakeLazyCounter();
         $container = self::buildContainer(
-            static fn(ContainerBuilder $builder) => $builder
-                ->addSingletonInstance(FakeLazyCounter::class, $counter)
+            static fn(ContainerBuilder $builder) => $builder->addSingletonInstance(FakeLazyCounter::class, $counter)
                 ->addTransientClass(FakeLazyService::class)
                 ->addTransientImplementation(FakeLazyInterface::class, FakeLazyService::class)
                 ->addTransientClass(FakeLazyInterfaceConsumer::class),
@@ -96,8 +93,7 @@ final class LazyTest extends AbstractDependencyInjectionTestCase
         // Arrange
         $counter = new FakeLazyCounter();
         $container = self::buildContainer(
-            static fn(ContainerBuilder $builder) => $builder
-                ->addSingletonInstance(FakeLazyCounter::class, $counter)
+            static fn(ContainerBuilder $builder) => $builder->addSingletonInstance(FakeLazyCounter::class, $counter)
                 ->addTransientFactory(
                     FakeLazyService::class,
                     static fn(FakeLazyCounter $c): FakeLazyService => new FakeLazyService($c),
@@ -119,8 +115,7 @@ final class LazyTest extends AbstractDependencyInjectionTestCase
     {
         // Arrange: A depends on B lazily, B depends on A eagerly; the lazy edge breaks the otherwise-fatal cycle.
         $container = self::buildContainer(
-            static fn(ContainerBuilder $builder) => $builder
-                ->addSingletonClass(FakeLazyCycleA::class)
+            static fn(ContainerBuilder $builder) => $builder->addSingletonClass(FakeLazyCycleA::class)
                 ->addSingletonClass(FakeLazyCycleB::class),
         );
 
@@ -137,8 +132,7 @@ final class LazyTest extends AbstractDependencyInjectionTestCase
         // Arrange
         $counter = new FakeLazyCounter();
         $container = self::buildContainer(
-            static fn(ContainerBuilder $builder) => $builder
-                ->addSingletonInstance(FakeLazyCounter::class, $counter)
+            static fn(ContainerBuilder $builder) => $builder->addSingletonInstance(FakeLazyCounter::class, $counter)
                 ->addSingletonClass(FakeLazyService::class)
                 ->addTransientClass(FakeLazyConsumer::class),
         );
@@ -158,8 +152,7 @@ final class LazyTest extends AbstractDependencyInjectionTestCase
         // Arrange
         $log = new FakeDisposalLog();
         $container = self::buildContainer(
-            static fn(ContainerBuilder $builder) => $builder
-                ->addSingletonInstance(FakeDisposalLog::class, $log)
+            static fn(ContainerBuilder $builder) => $builder->addSingletonInstance(FakeDisposalLog::class, $log)
                 ->addSingletonClass(FakeLazyDisposable::class)
                 ->addTransientClass(FakeLazyDisposableConsumer::class),
         );
@@ -177,8 +170,7 @@ final class LazyTest extends AbstractDependencyInjectionTestCase
         // Arrange
         $log = new FakeDisposalLog();
         $container = self::buildContainer(
-            static fn(ContainerBuilder $builder) => $builder
-                ->addSingletonInstance(FakeDisposalLog::class, $log)
+            static fn(ContainerBuilder $builder) => $builder->addSingletonInstance(FakeDisposalLog::class, $log)
                 ->addSingletonClass(FakeLazyDisposable::class)
                 ->addTransientClass(FakeLazyDisposableConsumer::class),
         );

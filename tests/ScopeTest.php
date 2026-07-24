@@ -171,8 +171,7 @@ final class ScopeTest extends AbstractDependencyInjectionTestCase
     {
         // Arrange
         $container = self::buildContainer(
-            static fn(ContainerBuilder $builder) => $builder
-                ->addScoped(FakeClassNoConstructor::class)
+            static fn(ContainerBuilder $builder) => $builder->addScoped(FakeClassNoConstructor::class)
                 ->addTransient(FakeClassWithConstructor::class),
         );
         $scope = $container->createScope();
@@ -189,8 +188,7 @@ final class ScopeTest extends AbstractDependencyInjectionTestCase
     {
         // Arrange
         $container = self::buildContainer(
-            static fn(ContainerBuilder $builder) => $builder
-                ->addScoped(FakeClassNoConstructor::class)
+            static fn(ContainerBuilder $builder) => $builder->addScoped(FakeClassNoConstructor::class)
                 ->addTransient(FakeClassWithConstructor::class),
         );
         $firstScope = $container->createScope();
@@ -212,8 +210,7 @@ final class ScopeTest extends AbstractDependencyInjectionTestCase
         // dependency as scoped and the dependent as singleton always resolves the scoped service outside of a scope.
         // This used to surface as a ScopeException lazily from either the scope or the root container's get(); it is
         // now a build-time captive-dependency defect, caught before either can ever be called.
-        $builder = self::createBuilder()
-            ->addScoped(FakeClassNoConstructor::class)
+        $builder = self::createBuilder()->addScoped(FakeClassNoConstructor::class)
             ->addSingleton(FakeClassWithConstructor::class);
 
         // Act
@@ -366,11 +363,10 @@ final class ScopeTest extends AbstractDependencyInjectionTestCase
         // failure (a CircularDependencyException from the shared in-progress tracker, or a ScopeException from
         // re-entering the scoped service at the root) rather than recursing.
         $container = self::buildContainer(
-            static fn(ContainerBuilder $builder) => $builder
-                ->addScopedFactory(
-                    FakeClassNoConstructor::class,
-                    fn(FakeClassWithConstructor $dependency) => new FakeClassNoConstructor(),
-                )
+            static fn(ContainerBuilder $builder) => $builder->addScopedFactory(
+                FakeClassNoConstructor::class,
+                fn(FakeClassWithConstructor $dependency) => new FakeClassNoConstructor(),
+            )
                 ->addSingletonFactory(
                     FakeClassWithConstructor::class,
                     static fn(ContainerInterface $c): FakeClassWithConstructor
@@ -414,8 +410,7 @@ final class ScopeTest extends AbstractDependencyInjectionTestCase
         // Arrange
         $log = new FakeDisposalLog();
         $container = self::buildContainer(
-            static fn(ContainerBuilder $builder) => $builder
-                ->addSingletonInstance(FakeDisposalLog::class, $log)
+            static fn(ContainerBuilder $builder) => $builder->addSingletonInstance(FakeDisposalLog::class, $log)
                 ->addScoped(FakeDisposableClass::class)
                 ->addScoped(FakeDisposableClassWithDependency::class),
         );
@@ -450,8 +445,7 @@ final class ScopeTest extends AbstractDependencyInjectionTestCase
         // Arrange
         $log = new FakeDisposalLog();
         $container = self::buildContainer(
-            static fn(ContainerBuilder $builder) => $builder
-                ->addSingletonInstance(FakeDisposalLog::class, $log)
+            static fn(ContainerBuilder $builder) => $builder->addSingletonInstance(FakeDisposalLog::class, $log)
                 ->addTransient(FakeDisposableClass::class),
         );
         $scope = $container->createScope();

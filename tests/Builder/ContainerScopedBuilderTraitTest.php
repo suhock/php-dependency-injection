@@ -42,13 +42,12 @@ final class ContainerScopedBuilderTraitTest extends AbstractDependencyInjectionT
     public function testAddScopedClass_WithMutator_GetReturnsMutatedInstance(): void
     {
         // Arrange
-        $container = self::createBuilder()
-            ->addScopedClass(
-                FakeClassNoConstructor::class,
-                function (FakeClassNoConstructor $obj) {
-                    $obj->string = 'test';
-                },
-            )
+        $container = self::createBuilder()->addScopedClass(
+            FakeClassNoConstructor::class,
+            function (FakeClassNoConstructor $obj) {
+                $obj->string = 'test';
+            },
+        )
             ->build();
 
         // Act
@@ -61,8 +60,7 @@ final class ContainerScopedBuilderTraitTest extends AbstractDependencyInjectionT
     public function testAddScopedImplementation_WithSubclass_GetReturnsInstanceOfSubclass(): void
     {
         // Arrange
-        $container = self::createBuilder()
-            ->addScopedClass(FakeClassExtendsBaseClass::class)
+        $container = self::createBuilder()->addScopedClass(FakeClassExtendsBaseClass::class)
             ->addScopedImplementation(FakeBaseClass::class, FakeClassExtendsBaseClass::class)
             ->build();
         $scope = $container->createScope();
@@ -97,8 +95,7 @@ final class ContainerScopedBuilderTraitTest extends AbstractDependencyInjectionT
     public function testAddScopedFactory_WithFactory_GetReturnsValueFromFactoryWithScopeDependencies(): void
     {
         // Arrange
-        $container = self::createBuilder()
-            ->addScoped(FakeClassNoConstructor::class)
+        $container = self::createBuilder()->addScoped(FakeClassNoConstructor::class)
             ->addScopedFactory(
                 FakeClassWithConstructor::class,
                 fn(FakeClassNoConstructor $obj) => new FakeClassWithConstructor($obj),
@@ -130,14 +127,13 @@ final class ContainerScopedBuilderTraitTest extends AbstractDependencyInjectionT
     public function testAddKeyedScopedClass_WithMutator_GetByKeyReturnsMutatedPerScopeInstance(): void
     {
         // Arrange
-        $container = self::createBuilder()
-            ->addKeyedScopedClass(
-                FakeClassNoConstructor::class,
-                'key1',
-                function (FakeClassNoConstructor $obj) {
-                    $obj->string = 'test';
-                },
-            )
+        $container = self::createBuilder()->addKeyedScopedClass(
+            FakeClassNoConstructor::class,
+            'key1',
+            function (FakeClassNoConstructor $obj) {
+                $obj->string = 'test';
+            },
+        )
             ->build();
         $scope = $container->createScope();
 
@@ -152,8 +148,7 @@ final class ContainerScopedBuilderTraitTest extends AbstractDependencyInjectionT
     public function testAddKeyedScopedImplementation_WithSubclass_GetByKeyReturnsInstanceOfSubclass(): void
     {
         // Arrange
-        $container = self::createBuilder()
-            ->addScopedClass(FakeClassExtendsBaseClass::class)
+        $container = self::createBuilder()->addScopedClass(FakeClassExtendsBaseClass::class)
             ->addKeyedScopedImplementation(FakeBaseClass::class, 'key1', FakeClassExtendsBaseClass::class)
             ->build();
         $scope = $container->createScope();
@@ -169,12 +164,11 @@ final class ContainerScopedBuilderTraitTest extends AbstractDependencyInjectionT
     public function testAddKeyedScopedFactory_WithFactory_GetByKeyReturnsPerScopeInstance(): void
     {
         // Arrange
-        $container = self::createBuilder()
-            ->addKeyedScopedFactory(
-                FakeBaseClass::class,
-                'key1',
-                fn() => new FakeClassExtendsBaseClass(),
-            )
+        $container = self::createBuilder()->addKeyedScopedFactory(
+            FakeBaseClass::class,
+            'key1',
+            fn() => new FakeClassExtendsBaseClass(),
+        )
             ->build();
         $scope = $container->createScope();
 

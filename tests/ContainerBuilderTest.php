@@ -51,8 +51,7 @@ final class ContainerBuilderTest extends AbstractDependencyInjectionTestCase
     public function testAddKeyed_WithValidClass_ProductHasKeyedService(): void
     {
         // Arrange & Act
-        $container = self::createBuilder()
-            ->addKeyedSingleton(FakeClassNoConstructor::class, 'key1')
+        $container = self::createBuilder()->addKeyedSingleton(FakeClassNoConstructor::class, 'key1')
             ->build();
 
         // Assert
@@ -73,8 +72,7 @@ final class ContainerBuilderTest extends AbstractDependencyInjectionTestCase
     public function testAddKeyed_WhenUnkeyedServiceExists_AddsIndependentKeyedDescriptor(): void
     {
         // Arrange & Act
-        $container = self::createBuilder()
-            ->addSingletonClass(FakeClassNoConstructor::class)
+        $container = self::createBuilder()->addSingletonClass(FakeClassNoConstructor::class)
             ->addKeyedSingleton(FakeClassNoConstructor::class, 'key1')
             ->build();
 
@@ -113,8 +111,7 @@ final class ContainerBuilderTest extends AbstractDependencyInjectionTestCase
     public function testRemove_WithKey_RemovesOnlyKeyedService(): void
     {
         // Arrange
-        $builder = self::createBuilder()
-            ->addSingletonClass(FakeClassNoConstructor::class)
+        $builder = self::createBuilder()->addSingletonClass(FakeClassNoConstructor::class)
             ->addKeyedSingleton(FakeClassNoConstructor::class, 'key1')
             ->addKeyedSingleton(FakeClassNoConstructor::class, 'key2');
 
@@ -130,8 +127,7 @@ final class ContainerBuilderTest extends AbstractDependencyInjectionTestCase
     public function testRemove_WithoutKey_DoesNotRemoveKeyedService(): void
     {
         // Arrange
-        $builder = self::createBuilder()
-            ->addSingletonClass(FakeClassNoConstructor::class)
+        $builder = self::createBuilder()->addSingletonClass(FakeClassNoConstructor::class)
             ->addKeyedSingleton(FakeClassNoConstructor::class, 'key1');
 
         // Act
@@ -172,8 +168,7 @@ final class ContainerBuilderTest extends AbstractDependencyInjectionTestCase
     public function testBuild_WithDefectiveConfiguration_ThrowsAggregatedValidationException(): void
     {
         // Arrange: two independent defects, a missing required dependency and an unresolvable builtin parameter.
-        $builder = self::createBuilder()
-            ->addTransientClass(FakeClassWithDependencies::class)
+        $builder = self::createBuilder()->addTransientClass(FakeClassWithDependencies::class)
             ->addTransientClass(FakeClassWithStringDependency::class);
 
         // Act
@@ -204,8 +199,7 @@ final class ContainerBuilderTest extends AbstractDependencyInjectionTestCase
         }
 
         // Act
-        $container = $builder
-            ->addSingletonFactory(Throwable::class, static fn(): RuntimeException => new RuntimeException())
+        $container = $builder->addSingletonFactory(Throwable::class, static fn(): RuntimeException => new RuntimeException())
             ->addSingletonFactory(RuntimeException::class, static fn(): RuntimeException => new RuntimeException())
             ->build();
 
@@ -267,8 +261,7 @@ final class ContainerBuilderTest extends AbstractDependencyInjectionTestCase
         $storesAfterFirstBuild = count($cache->storedIds);
 
         // Act
-        $container = ContainerBuilder::createDefault($cache)
-            ->addSingletonClass(FakeClassNoConstructor::class)
+        $container = ContainerBuilder::createDefault($cache)->addSingletonClass(FakeClassNoConstructor::class)
             ->build();
 
         // Assert: the second build stored nothing new and its product still resolves.
@@ -313,8 +306,7 @@ final class ContainerBuilderTest extends AbstractDependencyInjectionTestCase
         $cache = new FakeCache();
 
         // Act
-        $container = ContainerBuilder::createDefault($cache)
-            ->addSingletonFactory(FakeClassNoConstructor::class, phpversion(...))
+        $container = ContainerBuilder::createDefault($cache)->addSingletonFactory(FakeClassNoConstructor::class, phpversion(...))
             ->build();
 
         // Assert
@@ -325,8 +317,7 @@ final class ContainerBuilderTest extends AbstractDependencyInjectionTestCase
     public function testExportDependencyGraph_WithLinearChain_ExportsTheEdge(): void
     {
         // Arrange: FakeClassWithConstructor requires FakeClassNoConstructor via parameter $obj.
-        $builder = self::createBuilder()
-            ->addSingletonClass(FakeClassWithConstructor::class)
+        $builder = self::createBuilder()->addSingletonClass(FakeClassWithConstructor::class)
             ->addSingletonClass(FakeClassNoConstructor::class);
 
         // Act
@@ -358,8 +349,7 @@ final class ContainerBuilderTest extends AbstractDependencyInjectionTestCase
     public function testExportDependencyGraph_WithKeyedDependency_RendersTheKeyedTargetId(): void
     {
         // Arrange: FakeClassWithKeyedDependency injects FakeClassNoConstructor under 'key1'.
-        $builder = self::createBuilder()
-            ->addTransientClass(FakeClassWithKeyedDependency::class)
+        $builder = self::createBuilder()->addTransientClass(FakeClassWithKeyedDependency::class)
             ->addKeyedSingleton(FakeClassNoConstructor::class, 'key1');
 
         // Act
@@ -374,8 +364,7 @@ final class ContainerBuilderTest extends AbstractDependencyInjectionTestCase
     public function testExportDependencyGraph_WithImplementation_ExportsTheImplementationEdge(): void
     {
         // Arrange
-        $builder = self::createBuilder()
-            ->addTransientImplementation(FakeInterfaceOne::class, FakeClassImplementsInterfaces::class)
+        $builder = self::createBuilder()->addTransientImplementation(FakeInterfaceOne::class, FakeClassImplementsInterfaces::class)
             ->addTransientClass(FakeClassImplementsInterfaces::class);
 
         // Act
@@ -392,12 +381,11 @@ final class ContainerBuilderTest extends AbstractDependencyInjectionTestCase
     public function testExportDependencyGraph_WithSatisfiedSoftDependency_ExportsANonRequiredEdge(): void
     {
         // Arrange: the factory's nullable parameter is soft, but its dependency is added, so the edge exists.
-        $builder = self::createBuilder()
-            ->addSingletonFactory(
-                FakeClassWithConstructor::class,
-                static fn(?FakeClassNoConstructor $obj): FakeClassWithConstructor
+        $builder = self::createBuilder()->addSingletonFactory(
+            FakeClassWithConstructor::class,
+            static fn(?FakeClassNoConstructor $obj): FakeClassWithConstructor
                     => new FakeClassWithConstructor($obj ?? new FakeClassNoConstructor()),
-            )
+        )
             ->addSingletonClass(FakeClassNoConstructor::class);
 
         // Act
@@ -411,8 +399,7 @@ final class ContainerBuilderTest extends AbstractDependencyInjectionTestCase
     public function testExportDependencyGraph_WithUnionDependency_ExportsOnlyTheChosenEdge(): void
     {
         // Arrange: the union FakeInterfaceOne|FakeInterfaceTwo always chooses its first resolvable member.
-        $builder = self::createBuilder()
-            ->addTransientClass(FakeClassWithUnionDependency::class)
+        $builder = self::createBuilder()->addTransientClass(FakeClassWithUnionDependency::class)
             ->addTransientImplementation(FakeInterfaceOne::class, FakeClassImplementsInterfaces::class)
             ->addTransientImplementation(FakeInterfaceTwo::class, FakeClassImplementsInterfaces::class)
             ->addTransientClass(FakeClassImplementsInterfaces::class);
@@ -448,8 +435,7 @@ final class ContainerBuilderTest extends AbstractDependencyInjectionTestCase
     public function testExportDependencyGraph_RootsAreDerivable(): void
     {
         // Arrange: the roots (services nothing injects) are the ids that appear as no edge's target.
-        $builder = self::createBuilder()
-            ->addSingletonClass(FakeClassWithConstructor::class)
+        $builder = self::createBuilder()->addSingletonClass(FakeClassWithConstructor::class)
             ->addSingletonClass(FakeClassNoConstructor::class);
 
         // Act
