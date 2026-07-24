@@ -11,9 +11,7 @@ declare(strict_types=1);
 
 return (new PhpCsFixer\Config())
     ->setRiskyAllowed(true)
-    ->registerCustomFixers([
-        new \Suhock\PhpCsFixer\PhpdocTagHangingIndentFixer(),
-    ])
+    ->registerCustomFixers(new \Suhock\PhpCsFixer\Fixers())
     ->setRules([
         '@PER-CS3x0' => true,
 
@@ -50,7 +48,7 @@ return (new PhpCsFixer\Config())
         'phpdoc_trim' => true,
         'phpdoc_types' => true,
         'phpdoc_var_without_name' => true,
-        'Suhock/phpdoc_tag_description_indent' => true, // custom: suhock/php-cs-fixer-rules
+        'Suhock/phpdoc_tag_hanging_indent' => true,
 
         // Whitespace & layout
         'blank_line_before_statement' => ['statements' => ['return']],
@@ -62,6 +60,10 @@ return (new PhpCsFixer\Config())
         'method_chaining_indentation' => true,
         'multiline_whitespace_before_semicolons' => ['strategy' => 'no_multi_line'],
         'no_extra_blank_lines' => true,
+        'Suhock/method_chain_splitting' => [
+            'calls_on_first_line' => 1,
+            'max_calls_in_single_line_chain' => 2,
+        ],
 
         // Language constructs & cleanup
         'get_class_to_class_keyword' => true, // RISKY
