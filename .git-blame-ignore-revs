@@ -1,0 +1,14 @@
+# Commits listed here are skipped by git blame (mechanical reformats).
+# Enable locally: git config blame.ignoreRevsFile .git-blame-ignore-revs
+
+# Apply php-cs-fixer: blank line before function import groups
+d87b9190473f21c49ecd600b1ed0022345ddc5ce
+
+# Sort imports in ContainerBuilderTest
+05711bcc17c8dcda9ef97a1818efe052dfadcd50
+
+# Standardize import block formatting
+00446775bdba00364ec5ec3721196c9b246433fc
+
+# Reformat method chaining line breaks in tests
+5f377502cb0a72b95caca9491b5c99d5768a0e7f
