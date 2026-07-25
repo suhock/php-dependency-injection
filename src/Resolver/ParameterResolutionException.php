@@ -88,7 +88,7 @@ final class ParameterResolutionException extends InjectorException
             $rType instanceof ReflectionNamedType => $rType->getName(),
             $rType instanceof ReflectionUnionType => self::buildCombinedParameterTypeName($rType, '|'),
             $rType instanceof ReflectionIntersectionType => self::buildCombinedParameterTypeName($rType, '&'),
-            default => null, // covers null $rType as well as any new types introduced after PHP 8.1
+            default => null, // covers null $rType as well as any new types introduced after PHP 8.5
         };
     }
 

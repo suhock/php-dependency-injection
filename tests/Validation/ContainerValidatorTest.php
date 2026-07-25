@@ -12,7 +12,6 @@ declare(strict_types=1);
 namespace Suhock\DependencyInjection\Validation;
 
 use Closure;
-use PHPUnit\Framework\Attributes\RequiresPhp;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 use Suhock\DependencyInjection\Builder\Descriptor;
@@ -223,7 +222,6 @@ final class ContainerValidatorTest extends TestCase
         $this->assertNoIssues();
     }
 
-    #[RequiresPhp('>= 8.2.0')]
     public function testValidate_WithDnfDependencyMemberResolvable_ReportsNothing(): void
     {
         // Satisfies the (One&Two) conjunction of the DNF type via its One member.

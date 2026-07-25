@@ -160,7 +160,7 @@ final class ResolvableDependencyFactory
 
         foreach ($rType->getTypes() as $rInnerType) {
             if (!$rInnerType instanceof ReflectionNamedType) {
-                // Future-proofing. As of PHP 8.1, only named types are supported in intersection types.
+                // Future-proofing. As of PHP 8.5, only named types are supported in intersection types.
                 return null;
             }
 

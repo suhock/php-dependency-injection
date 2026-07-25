@@ -1,10 +1,8 @@
 # Contributing
 
-Thanks for your interest in improving `suhock/dependency-injection`.
-
 ## Requirements
 
-- PHP 8.1 or newer
+- PHP 8.4 or newer
 - [Composer](https://getcomposer.org/)
 
 ## Getting started
@@ -23,7 +21,7 @@ composer phpstan       # PHPStan, level 10
 composer php-cs-fixer  # php-cs-fixer (coding standard)
 ```
 
-CI runs the suite across PHP 8.1 through 8.4.
+CI runs the suite across PHP 8.4 and 8.5.
 
 ## Branch model
 

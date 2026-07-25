@@ -13,7 +13,6 @@ namespace Suhock\DependencyInjection;
 
 use Exception;
 use LogicException;
-use PHPUnit\Framework\Attributes\RequiresPhp;
 use ReflectionParameter;
 use RuntimeException;
 use Suhock\DependencyInjection\Fakes\FakeAbstractClass;
@@ -272,7 +271,6 @@ final class InjectorTest extends AbstractDependencyInjectionTestCase
         self::assertSame($instance, $result->obj);
     }
 
-    #[RequiresPhp('>= 8.2.0')]
     public function testInstantiate_WithDnfDependency_ResolvesViaIntersectionAlternative(): void
     {
         // Arrange: for (FakeInterfaceOne&FakeInterfaceTwo)|FakeInterfaceThree, register a service satisfying the
