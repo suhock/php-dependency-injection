@@ -16,11 +16,13 @@ use UnitEnum;
 
 /**
  * One guaranteed-failure defect found while validating a container's configuration.
+ *
+ * @template TClass of object
  */
 final class ValidationIssue
 {
     /**
-     * @param class-string $className The class of the service the issue was found on
+     * @param class-string<TClass> $className The class of the service the issue was found on
      * @param string|UnitEnum|null $key The key the service was added under, if any
      * @param ValidationIssueKind $kind The kind of defect
      * @param string $message A human-readable description of the defect

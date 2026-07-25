@@ -20,22 +20,24 @@ use Suhock\DependencyInjection\Builder\Descriptor;
  * Immutable and free of reflection objects and closures, so plans are cheap to cache and share; the executable parts
  * (factory and mutator closures) stay on the descriptor's provider and are paired with the plan at execution time.
  *
+ * @template TClass of object
+ *
  * @internal
  */
 final class ResolutionPlan
 {
     /**
-     * @param class-string $className The class the plan produces
+     * @param class-string<TClass> $className The class the plan produces
      * @param ResolutionPlanKind $kind How the instance is produced
      * @param list<ResolutionPlanEdge> $argumentEdges Constructor arguments ({@see ResolutionPlanKind::AutowiredClass})
      *     or factory arguments ({@see ResolutionPlanKind::Factory}), in call order
      * @param list<ResolutionPlanEdge> $mutatorEdges The mutator's parameter edges after the instance parameter, in
      *     call order
-     * @param class-string|null $implementationTarget The service the container resolves in this service's place
+     * @param class-string<TClass>|null $implementationTarget The service the container resolves in this service's place
      *     ({@see ResolutionPlanKind::Implementation})
      * @param string|null $nonInstantiableMessage Why the autowired class can never be instantiated, if it cannot
-     * @param string|null $declaredFactoryReturnType The factory's declared return class, when it declares a single
-     *     existing class or interface
+     * @param class-string<TClass>|null $declaredFactoryReturnType The factory's declared return class, when it declares
+     *     a single existing class or interface
      */
     public function __construct(
         public readonly string $className,

@@ -28,14 +28,14 @@ interface ContainerSingletonBuilderInterface
      * - a `Closure`: a factory to call.
      * - an `object`: the instance to use.
      *
-     * The convenience form takes the default for each shape. To pass a mutator,
-     * use {@see addSingletonClass()}; to set disposal of a supplied instance,
-     * use {@see addSingletonInstance()} with `$shouldDispose`.
+     * The convenience form takes the default for each shape.
+     * To pass a mutator, use {@see addSingletonClass()}.
+     * To set disposal of a supplied instance, use {@see addSingletonInstance()} with `$shouldDispose`.
      *
      * @template TClass of object
      *
      * @param class-string<TClass> $className
-     * @param class-string<TClass>|TClass|Closure|null $source
+     * @param class-string<TClass>|TClass|Closure(mixed...):TClass|null $source
      *
      * @return $this
      */
@@ -44,19 +44,19 @@ interface ContainerSingletonBuilderInterface
     /**
      * Adds a singleton service under $key. The provider is chosen from the type of $source:
      * - `null`: autowire $className's constructor.
-     * * - a `class-string`: the implementation class to resolve in place of $className.
-     * * - a `Closure`: a factory to call.
-     * * - an `object`: the instance to use.
+     * - a `class-string`: the implementation class to resolve in place of $className.
+     * - a `Closure`: a factory to call.
+     * - an `object`: the instance to use.
      *
-     * The convenience form takes the default for each shape. To pass a mutator,
-     * use {@see addKeyedSingletonClass()}; to set disposal of a supplied instance,
-     * use {@see addKeyedSingletonInstance()} with `$shouldDispose`.
+     * The convenience form takes the default for each shape.
+     * To pass a mutator, use {@see addKeyedSingletonClass()}.
+     * To set disposal of a supplied instance, use {@see addKeyedSingletonInstance()} with `$shouldDispose`.
      *
      * @template TClass of object
      *
      * @param class-string<TClass> $className
      * @param string|UnitEnum $key The key to add the service under
-     * @param class-string<TClass>|TClass|Closure|null $source
+     * @param class-string<TClass>|TClass|Closure(mixed...):TClass|null $source
      *
      * @return $this
      */
@@ -74,8 +74,8 @@ interface ContainerSingletonBuilderInterface
      * @template TClass of object
      *
      * @param class-string<TClass> $className The fully qualified name of the class to add
-     * @param Closure|callable-string|null $mutator [optional] This function will be called after an instance of the
-     *     class has been created. The class instance will be provided as the first parameter. Any additional
+     * @param callable(TClass,mixed...):mixed|null $mutator [optional] This function will be called after an instance of
+     *     the class has been created. The class instance will be provided as the first parameter. Any additional
      *     parameters will be injected.
      *
      * @throws ImplementationException
@@ -93,8 +93,8 @@ interface ContainerSingletonBuilderInterface
      *
      * @param class-string<TClass> $className The fully qualified name of the class to add
      * @param string|UnitEnum $key The key to add the service under
-     * @param Closure|callable-string|null $mutator [optional] This function will be called after an instance of the
-     *     class has been created. The class instance will be provided as the first parameter. Any additional
+     * @param callable(TClass,mixed...):mixed|null $mutator [optional] This function will be called after an instance of
+     *     the class has been created. The class instance will be provided as the first parameter. Any additional
      *     parameters will be injected.
      *
      * @throws ImplementationException
@@ -155,8 +155,8 @@ interface ContainerSingletonBuilderInterface
      * @template TClass of object
      *
      * @param class-string<TClass> $className The fully qualified name of the class to add
-     * @param callable $factory A factory method that returns an instance of the class specified by {@see $className}.
-     *     Any method parameters will be injected.
+     * @param callable(mixed...):TClass $factory A factory method that returns an instance of the class specified by
+     *     {@see $className}. Any method parameters will be injected.
      *
      * @return $this
      */
@@ -170,8 +170,8 @@ interface ContainerSingletonBuilderInterface
      *
      * @param class-string<TClass> $className The fully qualified name of the class to add
      * @param string|UnitEnum $key The key to add the service under
-     * @param callable $factory A factory method that returns an instance of the class specified by {@see $className}.
-     *     Any method parameters will be injected.
+     * @param callable(mixed...):TClass $factory A factory method that returns an instance of the class specified by
+     *     {@see $className}. Any method parameters will be injected.
      *
      * @return $this
      */

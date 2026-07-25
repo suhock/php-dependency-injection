@@ -36,7 +36,7 @@ interface ContainerScopedBuilderInterface
      * @template TClass of object
      *
      * @param class-string<TClass> $className
-     * @param class-string<TClass>|TClass|Closure|null $source
+     * @param class-string<TClass>|TClass|Closure(mixed...):mixed|null $source
      *
      * @return $this
      */
@@ -49,14 +49,13 @@ interface ContainerScopedBuilderInterface
      * - a `Closure`: a factory to call.
      * - an `object`: the instance to use.
      *
-     * The convenience form takes the default for each shape. To pass a mutator,
-     * use {@see addKeyedScopedClass()}.
+     * The convenience form takes the default for each shape. To pass a mutator, use {@see addKeyedScopedClass()}.
      *
      * @template TClass of object
      *
      * @param class-string<TClass> $className
      * @param string|UnitEnum $key The key to add the service under
-     * @param class-string<TClass>|TClass|Closure|null $source
+     * @param class-string<TClass>|TClass|Closure(mixed...):TClass|null $source
      *
      * @return $this
      */
@@ -74,9 +73,9 @@ interface ContainerScopedBuilderInterface
      * @template TClass of object
      *
      * @param class-string<TClass> $className The fully qualified name of the class to add
-     * @param Closure|callable-string|null $mutator [optional] This function will be called after an instance of the
-     *     class has been created. The class instance will be provided as the first parameter. Any additional parameters
-     *     will be injected.
+     * @param callable(TClass,mixed...):mixed|null $mutator [optional] This function will be called after an instance of
+     *     the class has been created. The class instance will be provided as the first parameter. Any additional
+     *     parameters will be injected.
      *
      * @throws ImplementationException
      *
@@ -93,9 +92,9 @@ interface ContainerScopedBuilderInterface
      *
      * @param class-string<TClass> $className The fully qualified name of the class to add
      * @param string|UnitEnum $key The key to add the service under
-     * @param Closure|callable-string|null $mutator [optional] This function will be called after an instance of the
-     *     class has been created. The class instance will be provided as the first parameter. Any additional parameters
-     *     will be injected.
+     * @param callable(TClass,mixed...):mixed|null $mutator [optional] This function will be called after an instance of
+     *     the class has been created. The class instance will be provided as the first parameter. Any additional
+     *     parameters will be injected.
      *
      * @throws ImplementationException
      *
@@ -155,8 +154,8 @@ interface ContainerScopedBuilderInterface
      * @template TClass of object
      *
      * @param class-string<TClass> $className The fully qualified name of the class to add
-     * @param callable $factory A factory method that returns an instance of the class specified by {@see $className}.
-     *     Any method parameters will be injected from the resolving scope.
+     * @param callable(mixed...):TClass $factory A factory method that returns an instance of the class specified by
+     *     {@see $className}. Any method parameters will be injected from the resolving scope.
      *
      * @return $this
      */
@@ -170,8 +169,8 @@ interface ContainerScopedBuilderInterface
      *
      * @param class-string<TClass> $className The fully qualified name of the class to add
      * @param string|UnitEnum $key The key to add the service under
-     * @param callable $factory A factory method that returns an instance of the class specified by {@see $className}.
-     *     Any method parameters will be injected from the resolving scope.
+     * @param callable(mixed...):TClass $factory A factory method that returns an instance of the class specified by
+     *     {@see $className}. Any method parameters will be injected from the resolving scope.
      *
      * @return $this
      */

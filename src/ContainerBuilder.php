@@ -186,7 +186,7 @@ final class ContainerBuilder implements ContainerBuilderInterface
     /**
      * Restores a cached plan set, or <code>null</code> when the cached value does not have the expected shape.
      *
-     * @return array<string, ResolutionPlan>|null
+     * @return array<string, ResolutionPlan<object>>|null
      */
     private static function plansFromCache(mixed $cached): ?array
     {

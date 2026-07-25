@@ -27,13 +27,12 @@ interface ContainerTransientBuilderInterface
      * - a `Closure`: a factory to call.
      * - an `object`: the instance to use.
      *
-     * The convenience form takes the default for each shape. To pass a mutator,
-     * use {@see addTransientClass()}.
+     * The convenience form takes the default for each shape. To pass a mutator, use {@see addTransientClass()}.
      *
      * @template TClass of object
      *
      * @param class-string<TClass> $className
-     * @param class-string<TClass>|Closure|null $source
+     * @param class-string<TClass>|Closure(mixed...):TClass|null $source
      *
      * @return $this
      */
@@ -46,14 +45,13 @@ interface ContainerTransientBuilderInterface
      * - a `Closure`: a factory to call.
      * - an `object`: the instance to use.
      *
-     * The convenience form takes the default for each shape. To pass a mutator,
-     * use {@see addKeyedTransientClass()}.
+     * The convenience form takes the default for each shape. To pass a mutator, use {@see addKeyedTransientClass()}.
      *
      * @template TClass of object
      *
      * @param class-string<TClass> $className
      * @param string|UnitEnum $key The key to add the service under
-     * @param class-string<TClass>|Closure|null $source
+     * @param class-string<TClass>|Closure(mixed...):TClass|null $source
      *
      * @return $this
      */
@@ -68,12 +66,14 @@ interface ContainerTransientBuilderInterface
      * constructor. An optional mutator function can be specified to perform additional initialization on the
      * constructed object.
      *
-     * @param class-string $className The fully qualified name of the class to add
-     * @param Closure|callable-string|null $mutator [optional] This function will be called after an instance of the
-     *     class has been created. The class instance will be provided as the first parameter. Any additional
+     * @template TClass of object
+     *
+     * @param class-string<TClass> $className The fully qualified name of the class to add
+     * @param callable(TClass,mixed...):mixed|null $mutator [optional] This function will be called after an instance of
+     *     the class has been created. The class instance will be provided as the first parameter. Any additional
      *     parameters will be injected.
      *
-     * @throws ImplementationException
+     *@throws ImplementationException
      *
      * @return $this
      */
@@ -84,13 +84,15 @@ interface ContainerTransientBuilderInterface
      * autowiring its constructor. An optional mutator function can be specified to perform additional initialization
      * on the constructed object.
      *
-     * @param class-string $className The fully qualified name of the class to add
+     * @template TClass of object
+     *
+     * @param class-string<TClass> $className The fully qualified name of the class to add
      * @param string|UnitEnum $key The key to add the service under
-     * @param Closure|callable-string|null $mutator [optional] This function will be called after an instance of the
-     *     class has been created. The class instance will be provided as the first parameter. Any additional
+     * @param callable(TClass,mixed...):mixed|null $mutator [optional] This function will be called after an instance of
+     *     the class has been created. The class instance will be provided as the first parameter. Any additional
      *     parameters will be injected.
      *
-     * @throws ImplementationException
+     *@throws ImplementationException
      *
      * @return $this
      */
@@ -143,9 +145,11 @@ interface ContainerTransientBuilderInterface
      * Indicates that the container should provide a transient instance of the given class by calling the specified
      * factory method.
      *
-     * @param class-string $className The fully qualified name of the class to add
-     * @param callable $factory A factory method that returns an instance of the class specified by {@see $className}.
-     *     Any method parameters will be injected.
+     * @template TClass of object
+     *
+     * @param class-string<TClass> $className The fully qualified name of the class to add
+     * @param callable(mixed...):TClass $factory A factory method that returns an instance of the class specified by
+     *     {@see $className}. Any method parameters will be injected.
      *
      * @return $this
      */
@@ -155,10 +159,12 @@ interface ContainerTransientBuilderInterface
      * Indicates that the container should provide a transient instance of the given class under the given key by
      * calling the specified factory method.
      *
-     * @param class-string $className The fully qualified name of the class to add
+     * @template TClass of object
+     *
+     * @param class-string<TClass> $className The fully qualified name of the class to add
      * @param string|UnitEnum $key The key to add the service under
-     * @param callable $factory A factory method that returns an instance of the class specified by {@see $className}.
-     *     Any method parameters will be injected.
+     * @param callable(mixed...):TClass $factory A factory method that returns an instance of the class specified by
+     *     {@see $className}. Any method parameters will be injected.
      *
      * @return $this
      */

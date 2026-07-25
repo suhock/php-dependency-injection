@@ -43,7 +43,7 @@ final class ResolutionPlanFactory
      * @var array<class-string, array{
      *     argumentEdges: list<ResolutionPlanEdge>,
      *     nonInstantiableMessage: string|null
-     *     }>
+     * }>
      */
     private array $classParts = [];
 
@@ -52,7 +52,7 @@ final class ResolutionPlanFactory
      *
      * @param array<string, Descriptor<object>> $descriptors
      *
-     * @return array<string, ResolutionPlan>
+     * @return array<string, ResolutionPlan<object>>
      */
     public function compile(array $descriptors): array
     {
@@ -66,21 +66,28 @@ final class ResolutionPlanFactory
     }
 
     /**
-     * @param Descriptor<object> $descriptor
+     * @template TClass of object
+     *
+     * @param Descriptor<TClass> $descriptor
+     *
+     * @return ResolutionPlan<TClass>
      */
     private function compileDescriptor(Descriptor $descriptor): ResolutionPlan
     {
         $provider = $descriptor->instanceProvider;
 
         if ($provider instanceof ClassInstanceProvider) {
+            /** @var ClassInstanceProvider<TClass> $provider */
             return $this->compileAutowireClass($provider->className, $provider->mutator);
         }
 
         if ($provider instanceof ClosureInstanceProvider) {
+            /** @var ClosureInstanceProvider<TClass> $provider */
             return self::compileCallable($provider->className, $provider->factory);
         }
 
         if ($provider instanceof ImplementationInstanceProvider) {
+            /** @var ImplementationInstanceProvider<TClass> $provider */
             return new ResolutionPlan(
                 $descriptor->className,
                 ResolutionPlanKind::Implementation,
@@ -93,7 +100,12 @@ final class ResolutionPlanFactory
     }
 
     /**
-     * @param class-string $className
+     * @template TClass of object
+     *
+     * @param class-string<TClass> $className
+     * @param Closure(TClass,mixed...):mixed|null $mutator
+     *
+     * @return ResolutionPlan<TClass>
      */
     private function compileAutowireClass(string $className, ?Closure $mutator): ResolutionPlan
     {
@@ -119,7 +131,12 @@ final class ResolutionPlanFactory
     }
 
     /**
-     * @param class-string $className
+     * @template TClass of object
+     *
+     * @param class-string<TClass> $className
+     * @param Closure(mixed...):TClass $factory
+     *
+     * @return ResolutionPlan<TClass>
      */
     private static function compileCallable(string $className, Closure $factory): ResolutionPlan
     {
@@ -130,11 +147,14 @@ final class ResolutionPlanFactory
             $edges[] = self::parameterEdge($rParam);
         }
 
+        /** @var class-string<TClass>|null $declaredReturnClass */
+        $declaredReturnClass = self::declaredReturnClass($rFunction);
+
         return new ResolutionPlan(
             $className,
             ResolutionPlanKind::Factory,
             argumentEdges: $edges,
-            declaredFactoryReturnType: self::declaredReturnClass($rFunction),
+            declaredFactoryReturnType: $declaredReturnClass,
         );
     }
 
@@ -195,9 +215,11 @@ final class ResolutionPlanFactory
     }
 
     /**
-     * The factory's declared return class, when it declares a single named type naming an existing class or
-     * interface. Builtin, composite, absent, and unloadable (e.g. <code>self</code>/<code>static</code>) return
-     * types yield <code>null</code>; their compatibility is unknowable without invoking the factory.
+     * The factory's declared return class, when it declares a single named type naming an existing class or interface.
+     * Builtin, composite, absent, and unloadable (e.g. <code>self</code>/<code>static</code>) return types yield
+     * <code>null</code>; their compatibility is unknowable without invoking the factory.
+     *
+     * @return class-string|null
      */
     private static function declaredReturnClass(ReflectionFunction $rFunction): ?string
     {

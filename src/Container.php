@@ -49,14 +49,14 @@ final class Container implements
     /** @var array<string, Descriptor<object>> */
     private readonly array $descriptors;
 
-    /** @var array<string, ResolutionPlan> */
+    /** @var array<string, ResolutionPlan<object>> */
     private readonly array $plans;
 
     /**
      * The factory and mutator closures paired with each plan, extracted once from the descriptors' providers so
      * execution does not rebuild dependency-source DTOs per resolution.
      *
-     * @var array<string, Closure>
+     * @var array<string, Closure(mixed...):object|Closure(object, mixed...):mixed>
      */
     private array $closures = [];
 
@@ -81,7 +81,7 @@ final class Container implements
      * @internal Use {@see ContainerBuilder::build()}
      *
      * @param array<string, Descriptor<object>> $descriptors The service descriptors, keyed by descriptor id
-     * @param array<string, ResolutionPlan> $plans The compiled resolution plans, keyed by descriptor id
+     * @param array<string, ResolutionPlan<object>> $plans The compiled resolution plans, keyed by descriptor id
      */
     public function __construct(array $descriptors, array $plans)
     {
@@ -102,7 +102,10 @@ final class Container implements
     /**
      * The factory or mutator closure a plan executes with, held by the descriptor's provider.
      *
+     * @param ResolutionPlan<object> $plan
      * @param Descriptor<object>|null $descriptor
+     *
+     * @return Closure(mixed...):object|Closure(object, mixed...):mixed|null
      */
     private static function executableClosure(ResolutionPlan $plan, ?Descriptor $descriptor): ?Closure
     {
@@ -391,6 +394,13 @@ final class Container implements
         throw new ContainerException('Unknown leaf instance provider ' . $provider::class);
     }
 
+    /**
+     * @template TClass of object
+     *
+     * @param ResolutionPlan<TClass> $plan
+     *
+     * @return TClass
+     */
     private function executeAutowiredClass(string $id, ResolutionPlan $plan, ResolutionContext $ctx, bool $lazy): object
     {
         if ($lazy) {
@@ -414,6 +424,8 @@ final class Container implements
 
     /**
      * Applies the descriptor's configuration mutator to a newly produced instance, if one is paired with the plan.
+     *
+     * @param ResolutionPlan<object> $plan
      */
     private function applyMutator(string $id, ResolutionPlan $plan, ResolutionContext $ctx, object $instance): void
     {
@@ -424,8 +436,16 @@ final class Container implements
         }
     }
 
+    /**
+     * @template TClass of object
+     *
+     * @param ResolutionPlan<TClass> $plan
+     *
+     * @return TClass
+     */
     private function executeFactory(string $id, ResolutionPlan $plan, ResolutionContext $ctx, bool $lazy): object
     {
+        /** @var Closure(mixed...):TClass $factory (guaranteed to be TClass factory) */
         $factory = $this->closures[$id]
             ?? throw new ContainerException("No factory closure is paired with the plan for $plan->className");
 
@@ -439,6 +459,13 @@ final class Container implements
                 );
 
             return (new ReflectionClass($className))->newLazyProxy(
+                /**
+                 * @template TClass of object
+                 *
+                 * @param TClass $proxy
+                 *
+                 * @return TClass
+                 */
                 fn(object $proxy): object => $this->invokeFactory($plan, $factory, $ctx),
             );
         }
@@ -448,6 +475,13 @@ final class Container implements
 
     /**
      * Invokes a factory with its resolved arguments and verifies the result is an instance of the service class.
+     *
+     * @template TClass of object
+     *
+     * @param ResolutionPlan<TClass> $plan
+     * @param Closure(mixed...):TClass $factory
+     *
+     * @return TClass
      */
     private function invokeFactory(ResolutionPlan $plan, Closure $factory, ResolutionContext $ctx): object
     {
@@ -461,23 +495,40 @@ final class Container implements
     }
 
     /**
-     * The statically-known concrete, instantiable class a lazy proxy of a factory-produced service can reflect: the
+     * The statically known concrete, instantiable class a lazy proxy of a factory-produced service can reflect: the
      * factory's declared return class if concrete, otherwise the service's own class if concrete. <code>null</code>
      * when neither is known, which build-time validation rejects.
      *
-     * @return class-string|null
+     * @template TClass of object
+     *
+     * @param ResolutionPlan<TClass> $plan
+     *
+     * @return class-string<TClass>|null
      */
     private static function lazyProxyClass(ResolutionPlan $plan): ?string
     {
-        foreach ([$plan->declaredFactoryReturnType, $plan->className] as $candidate) {
-            if ($candidate !== null && class_exists($candidate) && (new ReflectionClass($candidate))->isInstantiable()) {
-                return $candidate;
-            }
+        if (
+            $plan->declaredFactoryReturnType !== null
+            && class_exists($plan->declaredFactoryReturnType)
+            && new ReflectionClass($plan->declaredFactoryReturnType)->isInstantiable()
+        ) {
+            return $plan->declaredFactoryReturnType;
+        }
+
+        if (class_exists($plan->className) && new ReflectionClass($plan->className)->isInstantiable()) {
+            return $plan->className;
         }
 
         return null;
     }
 
+    /**
+     * @template TClass of object
+     *
+     * @param ResolutionPlan<TClass> $plan
+     *
+     * @return TClass
+     */
     private function executeImplementation(ResolutionPlan $plan, ResolutionContext $ctx, bool $lazy): object
     {
         if ($plan->implementationTarget === null) {
@@ -493,8 +544,9 @@ final class Container implements
      * Resolves a group of parameter edges to call arguments, in order.
      *
      * @param list<ResolutionPlanEdge> $edges
-     * @param array{class-string, string}|Closure $functionRef The reflectable reference to the parameters' function,
-     *     used only to build a precise exception when a required edge fails
+     * @param array{class-string, string}|Closure(mixed...):object|Closure(object, mixed...):mixed $functionRef The
+     *     reflectable reference to the parameters' function, used only to build a precise exception when a required
+     *     edge fails
      * @param int $skip The parameter offset of the first edge within the referenced function's signature
      *
      * @return list<mixed>

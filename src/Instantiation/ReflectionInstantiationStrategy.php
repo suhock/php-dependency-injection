@@ -48,8 +48,7 @@ final class ReflectionInstantiationStrategy implements InstantiationStrategyInte
     {
         try {
             $rClass = new ReflectionClass($className);
-            /** @phpstan-ignore catch.neverThrown (a class-string may reference an unloadable class at runtime) */
-        } catch (ReflectionException $e) {
+        } catch (ReflectionException $e) { // @phpstan-ignore catch.neverThrown (guard against invalid class-string)
             throw new InjectorException("Class $className does not exist", $e);
         }
 
