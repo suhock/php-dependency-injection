@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace Suhock\DependencyInjection\Fakes;
 
+use Override;
 use Suhock\Disposable\DisposableInterface;
 
 /**
@@ -26,6 +27,7 @@ final class FakeDisposableClass implements DisposableInterface
         private readonly string $name = 'dependency',
     ) {}
 
+    #[Override]
     public function dispose(): void
     {
         ++$this->disposeCount;

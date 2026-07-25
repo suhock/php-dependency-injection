@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace Suhock\DependencyInjection\Fakes;
 
+use Override;
 use Suhock\DependencyInjection\ClassNotFoundException;
 use Suhock\DependencyInjection\ContainerInterface;
 use UnitEnum;
@@ -31,6 +32,7 @@ final class FakeContainer implements ContainerInterface
         public array $classMapping = [],
     ) {}
 
+    #[Override]
     public function get(string $className, string|UnitEnum|null $key = null): object
     {
         if (!array_key_exists($className, $this->classMapping)) {
@@ -46,6 +48,7 @@ final class FakeContainer implements ContainerInterface
      *
      * @param class-string<TClass> $className The name of the class to test
      */
+    #[Override]
     public function has(string $className, string|UnitEnum|null $key = null): bool
     {
         return array_key_exists($className, $this->classMapping);

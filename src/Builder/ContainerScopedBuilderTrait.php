@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace Suhock\DependencyInjection\Builder;
 
+use Override;
 use Suhock\DependencyInjection\ContainerBuilderInterface;
 use Suhock\DependencyInjection\InstanceProvider\InstanceProviderFactory;
 use Suhock\DependencyInjection\InstanceProvider\InstanceProviderInterface;
@@ -42,6 +43,7 @@ trait ContainerScopedBuilderTrait
     /**
      * @inheritDoc
      */
+    #[Override]
     public function addScoped(string $className, string|object|null $source = null): static
     {
         $this->addScopedInstanceProvider(
@@ -55,6 +57,7 @@ trait ContainerScopedBuilderTrait
     /**
      * @inheritDoc
      */
+    #[Override]
     public function addKeyedScoped(
         string $className,
         string|UnitEnum $key,
@@ -72,6 +75,7 @@ trait ContainerScopedBuilderTrait
     /**
      * @inheritDoc
      */
+    #[Override]
     public function addScopedClass(string $className, ?callable $mutator = null): static
     {
         $this->addScopedInstanceProvider(
@@ -85,6 +89,7 @@ trait ContainerScopedBuilderTrait
     /**
      * @inheritDoc
      */
+    #[Override]
     public function addKeyedScopedClass(
         string $className,
         string|UnitEnum $key,
@@ -132,6 +137,7 @@ trait ContainerScopedBuilderTrait
     /**
      * @inheritDoc
      */
+    #[Override]
     public function addScopedFactory(string $className, callable $factory): static
     {
         $this->addScopedInstanceProvider(
@@ -145,6 +151,7 @@ trait ContainerScopedBuilderTrait
     /**
      * @inheritDoc
      */
+    #[Override]
     public function addKeyedScopedFactory(string $className, string|UnitEnum $key, callable $factory): static
     {
         $this->addKeyedScopedInstanceProvider(

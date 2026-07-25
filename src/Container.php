@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace Suhock\DependencyInjection;
 
 use Closure;
+use Override;
 use ReflectionClass;
 use ReflectionParameter;
 use Suhock\DependencyInjection\Builder\Descriptor;
@@ -119,6 +120,7 @@ final class Container implements
      *
      * @throws ContainerDisposedException If the container has been disposed
      */
+    #[Override]
     public function createScope(): ScopeInterface
     {
         $this->ensureNotDisposed();
@@ -143,6 +145,7 @@ final class Container implements
      *
      * @throws Throwable The first exception thrown by any disposed instance
      */
+    #[Override]
     public function dispose(): void
     {
         if ($this->disposed) {
@@ -175,6 +178,7 @@ final class Container implements
      *
      * @return TClass
      */
+    #[Override]
     public function get(string $className, string|UnitEnum|null $key = null): object
     {
         return $this->getForContext($className, $key, $this->resolutionContext);
@@ -218,6 +222,7 @@ final class Container implements
      *
      * @throws ContainerDisposedException If the container has been disposed
      */
+    #[Override]
     public function has(string $className, string|UnitEnum|null $key = null): bool
     {
         $this->ensureNotDisposed();
@@ -228,6 +233,7 @@ final class Container implements
     /**
      * @inheritDoc
      */
+    #[Override]
     public function getConcreteClassName(string $className, string|UnitEnum|null $key = null): ?string
     {
         return $this->concreteClassName(DescriptorId::compute($className, $key), []);

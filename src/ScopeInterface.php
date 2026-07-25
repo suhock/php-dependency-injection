@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace Suhock\DependencyInjection;
 
+use Override;
 use Suhock\Disposable\DisposableInterface;
 
 /**
@@ -25,5 +26,6 @@ interface ScopeInterface extends ContainerInterface, DisposableInterface
      * dependencies, and all cached instances are released. Any further request to the scope throws a
      * {@see ScopeException}. Disposing an already disposed scope has no effect.
      */
+    #[Override]
     public function dispose(): void;
 }

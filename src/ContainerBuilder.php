@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace Suhock\DependencyInjection;
 
 use Closure;
+use Override;
 use Suhock\DependencyInjection\Builder\ContainerScopedBuilderTrait;
 use Suhock\DependencyInjection\Builder\ContainerSingletonBuilderTrait;
 use Suhock\DependencyInjection\Builder\ContainerTransientBuilderTrait;
@@ -78,6 +79,7 @@ final class ContainerBuilder implements ContainerBuilderInterface
      * @param bool $shouldDispose Whether the container should dispose the disposable instances it creates for this
      *     service; pass false when their disposal is the responsibility of something outside the container
      */
+    #[Override]
     private function add(
         string $className,
         LifetimeStrategy $lifetimeStrategy,
@@ -99,6 +101,7 @@ final class ContainerBuilder implements ContainerBuilderInterface
      * @param bool $shouldDispose Whether the container should dispose the disposable instances it creates for this
      *     service; pass false when their disposal is the responsibility of something outside the container
      */
+    #[Override]
     private function addKeyed(
         string $className,
         string|UnitEnum $key,
@@ -118,6 +121,7 @@ final class ContainerBuilder implements ContainerBuilderInterface
      *
      * @return $this
      */
+    #[Override]
     public function remove(string $className, string|UnitEnum|null $key = null): static
     {
         $this->removeDescriptor($className, $key);
@@ -130,6 +134,7 @@ final class ContainerBuilder implements ContainerBuilderInterface
      *
      * @return $this
      */
+    #[Override]
     public function configure(callable $configure): static
     {
         $configure($this);

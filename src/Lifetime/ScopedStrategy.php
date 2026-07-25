@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace Suhock\DependencyInjection\Lifetime;
 
+use Override;
 use Suhock\DependencyInjection\ResolutionContext;
 use Suhock\DependencyInjection\ScopeException;
 
@@ -32,6 +33,7 @@ final class ScopedStrategy extends LifetimeStrategy
      *
      * @throws ScopeException If no scope is active in the given context
      */
+    #[Override]
     public function get(ResolutionContext $context, callable $factory): object
     {
         if ($context->root === null) {

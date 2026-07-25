@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace Suhock\DependencyInjection\Fakes;
 
+use Override;
 use Suhock\Disposable\DisposableInterface;
 
 /**
@@ -33,6 +34,7 @@ final class FakeLazyDisposable implements DisposableInterface
         return $this->value;
     }
 
+    #[Override]
     public function dispose(): void
     {
         $this->log->record('disposed');

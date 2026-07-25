@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace Suhock\DependencyInjection\Fakes;
 
+use Override;
 use Suhock\DependencyInjection\Cache\CacheInterface;
 
 use function array_key_exists;
@@ -28,6 +29,7 @@ final class FakeCache implements CacheInterface
     /** @var list<string> */
     public array $storedIds = [];
 
+    #[Override]
     public function tryGet(string $id, mixed &$value): bool
     {
         if (!array_key_exists($id, $this->values)) {
@@ -39,6 +41,7 @@ final class FakeCache implements CacheInterface
         return true;
     }
 
+    #[Override]
     public function set(string $id, mixed $value): void
     {
         $this->values[$id] = $value;

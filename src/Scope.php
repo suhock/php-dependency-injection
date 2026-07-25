@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace Suhock\DependencyInjection;
 
 use Closure;
+use Override;
 use Suhock\DependencyInjection\Lifetime\InstanceStore;
 use UnitEnum;
 
@@ -51,6 +52,7 @@ final class Scope implements ScopeInterface, ConcreteClassNameProviderInterface
      *
      * @throws ScopeException If the scope has been disposed
      */
+    #[Override]
     public function get(string $className, string|UnitEnum|null $key = null): object
     {
         $this->ensureNotDisposed();
@@ -64,6 +66,7 @@ final class Scope implements ScopeInterface, ConcreteClassNameProviderInterface
      *
      * @throws ScopeException If the scope has been disposed
      */
+    #[Override]
     public function has(string $className, string|UnitEnum|null $key = null): bool
     {
         $this->ensureNotDisposed();
@@ -74,12 +77,14 @@ final class Scope implements ScopeInterface, ConcreteClassNameProviderInterface
     /**
      * @inheritDoc
      */
+    #[Override]
     public function getConcreteClassName(string $className, string|UnitEnum|null $key = null): ?string
     {
         // A service's concrete class is fixed by the shared configuration, independent of the resolving scope.
         return $this->rootContainer->getConcreteClassName($className, $key);
     }
 
+    #[Override]
     public function dispose(): void
     {
         if ($this->disposed) {

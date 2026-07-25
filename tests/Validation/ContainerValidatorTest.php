@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace Suhock\DependencyInjection\Validation;
 
 use Closure;
+use Override;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 use Suhock\DependencyInjection\Builder\Descriptor;
@@ -61,6 +62,7 @@ final class ContainerValidatorTest extends TestCase
     /** @var array<string, Descriptor<object>> */
     private array $descriptors = [];
 
+    #[Override]
     protected function setUp(): void
     {
         $this->descriptors = [];

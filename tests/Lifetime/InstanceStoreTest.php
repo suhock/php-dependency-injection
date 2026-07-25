@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace Suhock\DependencyInjection\Lifetime;
 
+use Override;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 use Suhock\DependencyInjection\Fakes\FakeClassNoConstructor;
@@ -81,6 +82,7 @@ final class InstanceStoreTest extends TestCase
         $throwing = new class ($log) implements DisposableInterface {
             public function __construct(private readonly FakeDisposalLog $log) {}
 
+            #[Override]
             public function dispose(): void
             {
                 $this->log->record('throwing');

@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace Suhock\DependencyInjection\Lifetime;
 
+use Override;
 use Suhock\DependencyInjection\ResolutionContext;
 
 /**
@@ -27,6 +28,7 @@ final class TransientStrategy extends LifetimeStrategy
     /**
      * @inheritDoc
      */
+    #[Override]
     public function get(ResolutionContext $context, callable $factory): object
     {
         return $factory($context);

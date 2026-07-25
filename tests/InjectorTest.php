@@ -13,6 +13,7 @@ namespace Suhock\DependencyInjection;
 
 use Exception;
 use LogicException;
+use Override;
 use ReflectionParameter;
 use RuntimeException;
 use Suhock\DependencyInjection\Fakes\FakeAbstractClass;
@@ -186,6 +187,7 @@ final class InjectorTest extends AbstractDependencyInjectionTestCase
         $resolver = new class ($dependency) implements ParameterResolverInterface {
             public function __construct(private readonly FakeClassNoConstructor $dependency) {}
 
+            #[Override]
             public function resolveParameter(ReflectionParameter $rParam): mixed
             {
                 return $this->dependency;
@@ -206,6 +208,7 @@ final class InjectorTest extends AbstractDependencyInjectionTestCase
         $strategy = new class implements InstantiationStrategyInterface {
             public int $calls = 0;
 
+            #[Override]
             public function tryInstantiate(string $className, array $params): object
             {
                 $this->calls++;
@@ -228,6 +231,7 @@ final class InjectorTest extends AbstractDependencyInjectionTestCase
     {
         // Arrange: a lone strategy that declines everything.
         $declining = new class implements InstantiationStrategyInterface {
+            #[Override]
             public function tryInstantiate(string $className, array $params): ?object
             {
                 return null;

@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace Suhock\DependencyInjection\Resolver;
 
+use Override;
 use ReflectionClass;
 use ReflectionParameter;
 use Suhock\DependencyInjection\ClassResolutionException;
@@ -43,6 +44,7 @@ final class ContainerParameterResolver implements ParameterResolverInterface
         private readonly ContainerInterface $container,
     ) {}
 
+    #[Override]
     public function resolveParameter(ReflectionParameter $rParam): mixed
     {
         $deferredException = null;

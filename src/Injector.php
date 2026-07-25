@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace Suhock\DependencyInjection;
 
+use Override;
 use ReflectionFunction;
 use Suhock\DependencyInjection\Instantiation\InstantiationStrategyInterface;
 use Suhock\DependencyInjection\Instantiation\ReflectionInstantiationStrategy;
@@ -59,6 +60,7 @@ final class Injector implements InjectorInterface
     /**
      * @inheritDoc
      */
+    #[Override]
     public function call(callable $function, array $params = []): mixed
     {
         // A callable normalized to a closure is always reflectable, so this cannot throw ReflectionException.
@@ -72,6 +74,7 @@ final class Injector implements InjectorInterface
     /**
      * @inheritDoc
      */
+    #[Override]
     public function instantiate(string $className, array $params = []): object
     {
         $instance = $this->strategy->tryInstantiate($className, $params);

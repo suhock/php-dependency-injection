@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace Suhock\DependencyInjection\Lifetime;
 
+use Override;
 use Suhock\DependencyInjection\ResolutionContext;
 
 /**
@@ -29,6 +30,7 @@ final class SingletonStrategy extends LifetimeStrategy
     /**
      * @inheritDoc
      */
+    #[Override]
     public function get(ResolutionContext $context, callable $factory): object
     {
         $home = $context->rootContext();

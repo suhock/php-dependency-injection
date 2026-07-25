@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace Suhock\DependencyInjection\Builder;
 
+use Override;
 use Suhock\DependencyInjection\ContainerBuilderInterface;
 use Suhock\DependencyInjection\InstanceProvider\InstanceProviderFactory;
 use Suhock\DependencyInjection\InstanceProvider\InstanceProviderInterface;
@@ -42,6 +43,7 @@ trait ContainerSingletonBuilderTrait
     /**
      * @inheritDoc
      */
+    #[Override]
     public function addSingleton(string $className, string|object|null $source = null): static
     {
         $this->addSingletonInstanceProvider(
@@ -55,6 +57,7 @@ trait ContainerSingletonBuilderTrait
     /**
      * @inheritDoc
      */
+    #[Override]
     public function addKeyedSingleton(
         string $className,
         string|UnitEnum $key,
@@ -72,6 +75,7 @@ trait ContainerSingletonBuilderTrait
     /**
      * @inheritDoc
      */
+    #[Override]
     public function addSingletonClass(string $className, ?callable $mutator = null): static
     {
         $this->addSingletonInstanceProvider(
@@ -85,6 +89,7 @@ trait ContainerSingletonBuilderTrait
     /**
      * @inheritDoc
      */
+    #[Override]
     public function addKeyedSingletonClass(
         string $className,
         string|UnitEnum $key,
@@ -132,6 +137,7 @@ trait ContainerSingletonBuilderTrait
     /**
      * @inheritDoc
      */
+    #[Override]
     public function addSingletonFactory(string $className, callable $factory): static
     {
         $this->addSingletonInstanceProvider(
@@ -145,6 +151,7 @@ trait ContainerSingletonBuilderTrait
     /**
      * @inheritDoc
      */
+    #[Override]
     public function addKeyedSingletonFactory(string $className, string|UnitEnum $key, callable $factory): static
     {
         $this->addKeyedSingletonInstanceProvider(
@@ -159,6 +166,7 @@ trait ContainerSingletonBuilderTrait
     /**
      * @inheritDoc
      */
+    #[Override]
     public function addSingletonInstance(string $className, object $instance, bool $shouldDispose = true): static
     {
         $this->addSingletonInstanceProvider(
@@ -173,6 +181,7 @@ trait ContainerSingletonBuilderTrait
     /**
      * @inheritDoc
      */
+    #[Override]
     public function addKeyedSingletonInstance(
         string $className,
         string|UnitEnum $key,

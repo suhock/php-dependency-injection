@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace Suhock\DependencyInjection;
 
+use Override;
 use RuntimeException;
 use Throwable;
 
@@ -48,6 +49,7 @@ abstract class DependencyInjectionException extends RuntimeException implements 
      * @return DependencyInjectionExceptionInterface|null The {@see DependencyInjectionExceptionInterface} that was
      *     passed in as previous, but was consolidated into this instance, or <code>null</code>
      */
+    #[Override]
     final public function getConsolidatedException(): ?DependencyInjectionExceptionInterface
     {
         return $this->consolidatedException;

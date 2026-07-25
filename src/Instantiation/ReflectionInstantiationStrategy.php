@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace Suhock\DependencyInjection\Instantiation;
 
+use Override;
 use ReflectionClass;
 use ReflectionException;
 use Suhock\DependencyInjection\InjectorException;
@@ -42,6 +43,7 @@ final class ReflectionInstantiationStrategy implements InstantiationStrategyInte
      *
      * @return TClass
      */
+    #[Override]
     public function tryInstantiate(string $className, array $params): object
     {
         try {

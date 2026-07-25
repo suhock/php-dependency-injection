@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace Suhock\DependencyInjection\Builder;
 
 use Closure;
+use Override;
 use Suhock\DependencyInjection\ContainerBuilderInterface;
 use Suhock\DependencyInjection\InstanceProvider\InstanceProviderFactory;
 use Suhock\DependencyInjection\InstanceProvider\InstanceProviderInterface;
@@ -43,6 +44,7 @@ trait ContainerTransientBuilderTrait
     /**
      * @inheritDoc
      */
+    #[Override]
     public function addTransient(string $className, string|Closure|null $source = null): static
     {
         $this->addTransientInstanceProvider(
@@ -56,6 +58,7 @@ trait ContainerTransientBuilderTrait
     /**
      * @inheritDoc
      */
+    #[Override]
     public function addKeyedTransient(
         string $className,
         string|UnitEnum $key,
@@ -73,6 +76,7 @@ trait ContainerTransientBuilderTrait
     /**
      * @inheritDoc
      */
+    #[Override]
     public function addTransientClass(string $className, ?callable $mutator = null): static
     {
         $this->addTransientInstanceProvider(
@@ -86,6 +90,7 @@ trait ContainerTransientBuilderTrait
     /**
      * @inheritDoc
      */
+    #[Override]
     public function addKeyedTransientClass(
         string $className,
         string|UnitEnum $key,
@@ -133,6 +138,7 @@ trait ContainerTransientBuilderTrait
     /**
      * @inheritDoc
      */
+    #[Override]
     public function addTransientFactory(string $className, callable $factory): static
     {
         $this->addTransientInstanceProvider(
@@ -146,6 +152,7 @@ trait ContainerTransientBuilderTrait
     /**
      * @inheritDoc
      */
+    #[Override]
     public function addKeyedTransientFactory(string $className, string|UnitEnum $key, callable $factory): static
     {
         $this->addKeyedTransientInstanceProvider(

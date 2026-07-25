@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace Suhock\DependencyInjection\Cache;
 
+use Override;
 use RuntimeException;
 
 use function apcu_enabled;
@@ -40,6 +41,7 @@ final class ApcuCache implements CacheInterface
      *
      *     Uses the success flag from {@see apcu_fetch()} to distinguish a stored <code>false</code> from a cache miss.
      */
+    #[Override]
     public function tryGet(string $id, mixed &$value): bool
     {
         $value = apcu_fetch($id, $success);
@@ -50,6 +52,7 @@ final class ApcuCache implements CacheInterface
     /**
      * @inheritDoc
      */
+    #[Override]
     public function set(string $id, mixed $value): void
     {
         apcu_store($id, $value);

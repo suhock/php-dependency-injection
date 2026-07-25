@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace Suhock\DependencyInjection;
 
+use Override;
 use RuntimeException;
 use Suhock\DependencyInjection\Fakes\FakeClassNoConstructor;
 use Suhock\DependencyInjection\Fakes\FakeClassWithConstructor;
@@ -520,6 +521,7 @@ final class ScopeTest extends AbstractDependencyInjectionTestCase
             static fn(ContainerBuilder $builder) => $builder->addScopedFactory(
                 DisposableInterface::class,
                 static fn() => new class implements DisposableInterface {
+                    #[Override]
                     public function dispose(): void
                     {
                         throw new RuntimeException('dispose failed');

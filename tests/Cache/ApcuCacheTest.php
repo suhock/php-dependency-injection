@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace Suhock\DependencyInjection\Cache;
 
+use Override;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 
@@ -27,6 +28,7 @@ use function extension_loaded;
  */
 final class ApcuCacheTest extends TestCase
 {
+    #[Override]
     protected function setUp(): void
     {
         if (self::isApcuEnabled()) {

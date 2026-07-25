@@ -11,6 +11,8 @@ declare(strict_types=1);
 
 namespace Suhock\DependencyInjection\Fakes;
 
+use Override;
+
 /**
  * A dependency that records its own construction in a {@see FakeLazyCounter}, so a test can observe whether and when
  * it was built.
@@ -25,6 +27,7 @@ final class FakeLazyService implements FakeLazyInterface
         $this->value = 'pong';
     }
 
+    #[Override]
     public function ping(): string
     {
         // Reads a property so that calling this method triggers lazy initialization, as real usage would.
