@@ -1,32 +1,37 @@
 # Dependency Injection Library for PHP
 
-The PHP Dependency Injection library provides a customizable dependency
-injection framework for projects running on PHP 8.4 or later.
+A compile-and-validate dependency injection container for PHP 8.4+, built for
+both long-running applications and per-request processes.
+
+## Highlights
+
+- **Validation** – Catch missing dependencies, cycles, captive scopes, and
+  invalid factories when the container is built, with all detected defects
+  reported together.
+- **Service Lifetimes** – Use singleton, scoped, and transient lifetimes with
+  deterministic disposal in reverse creation order.
+- **Scoped Isolation** – Isolate request or job state in long-running workers
+  with first-class scopes.
+- **Keyed Services** – Register and inject multiple implementations of the same
+  service type under distinct keys.
+- **Native Lazy Objects** – Defer expensive services and break dependency
+  cycles with native PHP lazy objects.
+- **Caching and Diagnostics** – Cache compiled dependency plans for improved
+  performance in per-request processes and export the dependency graph for
+  tooling and analysis.
+- **Flexible Integration** – Use the standalone dependency injector, optional
+  PSR-11 adapter, and PHPStan extensions.
 
 ```php
 $container = Suhock\DependencyInjection\ContainerBuilder::createDefault()
     ->addSingleton(MyApplication::class)
-    ->addSingleton(MyLogger::class, fn () => new FileLogger('myapp.log'))
-    ->addSingletonInstance(RequestContext::class, $requestContext, shouldDispose: false)
+    ->addSingleton(Logger::class, fn () => new FileLogger('myapp.log'))
     ->addTransient(HttpClient::class, CurlHttpClient::class)
     ->addTransient(CurlHttpClient::class)
-    ->build()
-    ->get(MyApplication::class)
-    ->run();
+    ->build();
+
+$container->get(MyApplication::class)->run();
 ```
-
-This library provides [singleton](#singleton), [scoped](#scoped), and
-[transient](#transient) lifetime strategies and a variety of ways of
-[adding services](#adding-services-to-the-container) to the container.
-You can also add more than one implementation of the same type as
-[keyed services](#keyed-services).
-
-Once configured, [`build()`](#building-the-container) compiles and validates
-the whole dependency graph and hands back an immutable `Container`.
-
-The library also provides an [`Injector` class](#dependency-injector) for
-injecting dependencies and explicit parameters into a specific function or
-constructor.
 
 ## Table of Contents
 
@@ -65,19 +70,6 @@ constructor.
   - [PHPStan extensions](#phpstan-extensions)
 
 ## Installation
-
-Add `suhock/dependency-injection` to the `require` section of your project's
-`composer.json` file.
-
-```json
-{
-    "require": {
-        "suhock/dependency-injection": "^1.0"
-    }
-}
-```
-
-Alternatively, use the command line from your project's root directory.
 
 ```shell
 composer require "suhock/dependency-injection"
@@ -1309,31 +1301,25 @@ another store.
 
 ### PSR-11 compatibility
 
-This library's `get()` takes a class name and optional key rather than PSR-11's
-opaque string id, so `Container` does not implement `Psr\Container\ContainerInterface`
-directly. For frameworks that expect a PSR-11 container, the
+This library's `Container::get()` takes a class name and optional key rather
+than PSR-11's opaque string id, so `Container` does not and should not
+implement `Psr\Container\ContainerInterface` directly.
+
+For frameworks that expect a PSR-11 container, the
 [`suhock/dependency-injection-psr11`](https://github.com/suhock/php-dependency-injection-psr11)
 package provides a thin adapter that wraps the container and translates its
 exceptions into their PSR-11 counterparts.
 
-```json
-{
-    "require": {
-        "suhock/dependency-injection-psr11": "^1.0"
-    }
-}
+```shell
+composer require "suhock/dependency-injection-psr11"
 ```
 
 ### PHPStan extensions
 
 [PHPStan](https://phpstan.org/) extensions for this library are published in the separate
 [`suhock/dependency-injection-phpstan`](https://github.com/suhock/php-dependency-injection-phpstan)
-package. Add it to `require-dev`:
+package. Add it as a dev requirement.
 
-```json
-{
-    "require-dev": {
-        "suhock/dependency-injection-phpstan": "^1.0"
-    }
-}
+```shell
+composer require --dev "suhock/dependency-injection-phpstan"
 ```
