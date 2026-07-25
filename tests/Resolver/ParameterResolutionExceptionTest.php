@@ -13,6 +13,9 @@ namespace Suhock\DependencyInjection\Resolver;
 
 use PHPUnit\Framework\TestCase;
 use ReflectionParameter;
+use Suhock\DependencyInjection\Fakes\FakeInterfaceOne;
+use Suhock\DependencyInjection\Fakes\FakeInterfaceThree;
+use Suhock\DependencyInjection\Fakes\FakeInterfaceTwo;
 
 /**
  * Test suite for {@see ParameterResolutionException}.
@@ -20,6 +23,10 @@ use ReflectionParameter;
 final class ParameterResolutionExceptionTest extends TestCase
 {
     private function fakeFunction(string $fakeParameter): void {}
+
+    private function fakeDnfFunction(
+        (FakeInterfaceOne&FakeInterfaceTwo)|FakeInterfaceThree $fakeParameter,
+    ): void {}
 
     private function createException(): ParameterResolutionException
     {
@@ -61,6 +68,24 @@ final class ParameterResolutionExceptionTest extends TestCase
 
         // Assert
         self::assertStringContainsString('string', $message);
+    }
+
+    public function testGetMessage_HasDnfParameterType_WrapsIntersectionGroupInParentheses(): void
+    {
+        // Arrange
+        /** @noinspection PhpUnhandledExceptionInspection */
+        $exception = new ParameterResolutionException(
+            new ReflectionParameter($this->fakeDnfFunction(...), 'fakeParameter'),
+        );
+
+        // Act
+        $message = $exception->getMessage();
+
+        // Assert
+        self::assertStringContainsString(
+            '(' . FakeInterfaceOne::class . '&' . FakeInterfaceTwo::class . ')|' . FakeInterfaceThree::class,
+            $message,
+        );
     }
 
     public function testGetReflectionParameter_ReturnsReflectionParameter(): void

@@ -99,7 +99,14 @@ final class ParameterResolutionException extends InjectorException
         $parts = [];
 
         foreach ($rType->getTypes() as $rNestedType) {
-            $parts[] = self::buildParameterTypeName($rNestedType);
+            $part = self::buildParameterTypeName($rNestedType);
+
+            // In a DNF type, an intersection group nested inside a union is parenthesized, e.g. (A&B)|C.
+            if ($rType instanceof ReflectionUnionType && $rNestedType instanceof ReflectionIntersectionType) {
+                $part = "($part)";
+            }
+
+            $parts[] = $part;
         }
 
         return implode($delimiter, $parts);
