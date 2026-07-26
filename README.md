@@ -146,9 +146,8 @@ class MyApplication
     // The constructor arguments will be provided by the container
     public function __construct(
         private readonly HttpClient $client,
-        private readonly Logger $logger
-    ) {
-    }
+        private readonly Logger $logger,
+    ) {}
 }
 ```
 
@@ -164,9 +163,8 @@ resolved from a scope receives instead.
 class MyRouter
 {
     public function __construct(
-        private readonly ContainerInterface $container
-    ) {
-    }
+        private readonly ContainerInterface $container,
+    ) {}
 
     public function routeRequest(string $method, string $path): void
     {
@@ -480,9 +478,9 @@ use Suhock\Disposable\DisposableInterface;
 
 final class UnitOfWork implements DisposableInterface
 {
-    public function __construct(private readonly Connection $connection)
-    {
-    }
+    public function __construct(
+        private readonly Connection $connection,
+    ) {}
 
     public function dispose(): void
     {
@@ -635,7 +633,7 @@ $builder->addTransientClass(
     CurlHttpClient::class,
     function (CurlHttpClient $client, Logger $logger): void {
         $client->setLogger($logger);
-    }
+    },
 );
 ```
 
@@ -754,7 +752,7 @@ class ContainerBuilder
 ```php
 $builder->addSingletonFactory(
     Mailer::class,
-    fn (AppConfig $config) => new Mailer($config->mailerTransport)
+    fn (AppConfig $config) => new Mailer($config->mailerTransport),
 );
 ```
 
@@ -769,9 +767,9 @@ from that config.
 $builder->addTransientFactory(
     Logger::class,
     fn (FileWriter $writer) => new class($writer) implements Logger {
-        public function __construct(private readonly FileWriter $writer)
-        {
-        }
+        public function __construct(
+            private readonly FileWriter $writer,
+        ) {}
 
         public function log(string $message): void
         {
@@ -851,19 +849,19 @@ class ContainerBuilder
     public function addKeyedSingleton(
         string $className,
         string|UnitEnum $key,
-        string|object|null $source = null
+        string|object|null $source = null,
     ): static;
 
     public function addKeyedScoped(
         string $className,
         string|UnitEnum $key,
-        string|Closure|null $source = null
+        string|Closure|null $source = null,
     ): static;
 
     public function addKeyedTransient(
         string $className,
         string|UnitEnum $key,
-        string|Closure|null $source = null
+        string|Closure|null $source = null,
     ): static;
 }
 
@@ -900,12 +898,12 @@ Each explicit `add*` variant also has a keyed counterpart:
 $container = $builder
     ->addSingletonFactory(
         Settings::class,
-        fn () => JsonSettings::fromFile('default.json')
+        fn () => JsonSettings::fromFile('default.json'),
     )
     ->addKeyedSingleton(
         Settings::class,
         'admin',
-        fn () => JsonSettings::fromFile('admin.json')
+        fn () => JsonSettings::fromFile('admin.json'),
     )
     ->build();
 
@@ -937,9 +935,8 @@ class AdminController
          * Resolved from the Settings service under the 'admin' key.
          */
         #[Key('admin')]
-        private readonly Settings $adminSettings
-    ) {
-    }
+        private readonly Settings $adminSettings,
+    ) {}
 }
 ```
 
@@ -1014,7 +1011,7 @@ class ProjectListController
         // Parameter below will be populated from the value provided in the
         // $injector->call() parameter array. The default value will be used if
         // the key 'filter' is not present in the array.
-        string $filter = ''
+        string $filter = '',
     ): PageInterface {
         $projects = $projectRepository->query($filter);
 
@@ -1043,9 +1040,8 @@ provide a value if it can resolve a factory for that type.
 class MyApplication
 {
     public function __construct(
-        private readonly HttpClient $httpClient
-    ) {
-    }
+        private readonly HttpClient $httpClient,
+    ) {}
 }
 ```
 
@@ -1062,9 +1058,8 @@ then the container will provide a null value.
 class MyApplication
 {
     public function __construct(
-        private readonly ?HttpClient $httpClient
-    ) {
-    }
+        private readonly ?HttpClient $httpClient,
+    ) {}
 }
 ```
 
@@ -1085,9 +1080,8 @@ class MyApplication
         private readonly HttpClient $httpClient,
         private readonly string $homeUrl = '',
         private readonly int $timeout = 0,
-        private readonly array $otherOptions = []
-    ) {
-    }
+        private readonly array $otherOptions = [],
+    ) {}
 }
 ```
 
@@ -1106,9 +1100,8 @@ value using the first type it is able to resolve. Builtin types are ignored.
 class MyApplication
 {
     public function __construct(
-        private readonly HttpClient|GopherClient|string $client
-    ) {
-    }
+        private readonly HttpClient|GopherClient|string $client,
+    ) {}
 }
 ```
 
@@ -1130,9 +1123,8 @@ have side effects.
 class MyApplication
 {
     public function __construct(
-        private readonly HttpClient&Serializable $httpClient
-    ) {
-    }
+        private readonly HttpClient&Serializable $httpClient,
+    ) {}
 }
 ```
 
@@ -1162,8 +1154,7 @@ class ReportController
     public function __construct(
         #[Lazy]
         private readonly PdfRenderer $renderer,
-    ) {
-    }
+    ) {}
 }
 ```
 
