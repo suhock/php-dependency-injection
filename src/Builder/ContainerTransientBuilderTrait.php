@@ -46,11 +46,15 @@ trait ContainerTransientBuilderTrait
      */
     // @phpstan-ignore missingType.callable (parameters discovered at build-time)
     #[Override]
-    public function addTransient(string $className, string|Closure|null $source = null): static
-    {
+    public function addTransient(
+        string $className,
+        string|Closure|null $source = null,
+        bool $shouldDispose = true,
+    ): static {
         $this->addTransientInstanceProvider(
             $className,
             InstanceProviderFactory::createInstanceProvider($className, $source),
+            $shouldDispose,
         );
 
         return $this;
@@ -65,11 +69,13 @@ trait ContainerTransientBuilderTrait
         string $className,
         string|UnitEnum $key,
         string|Closure|null $source = null,
+        bool $shouldDispose = true,
     ): static {
         $this->addKeyedTransientInstanceProvider(
             $className,
             $key,
             InstanceProviderFactory::createInstanceProvider($className, $source),
+            $shouldDispose,
         );
 
         return $this;
@@ -80,11 +86,12 @@ trait ContainerTransientBuilderTrait
      */
     // @phpstan-ignore missingType.callable (parameters discovered at build-time)
     #[Override]
-    public function addTransientFactory(string $className, callable $factory): static
+    public function addTransientFactory(string $className, callable $factory, bool $shouldDispose = true): static
     {
         $this->addTransientInstanceProvider(
             $className,
             InstanceProviderFactory::createClosureInstanceProvider($className, $factory(...)),
+            $shouldDispose,
         );
 
         return $this;
@@ -95,12 +102,17 @@ trait ContainerTransientBuilderTrait
      */
     // @phpstan-ignore missingType.callable (parameters discovered at build-time)
     #[Override]
-    public function addKeyedTransientFactory(string $className, string|UnitEnum $key, callable $factory): static
-    {
+    public function addKeyedTransientFactory(
+        string $className,
+        string|UnitEnum $key,
+        callable $factory,
+        bool $shouldDispose = true,
+    ): static {
         $this->addKeyedTransientInstanceProvider(
             $className,
             $key,
             InstanceProviderFactory::createClosureInstanceProvider($className, $factory(...)),
+            $shouldDispose,
         );
 
         return $this;
@@ -111,12 +123,15 @@ trait ContainerTransientBuilderTrait
      *
      * @param class-string<TClass> $className
      * @param InstanceProviderInterface<TClass> $instanceProvider
+     * @param bool $shouldDispose Whether the container should dispose the disposable instances it creates for this
+     *     service
      */
     private function addTransientInstanceProvider(
         string $className,
         InstanceProviderInterface $instanceProvider,
+        bool $shouldDispose = true,
     ): void {
-        $this->add($className, new TransientStrategy($className), $instanceProvider);
+        $this->add($className, new TransientStrategy($className), $instanceProvider, $shouldDispose);
     }
 
     /**
@@ -124,12 +139,15 @@ trait ContainerTransientBuilderTrait
      *
      * @param class-string<TClass> $className
      * @param InstanceProviderInterface<TClass> $instanceProvider
+     * @param bool $shouldDispose Whether the container should dispose the disposable instances it creates for this
+     *     service
      */
     private function addKeyedTransientInstanceProvider(
         string $className,
         string|UnitEnum $key,
         InstanceProviderInterface $instanceProvider,
+        bool $shouldDispose = true,
     ): void {
-        $this->addKeyed($className, $key, new TransientStrategy($className), $instanceProvider);
+        $this->addKeyed($className, $key, new TransientStrategy($className), $instanceProvider, $shouldDispose);
     }
 }

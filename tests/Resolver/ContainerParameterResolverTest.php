@@ -86,7 +86,7 @@ final class ContainerParameterResolverTest extends AbstractDependencyInjectionTe
         $expectedInstance = new FakeClassNoConstructor();
         [$container, $injector] = $this->createContainerAndInjector(
             static fn(ContainerBuilder $builder)
-                => $builder->addSingletonInstance(FakeClassNoConstructor::class, $expectedInstance),
+                => $builder->addSingleton(FakeClassNoConstructor::class, $expectedInstance),
         );
 
         // Act

@@ -45,11 +45,15 @@ trait ContainerSingletonBuilderTrait
      */
     // @phpstan-ignore missingType.callable (parameters discovered at build-time)
     #[Override]
-    public function addSingleton(string $className, string|object|null $source = null): static
-    {
+    public function addSingleton(
+        string $className,
+        string|object|null $source = null,
+        bool $shouldDispose = true,
+    ): static {
         $this->addSingletonInstanceProvider(
             $className,
             InstanceProviderFactory::createInstanceProvider($className, $source),
+            $shouldDispose,
         );
 
         return $this;
@@ -64,56 +68,12 @@ trait ContainerSingletonBuilderTrait
         string $className,
         string|UnitEnum $key,
         string|object|null $source = null,
+        bool $shouldDispose = true,
     ): static {
         $this->addKeyedSingletonInstanceProvider(
             $className,
             $key,
             InstanceProviderFactory::createInstanceProvider($className, $source),
-        );
-
-        return $this;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    // @phpstan-ignore missingType.callable (parameters discovered at build-time)
-    #[Override]
-    public function addSingletonFactory(string $className, callable $factory): static
-    {
-        $this->addSingletonInstanceProvider(
-            $className,
-            InstanceProviderFactory::createClosureInstanceProvider($className, $factory(...)),
-        );
-
-        return $this;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    // @phpstan-ignore missingType.callable (parameters discovered at build-time)
-    #[Override]
-    public function addKeyedSingletonFactory(string $className, string|UnitEnum $key, callable $factory): static
-    {
-        $this->addKeyedSingletonInstanceProvider(
-            $className,
-            $key,
-            InstanceProviderFactory::createClosureInstanceProvider($className, $factory(...)),
-        );
-
-        return $this;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    #[Override]
-    public function addSingletonInstance(string $className, object $instance, bool $shouldDispose = true): static
-    {
-        $this->addSingletonInstanceProvider(
-            $className,
-            InstanceProviderFactory::createObjectInstanceProvider($className, $instance),
             $shouldDispose,
         );
 
@@ -123,17 +83,34 @@ trait ContainerSingletonBuilderTrait
     /**
      * @inheritDoc
      */
+    // @phpstan-ignore missingType.callable (parameters discovered at build-time)
     #[Override]
-    public function addKeyedSingletonInstance(
+    public function addSingletonFactory(string $className, callable $factory, bool $shouldDispose = true): static
+    {
+        $this->addSingletonInstanceProvider(
+            $className,
+            InstanceProviderFactory::createClosureInstanceProvider($className, $factory(...)),
+            $shouldDispose,
+        );
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    // @phpstan-ignore missingType.callable (parameters discovered at build-time)
+    #[Override]
+    public function addKeyedSingletonFactory(
         string $className,
         string|UnitEnum $key,
-        object $instance,
+        callable $factory,
         bool $shouldDispose = true,
     ): static {
         $this->addKeyedSingletonInstanceProvider(
             $className,
             $key,
-            InstanceProviderFactory::createObjectInstanceProvider($className, $instance),
+            InstanceProviderFactory::createClosureInstanceProvider($className, $factory(...)),
             $shouldDispose,
         );
 

@@ -187,7 +187,7 @@ final class ContainerTest extends AbstractDependencyInjectionTestCase
         // Arrange
         $container = self::buildContainer(
             static fn(ContainerBuilder $builder)
-                => $builder->addSingletonInstance(FakeClassNoConstructor::class, new FakeClassNoConstructor()),
+                => $builder->addSingleton(FakeClassNoConstructor::class, new FakeClassNoConstructor()),
         );
 
         // Act
@@ -229,7 +229,7 @@ final class ContainerTest extends AbstractDependencyInjectionTestCase
         // Arrange
         $container = self::buildContainer(
             static fn(ContainerBuilder $builder)
-                => $builder->addSingletonInstance(FakeClassNoConstructor::class, new FakeClassNoConstructor()),
+                => $builder->addSingleton(FakeClassNoConstructor::class, new FakeClassNoConstructor()),
         );
 
         // Act
@@ -274,7 +274,7 @@ final class ContainerTest extends AbstractDependencyInjectionTestCase
         // Arrange
         $container = self::buildContainer(
             static fn(ContainerBuilder $builder)
-                => $builder->addSingletonInstance(FakeClassNoConstructor::class, new FakeClassNoConstructor()),
+                => $builder->addSingleton(FakeClassNoConstructor::class, new FakeClassNoConstructor()),
         );
 
         // Act
@@ -350,7 +350,7 @@ final class ContainerTest extends AbstractDependencyInjectionTestCase
     {
         $instance = new FakeClassWithConstructor(new FakeClassNoConstructor());
         $container = self::buildContainer(
-            static fn(ContainerBuilder $builder) => $builder->addSingletonInstance(FakeInterfaceOne::class, $instance),
+            static fn(ContainerBuilder $builder) => $builder->addSingleton(FakeInterfaceOne::class, $instance),
         );
 
         self::assertSame(FakeClassWithConstructor::class, $container->getConcreteClassName(FakeInterfaceOne::class));

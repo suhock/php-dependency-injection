@@ -46,11 +46,15 @@ trait ContainerScopedBuilderTrait
      */
     // @phpstan-ignore missingType.callable (parameters discovered at build-time)
     #[Override]
-    public function addScoped(string $className, string|Closure|null $source = null): static
-    {
+    public function addScoped(
+        string $className,
+        string|Closure|null $source = null,
+        bool $shouldDispose = true,
+    ): static {
         $this->addScopedInstanceProvider(
             $className,
             InstanceProviderFactory::createInstanceProvider($className, $source),
+            $shouldDispose,
         );
 
         return $this;
@@ -65,11 +69,13 @@ trait ContainerScopedBuilderTrait
         string $className,
         string|UnitEnum $key,
         string|Closure|null $source = null,
+        bool $shouldDispose = true,
     ): static {
         $this->addKeyedScopedInstanceProvider(
             $className,
             $key,
             InstanceProviderFactory::createInstanceProvider($className, $source),
+            $shouldDispose,
         );
 
         return $this;
@@ -80,11 +86,12 @@ trait ContainerScopedBuilderTrait
      */
     // @phpstan-ignore missingType.callable (parameters discovered at build-time)
     #[Override]
-    public function addScopedFactory(string $className, callable $factory): static
+    public function addScopedFactory(string $className, callable $factory, bool $shouldDispose = true): static
     {
         $this->addScopedInstanceProvider(
             $className,
             InstanceProviderFactory::createClosureInstanceProvider($className, $factory(...)),
+            $shouldDispose,
         );
 
         return $this;
@@ -95,12 +102,17 @@ trait ContainerScopedBuilderTrait
      */
     // @phpstan-ignore missingType.callable (parameters discovered at build-time)
     #[Override]
-    public function addKeyedScopedFactory(string $className, string|UnitEnum $key, callable $factory): static
-    {
+    public function addKeyedScopedFactory(
+        string $className,
+        string|UnitEnum $key,
+        callable $factory,
+        bool $shouldDispose = true,
+    ): static {
         $this->addKeyedScopedInstanceProvider(
             $className,
             $key,
             InstanceProviderFactory::createClosureInstanceProvider($className, $factory(...)),
+            $shouldDispose,
         );
 
         return $this;
@@ -111,10 +123,15 @@ trait ContainerScopedBuilderTrait
      *
      * @param class-string<TClass> $className
      * @param InstanceProviderInterface<TClass> $instanceProvider
+     * @param bool $shouldDispose Whether the container should dispose the disposable instances it creates for this
+     *     service
      */
-    private function addScopedInstanceProvider(string $className, InstanceProviderInterface $instanceProvider): void
-    {
-        $this->add($className, new ScopedStrategy($className), $instanceProvider);
+    private function addScopedInstanceProvider(
+        string $className,
+        InstanceProviderInterface $instanceProvider,
+        bool $shouldDispose = true,
+    ): void {
+        $this->add($className, new ScopedStrategy($className), $instanceProvider, $shouldDispose);
     }
 
     /**
@@ -122,12 +139,15 @@ trait ContainerScopedBuilderTrait
      *
      * @param class-string<TClass> $className
      * @param InstanceProviderInterface<TClass> $instanceProvider
+     * @param bool $shouldDispose Whether the container should dispose the disposable instances it creates for this
+     *     service
      */
     private function addKeyedScopedInstanceProvider(
         string $className,
         string|UnitEnum $key,
         InstanceProviderInterface $instanceProvider,
+        bool $shouldDispose = true,
     ): void {
-        $this->addKeyed($className, $key, new ScopedStrategy($className), $instanceProvider);
+        $this->addKeyed($className, $key, new ScopedStrategy($className), $instanceProvider, $shouldDispose);
     }
 }

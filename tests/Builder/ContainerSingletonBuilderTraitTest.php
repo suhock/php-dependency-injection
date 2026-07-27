@@ -179,10 +179,10 @@ final class ContainerSingletonBuilderTraitTest extends AbstractDependencyInjecti
         );
     }
 
-    public function testAddSingletonInstance_WithValidInstance_GetReturnsInstance(): void
+    public function testAddSingleton_WithInstance_GetReturnsInstance(): void
     {
         // Arrange
-        $container = self::createBuilder()->addSingletonInstance(FakeClassNoConstructor::class, new FakeClassNoConstructor())
+        $container = self::createBuilder()->addSingleton(FakeClassNoConstructor::class, new FakeClassNoConstructor())
             ->build();
 
         // Act
@@ -194,14 +194,14 @@ final class ContainerSingletonBuilderTraitTest extends AbstractDependencyInjecti
         self::assertSame($instance, $sameInstance);
     }
 
-    public function testAddSingletonInstance_WhenInstanceIsWrongType_ThrowsInstanceTypeException(): void
+    public function testAddSingleton_WhenInstanceIsWrongType_ThrowsInstanceTypeException(): void
     {
         // Arrange
         $builder = self::createBuilder();
 
         // Act
         // @phpstan-ignore suhock.instanceType (the mismatched instance is the case under test)
-        $fn = static fn() => $builder->addSingletonInstance(
+        $fn = static fn() => $builder->addSingleton(
             FakeClassExtendsBaseClass::class,
             new FakeClassNoConstructor(),
         );
@@ -218,7 +218,7 @@ final class ContainerSingletonBuilderTraitTest extends AbstractDependencyInjecti
     {
         // Arrange
         $expectedInstance = new FakeClassExtendsBaseClass();
-        $container = self::createBuilder()->addSingletonInstance(FakeBaseClass::class, new FakeClassExtendsBaseClass())
+        $container = self::createBuilder()->addSingleton(FakeBaseClass::class, new FakeClassExtendsBaseClass())
             ->addSingleton(
                 FakeClassExtendsBaseClass::class,
                 fn(FakeBaseClass $inner) => $expectedInstance,
@@ -337,28 +337,14 @@ final class ContainerSingletonBuilderTraitTest extends AbstractDependencyInjecti
         self::assertSame($instance, $sameInstance);
     }
 
-    public function testAddKeyedSingletonInstance_WithValidInstance_GetByKeyReturnsInstance(): void
-    {
-        // Arrange
-        $expectedInstance = new FakeClassNoConstructor();
-        $container = self::createBuilder()->addKeyedSingletonInstance(FakeClassNoConstructor::class, 'key1', $expectedInstance)
-            ->build();
-
-        // Act
-        $result = $container->get(FakeClassNoConstructor::class, 'key1');
-
-        // Assert
-        self::assertSame($expectedInstance, $result);
-    }
-
-    public function testAddKeyedSingletonInstance_WhenInstanceIsWrongType_ThrowsInstanceTypeException(): void
+    public function testAddKeyedSingleton_WhenInstanceIsWrongType_ThrowsInstanceTypeException(): void
     {
         // Arrange
         $builder = self::createBuilder();
 
         // Act
         // @phpstan-ignore suhock.instanceType (the mismatched instance is the case under test)
-        $fn = static fn() => $builder->addKeyedSingletonInstance(
+        $fn = static fn() => $builder->addKeyedSingleton(
             FakeClassExtendsBaseClass::class,
             'key1',
             new FakeClassNoConstructor(),

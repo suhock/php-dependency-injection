@@ -14,13 +14,9 @@ namespace Suhock\DependencyInjection;
 use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\TestCase;
 use Suhock\DependencyInjection\Builder\Descriptor;
-use Suhock\DependencyInjection\InstanceProvider\ClassInstanceProvider;
 use Suhock\DependencyInjection\InstanceProvider\ImplementationException;
 use Suhock\DependencyInjection\InstanceProvider\InstanceTypeException;
 use Suhock\DependencyInjection\Lifetime\InstanceStore;
-use Suhock\DependencyInjection\Lifetime\ScopedStrategy;
-use Suhock\DependencyInjection\Lifetime\SingletonStrategy;
-use Suhock\DependencyInjection\Lifetime\TransientStrategy;
 use Suhock\DependencyInjection\Resolver\ParameterResolutionException;
 use Suhock\DependencyInjection\Resolver\ResolutionPlanFactory;
 use Throwable;
@@ -36,30 +32,9 @@ abstract class AbstractDependencyInjectionTestCase extends TestCase
     }
 
     /**
-     * A class-autowired descriptor with the given lifetime, for {@see buildRawContainer()}.
-     *
-     * @param class-string $className
-     *
-     * @return Descriptor<object>
-     */
-    final protected static function classDescriptor(
-        string $className,
-        string $lifetime,
-        bool $shouldDispose = true,
-    ): Descriptor {
-        $strategy = match ($lifetime) {
-            'singleton' => new SingletonStrategy($className),
-            'scoped' => new ScopedStrategy($className),
-            default => new TransientStrategy($className),
-        };
-
-        return new Descriptor($className, $strategy, new ClassInstanceProvider($className), $shouldDispose);
-    }
-
-    /**
      * Builds a container directly from hand-assembled descriptors, bypassing the builder, for tests that exercise
-     * engine behavior the public configuration surface deliberately no longer expresses (e.g. shouldDispose on
-     * container-created services other than instances).
+     * engine behavior the public configuration surface does not express (e.g. context-derived providers, which only
+     * auto-binding constructs).
      *
      * @param array<string, Descriptor<object>> $descriptors
      */

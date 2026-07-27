@@ -316,7 +316,7 @@ final class InjectorTest extends AbstractDependencyInjectionTestCase
         $unkeyed = new FakeClassNoConstructor();
         $keyed = new FakeClassNoConstructor();
         $container = self::buildContainer(
-            static fn(ContainerBuilder $builder) => $builder->addSingletonInstance(FakeClassNoConstructor::class, $unkeyed)
+            static fn(ContainerBuilder $builder) => $builder->addSingleton(FakeClassNoConstructor::class, $unkeyed)
                 ->addKeyedSingleton(FakeClassNoConstructor::class, 'key1', $keyed),
         );
         $injector = Injector::createDefault($container);
@@ -622,7 +622,7 @@ final class InjectorTest extends AbstractDependencyInjectionTestCase
         // Arrange: a real container reports the concrete class behind the interface, so the injector can proxy it.
         $counter = new FakeLazyCounter();
         $container = self::buildContainer(
-            static fn(ContainerBuilder $builder) => $builder->addSingletonInstance(FakeLazyCounter::class, $counter)
+            static fn(ContainerBuilder $builder) => $builder->addSingleton(FakeLazyCounter::class, $counter)
                 ->addTransient(FakeLazyService::class)
                 ->addTransient(FakeLazyInterface::class, FakeLazyService::class),
         );

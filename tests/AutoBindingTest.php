@@ -118,7 +118,7 @@ final class AutoBindingTest extends AbstractDependencyInjectionTestCase
         $userSupplied = self::buildContainer(static fn(ContainerBuilder $builder) => null);
         $container = self::buildContainer(
             static fn(ContainerBuilder $builder)
-                => $builder->addSingletonInstance(ContainerInterface::class, $userSupplied),
+                => $builder->addSingleton(ContainerInterface::class, $userSupplied),
         );
 
         // Act & Assert

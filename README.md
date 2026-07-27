@@ -110,7 +110,7 @@ $builder
     ->addSingleton(MyLogger::class, fn () => new FileLogger('myapp.log'))
 
     // Provide a pre-constructed instance and promise to dispose it later ourselves
-    ->addSingletonInstance(RequestContext::class, $requestContext, shouldDispose: false)
+    ->addSingleton(RequestContext::class, $requestContext, shouldDispose: false)
 
     // Alias an interface to an implementing type
     ->addTransient(HttpClient::class, CurlHttpClient::class)
@@ -538,12 +538,14 @@ than once has no effect.
 > By default the built container disposes every disposable instance it holds,
 > including concrete instances you explicitly supply. When an instance's
 > disposal is managed by something outside the container or if you intend to
-> dispose it yourself, you should use `add*Instance()` and pass
-> `shouldDispose: false`:
+> dispose it yourself, pass `shouldDispose: false`:
 
 ```php
 // The pool is closed elsewhere; the container must not dispose it.
-$builder->addSingletonInstance(ConnectionPool::class, $pool, shouldDispose: false);
+$builder->addSingleton(ConnectionPool::class, $pool, shouldDispose: false);
+
+// It applies to services the container creates too, not just supplied instances.
+$builder->addScoped(Connection::class, shouldDispose: false);
 ```
 
 #### Lifetime and ordering guarantees
@@ -576,8 +578,8 @@ There are a number of built-in ways to specify how services should be resolved:
  - [Provide a factory callback](#provide-a-factory-callback)
  - [Provide a concrete instance](#provide-a-concrete-instance)
 
-One method per lifetime covers the first three, choosing the provider from the
-type of `$source`:
+One method per lifetime covers all four, choosing the provider from the type of
+`$source`:
 
 ```php
 class ContainerBuilder
@@ -589,19 +591,31 @@ class ContainerBuilder
      * @param class-string<TImplementation>|(Closure(mixed...): TClass)|TClass|null $source
      * @return $this
      */
-    public function addSingleton(string $className, string|object|null $source = null): self;
+    public function addSingleton(
+        string $className,
+        string|object|null $source = null,
+        bool $shouldDispose = true,
+    ): self;
 
-    public function addScoped(string $className, string|Closure|null $source = null): self;
+    public function addScoped(
+        string $className,
+        string|Closure|null $source = null,
+        bool $shouldDispose = true,
+    ): self;
 
-    public function addTransient(string $className, string|Closure|null $source = null): self;
+    public function addTransient(
+        string $className,
+        string|Closure|null $source = null,
+        bool $shouldDispose = true,
+    ): self;
 }
 ```
 
 A `callable` that is not a `Closure` — an array callable, or an invokable
 object — cannot be told apart from the other source kinds, so pass those to
 [`add*Factory()`](#provide-a-factory-callback). Use
-[`addSingletonInstance()`](#provide-a-concrete-instance) to keep disposal
-responsibility for a supplied instance.
+`$shouldDispose: false` to keep disposal responsibility for any service,
+supplied instance or not — see [Opting out of disposal](#opting-out-of-disposal).
 
 #### Specify the class name
 
@@ -697,11 +711,11 @@ class ContainerBuilder
      * @param callable(mixed...): TClass $factory
      * @return $this
      */
-    public function addSingletonFactory(string $className, callable $factory): static;
+    public function addSingletonFactory(string $className, callable $factory, bool $shouldDispose = true): static;
 
-    public function addScopedFactory(string $className, callable $factory): static;
+    public function addScopedFactory(string $className, callable $factory, bool $shouldDispose = true): static;
 
-    public function addTransientFactory(string $className, callable $factory): static;
+    public function addTransientFactory(string $className, callable $factory, bool $shouldDispose = true): static;
 }
 ```
 
@@ -809,33 +823,12 @@ final class RetryingConnection extends Connection
 
 #### Provide a concrete instance
 
-The container will resolve the specified service to the provided class instance.
-
-```php
-class ContainerBuilder
-{
-    /**
-     * @template TClass of object
-     * @param class-string<TClass> $className
-     * @param TClass $instance
-     * @return $this
-     */
-    public function addSingletonInstance(string $className, object $instance, bool $shouldDispose = true): static;
-}
-```
+Pass the instance as the source and the container will resolve the service to
+it.
 
 > [!NOTE]
-> There is no `addScopedInstance` or `addTransientInstance`: a provided instance is a
-> single object, so it can only be a container-wide singleton.
-
-> [!TIP]
-> If the default value of `$shouldDispose: true` does not need to be changed
-> the shorthand forms can be used.
->
-> ```php
-> // equivalent to $builder->addSingletonInstance(MyService::class, $obj);
-> $builder->addSingleton(MyService::class, $obj);
-> ```
+> Only `addSingleton()` and `addKeyedSingleton()` accept an instance: a provided
+> instance is a single object, so it can only be a container-wide singleton.
 
 ##### Examples
 
@@ -843,7 +836,7 @@ class ContainerBuilder
 
 ```php
 $request = new Request($_SERVER, $_GET, $_POST, $_COOKIE);
-$builder->addSingletonInstance(Request::class, $request);
+$builder->addSingleton(Request::class, $request);
 ```
 
 Anytime your application requires a `Request` object, the container will provide
@@ -878,18 +871,21 @@ class ContainerBuilder
         string $className,
         string|UnitEnum $key,
         string|object|null $source = null,
+        bool $shouldDispose = true,
     ): static;
 
     public function addKeyedScoped(
         string $className,
         string|UnitEnum $key,
         string|Closure|null $source = null,
+        bool $shouldDispose = true,
     ): static;
 
     public function addKeyedTransient(
         string $className,
         string|UnitEnum $key,
         string|Closure|null $source = null,
+        bool $shouldDispose = true,
     ): static;
 }
 
@@ -916,9 +912,9 @@ The `$source` parameter determines how the container provides the instance:
    `addKeyedSingleton()` accepts one, since a single object can only be a
    container-wide singleton.
 
-The explicit `add*Factory()` and `add*Instance()` variants have keyed
-counterparts too: `addKeyedSingletonFactory()`, `addKeyedScopedFactory()`,
-`addKeyedTransientFactory()`, and `addKeyedSingletonInstance()`.
+The explicit `add*Factory()` variants have keyed counterparts too:
+`addKeyedSingletonFactory()`, `addKeyedScopedFactory()`, and
+`addKeyedTransientFactory()`.
 
 ### Examples
 

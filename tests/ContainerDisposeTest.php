@@ -39,7 +39,7 @@ final class ContainerDisposeTest extends AbstractDependencyInjectionTestCase
         $log = new FakeDisposalLog();
         $container = self::buildContainer(
             static fn(ContainerBuilder $builder) => $builder
-                ->addSingletonInstance(FakeDisposalLog::class, $log, shouldDispose: false)
+                ->addSingleton(FakeDisposalLog::class, $log, shouldDispose: false)
                 ->addSingletonFactory(
                     FakeDisposableBaseClass::class,
                     static fn(FakeDisposableBaseClass $inner): FakeDisposableBaseClass
@@ -63,7 +63,7 @@ final class ContainerDisposeTest extends AbstractDependencyInjectionTestCase
         $log = new FakeDisposalLog();
         $container = self::buildContainer(
             static fn(ContainerBuilder $builder) => $builder
-                ->addSingletonInstance(FakeDisposalLog::class, $log, shouldDispose: false)
+                ->addSingleton(FakeDisposalLog::class, $log, shouldDispose: false)
                 ->addSingletonFactory(
                     FakeDisposableClass::class,
                     static fn(FakeDisposableClass $self): FakeDisposableClass => $self,
@@ -99,7 +99,7 @@ final class ContainerDisposeTest extends AbstractDependencyInjectionTestCase
         // Arrange
         $log = new FakeDisposalLog();
         $container = self::buildContainer(
-            static fn(ContainerBuilder $builder) => $builder->addSingletonInstance(FakeDisposalLog::class, $log)
+            static fn(ContainerBuilder $builder) => $builder->addSingleton(FakeDisposalLog::class, $log)
                 ->addSingleton(FakeDisposableClass::class)
                 ->addSingleton(FakeDisposableClassWithDependency::class),
         );
@@ -117,7 +117,7 @@ final class ContainerDisposeTest extends AbstractDependencyInjectionTestCase
         // Arrange
         $instance = new FakeDisposableClass();
         $container = self::buildContainer(
-            static fn(ContainerBuilder $builder) => $builder->addSingletonInstance(FakeDisposableClass::class, $instance),
+            static fn(ContainerBuilder $builder) => $builder->addSingleton(FakeDisposableClass::class, $instance),
         );
         $container->get(FakeDisposableClass::class);
 
@@ -134,7 +134,7 @@ final class ContainerDisposeTest extends AbstractDependencyInjectionTestCase
         $instance = new FakeDisposableClass();
         $container = self::buildContainer(
             static fn(ContainerBuilder $builder)
-                => $builder->addSingletonInstance(FakeDisposableClass::class, $instance, shouldDispose: false),
+                => $builder->addSingleton(FakeDisposableClass::class, $instance, shouldDispose: false),
         );
         $container->get(FakeDisposableClass::class);
 
@@ -145,16 +145,48 @@ final class ContainerDisposeTest extends AbstractDependencyInjectionTestCase
         self::assertSame(0, $instance->disposeCount);
     }
 
-    public function testDispose_WithShouldDisposeFalseSingleton_DoesNotDisposeInstance(): void
+    public function testDispose_WithShouldDisposeFalseAutowiredSingleton_DoesNotDisposeInstance(): void
     {
         // Arrange
-        $container = self::buildRawContainer([
-            FakeDisposableClass::class => self::classDescriptor(
+        $container = self::buildContainer(
+            static fn(ContainerBuilder $builder)
+                => $builder->addSingleton(FakeDisposableClass::class, shouldDispose: false),
+        );
+        $instance = $container->get(FakeDisposableClass::class);
+
+        // Act
+        $container->dispose();
+
+        // Assert
+        self::assertSame(0, $instance->disposeCount);
+    }
+
+    public function testDispose_WithShouldDisposeFalseSingletonFactory_DoesNotDisposeInstance(): void
+    {
+        // Arrange
+        $container = self::buildContainer(
+            static fn(ContainerBuilder $builder) => $builder->addSingletonFactory(
                 FakeDisposableClass::class,
-                'singleton',
+                static fn() => new FakeDisposableClass(),
                 shouldDispose: false,
             ),
-        ]);
+        );
+        $instance = $container->get(FakeDisposableClass::class);
+
+        // Act
+        $container->dispose();
+
+        // Assert
+        self::assertSame(0, $instance->disposeCount);
+    }
+
+    public function testDispose_WithShouldDisposeFalseTransient_DoesNotDisposeInstance(): void
+    {
+        // Arrange
+        $container = self::buildContainer(
+            static fn(ContainerBuilder $builder)
+                => $builder->addTransient(FakeDisposableClass::class, shouldDispose: false),
+        );
         $instance = $container->get(FakeDisposableClass::class);
 
         // Act

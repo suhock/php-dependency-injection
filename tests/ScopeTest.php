@@ -411,7 +411,7 @@ final class ScopeTest extends AbstractDependencyInjectionTestCase
         // Arrange
         $log = new FakeDisposalLog();
         $container = self::buildContainer(
-            static fn(ContainerBuilder $builder) => $builder->addSingletonInstance(FakeDisposalLog::class, $log)
+            static fn(ContainerBuilder $builder) => $builder->addSingleton(FakeDisposalLog::class, $log)
                 ->addScoped(FakeDisposableClass::class)
                 ->addScoped(FakeDisposableClassWithDependency::class),
         );
@@ -446,7 +446,7 @@ final class ScopeTest extends AbstractDependencyInjectionTestCase
         // Arrange
         $log = new FakeDisposalLog();
         $container = self::buildContainer(
-            static fn(ContainerBuilder $builder) => $builder->addSingletonInstance(FakeDisposalLog::class, $log)
+            static fn(ContainerBuilder $builder) => $builder->addSingleton(FakeDisposalLog::class, $log)
                 ->addTransient(FakeDisposableClass::class),
         );
         $scope = $container->createScope();
@@ -480,13 +480,10 @@ final class ScopeTest extends AbstractDependencyInjectionTestCase
     public function testDispose_WithShouldDisposeFalseScopedService_DoesNotDisposeInstance(): void
     {
         // Arrange
-        $container = self::buildRawContainer([
-            FakeDisposableClass::class => self::classDescriptor(
-                FakeDisposableClass::class,
-                'scoped',
-                shouldDispose: false,
-            ),
-        ]);
+        $container = self::buildContainer(
+            static fn(ContainerBuilder $builder)
+                => $builder->addScoped(FakeDisposableClass::class, shouldDispose: false),
+        );
         $scope = $container->createScope();
         $instance = $scope->get(FakeDisposableClass::class);
 

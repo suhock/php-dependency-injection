@@ -28,12 +28,13 @@ interface ContainerSingletonBuilderInterface
      * - a `Closure`: a factory to call.
      * - an `object`: the instance to use.
      *
-     * To set disposal of a supplied instance, use {@see addSingletonInstance()} with `$shouldDispose`.
-     *
      * @template TClass of object
      *
      * @param class-string<TClass> $className
      * @param class-string<TClass>|TClass|Closure|null $source
+     * @param bool $shouldDispose Whether the container should dispose the disposable instances it creates for this
+     *     service, if they implement {@see \Suhock\Disposable\DisposableInterface}. Pass false to retain disposal
+     *     responsibility yourself, e.g. when a supplied instance is shared with code outside the container.
      *
      * @throws ImplementationException If $source names a class that is not a subclass of $className
      * @throws InstanceTypeException If $source is an object that is not an instance of $className
@@ -41,7 +42,11 @@ interface ContainerSingletonBuilderInterface
      * @return $this
      */
     // @phpstan-ignore missingType.callable (parameters discovered at build-time)
-    public function addSingleton(string $className, string|object|null $source = null): static;
+    public function addSingleton(
+        string $className,
+        string|object|null $source = null,
+        bool $shouldDispose = true,
+    ): static;
 
     /**
      * Adds a singleton service under $key. The provider is chosen from the type of $source:
@@ -50,13 +55,14 @@ interface ContainerSingletonBuilderInterface
      * - a `Closure`: a factory to call.
      * - an `object`: the instance to use.
      *
-     * To set disposal of a supplied instance, use {@see addKeyedSingletonInstance()} with `$shouldDispose`.
-     *
      * @template TClass of object
      *
      * @param class-string<TClass> $className
      * @param string|UnitEnum $key The key to add the service under
      * @param class-string<TClass>|TClass|Closure|null $source
+     * @param bool $shouldDispose Whether the container should dispose the disposable instances it creates for this
+     *     service, if they implement {@see \Suhock\Disposable\DisposableInterface}. Pass false to retain disposal
+     *     responsibility yourself, e.g. when a supplied instance is shared with code outside the container.
      *
      * @throws ImplementationException If $source names a class that is not a subclass of $className
      * @throws InstanceTypeException If $source is an object that is not an instance of $className
@@ -68,6 +74,7 @@ interface ContainerSingletonBuilderInterface
         string $className,
         string|UnitEnum $key,
         string|object|null $source = null,
+        bool $shouldDispose = true,
     ): static;
 
     /**
@@ -79,11 +86,14 @@ interface ContainerSingletonBuilderInterface
      * @param class-string<TClass> $className The fully qualified name of the class to add
      * @param callable $factory A factory method that returns an instance of the class specified by {@see $className}.
      *     Any method parameters will be injected.
+     * @param bool $shouldDispose Whether the container should dispose the disposable instances it creates for this
+     *     service, if they implement {@see \Suhock\Disposable\DisposableInterface}. Pass false to retain disposal
+     *     responsibility yourself, e.g. when a supplied instance is shared with code outside the container.
      *
      * @return $this
      */
     // @phpstan-ignore missingType.callable (parameters discovered at build-time)
-    public function addSingletonFactory(string $className, callable $factory): static;
+    public function addSingletonFactory(string $className, callable $factory, bool $shouldDispose = true): static;
 
     /**
      * Indicates that the container should provide a singleton instance of the given class under the given key by
@@ -95,50 +105,17 @@ interface ContainerSingletonBuilderInterface
      * @param string|UnitEnum $key The key to add the service under
      * @param callable $factory A factory method that returns an instance of the class specified by {@see $className}.
      *     Any method parameters will be injected.
+     * @param bool $shouldDispose Whether the container should dispose the disposable instances it creates for this
+     *     service, if they implement {@see \Suhock\Disposable\DisposableInterface}. Pass false to retain disposal
+     *     responsibility yourself, e.g. when a supplied instance is shared with code outside the container.
      *
      * @return $this
      */
     // @phpstan-ignore missingType.callable (parameters discovered at build-time)
-    public function addKeyedSingletonFactory(string $className, string|UnitEnum $key, callable $factory): static;
-
-    /**
-     * Indicates that the container should provide the given class with the specified instance of that class.
-     *
-     * @template TClass of object
-     *
-     * @param class-string<TClass> $className The fully qualified name of the class to add
-     * @param TClass $instance An instance of the class
-     * @param bool $shouldDispose Whether the container should dispose the instance, if it implements
-     *     {@see \Suhock\Disposable\DisposableInterface}, when the container is disposed. Pass false to retain
-     *     disposal responsibility yourself, e.g. when the instance is shared with code outside the container.
-     *
-     * @throws InstanceTypeException
-     *
-     * @return $this
-     */
-    public function addSingletonInstance(string $className, object $instance, bool $shouldDispose = true): static;
-
-    /**
-     * Indicates that the container should provide the given class under the given key with the specified instance of
-     * that class.
-     *
-     * @template TClass of object
-     *
-     * @param class-string<TClass> $className The fully qualified name of the class to add
-     * @param string|UnitEnum $key The key to add the service under
-     * @param TClass $instance An instance of the class
-     * @param bool $shouldDispose Whether the container should dispose the instance, if it implements
-     *     {@see \Suhock\Disposable\DisposableInterface}, when the container is disposed. Pass false to retain
-     *     disposal responsibility yourself, e.g. when the instance is shared with code outside the container.
-     *
-     * @throws InstanceTypeException
-     *
-     * @return $this
-     */
-    public function addKeyedSingletonInstance(
+    public function addKeyedSingletonFactory(
         string $className,
         string|UnitEnum $key,
-        object $instance,
+        callable $factory,
         bool $shouldDispose = true,
     ): static;
 }
