@@ -16,6 +16,7 @@ use Override;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 use Suhock\DependencyInjection\Builder\Descriptor;
+use Suhock\DependencyInjection\Compiler\ResolutionPlanFactory;
 use Suhock\DependencyInjection\Fakes\FakeAbstractClass;
 use Suhock\DependencyInjection\Fakes\FakeClassImplementsInterfaces;
 use Suhock\DependencyInjection\Fakes\FakeClassNoConstructor;
@@ -50,7 +51,6 @@ use Suhock\DependencyInjection\Lazy;
 use Suhock\DependencyInjection\Lifetime\ScopedStrategy;
 use Suhock\DependencyInjection\Lifetime\SingletonStrategy;
 use Suhock\DependencyInjection\Lifetime\TransientStrategy;
-use Suhock\DependencyInjection\Resolver\ResolutionPlanFactory;
 use Throwable;
 
 /**

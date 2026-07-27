@@ -16,6 +16,7 @@ use Suhock\DependencyInjection\Builder\Descriptor;
 use Suhock\DependencyInjection\Cache\CacheInterface;
 use Suhock\DependencyInjection\Compiler\ContainerCompiler;
 use Suhock\DependencyInjection\Compiler\ContainerCompilerInterface;
+use Suhock\DependencyInjection\Compiler\DependencyGraph;
 use Suhock\DependencyInjection\InstanceProvider\InstanceProviderFactory;
 use Suhock\DependencyInjection\InstanceProvider\InstanceProviderInterface;
 use Suhock\DependencyInjection\Lifetime\LifetimeStrategy;
@@ -23,7 +24,6 @@ use Suhock\DependencyInjection\Lifetime\ScopedStrategy;
 use Suhock\DependencyInjection\Lifetime\SingletonStrategy;
 use Suhock\DependencyInjection\Lifetime\TransientStrategy;
 use Suhock\DependencyInjection\Validation\ContainerValidationException;
-use Suhock\DependencyInjection\Validation\DependencyGraph;
 use UnitEnum;
 
 /**

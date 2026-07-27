@@ -31,7 +31,6 @@ use Suhock\DependencyInjection\Lifetime\SingletonStrategy;
 use Suhock\DependencyInjection\Lifetime\TransientStrategy;
 use Suhock\DependencyInjection\ScopeFactoryInterface;
 use Suhock\DependencyInjection\Validation\ContainerValidationException;
-use Suhock\DependencyInjection\Validation\DependencyGraphEdge;
 use Suhock\DependencyInjection\Validation\ValidationIssue;
 use Suhock\DependencyInjection\Validation\ValidationIssueKind;
 

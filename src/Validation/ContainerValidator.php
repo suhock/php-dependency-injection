@@ -13,14 +13,16 @@ namespace Suhock\DependencyInjection\Validation;
 
 use ReflectionClass;
 use Suhock\DependencyInjection\Builder\Descriptor;
+use Suhock\DependencyInjection\Compiler\DependencyGraph;
+use Suhock\DependencyInjection\Compiler\DependencyGraphEdge;
+use Suhock\DependencyInjection\Compiler\ResolutionPlan;
+use Suhock\DependencyInjection\Compiler\ResolutionPlanEdge;
+use Suhock\DependencyInjection\Compiler\ResolutionPlanKind;
 use Suhock\DependencyInjection\DescriptorId;
 use Suhock\DependencyInjection\Key;
 use Suhock\DependencyInjection\Lifetime\ScopedStrategy;
 use Suhock\DependencyInjection\Lifetime\SingletonStrategy;
 use Suhock\DependencyInjection\Lifetime\TransientStrategy;
-use Suhock\DependencyInjection\Resolver\ResolutionPlan;
-use Suhock\DependencyInjection\Resolver\ResolutionPlanEdge;
-use Suhock\DependencyInjection\Resolver\ResolutionPlanKind;
 
 use function array_map;
 use function array_pop;

@@ -14,6 +14,7 @@ namespace Suhock\DependencyInjection;
 use LogicException;
 use RuntimeException;
 use Suhock\DependencyInjection\Compiler\ContainerCompilerInterface;
+use Suhock\DependencyInjection\Compiler\DependencyGraph;
 use Suhock\DependencyInjection\Fakes\FakeBaseClass;
 use Suhock\DependencyInjection\Fakes\FakeClassExtendsBaseClass;
 use Suhock\DependencyInjection\Fakes\FakeClassNoConstructor;
@@ -26,7 +27,6 @@ use Suhock\DependencyInjection\Fakes\FakeStaticFactory;
 use Suhock\DependencyInjection\Fakes\FakeUnitEnum;
 use Suhock\DependencyInjection\InstanceProvider\InstanceTypeException;
 use Suhock\DependencyInjection\Validation\ContainerValidationException;
-use Suhock\DependencyInjection\Validation\DependencyGraph;
 use Throwable;
 
 use function array_keys;

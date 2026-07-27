@@ -9,7 +9,7 @@
 
 declare(strict_types=1);
 
-namespace Suhock\DependencyInjection\Validation;
+namespace Suhock\DependencyInjection\Compiler;
 
 /**
  * A configuration's dependency graph, exported for external tooling: every service and every satisfied, chosen edge

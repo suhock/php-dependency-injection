@@ -9,7 +9,7 @@
 
 declare(strict_types=1);
 
-namespace Suhock\DependencyInjection\Resolver;
+namespace Suhock\DependencyInjection\Compiler;
 
 use Closure;
 use PHPUnit\Framework\TestCase;

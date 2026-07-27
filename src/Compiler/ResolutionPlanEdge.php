@@ -9,9 +9,10 @@
 
 declare(strict_types=1);
 
-namespace Suhock\DependencyInjection\Resolver;
+namespace Suhock\DependencyInjection\Compiler;
 
 use Suhock\DependencyInjection\Lazy;
+use Suhock\DependencyInjection\Resolver\ResolvableDependency;
 
 /**
  * One dependency edge of a {@see ResolutionPlan}: an injection point the container satisfies when the service

@@ -9,7 +9,7 @@
 
 declare(strict_types=1);
 
-namespace Suhock\DependencyInjection\Validation;
+namespace Suhock\DependencyInjection\Compiler;
 
 use Closure;
 use ReflectionFunction;

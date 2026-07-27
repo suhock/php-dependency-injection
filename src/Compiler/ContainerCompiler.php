@@ -20,12 +20,8 @@ use Suhock\DependencyInjection\ContainerInterface;
 use Suhock\DependencyInjection\InstanceProvider\ContextInstanceProvider;
 use Suhock\DependencyInjection\Lifetime\TransientStrategy;
 use Suhock\DependencyInjection\ResolutionContext;
-use Suhock\DependencyInjection\Resolver\ResolutionPlan;
-use Suhock\DependencyInjection\Resolver\ResolutionPlanFactory;
 use Suhock\DependencyInjection\ScopeFactoryInterface;
-use Suhock\DependencyInjection\Validation\ConfigurationFingerprint;
 use Suhock\DependencyInjection\Validation\ContainerValidator;
-use Suhock\DependencyInjection\Validation\DependencyGraph;
 
 use function is_array;
 use function is_string;

@@ -9,7 +9,7 @@
 
 declare(strict_types=1);
 
-namespace Suhock\DependencyInjection\Validation;
+namespace Suhock\DependencyInjection\Compiler;
 
 /**
  * One edge of an exported {@see DependencyGraph}: the source service injects the target service through the named

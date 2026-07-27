@@ -9,7 +9,7 @@
 
 declare(strict_types=1);
 
-namespace Suhock\DependencyInjection\Resolver;
+namespace Suhock\DependencyInjection\Compiler;
 
 /**
  * How a compiled {@see ResolutionPlan} produces its instance.

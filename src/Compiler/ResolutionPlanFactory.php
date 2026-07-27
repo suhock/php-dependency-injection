@@ -9,7 +9,7 @@
 
 declare(strict_types=1);
 
-namespace Suhock\DependencyInjection\Resolver;
+namespace Suhock\DependencyInjection\Compiler;
 
 use Closure;
 use ReflectionClass;
@@ -20,6 +20,7 @@ use Suhock\DependencyInjection\Builder\Descriptor;
 use Suhock\DependencyInjection\DescriptorId;
 use Suhock\DependencyInjection\InstanceProvider\InstanceProviders;
 use Suhock\DependencyInjection\Lazy;
+use Suhock\DependencyInjection\Resolver\ResolvableDependencyFactory;
 
 use function class_exists;
 use function count;

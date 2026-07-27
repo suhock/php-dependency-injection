@@ -14,7 +14,6 @@ namespace Suhock\DependencyInjection\Compiler;
 use Suhock\DependencyInjection\Builder\Descriptor;
 use Suhock\DependencyInjection\Container;
 use Suhock\DependencyInjection\Validation\ContainerValidationException;
-use Suhock\DependencyInjection\Validation\DependencyGraph;
 
 /**
  * Turns a set of service descriptors into a {@see Container}.
