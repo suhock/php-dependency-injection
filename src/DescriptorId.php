@@ -29,6 +29,8 @@ final class DescriptorId
 {
     private const SEPARATOR = "\0";
 
+    private function __construct() {}
+
     /**
      * @param class-string $className
      */
