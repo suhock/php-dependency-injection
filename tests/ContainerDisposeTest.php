@@ -11,8 +11,10 @@ declare(strict_types=1);
 
 namespace Suhock\DependencyInjection;
 
+use Suhock\DependencyInjection\Fakes\FakeDisposableBaseClass;
 use Suhock\DependencyInjection\Fakes\FakeDisposableClass;
 use Suhock\DependencyInjection\Fakes\FakeDisposableClassWithDependency;
+use Suhock\DependencyInjection\Fakes\FakeDisposableDecorator;
 use Suhock\DependencyInjection\Fakes\FakeDisposalLog;
 use Suhock\Disposable\DisposableInterface;
 
@@ -28,6 +30,53 @@ final class ContainerDisposeTest extends AbstractDependencyInjectionTestCase
 
         // Assert
         self::assertInstanceOf(DisposableInterface::class, $container);
+    }
+
+    public function testDispose_WhenSelfFactoryReturnsADecorator_DisposesTheWrappedInstanceAfterIt(): void
+    {
+        // Arrange: the decorator holds the instance the container constructed but does not dispose it, as a class
+        // handed a collaborator from outside reasonably may not.
+        $log = new FakeDisposalLog();
+        $container = self::buildContainer(
+            static fn(ContainerBuilder $builder) => $builder
+                ->addSingletonInstance(FakeDisposalLog::class, $log, shouldDispose: false)
+                ->addSingletonFactory(
+                    FakeDisposableBaseClass::class,
+                    static fn(FakeDisposableBaseClass $inner): FakeDisposableBaseClass
+                        => new FakeDisposableDecorator($inner, $log),
+                ),
+        );
+        $decorator = $container->get(FakeDisposableBaseClass::class);
+
+        // Act
+        $container->dispose();
+
+        // Assert: the container disposes what it constructed, after whatever the factory returned.
+        self::assertInstanceOf(FakeDisposableDecorator::class, $decorator);
+        self::assertSame(1, $decorator->inner->disposeCount);
+        self::assertSame(['decorator', 'inner'], $log->entries);
+    }
+
+    public function testDispose_WhenSelfFactoryReturnsTheGivenInstance_DisposesItOnce(): void
+    {
+        // Arrange
+        $log = new FakeDisposalLog();
+        $container = self::buildContainer(
+            static fn(ContainerBuilder $builder) => $builder
+                ->addSingletonInstance(FakeDisposalLog::class, $log, shouldDispose: false)
+                ->addSingletonFactory(
+                    FakeDisposableClass::class,
+                    static fn(FakeDisposableClass $self): FakeDisposableClass => $self,
+                ),
+        );
+        $instance = $container->get(FakeDisposableClass::class);
+
+        // Act
+        $container->dispose();
+
+        // Assert: recording is idempotent per store, so the single instance is disposed exactly once.
+        self::assertSame(1, $instance->disposeCount);
+        self::assertSame(['dependency'], $log->entries);
     }
 
     public function testDispose_WithSingletonDisposable_DisposesInstance(): void

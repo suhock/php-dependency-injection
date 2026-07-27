@@ -57,12 +57,9 @@ final class InstanceProviderFactory
      *
      * @return ClassInstanceProvider<TClass>
      */
-    // @phpstan-ignore missingType.callable (a mutator's parameters are injected)
-    public static function createClassInstanceProvider(
-        string $className,
-        ?callable $mutator = null,
-    ): ClassInstanceProvider {
-        return new ClassInstanceProvider($className, $mutator !== null ? $mutator(...) : null);
+    public static function createClassInstanceProvider(string $className): ClassInstanceProvider
+    {
+        return new ClassInstanceProvider($className);
     }
 
     /**

@@ -30,9 +30,6 @@ interface ContainerScopedBuilderInterface
      * - a `Closure`: a factory to call.
      * - an `object`: the instance to use.
      *
-     * The convenience form takes the default for each shape. To pass a mutator,
-     * use {@see addScopedClass()}.
-     *
      * @template TClass of object
      *
      * @param class-string<TClass> $className
@@ -50,9 +47,6 @@ interface ContainerScopedBuilderInterface
      * - a `Closure`: a factory to call.
      * - an `object`: the instance to use.
      *
-     * The convenience form takes the default for each shape. To pass a mutator,
-     * use {@see addKeyedScopedClass()}.
-     *
      * @template TClass of object
      *
      * @param class-string<TClass> $className
@@ -69,47 +63,32 @@ interface ContainerScopedBuilderInterface
     ): static;
 
     /**
-     * Indicates that the container should provide a per-scope instance of the given class by autowiring its
-     * constructor. An optional mutator function can be specified to perform additional initialization on the
-     * constructed object.
+     * Indicates that the container should provide a scoped instance of the given class by autowiring its constructor.
      *
      * @template TClass of object
      *
      * @param class-string<TClass> $className The fully qualified name of the class to add
-     * @param Closure|callable-string|null $mutator [optional] This function will be called after an instance of the
-     *     class has been created. The class instance will be provided as the first parameter. Any additional parameters
-     *     will be injected.
      *
      * @throws ImplementationException
      *
      * @return $this
      */
-    // @phpstan-ignore missingType.callable (parameters discovered at build-time), missingType.callable (likewise)
-    public function addScopedClass(string $className, ?callable $mutator = null): static;
+    public function addScopedClass(string $className): static;
 
     /**
-     * Indicates that the container should provide a per-scope instance of the given class under the given key by
-     * autowiring its constructor. An optional mutator function can be specified to perform additional initialization
-     * on the constructed object.
+     * Indicates that the container should provide a scoped instance of the given class under the given key by
+     * autowiring its constructor.
      *
      * @template TClass of object
      *
      * @param class-string<TClass> $className The fully qualified name of the class to add
      * @param string|UnitEnum $key The key to add the service under
-     * @param Closure|callable-string|null $mutator [optional] This function will be called after an instance of the
-     *     class has been created. The class instance will be provided as the first parameter. Any additional parameters
-     *     will be injected.
      *
      * @throws ImplementationException
      *
      * @return $this
      */
-    // @phpstan-ignore missingType.callable (parameters discovered at build-time), missingType.callable (likewise)
-    public function addKeyedScopedClass(
-        string $className,
-        string|UnitEnum $key,
-        ?callable $mutator = null,
-    ): static;
+    public function addKeyedScopedClass(string $className, string|UnitEnum $key): static;
 
     /**
      * Indicates that the container should provide a per-scope instance of the given class by retrieving an instance of

@@ -16,6 +16,7 @@ use Suhock\DependencyInjection\Fakes\FakeBaseClass;
 use Suhock\DependencyInjection\Fakes\FakeClassExtendsBaseClass;
 use Suhock\DependencyInjection\Fakes\FakeClassNoConstructor;
 use Suhock\DependencyInjection\Fakes\FakeClassWithConstructor;
+use Suhock\DependencyInjection\Key;
 
 /**
  * Test suite for {@see ContainerScopedBuilderTrait}.
@@ -39,13 +40,15 @@ final class ContainerScopedBuilderTraitTest extends AbstractDependencyInjectionT
         self::assertNotSame($instance, $otherScopeInstance);
     }
 
-    public function testAddScopedClass_WithMutator_GetReturnsMutatedInstance(): void
+    public function testAddScopedFactory_WithSelfParameter_GetReturnsConfiguredInstance(): void
     {
         // Arrange
-        $container = self::createBuilder()->addScopedClass(
+        $container = self::createBuilder()->addScopedFactory(
             FakeClassNoConstructor::class,
-            function (FakeClassNoConstructor $obj) {
+            function (FakeClassNoConstructor $obj): FakeClassNoConstructor {
                 $obj->string = 'test';
+
+                return $obj;
             },
         )
             ->build();
@@ -125,14 +128,16 @@ final class ContainerScopedBuilderTraitTest extends AbstractDependencyInjectionT
         self::assertFalse($scope->has(FakeClassNoConstructor::class));
     }
 
-    public function testAddKeyedScopedClass_WithMutator_GetByKeyReturnsMutatedPerScopeInstance(): void
+    public function testAddKeyedScopedFactory_WithSelfParameter_GetByKeyReturnsConfiguredPerScopeInstance(): void
     {
         // Arrange
-        $container = self::createBuilder()->addKeyedScopedClass(
+        $container = self::createBuilder()->addKeyedScopedFactory(
             FakeClassNoConstructor::class,
             'key1',
-            function (FakeClassNoConstructor $obj) {
+            function (#[Key('key1')] FakeClassNoConstructor $obj): FakeClassNoConstructor {
                 $obj->string = 'test';
+
+                return $obj;
             },
         )
             ->build();

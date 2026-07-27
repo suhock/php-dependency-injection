@@ -17,6 +17,7 @@ use Suhock\DependencyInjection\Fakes\FakeBaseClass;
 use Suhock\DependencyInjection\Fakes\FakeClassExtendsBaseClass;
 use Suhock\DependencyInjection\Fakes\FakeClassNoConstructor;
 use Suhock\DependencyInjection\InstanceProvider\InstanceTypeException;
+use Suhock\DependencyInjection\Key;
 
 /**
  * Test suite for {@see ContainerSingletonBuilderTrait}.
@@ -37,13 +38,15 @@ final class ContainerSingletonBuilderTraitTest extends AbstractDependencyInjecti
         self::assertSame($instance, $sameInstance);
     }
 
-    public function testAddSingletonClass_WithMutator_GetReturnsMutatedInstance(): void
+    public function testAddSingletonFactory_WithSelfParameter_GetReturnsConfiguredInstance(): void
     {
         // Arrange
-        $container = self::createBuilder()->addSingletonClass(
+        $container = self::createBuilder()->addSingletonFactory(
             FakeClassNoConstructor::class,
-            function (FakeClassNoConstructor $obj) {
+            function (FakeClassNoConstructor $obj): FakeClassNoConstructor {
                 $obj->string = 'test';
+
+                return $obj;
             },
         )
             ->build();
@@ -292,14 +295,16 @@ final class ContainerSingletonBuilderTraitTest extends AbstractDependencyInjecti
         self::assertSame($expectedInstance, $result);
     }
 
-    public function testAddKeyedSingletonClass_WithMutator_GetByKeyReturnsMutatedInstance(): void
+    public function testAddKeyedSingletonFactory_WithSelfParameter_GetByKeyReturnsConfiguredInstance(): void
     {
         // Arrange
-        $container = self::createBuilder()->addKeyedSingletonClass(
+        $container = self::createBuilder()->addKeyedSingletonFactory(
             FakeClassNoConstructor::class,
             'key1',
-            function (FakeClassNoConstructor $obj) {
+            function (#[Key('key1')] FakeClassNoConstructor $obj): FakeClassNoConstructor {
                 $obj->string = 'test';
+
+                return $obj;
             },
         )
             ->build();

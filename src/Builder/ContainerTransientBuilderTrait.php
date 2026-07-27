@@ -78,13 +78,12 @@ trait ContainerTransientBuilderTrait
     /**
      * @inheritDoc
      */
-    // @phpstan-ignore missingType.callable (parameters discovered at build-time), missingType.callable (likewise)
     #[Override]
-    public function addTransientClass(string $className, ?callable $mutator = null): static
+    public function addTransientClass(string $className): static
     {
         $this->addTransientInstanceProvider(
             $className,
-            InstanceProviderFactory::createClassInstanceProvider($className, $mutator),
+            InstanceProviderFactory::createClassInstanceProvider($className),
         );
 
         return $this;
@@ -93,17 +92,13 @@ trait ContainerTransientBuilderTrait
     /**
      * @inheritDoc
      */
-    // @phpstan-ignore missingType.callable (parameters discovered at build-time), missingType.callable (likewise)
     #[Override]
-    public function addKeyedTransientClass(
-        string $className,
-        string|UnitEnum $key,
-        ?callable $mutator = null,
-    ): static {
+    public function addKeyedTransientClass(string $className, string|UnitEnum $key): static
+    {
         $this->addKeyedTransientInstanceProvider(
             $className,
             $key,
-            InstanceProviderFactory::createClassInstanceProvider($className, $mutator),
+            InstanceProviderFactory::createClassInstanceProvider($className),
         );
 
         return $this;

@@ -138,6 +138,11 @@ final class ContainerValidator
             }
 
             foreach (self::describedEdges($plan) as [$description, $edge]) {
+                // A self edge constructs the service rather than resolving it, so resolution traverses nothing here.
+                if ($edge->self) {
+                    continue;
+                }
+
                 $target = $this->chosenTarget($edge);
 
                 if ($target !== null) {
@@ -168,8 +173,10 @@ final class ContainerValidator
             yield [sprintf('parameter $%s of %s', $edge->name, $argumentLocation), $edge];
         }
 
-        foreach ($plan->mutatorEdges as $edge) {
-            yield [sprintf('parameter $%s of the mutator', $edge->name), $edge];
+        // A factory naming the service it produces constructs that service's class, so the class's constructor
+        // arguments are edges of this service exactly as they are for an autowired class.
+        foreach ($plan->selfConstructorEdges as $edge) {
+            yield [sprintf('parameter $%s of __construct()', $edge->name), $edge];
         }
     }
 
@@ -218,7 +225,9 @@ final class ContainerValidator
         }
 
         foreach (self::describedEdges($plan) as [$description, $edge]) {
-            if ($edge->soft || $this->edgeIsSatisfied($edge)) {
+            // A self edge is satisfied by constructing the service's own class, never by a lookup, so the only way
+            // it can fail is a class that cannot be constructed at all — already reported above.
+            if ($edge->soft || $edge->self || $this->edgeIsSatisfied($edge)) {
                 continue;
             }
 
@@ -245,7 +254,8 @@ final class ContainerValidator
 
     /**
      * The lazy-injection defects of one service: a #[Lazy] parameter the container cannot construct lazily, because
-     * it has no class type, or resolves to a factory-produced service whose concrete class is not statically known.
+     * it has no class type, resolves to a factory-produced service whose concrete class is not statically known, or
+     * names the service the factory produces (constructed directly, so there is nothing to defer).
      * A lazy edge that is simply unresolvable is not a lazy defect: a required one is reported as a missing
      * dependency, a soft one self-heals, and neither ever builds a lazy object.
      *
@@ -264,7 +274,10 @@ final class ContainerValidator
                 continue;
             }
 
-            $message = $this->lazyDefect($edge, $description, $plans);
+            $message = $edge->self
+                ? "lazy $description names the service the factory produces, which the container constructs directly"
+                    . ' rather than resolving, so it cannot be deferred'
+                : $this->lazyDefect($edge, $description, $plans);
 
             if ($message !== null) {
                 $issues[] = new ValidationIssue(
@@ -602,6 +615,13 @@ final class ContainerValidator
         }
 
         foreach (self::describedEdges($plan) as [$description, $edge]) {
+            // A self edge does not resolve the service, it constructs it, so it is not a dependency on anything and
+            // must not register as a self-loop. What the construction really depends on is already yielded above, as
+            // the class's constructor edges.
+            if ($edge->self) {
+                continue;
+            }
+
             $target = $this->chosenTarget($edge);
 
             if ($target !== null) {

@@ -52,12 +52,12 @@ final class Container implements
     private readonly array $plans;
 
     /**
-     * The factory and mutator closures paired with each plan, extracted once from the descriptors' providers so
-     * execution does not rebuild dependency-source DTOs per resolution.
+     * The factory closures paired with each plan, extracted once from the descriptors' providers so execution does
+     * not rebuild dependency-source DTOs per resolution.
      *
      * @var array<string, Closure>
      */
-    // @phpstan-ignore missingType.callable (holds both factory and mutator closures)
+    // @phpstan-ignore missingType.callable (parameters discovered at build-time)
     private array $closures = [];
 
     private readonly InstanceStore $instances;
@@ -90,8 +90,8 @@ final class Container implements
         $this->instances = new InstanceStore();
         $this->resolutionContext = new ResolutionContext($this, $this->instances);
 
-        foreach ($plans as $id => $plan) {
-            $closure = self::executableClosure($plan, $descriptors[$id] ?? null);
+        foreach (array_keys($plans) as $id) {
+            $closure = self::executableClosure($descriptors[$id] ?? null);
 
             if ($closure !== null) {
                 $this->closures[$id] = $closure;
@@ -100,20 +100,16 @@ final class Container implements
     }
 
     /**
-     * The factory or mutator closure a plan executes with, held by the descriptor's provider.
+     * The factory closure a plan executes with, held by the descriptor's provider.
      *
      * @param Descriptor<object>|null $descriptor
      */
-    // @phpstan-ignore missingType.callable (returns either a factory or a mutator closure)
-    private static function executableClosure(ResolutionPlan $plan, ?Descriptor $descriptor): ?Closure
+    // @phpstan-ignore missingType.callable (parameters discovered at build-time)
+    private static function executableClosure(?Descriptor $descriptor): ?Closure
     {
         $provider = $descriptor?->instanceProvider;
 
-        return match (true) {
-            InstanceProviders::isClosure($provider) => $provider->factory,
-            InstanceProviders::isClass($provider) => $provider->mutator,
-            default => null,
-        };
+        return InstanceProviders::isClosure($provider) ? $provider->factory : null;
     }
 
     /**
@@ -361,8 +357,8 @@ final class Container implements
         $plan = $this->plans[$id] ?? throw new ContainerException("No compiled plan exists for service $id");
 
         return match ($plan->kind) {
-            ResolutionPlanKind::AutowiredClass => $this->executeAutowiredClass($id, $plan, $ctx, $lazy),
-            ResolutionPlanKind::Factory => $this->executeFactory($id, $plan, $ctx, $lazy),
+            ResolutionPlanKind::AutowiredClass => $this->executeAutowiredClass($plan, $ctx, $lazy),
+            ResolutionPlanKind::Factory => $this->executeFactory($id, $plan, $ctx, $lazy, $descriptor->shouldDispose),
             ResolutionPlanKind::Implementation => $this->executeImplementation($plan, $ctx, $lazy),
             ResolutionPlanKind::Leaf => self::executeLeaf($descriptor->instanceProvider, $ctx),
         };
@@ -392,41 +388,40 @@ final class Container implements
         throw new ContainerException('Unknown leaf instance provider ' . $provider::class);
     }
 
-    private function executeAutowiredClass(string $id, ResolutionPlan $plan, ResolutionContext $ctx, bool $lazy): object
+    private function executeAutowiredClass(ResolutionPlan $plan, ResolutionContext $ctx, bool $lazy): object
     {
         if ($lazy) {
             $rClass = new ReflectionClass($plan->className);
 
-            return $rClass->newLazyGhost(function (object $ghost) use ($id, $plan, $ctx, $rClass): void {
+            return $rClass->newLazyGhost(function (object $ghost) use ($plan, $ctx, $rClass): void {
                 $rClass->getConstructor()?->invokeArgs(
                     $ghost,
                     $this->resolveArguments($plan->argumentEdges, $ctx, [$plan->className, '__construct']),
                 );
-                $this->applyMutator($id, $plan, $ctx, $ghost);
             });
         }
 
-        $className = $plan->className;
-        $instance = new $className(...$this->resolveArguments($plan->argumentEdges, $ctx, [$className, '__construct']));
-        $this->applyMutator($id, $plan, $ctx, $instance);
-
-        return $instance;
+        return $this->constructClass($plan->className, $plan->argumentEdges, $ctx);
     }
 
     /**
-     * Applies the descriptor's configuration mutator to a newly produced instance, if one is paired with the plan.
+     * Constructs a class directly, injecting the given constructor edges.
+     *
+     * @param class-string $className
+     * @param list<ResolutionPlanEdge> $constructorEdges
      */
-    private function applyMutator(string $id, ResolutionPlan $plan, ResolutionContext $ctx, object $instance): void
+    private function constructClass(string $className, array $constructorEdges, ResolutionContext $ctx): object
     {
-        $mutator = $this->closures[$id] ?? null;
-
-        if ($mutator !== null) {
-            $mutator($instance, ...$this->resolveArguments($plan->mutatorEdges, $ctx, $mutator, skip: 1));
-        }
+        return new $className(...$this->resolveArguments($constructorEdges, $ctx, [$className, '__construct']));
     }
 
-    private function executeFactory(string $id, ResolutionPlan $plan, ResolutionContext $ctx, bool $lazy): object
-    {
+    private function executeFactory(
+        string $id,
+        ResolutionPlan $plan,
+        ResolutionContext $ctx,
+        bool $lazy,
+        bool $shouldDispose,
+    ): object {
         $factory = $this->closures[$id]
             ?? throw new ContainerException("No factory closure is paired with the plan for $plan->className");
 
@@ -440,26 +435,58 @@ final class Container implements
                 );
 
             return (new ReflectionClass($className))->newLazyProxy(
-                fn(object $proxy): object => $this->invokeFactory($plan, $factory, $ctx),
+                fn(object $proxy): object => $this->invokeFactory($plan, $factory, $ctx, $shouldDispose),
             );
         }
 
-        return $this->invokeFactory($plan, $factory, $ctx);
+        return $this->invokeFactory($plan, $factory, $ctx, $shouldDispose);
     }
 
     /**
      * Invokes a factory with its resolved arguments and verifies the result is an instance of the service class.
+     *
+     * A factory that names the service it produces is handed the instance the container would have constructed for
+     * the descriptor. That instance is constructed once per resolution, so every such parameter receives the same
+     * object, and it is constructed directly rather than resolved, so the descriptor is never re-entered.
      */
     // @phpstan-ignore missingType.callable (comes from the untyped closure map above)
-    private function invokeFactory(ResolutionPlan $plan, Closure $factory, ResolutionContext $ctx): object
-    {
-        $result = $factory(...$this->resolveArguments($plan->argumentEdges, $ctx, $factory));
+    private function invokeFactory(
+        ResolutionPlan $plan,
+        Closure $factory,
+        ResolutionContext $ctx,
+        bool $shouldDispose,
+    ): object {
+        $self = self::hasSelfEdge($plan->argumentEdges)
+            ? $this->constructSelf($plan, $ctx, $shouldDispose)
+            : null;
+        $result = $factory(...$this->resolveArguments($plan->argumentEdges, $ctx, $factory, $self));
 
         if (!$result instanceof $plan->className) {
             throw new InstanceTypeException($plan->className, $result);
         }
 
         return $result;
+    }
+
+    /**
+     * Constructs the instance satisfying a factory's self edges, and records it for disposal on the same terms as any
+     * other instance the container creates for the descriptor.
+     *
+     * Recording it here rather than leaving it to the caller of the factory is what keeps a decorator safe: a factory
+     * handed this instance may reasonably return a wrapper that does not own it, and without this the instance would
+     * be unreachable and never disposed. Recording is idempotent per store, so a factory that returns the instance it
+     * was given is still disposed exactly once. It is recorded before the factory runs, so it is disposed after
+     * whatever the factory returns — a wrapper releases its own resources before the instance it wraps.
+     */
+    private function constructSelf(ResolutionPlan $plan, ResolutionContext $ctx, bool $shouldDispose): object
+    {
+        $self = $this->constructClass($plan->className, $plan->selfConstructorEdges, $ctx);
+
+        if ($shouldDispose && $self instanceof DisposableInterface) {
+            $ctx->store->addDisposable($self);
+        }
+
+        return $self;
     }
 
     /**
@@ -497,7 +524,7 @@ final class Container implements
      * @param list<ResolutionPlanEdge> $edges
      * @param array{class-string, string}|Closure $functionRef The reflectable reference to the parameters' function,
      *     used only to build a precise exception when a required edge fails
-     * @param int $skip The parameter offset of the first edge within the referenced function's signature
+     * @param object|null $self The instance satisfying a {@see ResolutionPlanEdge::$self} edge, already constructed
      *
      * @return list<mixed>
      */
@@ -506,18 +533,24 @@ final class Container implements
         array $edges,
         ResolutionContext $ctx,
         array|Closure $functionRef,
-        int $skip = 0,
+        ?object $self = null,
     ): array {
         $args = [];
 
         foreach ($edges as $index => $edge) {
+            if ($edge->self) {
+                $args[] = $self;
+
+                continue;
+            }
+
             try {
                 if (!$this->tryResolveEdge($edge, $ctx, $value)) {
-                    throw new ParameterResolutionException(new ReflectionParameter($functionRef, $index + $skip));
+                    throw new ParameterResolutionException(new ReflectionParameter($functionRef, $index));
                 }
             } catch (ClassResolutionException $exception) {
                 throw new ParameterResolutionException(
-                    new ReflectionParameter($functionRef, $index + $skip),
+                    new ReflectionParameter($functionRef, $index),
                     $exception,
                 );
             }
@@ -526,6 +559,20 @@ final class Container implements
         }
 
         return $args;
+    }
+
+    /**
+     * @param list<ResolutionPlanEdge> $edges
+     */
+    private static function hasSelfEdge(array $edges): bool
+    {
+        foreach ($edges as $edge) {
+            if ($edge->self) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

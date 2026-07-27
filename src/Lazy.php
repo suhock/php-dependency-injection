@@ -14,8 +14,9 @@ namespace Suhock\DependencyInjection;
 use Attribute;
 
 /**
- * Marks a parameter whose dependency is injected lazily: the container resolves and constructs the dependency only
- * when the injected object is first used. Applies to constructor, factory, and mutator parameters.
+ * Marks a parameter whose dependency is injected lazily. The container resolves and constructs the dependency only
+ * when the injected object is first used. Applies to constructor and factory parameters.
+ *
  * The lazy value is a PHP native lazy object of the resolved type: a ghost when the container constructs the dependency
  * itself, or a proxy when a factory produces it.
  */

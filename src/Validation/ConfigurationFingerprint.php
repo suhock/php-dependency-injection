@@ -41,12 +41,12 @@ use function ksort;
  */
 final class ConfigurationFingerprint
 {
-    private const SCHEMA_VERSION = 2;
+    private const SCHEMA_VERSION = 3;
 
     /**
      * Computes a stable digest of the given configuration, or <code>null</code> if the configuration cannot be
-     * fingerprinted. Currently, only when a factory or mutator closure's origin cannot be determined (an internal
-     * function or one defined in eval'd code), since then no file/line identity exists to hash.
+     * fingerprinted. Currently, only when a factory closure's origin cannot be determined (an internal function or
+     * one defined in eval'd code), since then no file/line identity exists to hash.
      *
      * The digest is computed incrementally: each descriptor's record is fed to the hash context as it is produced,
      * so peak memory use is independent of the number of descriptors.
@@ -85,13 +85,7 @@ final class ConfigurationFingerprint
     private static function providerShape(InstanceProviderInterface $provider): ?string
     {
         if ($provider instanceof ClassInstanceProvider) {
-            if ($provider->mutator === null) {
-                return 'autowire:' . $provider->className . '-';
-            }
-
-            $signature = self::closureSignature($provider->mutator);
-
-            return $signature === null ? null : 'autowire:' . $provider->className . $signature;
+            return 'autowire:' . $provider->className;
         }
 
         if ($provider instanceof ClosureInstanceProvider) {
@@ -116,7 +110,7 @@ final class ConfigurationFingerprint
      * @return string|null <code>null</code> if the closure has no file (an internal function or one defined in
      *     eval'd code), and so cannot be fingerprinted
      */
-    // @phpstan-ignore missingType.callable (fingerprints factory and mutator closures alike)
+    // @phpstan-ignore missingType.callable (parameters discovered at build-time)
     private static function closureSignature(Closure $closure): ?string
     {
         $rFunction = new ReflectionFunction($closure);

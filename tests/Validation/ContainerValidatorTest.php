@@ -46,6 +46,7 @@ use Suhock\DependencyInjection\InstanceProvider\ClassInstanceProvider;
 use Suhock\DependencyInjection\InstanceProvider\ClosureInstanceProvider;
 use Suhock\DependencyInjection\InstanceProvider\ImplementationInstanceProvider;
 use Suhock\DependencyInjection\InstanceProvider\InstanceProviderInterface;
+use Suhock\DependencyInjection\Lazy;
 use Suhock\DependencyInjection\Lifetime\ScopedStrategy;
 use Suhock\DependencyInjection\Lifetime\SingletonStrategy;
 use Suhock\DependencyInjection\Lifetime\TransientStrategy;
@@ -357,15 +358,50 @@ final class ContainerValidatorTest extends TestCase
         $this->assertNoIssues();
     }
 
-    public function testValidate_WithSelfCycle_ReportsCircularDependency(): void
+    public function testValidate_WithSelfParameterOnNonInstantiableClass_ReportsNonInstantiableClass(): void
     {
+        // A factory naming the service it produces has that class constructed for it, which an interface cannot be.
         $this->addFactory(
             FakeInterfaceOne::class,
             static fn(FakeInterfaceOne $self): FakeClassImplementsInterfaces
                 => new FakeClassImplementsInterfaces(),
         );
 
+        $this->assertSoleIssueKind(ValidationIssueKind::NonInstantiableClass);
+    }
+
+    public function testValidate_WithSelfParameter_ReportsNothing(): void
+    {
+        // The self parameter is constructed, not resolved, so it is not a dependency on this service.
+        $this->addFactory(
+            FakeClassNoConstructor::class,
+            static fn(FakeClassNoConstructor $self): FakeClassNoConstructor => $self,
+        );
+
+        $this->assertNoIssues();
+    }
+
+    public function testValidate_WithCycleThroughSelfConstructor_ReportsCircularDependency(): void
+    {
+        // The self parameter's class is constructed, so its constructor's edges are this service's edges and a
+        // cycle through them is still a cycle.
+        $this->addFactory(
+            FakeCycleA::class,
+            static fn(FakeCycleA $self): FakeCycleA => $self,
+        );
+        $this->addClass(FakeCycleB::class);
+
         $this->assertSoleIssueKind(ValidationIssueKind::CircularDependency);
+    }
+
+    public function testValidate_WithLazySelfParameter_ReportsUnbuildableLazyDependency(): void
+    {
+        $this->addFactory(
+            FakeClassNoConstructor::class,
+            static fn(#[Lazy] FakeClassNoConstructor $self): FakeClassNoConstructor => $self,
+        );
+
+        $this->assertSoleIssueKind(ValidationIssueKind::UnbuildableLazyDependency);
     }
 
     public function testValidate_WithRequiredCaptivePath_ReportsCaptiveDependency(): void

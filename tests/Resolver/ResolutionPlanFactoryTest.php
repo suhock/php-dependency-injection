@@ -48,13 +48,12 @@ final class ResolutionPlanFactoryTest extends TestCase
      *
      * @return Descriptor<object>
      */
-    // @phpstan-ignore missingType.callable (a mutator's parameters are injected)
-    private static function autowireDescriptor(string $className, ?Closure $mutator = null): Descriptor
+    private static function autowireDescriptor(string $className): Descriptor
     {
         return new Descriptor(
             $className,
             new TransientStrategy($className),
-            new ClassInstanceProvider($className, $mutator),
+            new ClassInstanceProvider($className),
         );
     }
 
@@ -275,32 +274,102 @@ final class ResolutionPlanFactoryTest extends TestCase
         self::assertTrue(self::edgeAt($plan->argumentEdges, 0)->lazy);
     }
 
-    public function testCompile_WithLazyMutatorParameter_MarksMutatorEdgeLazy(): void
+    public function testCompile_WithSelfParameter_MarksEdgeSelfAndCompilesConstructorEdges(): void
     {
-        $plan = self::compileSingle([
-            FakeClassNoConstructor::class => self::autowireDescriptor(
-                FakeClassNoConstructor::class,
-                static fn(FakeClassNoConstructor $instance, #[Lazy] FakeInterfaceOne $extra) => $instance,
+        // Arrange
+        $descriptors = [
+            FakeClassWithDependencies::class => self::closureDescriptor(
+                FakeClassWithDependencies::class,
+                static fn(FakeClassWithDependencies $self): FakeClassWithDependencies => $self,
             ),
-        ]);
+        ];
 
-        self::assertTrue(self::edgeAt($plan->mutatorEdges, 0)->lazy);
+        // Act
+        $plan = self::compileSingle($descriptors);
+
+        // Assert
+        self::assertTrue(self::edgeAt($plan->argumentEdges, 0)->self);
+        self::assertSame(
+            [[Throwable::class]],
+            self::edgeAt($plan->selfConstructorEdges, 0)->dependency?->alternatives,
+        );
     }
 
-    public function testCompile_WithMutator_ProducesEdgesForParametersAfterTheInstance(): void
+    public function testCompile_WithSelfParameter_MakesTheEdgeNeverSoft(): void
     {
-        $plan = self::compileSingle([
-            FakeClassNoConstructor::class => self::autowireDescriptor(
+        // Arrange
+        $descriptors = [
+            FakeClassNoConstructor::class => self::closureDescriptor(
                 FakeClassNoConstructor::class,
-                static fn(FakeClassNoConstructor $instance, FakeInterfaceOne $extra) => $instance,
+                static fn(?FakeClassNoConstructor $self = null): FakeClassNoConstructor
+                    => $self ?? new FakeClassNoConstructor(),
             ),
-        ]);
+        ];
 
-        self::assertCount(1, $plan->mutatorEdges);
-        self::assertSame('extra', self::edgeAt($plan->mutatorEdges, 0)->name);
+        // Act
+        $plan = self::compileSingle($descriptors);
+
+        // Assert
+        self::assertTrue(self::edgeAt($plan->argumentEdges, 0)->self);
+        self::assertFalse(self::edgeAt($plan->argumentEdges, 0)->soft);
+    }
+
+    public function testCompile_WithUnionIncludingOwnType_DoesNotMarkEdgeSelf(): void
+    {
+        // Arrange: matching is on the exact declared type, so a union is an ordinary container lookup.
+        $descriptors = [
+            FakeClassNoConstructor::class => self::closureDescriptor(
+                FakeClassNoConstructor::class,
+                static fn(FakeClassNoConstructor|FakeInterfaceOne $dep): FakeClassNoConstructor
+                    => new FakeClassNoConstructor(),
+            ),
+        ];
+
+        // Act
+        $plan = self::compileSingle($descriptors);
+
+        // Assert
+        self::assertFalse(self::edgeAt($plan->argumentEdges, 0)->self);
+        self::assertSame([], $plan->selfConstructorEdges);
+    }
+
+    public function testCompile_WithFactoryTakingAnotherService_DoesNotMarkEdgeSelf(): void
+    {
+        // Arrange
+        $descriptors = [
+            FakeClassNoConstructor::class => self::closureDescriptor(
+                FakeClassNoConstructor::class,
+                static fn(FakeInterfaceOne $dep): FakeClassNoConstructor => new FakeClassNoConstructor(),
+            ),
+        ];
+
+        // Act
+        $plan = self::compileSingle($descriptors);
+
+        // Assert
+        self::assertFalse(self::edgeAt($plan->argumentEdges, 0)->self);
+        self::assertSame([], $plan->selfConstructorEdges);
+    }
+
+    public function testCompile_WithSelfParameterOnInterface_ReportsItCannotBeConstructed(): void
+    {
+        // Arrange: an interface passes interface_exists but not class_exists, so the message must not claim the
+        // service does not exist.
+        $descriptors = [
+            FakeInterfaceOne::class => self::closureDescriptor(
+                FakeInterfaceOne::class,
+                static fn(FakeInterfaceOne $self): FakeInterfaceOne => $self,
+            ),
+        ];
+
+        // Act
+        $plan = self::compileSingle($descriptors);
+
+        // Assert
+        self::assertTrue(self::edgeAt($plan->argumentEdges, 0)->self);
         self::assertSame(
-            [[FakeInterfaceOne::class]],
-            self::edgeAt($plan->mutatorEdges, 0)->dependency?->alternatives,
+            'Interface ' . FakeInterfaceOne::class . ' cannot be constructed',
+            $plan->nonInstantiableMessage,
         );
     }
 

@@ -11,8 +11,6 @@ declare(strict_types=1);
 
 namespace Suhock\DependencyInjection\InstanceProvider;
 
-use Closure;
-
 /**
  * Factory that provides instances of a class by directly instantiating the class.
  *
@@ -24,21 +22,10 @@ use Closure;
  */
 final class ClassInstanceProvider implements InstanceProviderInterface
 {
-    // @phpstan-ignore missingType.callable (a mutator's parameters are injected)
-    public readonly ?Closure $mutator;
-
     /**
      * @param class-string<TClass> $className The name of the class this factory will instantiate
-     * @param Closure|callable-string|null $mutator [optional] Mutator function that allows additional changes to the
-     *     instantiated instance. The first parameter will be the new object instance. Any other parameters will be
-     *     injected.
      */
-    // @phpstan-ignore missingType.callable (parameters discovered at build-time), missingType.callable (likewise)
     public function __construct(
         public readonly string $className,
-        ?callable $mutator = null,
-    ) {
-        $this->mutator = $mutator !== null ? $mutator(...) : null;
-    }
-
+    ) {}
 }

@@ -17,8 +17,8 @@ use Suhock\DependencyInjection\Builder\Descriptor;
  * The compiled resolution shape of one service {@see Descriptor}: how the instance is produced, every dependency edge
  * resolution will satisfy, and the defects that guarantee a resolution failure. Produced by
  * {@see ResolutionPlanFactory} from reflection and the provider's dependency source, without instantiating anything.
- * Immutable and free of reflection objects and closures, so plans are cheap to cache and share; the executable parts
- * (factory and mutator closures) stay on the descriptor's provider and are paired with the plan at execution time.
+ * The executable part (the factory closure) stays on the descriptor's provider and is paired with the plan at execution
+ * time.
  *
  * @internal
  */
@@ -29,8 +29,9 @@ final class ResolutionPlan
      * @param ResolutionPlanKind $kind How the instance is produced
      * @param list<ResolutionPlanEdge> $argumentEdges Constructor arguments ({@see ResolutionPlanKind::AutowiredClass})
      *     or factory arguments ({@see ResolutionPlanKind::Factory}), in call order
-     * @param list<ResolutionPlanEdge> $mutatorEdges The mutator's parameter edges after the instance parameter, in
-     *     call order
+     * @param list<ResolutionPlanEdge> $selfConstructorEdges The constructor arguments of the service's own class, in
+     *     call order, when a factory parameter names the service the factory produces
+     *     ({@see ResolutionPlanEdge::$self}); empty otherwise
      * @param class-string|null $implementationTarget The service the container resolves in this service's place
      *     ({@see ResolutionPlanKind::Implementation})
      * @param string|null $nonInstantiableMessage Why the autowired class can never be instantiated, if it cannot
@@ -41,7 +42,7 @@ final class ResolutionPlan
         public readonly string $className,
         public readonly ResolutionPlanKind $kind,
         public readonly array $argumentEdges = [],
-        public readonly array $mutatorEdges = [],
+        public readonly array $selfConstructorEdges = [],
         public readonly ?string $implementationTarget = null,
         public readonly ?string $nonInstantiableMessage = null,
         public readonly ?string $declaredFactoryReturnType = null,

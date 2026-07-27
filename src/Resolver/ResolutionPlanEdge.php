@@ -26,6 +26,10 @@ use Suhock\DependencyInjection\Lazy;
  * A {@see $lazy} edge (its parameter carries {@see Lazy}) is satisfied with a PHP native lazy object of the resolved
  * type, deferring the dependency's construction until first use.
  *
+ * A {@see $self} edge names the service the factory itself produces, and is satisfied by constructing that service's
+ * class rather than by consulting the container. It is never soft: construction does not fail the way a container
+ * lookup can.
+ *
  * @internal
  */
 final class ResolutionPlanEdge
@@ -41,6 +45,8 @@ final class ResolutionPlanEdge
      * @param string|null $declaredType The raw declared type, populated only when {@see $dependency} is
      *     <code>null</code> and the injection point has a type, for diagnostics
      * @param bool $lazy Whether the dependency is injected lazily (the parameter carries {@see Lazy})
+     * @param bool $self Whether the injection point names the service the factory produces, satisfied by construction
+     *     rather than by a container lookup
      */
     public function __construct(
         public readonly string $name,
@@ -50,5 +56,6 @@ final class ResolutionPlanEdge
         public readonly mixed $defaultValue = null,
         public readonly ?string $declaredType = null,
         public readonly bool $lazy = false,
+        public readonly bool $self = false,
     ) {}
 }

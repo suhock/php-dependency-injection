@@ -53,6 +53,68 @@ final class ContainerTest extends AbstractDependencyInjectionTestCase
         self::assertThrowsClassNotFoundException(FakeClassNoConstructor::class, $fn);
     }
 
+    public function testGet_WithMultipleSelfParameters_PassesTheSameInstanceToEach(): void
+    {
+        // Arrange: the self parameter is the instance the descriptor would have produced, so there is one per
+        // resolution however many parameters observe it.
+        $container = self::buildContainer(
+            static fn(ContainerBuilder $builder) => $builder->addSingletonFactory(
+                FakeClassNoConstructor::class,
+                static function (
+                    FakeClassNoConstructor $first,
+                    FakeClassNoConstructor $second,
+                ): FakeClassNoConstructor {
+                    $first->string = 'configured';
+
+                    return $second;
+                },
+            ),
+        );
+
+        // Act
+        $result = $container->get(FakeClassNoConstructor::class);
+
+        // Assert
+        self::assertSame('configured', $result->string);
+    }
+
+    public function testGet_WhenSelfFactoryReturnsAnotherInstance_ReturnsTheFactorysResult(): void
+    {
+        // Arrange: the return value is the product, so a factory may replace the instance it was handed.
+        $replacement = new FakeClassNoConstructor();
+        $container = self::buildContainer(
+            static fn(ContainerBuilder $builder) => $builder->addSingletonFactory(
+                FakeClassNoConstructor::class,
+                static fn(FakeClassNoConstructor $self): FakeClassNoConstructor => $replacement,
+            ),
+        );
+
+        // Act
+        $result = $container->get(FakeClassNoConstructor::class);
+
+        // Assert
+        self::assertSame($replacement, $result);
+    }
+
+    public function testGet_WithSelfParameter_DoesNotTripTheCircularDependencyGuard(): void
+    {
+        // Arrange: the self parameter is constructed directly, so the descriptor is never re-entered.
+        $container = self::buildContainer(
+            static fn(ContainerBuilder $builder) => $builder
+                ->addTransient(FakeClassNoConstructor::class)
+                ->addTransientFactory(
+                    FakeClassWithConstructor::class,
+                    static fn(FakeClassWithConstructor $self): FakeClassWithConstructor => $self,
+                ),
+        );
+
+        // Act
+        $result = $container->get(FakeClassWithConstructor::class);
+
+        // Assert
+        self::assertInstanceOf(FakeClassWithConstructor::class, $result);
+    }
+
     public function testGet_WhenFactoryBodyReenters_ThrowsWrappedCircularDependencyException(): void
     {
         // Arrange: build-time validation cannot see inside a factory body, so the runtime $resolving guard is

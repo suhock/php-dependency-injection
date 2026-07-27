@@ -77,13 +77,12 @@ trait ContainerSingletonBuilderTrait
     /**
      * @inheritDoc
      */
-    // @phpstan-ignore missingType.callable (parameters discovered at build-time), missingType.callable (likewise)
     #[Override]
-    public function addSingletonClass(string $className, ?callable $mutator = null): static
+    public function addSingletonClass(string $className): static
     {
         $this->addSingletonInstanceProvider(
             $className,
-            InstanceProviderFactory::createClassInstanceProvider($className, $mutator),
+            InstanceProviderFactory::createClassInstanceProvider($className),
         );
 
         return $this;
@@ -92,17 +91,13 @@ trait ContainerSingletonBuilderTrait
     /**
      * @inheritDoc
      */
-    // @phpstan-ignore missingType.callable (parameters discovered at build-time), missingType.callable (likewise)
     #[Override]
-    public function addKeyedSingletonClass(
-        string $className,
-        string|UnitEnum $key,
-        ?callable $mutator = null,
-    ): static {
+    public function addKeyedSingletonClass(string $className, string|UnitEnum $key): static
+    {
         $this->addKeyedSingletonInstanceProvider(
             $className,
             $key,
-            InstanceProviderFactory::createClassInstanceProvider($className, $mutator),
+            InstanceProviderFactory::createClassInstanceProvider($className),
         );
 
         return $this;

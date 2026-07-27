@@ -27,9 +27,6 @@ interface ContainerTransientBuilderInterface
      * - a `Closure`: a factory to call.
      * - an `object`: the instance to use.
      *
-     * The convenience form takes the default for each shape. To pass a mutator,
-     * use {@see addTransientClass()}.
-     *
      * @template TClass of object
      *
      * @param class-string<TClass> $className
@@ -46,9 +43,6 @@ interface ContainerTransientBuilderInterface
      * - a `class-string`: the implementation class to resolve in place of $className.
      * - a `Closure`: a factory to call.
      * - an `object`: the instance to use.
-     *
-     * The convenience form takes the default for each shape. To pass a mutator,
-     * use {@see addKeyedTransientClass()}.
      *
      * @template TClass of object
      *
@@ -67,42 +61,32 @@ interface ContainerTransientBuilderInterface
 
     /**
      * Indicates that the container should provide a transient instance of the given class by autowiring its
-     * constructor. An optional mutator function can be specified to perform additional initialization on the
-     * constructed object.
+     * constructor.
      *
-     * @param class-string $className The fully qualified name of the class to add
-     * @param Closure|callable-string|null $mutator [optional] This function will be called after an instance of the
-     *     class has been created. The class instance will be provided as the first parameter. Any additional
-     *     parameters will be injected.
+     * @template TClass of object
+     *
+     * @param class-string<TClass> $className The fully qualified name of the class to add
      *
      * @throws ImplementationException
      *
      * @return $this
      */
-    // @phpstan-ignore missingType.callable (parameters discovered at build-time), missingType.callable (likewise)
-    public function addTransientClass(string $className, ?callable $mutator = null): static;
+    public function addTransientClass(string $className): static;
 
     /**
      * Indicates that the container should provide a transient instance of the given class under the given key by
-     * autowiring its constructor. An optional mutator function can be specified to perform additional initialization
-     * on the constructed object.
+     * autowiring its constructor.
      *
-     * @param class-string $className The fully qualified name of the class to add
+     * @template TClass of object
+     *
+     * @param class-string<TClass> $className The fully qualified name of the class to add
      * @param string|UnitEnum $key The key to add the service under
-     * @param Closure|callable-string|null $mutator [optional] This function will be called after an instance of the
-     *     class has been created. The class instance will be provided as the first parameter. Any additional
-     *     parameters will be injected.
      *
      * @throws ImplementationException
      *
      * @return $this
      */
-    // @phpstan-ignore missingType.callable (parameters discovered at build-time), missingType.callable (likewise)
-    public function addKeyedTransientClass(
-        string $className,
-        string|UnitEnum $key,
-        ?callable $mutator = null,
-    ): static;
+    public function addKeyedTransientClass(string $className, string|UnitEnum $key): static;
 
     /**
      * Indicates that the container should provide a transient instance of the given class by retrieving an instance of

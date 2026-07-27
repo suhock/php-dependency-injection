@@ -77,13 +77,12 @@ trait ContainerScopedBuilderTrait
     /**
      * @inheritDoc
      */
-    // @phpstan-ignore missingType.callable (parameters discovered at build-time), missingType.callable (likewise)
     #[Override]
-    public function addScopedClass(string $className, ?callable $mutator = null): static
+    public function addScopedClass(string $className): static
     {
         $this->addScopedInstanceProvider(
             $className,
-            InstanceProviderFactory::createClassInstanceProvider($className, $mutator),
+            InstanceProviderFactory::createClassInstanceProvider($className),
         );
 
         return $this;
@@ -92,17 +91,13 @@ trait ContainerScopedBuilderTrait
     /**
      * @inheritDoc
      */
-    // @phpstan-ignore missingType.callable (parameters discovered at build-time), missingType.callable (likewise)
     #[Override]
-    public function addKeyedScopedClass(
-        string $className,
-        string|UnitEnum $key,
-        ?callable $mutator = null,
-    ): static {
+    public function addKeyedScopedClass(string $className, string|UnitEnum $key): static
+    {
         $this->addKeyedScopedInstanceProvider(
             $className,
             $key,
-            InstanceProviderFactory::createClassInstanceProvider($className, $mutator),
+            InstanceProviderFactory::createClassInstanceProvider($className),
         );
 
         return $this;

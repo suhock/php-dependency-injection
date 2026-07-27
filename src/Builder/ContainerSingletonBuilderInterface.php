@@ -28,9 +28,7 @@ interface ContainerSingletonBuilderInterface
      * - a `Closure`: a factory to call.
      * - an `object`: the instance to use.
      *
-     * The convenience form takes the default for each shape. To pass a mutator,
-     * use {@see addSingletonClass()}; to set disposal of a supplied instance,
-     * use {@see addSingletonInstance()} with `$shouldDispose`.
+     * To set disposal of a supplied instance, use {@see addSingletonInstance()} with `$shouldDispose`.
      *
      * @template TClass of object
      *
@@ -49,9 +47,7 @@ interface ContainerSingletonBuilderInterface
      * * - a `Closure`: a factory to call.
      * * - an `object`: the instance to use.
      *
-     * The convenience form takes the default for each shape. To pass a mutator,
-     * use {@see addKeyedSingletonClass()}; to set disposal of a supplied instance,
-     * use {@see addKeyedSingletonInstance()} with `$shouldDispose`.
+     * To set disposal of a supplied instance, use {@see addKeyedSingletonInstance()} with `$shouldDispose`.
      *
      * @template TClass of object
      *
@@ -70,46 +66,32 @@ interface ContainerSingletonBuilderInterface
 
     /**
      * Indicates that the container should provide a singleton instance of the given class by autowiring its
-     * constructor. An optional mutator function can be specified to perform additional initialization on the
-     * constructed object.
+     * constructor.
      *
      * @template TClass of object
      *
      * @param class-string<TClass> $className The fully qualified name of the class to add
-     * @param Closure|callable-string|null $mutator [optional] This function will be called after an instance of the
-     *     class has been created. The class instance will be provided as the first parameter. Any additional
-     *     parameters will be injected.
      *
      * @throws ImplementationException
      *
      * @return $this
      */
-    // @phpstan-ignore missingType.callable (parameters discovered at build-time), missingType.callable (likewise)
-    public function addSingletonClass(string $className, ?callable $mutator = null): static;
+    public function addSingletonClass(string $className): static;
 
     /**
      * Indicates that the container should provide a singleton instance of the given class under the given key by
-     * autowiring its constructor. An optional mutator function can be specified to perform additional initialization
-     * on the constructed object.
+     * autowiring its constructor.
      *
      * @template TClass of object
      *
      * @param class-string<TClass> $className The fully qualified name of the class to add
      * @param string|UnitEnum $key The key to add the service under
-     * @param Closure|callable-string|null $mutator [optional] This function will be called after an instance of the
-     *     class has been created. The class instance will be provided as the first parameter. Any additional
-     *     parameters will be injected.
      *
      * @throws ImplementationException
      *
      * @return $this
      */
-    // @phpstan-ignore missingType.callable (parameters discovered at build-time), missingType.callable (likewise)
-    public function addKeyedSingletonClass(
-        string $className,
-        string|UnitEnum $key,
-        ?callable $mutator = null,
-    ): static;
+    public function addKeyedSingletonClass(string $className, string|UnitEnum $key): static;
 
     /**
      * Indicates that the container should provide a singleton instance of the given class by retrieving an instance of

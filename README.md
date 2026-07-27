@@ -115,11 +115,13 @@ $builder
     // Alias an interface to an implementing type
     ->addTransient(HttpClient::class, CurlHttpClient::class)
 
-    // Add optional values with a mutator after injecting the constructor's dependencies
-    ->addTransientClass(
+    // Take the autowired instance and configure it before handing it back
+    ->addTransient(
         CurlHttpClient::class,
-        function (CurlHttpClient $client, Logger $logger): void {
+        function (CurlHttpClient $client, Logger $logger): CurlHttpClient {
             $client->addLogger($logger);
+
+            return $client;
         }
     );
 ```
@@ -555,7 +557,7 @@ $builder->addSingletonInstance(ConnectionPool::class, $pool, shouldDispose: fals
    so discarded transients never accumulate.
  - Disposal proceeds in **reverse creation order**. This relies on
    dependencies being constructed before their dependents, which holds for
-   constructor and mutator injection. A service that
+   constructor and factory injection. A service that
    resolves further dependencies lazily (for example by holding the container
    or a `ScopeFactoryInterface` and calling `get()` after construction) can
    invert that order for the pair involved.
@@ -579,29 +581,24 @@ There are a number of built-in ways to specify how services should be resolved:
 The container will construct the named class by calling the class's constructor,
 automatically resolving any dependencies in the constructor's parameter list.
 
-The optional `$mutator` callback allows additional configuration of the object
-after the container has initialized it. The callback must take an instance of
-the class as its first parameter. Additional parameters will be injected.
-
 ```php
 class ContainerBuilder
 {
     /**
      * @template TClass of object
      * @param class-string<TClass> $className
-     * @param (callable(TClass, mixed...): void)|null $mutator
      * @return $this
      */
-    public function addSingletonClass(string $className, ?callable $mutator = null): self;
+    public function addSingletonClass(string $className): self;
 
-    public function addScopedClass(string $className, ?callable $mutator = null): self;
+    public function addScopedClass(string $className): self;
 
-    public function addTransientClass(string $className, ?callable $mutator = null): self;
+    public function addTransientClass(string $className): self;
 }
 ```
 
 > [!TIP]
-> If a mutator callback is not needed, the shorthand forms can be used instead:
+> The shorthand forms are equivalent:
 >
 > ```php
 > $builder->addSingleton(MyService::class); // equivalent to $builder->addSingletonClass(MyService::class);
@@ -621,21 +618,9 @@ instance.
 $builder->addSingletonClass(MyService::class);
 ```
 
-###### Using a mutator for post-construction configuration
-
-A mutator runs after the constructor to perform initialization the constructor
-cannot express — configuring the instance, or adapting a class whose constructor
-you do not control. Its additional parameters are injected from the container.
-Prefer constructor parameters for a class's own dependencies.
-
-```php
-$builder->addTransientClass(
-    CurlHttpClient::class,
-    function (CurlHttpClient $client, Logger $logger): void {
-        $client->setLogger($logger);
-    },
-);
-```
+To do more than construct the class — decorate it, or configure it in a way the
+constructor cannot express — take the service's own type as a factory parameter.
+See [Taking the autowired instance](#taking-the-autowired-instance).
 
 #### Specify an implementing class name
 
@@ -778,6 +763,62 @@ $builder->addTransientFactory(
     }
 );
 ```
+
+###### Taking the autowired instance
+
+A factory parameter that names the service the factory produces receives an
+instance with its constructor autowired as usual. This lets a factory configure
+or decorate a class without hand-writing its constructor arguments, preserving
+build-time verifiability.
+
+```php
+$builder->addTransientFactory(
+    CurlHttpClient::class,
+    function (CurlHttpClient $client, Logger $logger): CurlHttpClient {
+        $client->addLogger($logger);
+        return $client;
+    },
+);
+```
+
+The parameter is matched on its exact declared type plus its key, so a keyed
+service requires `#[Key]` on the parameter as well:
+
+```php
+$builder->addTransientFactory(
+    CurlHttpClient::class,
+    'api',
+    function (#[Key('api')] CurlHttpClient $client, Logger $logger): CurlHttpClient {
+        $client->addLogger($logger);
+        return $client;
+    },
+);
+```
+
+A union or intersection type never matches, even if one of its members resolves
+to the same service.
+
+The instance is constructed once per resolution, so if several parameters name
+the service they all receive the same object.
+
+The factory's return value will always be treated as the resolved service, even
+if it differs from the provided instance. Thus, a factory may wrap the instance
+it was handed with a decorator inheriting from the named service type rather
+than return it directly. The container will dispose the provided instance
+normally at the end of its lifetime.
+
+```php
+final class RetryingConnection extends Connection
+{
+    public function __construct(private readonly Connection $inner) {}
+}
+```
+
+> [!NOTE]
+> If the factory instead discards the provided instance, garbage collection
+> will likely clean up the instance before the container can dispose it itself.
+> In this case, if there is anything the class must always clean up, it should
+> implement `__destruct()`, following the disposable pattern.
 
 #### Provide a concrete instance
 
@@ -1160,8 +1201,9 @@ class ReportController
 
 Here `PdfRenderer` (and everything it depends on) is not constructed when
 `ReportController` is resolved, but the first time a property or method of
-`$renderer` is accessed. `#[Lazy]` applies to constructor, factory, and mutator
-parameters.
+`$renderer` is accessed. `#[Lazy]` applies to constructor and factory
+parameters, except for a factory parameter naming the service the factory
+produces, which the container constructs directly.
 
 Because a lazy dependency is not constructed while its consumer is, `#[Lazy]`
 also breaks an otherwise-fatal construction cycle between two services: mark one

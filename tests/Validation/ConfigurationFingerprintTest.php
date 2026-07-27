@@ -272,13 +272,12 @@ final class ConfigurationFingerprintTest extends TestCase
      *
      * @return Descriptor<object>
      */
-    // @phpstan-ignore missingType.callable (a mutator's parameters are injected)
-    private static function autowireClass(string $className, ?Closure $mutator = null): Descriptor
+    private static function autowireClass(string $className): Descriptor
     {
         return new Descriptor(
             $className,
             new TransientStrategy($className),
-            new ClassInstanceProvider($className, $mutator),
+            new ClassInstanceProvider($className),
         );
     }
 
@@ -322,22 +321,27 @@ final class ConfigurationFingerprintTest extends TestCase
         ): FakeClassNoConstructor => $dependency;
     }
 
-    public function testCompute_WithAutowireMutator_DiffersFromWithoutMutator(): void
+    public function testCompute_WithSelfParameterAddedToFactory_DiffersFromWithout(): void
     {
-        // Arrange: same autowired class, one with a mutator and one without.
-        $withoutMutator = [FakeClassNoConstructor::class => self::autowireClass(FakeClassNoConstructor::class)];
-        $withMutator = [
-            FakeClassNoConstructor::class => self::autowireClass(
+        // Arrange: the same factory, one taking the service it produces and one not.
+        $withoutSelf = [
+            FakeClassNoConstructor::class => self::transientClosure(
                 FakeClassNoConstructor::class,
-                static function (FakeClassNoConstructor $instance): void {},
+                static fn(): FakeClassNoConstructor => new FakeClassNoConstructor(),
+            ),
+        ];
+        $withSelf = [
+            FakeClassNoConstructor::class => self::transientClosure(
+                FakeClassNoConstructor::class,
+                static fn(FakeClassNoConstructor $self): FakeClassNoConstructor => $self,
             ),
         ];
 
         // Act
-        $digestWithout = ConfigurationFingerprint::compute($withoutMutator);
-        $digestWith = ConfigurationFingerprint::compute($withMutator);
+        $digestWithout = ConfigurationFingerprint::compute($withoutSelf);
+        $digestWith = ConfigurationFingerprint::compute($withSelf);
 
-        // Assert: the mutator's signature is part of the fingerprint, so its presence changes the digest.
+        // Assert: the factory's parameter list is part of the fingerprint, so the self parameter changes the digest.
         self::assertNotNull($digestWithout);
         self::assertNotNull($digestWith);
         self::assertNotSame($digestWithout, $digestWith);
