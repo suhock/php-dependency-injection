@@ -17,13 +17,13 @@ use ReflectionNamedType;
 use ReflectionParameter;
 use ReflectionType;
 use ReflectionUnionType;
-use Suhock\DependencyInjection\InjectorException;
+use Suhock\DependencyInjection\ContainerException;
 use Throwable;
 
 /**
  * Exception that indicates the injector could not resolve a value for a function parameter.
  */
-final class ParameterResolutionException extends InjectorException
+final class ParameterResolutionException extends ContainerException
 {
     /**
      * @param ReflectionParameter $reflectionParameter The unresolved parameter

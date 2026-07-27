@@ -81,7 +81,7 @@ final class Injector implements InjectorInterface
         $instance = $this->strategy->tryInstantiate($className, $params);
 
         if ($instance === null) {
-            throw new InjectorException("No instantiation strategy could instantiate $className");
+            throw new InjectorException("$className could not be instantiated");
         }
 
         return $instance;

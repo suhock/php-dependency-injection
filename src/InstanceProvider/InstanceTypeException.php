@@ -11,8 +11,8 @@ declare(strict_types=1);
 
 namespace Suhock\DependencyInjection\InstanceProvider;
 
+use Suhock\DependencyInjection\ContainerException;
 use Suhock\DependencyInjection\DependencyInjectionException;
-use Suhock\DependencyInjection\InjectorException;
 use Throwable;
 
 use function gettype;
@@ -24,7 +24,7 @@ use function is_object;
  *
  * @template TExpected of object
  */
-final class InstanceTypeException extends InjectorException
+final class InstanceTypeException extends ContainerException
 {
     /**
      * @inheritDoc
