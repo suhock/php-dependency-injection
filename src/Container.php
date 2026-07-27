@@ -16,10 +16,9 @@ use Override;
 use ReflectionClass;
 use ReflectionParameter;
 use Suhock\DependencyInjection\Builder\Descriptor;
-use Suhock\DependencyInjection\InstanceProvider\ClassInstanceProvider;
-use Suhock\DependencyInjection\InstanceProvider\ClosureInstanceProvider;
 use Suhock\DependencyInjection\InstanceProvider\ContextInstanceProvider;
 use Suhock\DependencyInjection\InstanceProvider\InstanceProviderInterface;
+use Suhock\DependencyInjection\InstanceProvider\InstanceProviders;
 use Suhock\DependencyInjection\InstanceProvider\InstanceTypeException;
 use Suhock\DependencyInjection\InstanceProvider\ObjectInstanceProvider;
 use Suhock\DependencyInjection\Lifetime\InstanceStore;
@@ -112,8 +111,8 @@ final class Container implements
         $provider = $descriptor?->instanceProvider;
 
         return match (true) {
-            $provider instanceof ClosureInstanceProvider => $provider->factory,
-            $provider instanceof ClassInstanceProvider => $provider->mutator,
+            InstanceProviders::isClosure($provider) => $provider->factory,
+            InstanceProviders::isClass($provider) => $provider->mutator,
             default => null,
         };
     }

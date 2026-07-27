@@ -17,9 +17,7 @@ use ReflectionFunction;
 use ReflectionNamedType;
 use ReflectionParameter;
 use Suhock\DependencyInjection\Builder\Descriptor;
-use Suhock\DependencyInjection\InstanceProvider\ClassInstanceProvider;
-use Suhock\DependencyInjection\InstanceProvider\ClosureInstanceProvider;
-use Suhock\DependencyInjection\InstanceProvider\ImplementationInstanceProvider;
+use Suhock\DependencyInjection\InstanceProvider\InstanceProviders;
 use Suhock\DependencyInjection\Lazy;
 
 use function array_slice;
@@ -76,18 +74,15 @@ final class ResolutionPlanFactory
     {
         $provider = $descriptor->instanceProvider;
 
-        if ($provider instanceof ClassInstanceProvider) {
-            /** @var ClassInstanceProvider<TClass> $provider */
+        if (InstanceProviders::isClass($provider)) {
             return $this->compileAutowireClass($provider->className, $provider->mutator);
         }
 
-        if ($provider instanceof ClosureInstanceProvider) {
-            /** @var ClosureInstanceProvider<TClass> $provider */
+        if (InstanceProviders::isClosure($provider)) {
             return self::compileCallable($provider->className, $provider->factory);
         }
 
-        if ($provider instanceof ImplementationInstanceProvider) {
-            /** @var ImplementationInstanceProvider<TClass> $provider */
+        if (InstanceProviders::isImplementation($provider)) {
             return new ResolutionPlan(
                 $descriptor->className,
                 ResolutionPlanKind::Implementation,
