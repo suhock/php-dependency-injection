@@ -13,14 +13,14 @@ namespace Suhock\DependencyInjection;
 
 use Closure;
 use Override;
-use Suhock\DependencyInjection\Builder\ContainerScopedBuilderTrait;
-use Suhock\DependencyInjection\Builder\ContainerSingletonBuilderTrait;
-use Suhock\DependencyInjection\Builder\ContainerTransientBuilderTrait;
 use Suhock\DependencyInjection\Builder\Descriptor;
 use Suhock\DependencyInjection\Cache\CacheInterface;
 use Suhock\DependencyInjection\InstanceProvider\ContextInstanceProvider;
+use Suhock\DependencyInjection\InstanceProvider\InstanceProviderFactory;
 use Suhock\DependencyInjection\InstanceProvider\InstanceProviderInterface;
 use Suhock\DependencyInjection\Lifetime\LifetimeStrategy;
+use Suhock\DependencyInjection\Lifetime\ScopedStrategy;
+use Suhock\DependencyInjection\Lifetime\SingletonStrategy;
 use Suhock\DependencyInjection\Lifetime\TransientStrategy;
 use Suhock\DependencyInjection\Resolver\ResolutionPlan;
 use Suhock\DependencyInjection\Resolver\ResolutionPlanFactory;
@@ -41,10 +41,6 @@ use function is_string;
  */
 final class ContainerBuilder implements ContainerBuilderInterface
 {
-    use ContainerScopedBuilderTrait;
-    use ContainerSingletonBuilderTrait;
-    use ContainerTransientBuilderTrait;
-
     private const GRAPH_KEY_PREFIX = 'sdi:graph:';
 
     /** @var array<string, Descriptor<object>> */
@@ -69,50 +65,129 @@ final class ContainerBuilder implements ContainerBuilderInterface
     }
 
     /**
-     * Adds an instance provider with a lifetime strategy to the container for a given class.
-     *
-     * @template TClass of object
-     *
-     * @param class-string<TClass> $className The class name of the service to add
-     * @param LifetimeStrategy<TClass> $lifetimeStrategy The lifetime strategy to use to manage instances
-     * @param InstanceProviderInterface<TClass> $instanceProvider The instance provider to use to create new instances
-     * @param bool $shouldDispose Whether the container should dispose the disposable instances it creates for this
-     *     service; pass false when their disposal is the responsibility of something outside the container
+     * @inheritDoc
      */
+    // @phpstan-ignore missingType.callable (parameters discovered at build-time)
     #[Override]
-    private function add(
+    public function addSingleton(
         string $className,
-        LifetimeStrategy $lifetimeStrategy,
-        InstanceProviderInterface $instanceProvider,
+        string|callable|object|null $source = null,
         bool $shouldDispose = true,
-    ): void {
-        $this->addDescriptor(new Descriptor($className, $lifetimeStrategy, $instanceProvider, $shouldDispose));
+    ): static {
+        $this->add(
+            $className,
+            new SingletonStrategy($className),
+            InstanceProviderFactory::createInstanceProvider($className, $source),
+            $shouldDispose,
+        );
+
+        return $this;
     }
 
     /**
-     * Adds a keyed instance provider with a lifetime strategy to the container for a given class.
-     *
-     * @template TClass of object
-     *
-     * @param class-string<TClass> $className The class name of the service to add
-     * @param string|UnitEnum $key The key of the service
-     * @param LifetimeStrategy<TClass> $lifetimeStrategy The lifetime strategy to use to manage instances
-     * @param InstanceProviderInterface<TClass> $instanceProvider The instance provider to use to create new instances
-     * @param bool $shouldDispose Whether the container should dispose the disposable instances it creates for this
-     *     service; pass false when their disposal is the responsibility of something outside the container
+     * @inheritDoc
      */
+    // @phpstan-ignore missingType.callable (parameters discovered at build-time)
     #[Override]
-    private function addKeyed(
+    public function addScoped(
+        string $className,
+        string|callable|null $source = null,
+        bool $shouldDispose = true,
+    ): static {
+        $this->add(
+            $className,
+            new ScopedStrategy($className),
+            InstanceProviderFactory::createInstanceProvider($className, $source),
+            $shouldDispose,
+        );
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    // @phpstan-ignore missingType.callable (parameters discovered at build-time)
+    #[Override]
+    public function addTransient(
+        string $className,
+        string|callable|null $source = null,
+        bool $shouldDispose = true,
+    ): static {
+        $this->add(
+            $className,
+            new TransientStrategy($className),
+            InstanceProviderFactory::createInstanceProvider($className, $source),
+            $shouldDispose,
+        );
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    // @phpstan-ignore missingType.callable (parameters discovered at build-time)
+    #[Override]
+    public function addKeyedSingleton(
         string $className,
         string|UnitEnum $key,
-        LifetimeStrategy $lifetimeStrategy,
-        InstanceProviderInterface $instanceProvider,
+        string|callable|object|null $source = null,
         bool $shouldDispose = true,
-    ): void {
-        $this->addKeyedDescriptor(
-            new Descriptor($className, $lifetimeStrategy, $instanceProvider, $shouldDispose),
+    ): static {
+        $this->addKeyed(
+            $className,
             $key,
+            new SingletonStrategy($className),
+            InstanceProviderFactory::createInstanceProvider($className, $source),
+            $shouldDispose,
         );
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    // @phpstan-ignore missingType.callable (parameters discovered at build-time)
+    #[Override]
+    public function addKeyedScoped(
+        string $className,
+        string|UnitEnum $key,
+        string|callable|null $source = null,
+        bool $shouldDispose = true,
+    ): static {
+        $this->addKeyed(
+            $className,
+            $key,
+            new ScopedStrategy($className),
+            InstanceProviderFactory::createInstanceProvider($className, $source),
+            $shouldDispose,
+        );
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    // @phpstan-ignore missingType.callable (parameters discovered at build-time)
+    #[Override]
+    public function addKeyedTransient(
+        string $className,
+        string|UnitEnum $key,
+        string|callable|null $source = null,
+        bool $shouldDispose = true,
+    ): static {
+        $this->addKeyed(
+            $className,
+            $key,
+            new TransientStrategy($className),
+            InstanceProviderFactory::createInstanceProvider($className, $source),
+            $shouldDispose,
+        );
+
+        return $this;
     }
 
     /**
@@ -267,15 +342,48 @@ final class ContainerBuilder implements ContainerBuilderInterface
     }
 
     /**
+     * Adds an instance provider with a lifetime strategy to the container for a given class.
+     *
      * @template TClass of object
      *
-     * @param Descriptor<TClass> $descriptor
-     *
-     * @return $this
+     * @param class-string<TClass> $className The class name of the service to add
+     * @param LifetimeStrategy<TClass> $lifetimeStrategy The lifetime strategy to use to manage instances
+     * @param InstanceProviderInterface<TClass> $instanceProvider The instance provider to use to create new instances
+     * @param bool $shouldDispose Whether the container should dispose the disposable instances it creates for this
+     *     service; pass false when their disposal is the responsibility of something outside the container
      */
-    private function addDescriptor(Descriptor $descriptor): self
-    {
-        return $this->store($descriptor, null);
+    private function add(
+        string $className,
+        LifetimeStrategy $lifetimeStrategy,
+        InstanceProviderInterface $instanceProvider,
+        bool $shouldDispose = true,
+    ): void {
+        $this->addDescriptor(new Descriptor($className, $lifetimeStrategy, $instanceProvider, $shouldDispose));
+    }
+
+    /**
+     * Adds a keyed instance provider with a lifetime strategy to the container for a given class.
+     *
+     * @template TClass of object
+     *
+     * @param class-string<TClass> $className The class name of the service to add
+     * @param string|UnitEnum $key The key of the service
+     * @param LifetimeStrategy<TClass> $lifetimeStrategy The lifetime strategy to use to manage instances
+     * @param InstanceProviderInterface<TClass> $instanceProvider The instance provider to use to create new instances
+     * @param bool $shouldDispose Whether the container should dispose the disposable instances it creates for this
+     *     service; pass false when their disposal is the responsibility of something outside the container
+     */
+    private function addKeyed(
+        string $className,
+        string|UnitEnum $key,
+        LifetimeStrategy $lifetimeStrategy,
+        InstanceProviderInterface $instanceProvider,
+        bool $shouldDispose = true,
+    ): void {
+        $this->addDescriptor(
+            new Descriptor($className, $lifetimeStrategy, $instanceProvider, $shouldDispose),
+            $key,
+        );
     }
 
     /**
@@ -285,19 +393,7 @@ final class ContainerBuilder implements ContainerBuilderInterface
      *
      * @return $this
      */
-    private function addKeyedDescriptor(Descriptor $descriptor, string|UnitEnum $key): self
-    {
-        return $this->store($descriptor, $key);
-    }
-
-    /**
-     * @template TClass of object
-     *
-     * @param Descriptor<TClass> $descriptor
-     *
-     * @return $this
-     */
-    private function store(Descriptor $descriptor, string|UnitEnum|null $key): self
+    private function addDescriptor(Descriptor $descriptor, string|UnitEnum|null $key = null): self
     {
         $id = DescriptorId::compute($descriptor->className, $key);
 
