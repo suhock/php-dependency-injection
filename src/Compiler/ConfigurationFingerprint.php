@@ -34,9 +34,6 @@ use function ksort;
  * validation run can be safely reused only while the configuration it was built from has not changed in any way
  * that could affect the outcome.
  *
- * The digest is deliberately insensitive to anything the compiler that walks the dependency graph is insensitive to:
- * captured closure variables, held-instance state, and anything else the compiler never inspects.
- *
  * @internal
  */
 final class ConfigurationFingerprint
@@ -48,8 +45,7 @@ final class ConfigurationFingerprint
      * fingerprinted. Currently, only when a factory closure's origin cannot be determined (an internal function or
      * one defined in eval'd code), since then no file/line identity exists to hash.
      *
-     * The digest is computed incrementally: each descriptor's record is fed to the hash context as it is produced,
-     * so peak memory use is independent of the number of descriptors.
+     * The digest is computed incrementally. Each descriptor's record is fed to the hash context as it is produced.
      *
      * @param array<string, Descriptor<object>> $descriptors The service descriptors, keyed by descriptor id
      */
@@ -104,8 +100,8 @@ final class ConfigurationFingerprint
     }
 
     /**
-     * The validation-relevant identity of a closure: where it is declared and its declared parameter/return
-     * signature.
+     * The validation-relevant identity of a closure (where it is declared and its declared parameter/return
+     * signature).
      *
      * @return string|null <code>null</code> if the closure has no file (an internal function or one defined in
      *     eval'd code), and so cannot be fingerprinted

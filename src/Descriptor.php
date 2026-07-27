@@ -15,8 +15,7 @@ use Suhock\DependencyInjection\InstanceProvider\InstanceProviderInterface;
 use Suhock\DependencyInjection\Lifetime\LifetimeStrategy;
 
 /**
- * Contains information about how to resolve a service. A descriptor must remain immutable so that it can be shared by
- * multiple resolution roots.
+ * Contains information about how to resolve a service.
  *
  * @template TClass as object
  *
