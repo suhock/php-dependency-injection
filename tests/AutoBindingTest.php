@@ -44,7 +44,7 @@ final class AutoBindingTest extends AbstractDependencyInjectionTestCase
         $received = null;
         $container = self::buildContainer(
             static function (ContainerBuilder $builder) use (&$received): void {
-                $builder->addSingletonFactory(
+                $builder->addSingleton(
                     FakeClassNoConstructor::class,
                     static function (ContainerInterface $c) use (&$received): FakeClassNoConstructor {
                         $received = $c;
@@ -68,7 +68,7 @@ final class AutoBindingTest extends AbstractDependencyInjectionTestCase
         $received = null;
         $container = self::buildContainer(
             static function (ContainerBuilder $builder) use (&$received): void {
-                $builder->addScopedFactory(
+                $builder->addScoped(
                     FakeClassNoConstructor::class,
                     static function (ContainerInterface $c) use (&$received): FakeClassNoConstructor {
                         $received = $c;
@@ -93,7 +93,7 @@ final class AutoBindingTest extends AbstractDependencyInjectionTestCase
         $received = null;
         $container = self::buildContainer(
             static function (ContainerBuilder $builder) use (&$received): void {
-                $builder->addScopedFactory(
+                $builder->addScoped(
                     FakeClassNoConstructor::class,
                     static function (ScopeFactoryInterface $factory) use (&$received): FakeClassNoConstructor {
                         $received = $factory;

@@ -364,11 +364,11 @@ final class ScopeTest extends AbstractDependencyInjectionTestCase
         // failure (a CircularDependencyException from the shared in-progress tracker, or a ScopeException from
         // re-entering the scoped service at the root) rather than recursing.
         $container = self::buildContainer(
-            static fn(ContainerBuilder $builder) => $builder->addScopedFactory(
+            static fn(ContainerBuilder $builder) => $builder->addScoped(
                 FakeClassNoConstructor::class,
                 fn(FakeClassWithConstructor $dependency) => new FakeClassNoConstructor(),
             )
-                ->addSingletonFactory(
+                ->addSingleton(
                     FakeClassWithConstructor::class,
                     static fn(ContainerInterface $c): FakeClassWithConstructor
                         => new FakeClassWithConstructor($c->get(FakeClassNoConstructor::class)),
@@ -515,7 +515,7 @@ final class ScopeTest extends AbstractDependencyInjectionTestCase
     {
         // Arrange
         $container = self::buildContainer(
-            static fn(ContainerBuilder $builder) => $builder->addScopedFactory(
+            static fn(ContainerBuilder $builder) => $builder->addScoped(
                 DisposableInterface::class,
                 static fn() => new class implements DisposableInterface {
                     #[Override]

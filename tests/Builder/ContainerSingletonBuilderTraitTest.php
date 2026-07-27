@@ -16,6 +16,9 @@ use Suhock\DependencyInjection\AbstractDependencyInjectionTestCase;
 use Suhock\DependencyInjection\Fakes\FakeBaseClass;
 use Suhock\DependencyInjection\Fakes\FakeClassExtendsBaseClass;
 use Suhock\DependencyInjection\Fakes\FakeClassNoConstructor;
+use Suhock\DependencyInjection\Fakes\FakeInvokableBaseClass;
+use Suhock\DependencyInjection\Fakes\FakeInvokableFactory;
+use Suhock\DependencyInjection\Fakes\FakeStaticFactory;
 use Suhock\DependencyInjection\InstanceProvider\InstanceTypeException;
 use Suhock\DependencyInjection\Key;
 
@@ -38,10 +41,10 @@ final class ContainerSingletonBuilderTraitTest extends AbstractDependencyInjecti
         self::assertSame($instance, $sameInstance);
     }
 
-    public function testAddSingletonFactory_WithSelfParameter_GetReturnsConfiguredInstance(): void
+    public function testAddSingleton_WithSelfParameterFactory_GetReturnsConfiguredInstance(): void
     {
         // Arrange
-        $container = self::createBuilder()->addSingletonFactory(
+        $container = self::createBuilder()->addSingleton(
             FakeClassNoConstructor::class,
             function (FakeClassNoConstructor $obj): FakeClassNoConstructor {
                 $obj->string = 'test';
@@ -114,10 +117,24 @@ final class ContainerSingletonBuilderTraitTest extends AbstractDependencyInjecti
         );
     }
 
-    public function testAddSingletonFactory_WithFactory_GetReturnsValueFromFactory(): void
+    public function testAddSingleton_WithStringNamingNeitherClassNorFunction_ThrowsImplementationException(): void
     {
         // Arrange
-        $container = self::createBuilder()->addSingletonFactory(
+        $builder = self::createBuilder();
+
+        // Act
+        // @phpstan-ignore argument.type (the unresolvable source name is the case under test)
+        $fn = static fn() => $builder->addSingleton(FakeBaseClass::class, 'Suhock\\NoSuchClass');
+
+        // Assert
+        // @phpstan-ignore argument.type (the unresolvable source name is the case under test)
+        self::assertThrowsImplementationException(FakeBaseClass::class, 'Suhock\\NoSuchClass', $fn);
+    }
+
+    public function testAddSingleton_WithFactory_GetReturnsValueFromFactory(): void
+    {
+        // Arrange
+        $container = self::createBuilder()->addSingleton(
             FakeBaseClass::class,
             fn() => new FakeClassExtendsBaseClass(),
         )
@@ -132,11 +149,11 @@ final class ContainerSingletonBuilderTraitTest extends AbstractDependencyInjecti
         self::assertSame($instance, $sameInstance);
     }
 
-    public function testAddSingletonFactory_WhenFactoryReturnsNull_GetThrowsInstanceTypeException(): void
+    public function testAddSingleton_WhenFactoryReturnsNull_GetThrowsInstanceTypeException(): void
     {
         // Arrange
         // @phpstan-ignore suhock.factoryReturnType (the wrong return type is the case under test)
-        $container = self::createBuilder()->addSingletonFactory(FakeClassNoConstructor::class, fn() => null)
+        $container = self::createBuilder()->addSingleton(FakeClassNoConstructor::class, fn() => null)
             ->build();
 
         // Act
@@ -154,11 +171,11 @@ final class ContainerSingletonBuilderTraitTest extends AbstractDependencyInjecti
         );
     }
 
-    public function testAddSingletonFactory_WhenReturnTypeIsWrong_GetThrowsInstanceTypeException(): void
+    public function testAddSingleton_WhenFactoryReturnTypeIsWrong_GetThrowsInstanceTypeException(): void
     {
         // Arrange
         // @phpstan-ignore suhock.factoryReturnType (the wrong return type is the case under test)
-        $container = self::createBuilder()->addSingletonFactory(
+        $container = self::createBuilder()->addSingleton(
             FakeClassNoConstructor::class,
             fn() => new LogicException(),
         )
@@ -232,6 +249,73 @@ final class ContainerSingletonBuilderTraitTest extends AbstractDependencyInjecti
         self::assertSame($expectedInstance, $result);
     }
 
+    public function testAddSingleton_WithCallableString_UsesItAsFactory(): void
+    {
+        // Arrange
+        $container = self::createBuilder()
+            ->addSingleton(FakeBaseClass::class, FakeStaticFactory::class . '::create')
+            ->build();
+
+        // Act
+        $result = $container->get(FakeBaseClass::class);
+
+        // Assert
+        self::assertInstanceOf(FakeClassExtendsBaseClass::class, $result);
+    }
+
+    public function testAddSingleton_WithCallableArray_UsesItAsFactory(): void
+    {
+        // Arrange
+        $container = self::createBuilder()
+            ->addSingleton(FakeBaseClass::class, [new FakeStaticFactory(), 'make'])
+            ->build();
+
+        // Act
+        $result = $container->get(FakeBaseClass::class);
+
+        // Assert
+        self::assertInstanceOf(FakeClassExtendsBaseClass::class, $result);
+    }
+
+    public function testAddSingleton_WithInvokableObjectNotOfClass_UsesItAsFactory(): void
+    {
+        // Arrange
+        $container = self::createBuilder()->addSingleton(FakeBaseClass::class, new FakeInvokableFactory())->build();
+
+        // Act
+        $result = $container->get(FakeBaseClass::class);
+
+        // Assert
+        self::assertInstanceOf(FakeClassExtendsBaseClass::class, $result);
+    }
+
+    public function testAddSingleton_WithInvokableInstanceOfClass_UsesItAsTheInstance(): void
+    {
+        // Arrange
+        $expectedInstance = new FakeInvokableBaseClass();
+        $container = self::createBuilder()->addSingleton(FakeBaseClass::class, $expectedInstance)->build();
+
+        // Act
+        $result = $container->get(FakeBaseClass::class);
+
+        // Assert
+        self::assertSame($expectedInstance, $result);
+    }
+
+    public function testAddSingleton_WithFirstClassCallableOfInvokableInstance_UsesItAsFactory(): void
+    {
+        // Arrange
+        $instance = new FakeInvokableBaseClass();
+        $container = self::createBuilder()->addSingleton(FakeBaseClass::class, $instance(...))->build();
+
+        // Act
+        $result = $container->get(FakeBaseClass::class);
+
+        // Assert
+        self::assertNotSame($instance, $result);
+        self::assertInstanceOf(FakeClassExtendsBaseClass::class, $result);
+    }
+
     public function testAddKeyedSingleton_WithClassName_GetReturnsInstanceOfClass(): void
     {
         // Arrange
@@ -295,10 +379,10 @@ final class ContainerSingletonBuilderTraitTest extends AbstractDependencyInjecti
         self::assertSame($expectedInstance, $result);
     }
 
-    public function testAddKeyedSingletonFactory_WithSelfParameter_GetByKeyReturnsConfiguredInstance(): void
+    public function testAddKeyedSingleton_WithSelfParameterFactory_GetByKeyReturnsConfiguredInstance(): void
     {
         // Arrange
-        $container = self::createBuilder()->addKeyedSingletonFactory(
+        $container = self::createBuilder()->addKeyedSingleton(
             FakeClassNoConstructor::class,
             'key1',
             function (#[Key('key1')] FakeClassNoConstructor $obj): FakeClassNoConstructor {
@@ -315,25 +399,6 @@ final class ContainerSingletonBuilderTraitTest extends AbstractDependencyInjecti
 
         // Assert
         self::assertSame('test', $instance->string);
-        self::assertSame($instance, $sameInstance);
-    }
-
-    public function testAddKeyedSingletonFactory_WithFactory_GetByKeyReturnsValueFromFactory(): void
-    {
-        // Arrange
-        $container = self::createBuilder()->addKeyedSingletonFactory(
-            FakeBaseClass::class,
-            'key1',
-            fn() => new FakeClassExtendsBaseClass(),
-        )
-            ->build();
-
-        // Act
-        $instance = $container->get(FakeBaseClass::class, 'key1');
-        $sameInstance = $container->get(FakeBaseClass::class, 'key1');
-
-        // Assert
-        self::assertInstanceOf(FakeClassExtendsBaseClass::class, $instance);
         self::assertSame($instance, $sameInstance);
     }
 

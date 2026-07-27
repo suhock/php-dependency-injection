@@ -24,6 +24,7 @@
             "type": "path",
             "url": "../dependency-injection-phpstan",
             "options": {
+                "symlink": false,
                 "versions": {
                     "suhock/dependency-injection-phpstan": "1.0.0"
                 }

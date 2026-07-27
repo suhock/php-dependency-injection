@@ -13,6 +13,9 @@ namespace Suhock\DependencyInjection\InstanceProvider;
 
 use Closure;
 
+use function class_exists;
+use function interface_exists;
+use function is_callable;
 use function is_string;
 
 /**
@@ -23,27 +26,34 @@ use function is_string;
 final class InstanceProviderFactory
 {
     /**
+     * Chooses the provider a source describes with the following priority:
+     * - null: class instance provider
+     * - class/interface name or non-callable string: implementation provider
+     * - callable string, callable array, Closure, or invokable object of different type: a closure provider
+     * - any other object: an object instance provider
+     *
      * @template TClass of object
      *
      * @param class-string<TClass> $className
-     * @param class-string<TClass>|TClass|Closure|null $source
+     * @param class-string<TClass>|TClass|callable|null $source
      *
      * @return InstanceProviderInterface<TClass>
      */
     // @phpstan-ignore missingType.callable (parameters discovered at build-time)
     public static function createInstanceProvider(
         string $className,
-        string|object|null $source = null,
+        string|callable|object|null $source = null,
     ): InstanceProviderInterface {
         if ($source === null) {
             return self::createClassInstanceProvider($className);
         }
 
-        if (is_string($source)) {
+        if (is_string($source) && (class_exists($source) || interface_exists($source) || !is_callable($source))) {
+            /** @var class-string<TClass> $source */
             return self::createImplementationInstanceProvider($className, $source);
         }
 
-        if ($source instanceof Closure) {
+        if (is_callable($source) && !$source instanceof $className) {
             return self::createClosureInstanceProvider($className, $source);
         }
 

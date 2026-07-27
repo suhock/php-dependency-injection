@@ -94,7 +94,7 @@ final class LazyTest extends AbstractDependencyInjectionTestCase
         $counter = new FakeLazyCounter();
         $container = self::buildContainer(
             static fn(ContainerBuilder $builder) => $builder->addSingleton(FakeLazyCounter::class, $counter)
-                ->addTransientFactory(
+                ->addTransient(
                     FakeLazyService::class,
                     static fn(FakeLazyCounter $c): FakeLazyService => new FakeLazyService($c),
                 )

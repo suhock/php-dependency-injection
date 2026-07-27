@@ -199,8 +199,8 @@ final class ContainerBuilderTest extends AbstractDependencyInjectionTestCase
         }
 
         // Act
-        $container = $builder->addSingletonFactory(Throwable::class, static fn(): RuntimeException => new RuntimeException())
-            ->addSingletonFactory(RuntimeException::class, static fn(): RuntimeException => new RuntimeException())
+        $container = $builder->addSingleton(Throwable::class, static fn(): RuntimeException => new RuntimeException())
+            ->addSingleton(RuntimeException::class, static fn(): RuntimeException => new RuntimeException())
             ->build();
 
         // Assert
@@ -307,7 +307,7 @@ final class ContainerBuilderTest extends AbstractDependencyInjectionTestCase
 
         // Act
         // @phpstan-ignore suhock.factoryReturnType (an internal function has no definition site to fingerprint)
-        $container = ContainerBuilder::createDefault($cache)->addSingletonFactory(FakeClassNoConstructor::class, phpversion(...))
+        $container = ContainerBuilder::createDefault($cache)->addSingleton(FakeClassNoConstructor::class, phpversion(...))
             ->build();
 
         // Assert
@@ -382,7 +382,7 @@ final class ContainerBuilderTest extends AbstractDependencyInjectionTestCase
     public function testExportDependencyGraph_WithSatisfiedSoftDependency_ExportsANonRequiredEdge(): void
     {
         // Arrange: the factory's nullable parameter is soft, but its dependency is added, so the edge exists.
-        $builder = self::createBuilder()->addSingletonFactory(
+        $builder = self::createBuilder()->addSingleton(
             FakeClassWithConstructor::class,
             static fn(?FakeClassNoConstructor $obj): FakeClassWithConstructor
                     => new FakeClassWithConstructor($obj ?? new FakeClassNoConstructor()),

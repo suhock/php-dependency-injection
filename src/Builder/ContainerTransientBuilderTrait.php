@@ -11,7 +11,6 @@ declare(strict_types=1);
 
 namespace Suhock\DependencyInjection\Builder;
 
-use Closure;
 use Override;
 use Suhock\DependencyInjection\ContainerBuilderInterface;
 use Suhock\DependencyInjection\InstanceProvider\InstanceProviderFactory;
@@ -48,7 +47,7 @@ trait ContainerTransientBuilderTrait
     #[Override]
     public function addTransient(
         string $className,
-        string|Closure|null $source = null,
+        string|callable|null $source = null,
         bool $shouldDispose = true,
     ): static {
         $this->addTransientInstanceProvider(
@@ -68,50 +67,13 @@ trait ContainerTransientBuilderTrait
     public function addKeyedTransient(
         string $className,
         string|UnitEnum $key,
-        string|Closure|null $source = null,
+        string|callable|null $source = null,
         bool $shouldDispose = true,
     ): static {
         $this->addKeyedTransientInstanceProvider(
             $className,
             $key,
             InstanceProviderFactory::createInstanceProvider($className, $source),
-            $shouldDispose,
-        );
-
-        return $this;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    // @phpstan-ignore missingType.callable (parameters discovered at build-time)
-    #[Override]
-    public function addTransientFactory(string $className, callable $factory, bool $shouldDispose = true): static
-    {
-        $this->addTransientInstanceProvider(
-            $className,
-            InstanceProviderFactory::createClosureInstanceProvider($className, $factory(...)),
-            $shouldDispose,
-        );
-
-        return $this;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    // @phpstan-ignore missingType.callable (parameters discovered at build-time)
-    #[Override]
-    public function addKeyedTransientFactory(
-        string $className,
-        string|UnitEnum $key,
-        callable $factory,
-        bool $shouldDispose = true,
-    ): static {
-        $this->addKeyedTransientInstanceProvider(
-            $className,
-            $key,
-            InstanceProviderFactory::createClosureInstanceProvider($className, $factory(...)),
             $shouldDispose,
         );
 

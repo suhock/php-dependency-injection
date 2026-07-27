@@ -58,7 +58,7 @@ final class ContainerTest extends AbstractDependencyInjectionTestCase
         // Arrange: the self parameter is the instance the descriptor would have produced, so there is one per
         // resolution however many parameters observe it.
         $container = self::buildContainer(
-            static fn(ContainerBuilder $builder) => $builder->addSingletonFactory(
+            static fn(ContainerBuilder $builder) => $builder->addSingleton(
                 FakeClassNoConstructor::class,
                 static function (
                     FakeClassNoConstructor $first,
@@ -83,7 +83,7 @@ final class ContainerTest extends AbstractDependencyInjectionTestCase
         // Arrange: the return value is the product, so a factory may replace the instance it was handed.
         $replacement = new FakeClassNoConstructor();
         $container = self::buildContainer(
-            static fn(ContainerBuilder $builder) => $builder->addSingletonFactory(
+            static fn(ContainerBuilder $builder) => $builder->addSingleton(
                 FakeClassNoConstructor::class,
                 static fn(FakeClassNoConstructor $self): FakeClassNoConstructor => $replacement,
             ),
@@ -102,7 +102,7 @@ final class ContainerTest extends AbstractDependencyInjectionTestCase
         $container = self::buildContainer(
             static fn(ContainerBuilder $builder) => $builder
                 ->addTransient(FakeClassNoConstructor::class)
-                ->addTransientFactory(
+                ->addTransient(
                     FakeClassWithConstructor::class,
                     static fn(FakeClassWithConstructor $self): FakeClassWithConstructor => $self,
                 ),
@@ -120,7 +120,7 @@ final class ContainerTest extends AbstractDependencyInjectionTestCase
         // Arrange: build-time validation cannot see inside a factory body, so the runtime $resolving guard is
         // the backstop for a factory that resolves its own service.
         $container = self::buildContainer(
-            static fn(ContainerBuilder $builder) => $builder->addSingletonFactory(
+            static fn(ContainerBuilder $builder) => $builder->addSingleton(
                 FakeClassNoConstructor::class,
                 static fn(ContainerInterface $c): FakeClassNoConstructor
                     => $c->get(FakeClassNoConstructor::class),
@@ -244,7 +244,7 @@ final class ContainerTest extends AbstractDependencyInjectionTestCase
         // Arrange
         $container = self::buildContainer(
             static fn(ContainerBuilder $builder)
-                => $builder->addSingletonFactory(FakeClassNoConstructor::class, fn() => new FakeClassNoConstructor()),
+                => $builder->addSingleton(FakeClassNoConstructor::class, fn() => new FakeClassNoConstructor()),
         );
 
         // Act
@@ -325,7 +325,7 @@ final class ContainerTest extends AbstractDependencyInjectionTestCase
     public function testGetConcreteClassName_WithFactoryConcreteReturnType_ReturnsIt(): void
     {
         $container = self::buildContainer(
-            static fn(ContainerBuilder $builder) => $builder->addTransientFactory(
+            static fn(ContainerBuilder $builder) => $builder->addTransient(
                 FakeInterfaceOne::class,
                 static fn(): FakeClassWithConstructor => new FakeClassWithConstructor(new FakeClassNoConstructor()),
             ),
@@ -337,7 +337,7 @@ final class ContainerTest extends AbstractDependencyInjectionTestCase
     public function testGetConcreteClassName_WithFactoryInterfaceReturnType_ReturnsNull(): void
     {
         $container = self::buildContainer(
-            static fn(ContainerBuilder $builder) => $builder->addTransientFactory(
+            static fn(ContainerBuilder $builder) => $builder->addTransient(
                 FakeInterfaceOne::class,
                 static fn(): FakeInterfaceOne => new FakeClassWithConstructor(new FakeClassNoConstructor()),
             ),

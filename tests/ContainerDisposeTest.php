@@ -40,7 +40,7 @@ final class ContainerDisposeTest extends AbstractDependencyInjectionTestCase
         $container = self::buildContainer(
             static fn(ContainerBuilder $builder) => $builder
                 ->addSingleton(FakeDisposalLog::class, $log, shouldDispose: false)
-                ->addSingletonFactory(
+                ->addSingleton(
                     FakeDisposableBaseClass::class,
                     static fn(FakeDisposableBaseClass $inner): FakeDisposableBaseClass
                         => new FakeDisposableDecorator($inner, $log),
@@ -64,7 +64,7 @@ final class ContainerDisposeTest extends AbstractDependencyInjectionTestCase
         $container = self::buildContainer(
             static fn(ContainerBuilder $builder) => $builder
                 ->addSingleton(FakeDisposalLog::class, $log, shouldDispose: false)
-                ->addSingletonFactory(
+                ->addSingleton(
                     FakeDisposableClass::class,
                     static fn(FakeDisposableClass $self): FakeDisposableClass => $self,
                 ),
@@ -165,7 +165,7 @@ final class ContainerDisposeTest extends AbstractDependencyInjectionTestCase
     {
         // Arrange
         $container = self::buildContainer(
-            static fn(ContainerBuilder $builder) => $builder->addSingletonFactory(
+            static fn(ContainerBuilder $builder) => $builder->addSingleton(
                 FakeDisposableClass::class,
                 static fn() => new FakeDisposableClass(),
                 shouldDispose: false,

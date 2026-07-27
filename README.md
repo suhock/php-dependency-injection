@@ -23,7 +23,9 @@ both long-running applications and per-request processes.
   PSR-11 adapter, and PHPStan extensions.
 
 ```php
-$container = Suhock\DependencyInjection\ContainerBuilder::createDefault()
+use Suhock\DependencyInjection\ContainerBuilder;
+
+$container = ContainerBuilder::createDefault()
     ->addSingleton(MyApplication::class)
     ->addSingleton(Logger::class, fn () => new FileLogger('myapp.log'))
     ->addTransient(HttpClient::class, CurlHttpClient::class)
@@ -434,7 +436,7 @@ $container = ContainerBuilder::createDefault()
     ->addSingleton(FileLogger::class)
     ->addSingleton(Logger::class, FileLogger::class)
     // FrankenPHP refreshes the superglobals before each request.
-    ->addScopedFactory(RequestContext::class, fn () => RequestContext::fromGlobals())
+    ->addScoped(RequestContext::class, fn () => RequestContext::fromGlobals())
     ->addTransient(RequestHandler::class)
     ->build();
 
@@ -588,39 +590,37 @@ class ContainerBuilder
      * @template TClass of object
      * @template TImplementation of TClass
      * @param class-string<TClass> $className
-     * @param class-string<TImplementation>|(Closure(mixed...): TClass)|TClass|null $source
+     * @param class-string<TImplementation>|TClass|callable|null $source
      * @return $this
      */
     public function addSingleton(
         string $className,
-        string|object|null $source = null,
+        string|callable|object|null $source = null,
         bool $shouldDispose = true,
     ): self;
 
     public function addScoped(
         string $className,
-        string|Closure|null $source = null,
+        string|callable|null $source = null,
         bool $shouldDispose = true,
     ): self;
 
     public function addTransient(
         string $className,
-        string|Closure|null $source = null,
+        string|callable|null $source = null,
         bool $shouldDispose = true,
     ): self;
 }
 ```
 
-A `callable` that is not a `Closure` — an array callable, or an invokable
-object — cannot be told apart from the other source kinds, so pass those to
-[`add*Factory()`](#provide-a-factory-callback). Use
-`$shouldDispose: false` to keep disposal responsibility for any service,
-supplied instance or not — see [Opting out of disposal](#opting-out-of-disposal).
+Use `$shouldDispose: false` to keep disposal responsibility for any service,
+supplied instance or not — see
+[Opting out of disposal](#opting-out-of-disposal).
 
 #### Specify the class name
 
-Omit the source and the container will construct the named class by calling the
-class's constructor, automatically resolving any dependencies in the
+Omit the source, and the container will construct the named class by calling
+the class's constructor, automatically resolving any dependencies in the
 constructor's parameter list.
 
 ##### Examples
@@ -702,41 +702,28 @@ The container will resolve the named service by requesting it from the provided
 factory callback method. Any parameters in the factory method will be resolved
 automatically.
 
+Pass any valid `callable` as the source: a closure, a first-class callable, a
+callable array such as `[$producer, 'make']`, a callable string such as
+`'Factory::create'`, or an invokable object.
+
 ```php
-class ContainerBuilder
-{
-    /**
-     * @template TClass of object
-     * @param class-string<TClass> $className
-     * @param callable(mixed...): TClass $factory
-     * @return $this
-     */
-    public function addSingletonFactory(string $className, callable $factory, bool $shouldDispose = true): static;
-
-    public function addScopedFactory(string $className, callable $factory, bool $shouldDispose = true): static;
-
-    public function addTransientFactory(string $className, callable $factory, bool $shouldDispose = true): static;
-}
+$builder->addSingleton(MyService::class, fn () => new MyService('foo'));
+$builder->addScoped(RequestContext::class, RequestContext::fromGlobals(...));
+$builder->addTransient(Report::class, [$reports, 'next']);
 ```
 
-> [!TIP]
-> If providing a `Closure` the shorthand forms can be also used:
->
-> ```php
-> // equivalent to $builder->addSingletonFactory(MyService::class, fn () => new MyService('foo'));
-> $builder->addSingleton(MyService::class, fn () => new MyService('foo'));
-> ```
-
 > [!CAUTION]
-> If you need to provide a named function, you must use the `add{Lifetime}Factory`
-> form, since the shorthand methods interpret string sources as class names.
+> A typo in a callable specified by a string will result in an error reporting
+> an unresolvable implementation class by that name, rather than as an error
+> reporting an invalid function. This is because if the string is not a valid
+> callable, the container will attempt to resolve it as a class name instead.
 
 ##### Examples
 
 ###### Inject a configuration value
 
 ```php
-$builder->addSingletonFactory(
+$builder->addSingleton(
     Mailer::class,
     fn (AppConfig $config) => new Mailer($config->mailerTransport),
 );
@@ -750,7 +737,7 @@ from that config.
 ###### Inline class implementation
 
 ```php
-$builder->addTransientFactory(
+$builder->addTransient(
     Logger::class,
     fn (FileWriter $writer) => new class($writer) implements Logger {
         public function __construct(
@@ -773,7 +760,7 @@ or decorate a class without hand-writing its constructor arguments, preserving
 build-time verifiability.
 
 ```php
-$builder->addTransientFactory(
+$builder->addTransient(
     CurlHttpClient::class,
     function (CurlHttpClient $client, Logger $logger): CurlHttpClient {
         $client->addLogger($logger);
@@ -786,7 +773,7 @@ The parameter is matched on its exact declared type plus its key, so a keyed
 service requires `#[Key]` on the parameter as well:
 
 ```php
-$builder->addTransientFactory(
+$builder->addTransient(
     CurlHttpClient::class,
     'api',
     function (#[Key('api')] CurlHttpClient $client, Logger $logger): CurlHttpClient {
@@ -864,27 +851,27 @@ class ContainerBuilder
      * @template TClass of object
      * @template TImplementation of TClass
      * @param class-string<TClass> $className
-     * @param class-string<TImplementation>|(Closure(mixed...): TClass)|TClass|null $source
+     * @param class-string<TImplementation>|TClass|callable|null $source
      * @return $this
      */
     public function addKeyedSingleton(
         string $className,
         string|UnitEnum $key,
-        string|object|null $source = null,
+        string|callable|object|null $source = null,
         bool $shouldDispose = true,
     ): static;
 
     public function addKeyedScoped(
         string $className,
         string|UnitEnum $key,
-        string|Closure|null $source = null,
+        string|callable|null $source = null,
         bool $shouldDispose = true,
     ): static;
 
     public function addKeyedTransient(
         string $className,
         string|UnitEnum $key,
-        string|Closure|null $source = null,
+        string|callable|null $source = null,
         bool $shouldDispose = true,
     ): static;
 }
@@ -907,14 +894,11 @@ The `$source` parameter determines how the container provides the instance:
  - If `null`, the container injects the class's constructor dependencies.
  - If a class name, the container maps the class to that implementation, which
    must also be added to the container.
- - If a closure, the container calls it as a factory, injecting its parameters.
+ - If anything else callable, the container calls it as a factory, injecting its
+   parameters.
  - If any other object, the container provides that object directly. Only
    `addKeyedSingleton()` accepts one, since a single object can only be a
    container-wide singleton.
-
-The explicit `add*Factory()` variants have keyed counterparts too:
-`addKeyedSingletonFactory()`, `addKeyedScopedFactory()`, and
-`addKeyedTransientFactory()`.
 
 ### Examples
 
@@ -922,7 +906,7 @@ The explicit `add*Factory()` variants have keyed counterparts too:
 
 ```php
 $container = $builder
-    ->addSingletonFactory(
+    ->addSingleton(
         Settings::class,
         fn () => JsonSettings::fromFile('default.json'),
     )

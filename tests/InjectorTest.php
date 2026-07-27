@@ -541,7 +541,7 @@ final class InjectorTest extends AbstractDependencyInjectionTestCase
         // Arrange: a self-referential factory *parameter* is a cycle build-time validation proves and rejects, so
         // the cycle hides in the factory body instead: invisible to the validator, caught by the runtime guard.
         $container = self::buildContainer(
-            static fn(ContainerBuilder $builder) => $builder->addSingletonFactory(
+            static fn(ContainerBuilder $builder) => $builder->addSingleton(
                 FakeClassNoConstructor::class,
                 static fn(ContainerInterface $c): FakeClassNoConstructor
                     => $c->get(FakeClassNoConstructor::class),

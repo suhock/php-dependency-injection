@@ -39,10 +39,10 @@ final class ContainerTransientBuilderTraitTest extends AbstractDependencyInjecti
         self::assertNotSame($instance, $newInstance);
     }
 
-    public function testAddTransientFactory_WithSelfParameter_GetReturnsConfiguredInstance(): void
+    public function testAddTransient_WithSelfParameterFactory_GetReturnsConfiguredInstance(): void
     {
         // Arrange
-        $container = self::createBuilder()->addTransientFactory(
+        $container = self::createBuilder()->addTransient(
             FakeClassNoConstructor::class,
             function (FakeClassNoConstructor $obj): FakeClassNoConstructor {
                 $obj->string = 'test';
@@ -116,10 +116,10 @@ final class ContainerTransientBuilderTraitTest extends AbstractDependencyInjecti
         );
     }
 
-    public function testAddTransientFactory_WithFactory_GetReturnsValueFromFactory(): void
+    public function testAddTransient_WithFactory_GetReturnsValueFromFactory(): void
     {
         // Arrange
-        $container = self::createBuilder()->addTransientFactory(
+        $container = self::createBuilder()->addTransient(
             FakeBaseClass::class,
             fn() => new FakeClassExtendsBaseClass(),
         )
@@ -135,11 +135,11 @@ final class ContainerTransientBuilderTraitTest extends AbstractDependencyInjecti
         self::assertNotSame($instance, $newInstance);
     }
 
-    public function testAddTransientFactory_WhenFactoryReturnsNull_GetThrowsWrappedInstanceTypeException(): void
+    public function testAddTransient_WhenFactoryReturnsNull_GetThrowsWrappedInstanceTypeException(): void
     {
         // Arrange
         // @phpstan-ignore suhock.factoryReturnType (the wrong return type is the case under test)
-        $container = self::createBuilder()->addTransientFactory(FakeClassNoConstructor::class, fn() => null)
+        $container = self::createBuilder()->addTransient(FakeClassNoConstructor::class, fn() => null)
             ->build();
 
         // Act
@@ -157,11 +157,11 @@ final class ContainerTransientBuilderTraitTest extends AbstractDependencyInjecti
         );
     }
 
-    public function testAddTransientFactory_WhenReturnTypeIsWrong_GetThrowsWrappedInstanceTypeException(): void
+    public function testAddTransient_WhenFactoryReturnTypeIsWrong_GetThrowsWrappedInstanceTypeException(): void
     {
         // Arrange
         // @phpstan-ignore suhock.factoryReturnType (the wrong return type is the case under test)
-        $container = self::createBuilder()->addTransientFactory(
+        $container = self::createBuilder()->addTransient(
             FakeClassNoConstructor::class,
             fn() => new LogicException(),
         )
@@ -234,10 +234,10 @@ final class ContainerTransientBuilderTraitTest extends AbstractDependencyInjecti
         self::assertNotSame($instance, $newInstance);
     }
 
-    public function testAddKeyedTransientFactory_WithSelfParameter_GetByKeyReturnsConfiguredInstance(): void
+    public function testAddKeyedTransient_WithSelfParameterFactory_GetByKeyReturnsConfiguredInstance(): void
     {
         // Arrange
-        $container = self::createBuilder()->addKeyedTransientFactory(
+        $container = self::createBuilder()->addKeyedTransient(
             FakeClassNoConstructor::class,
             'key1',
             function (#[Key('key1')] FakeClassNoConstructor $obj): FakeClassNoConstructor {
@@ -254,25 +254,6 @@ final class ContainerTransientBuilderTraitTest extends AbstractDependencyInjecti
 
         // Assert
         self::assertSame('test', $instance->string);
-        self::assertNotSame($instance, $newInstance);
-    }
-
-    public function testAddKeyedTransientFactory_WithFactory_GetByKeyReturnsNewValueFromFactory(): void
-    {
-        // Arrange
-        $container = self::createBuilder()->addKeyedTransientFactory(
-            FakeBaseClass::class,
-            'key1',
-            fn() => new FakeClassExtendsBaseClass(),
-        )
-            ->build();
-
-        // Act
-        $instance = $container->get(FakeBaseClass::class, 'key1');
-        $newInstance = $container->get(FakeBaseClass::class, 'key1');
-
-        // Assert
-        self::assertInstanceOf(FakeClassExtendsBaseClass::class, $instance);
         self::assertNotSame($instance, $newInstance);
     }
 }
