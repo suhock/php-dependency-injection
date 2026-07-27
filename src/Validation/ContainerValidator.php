@@ -12,12 +12,12 @@ declare(strict_types=1);
 namespace Suhock\DependencyInjection\Validation;
 
 use ReflectionClass;
-use Suhock\DependencyInjection\Builder\Descriptor;
 use Suhock\DependencyInjection\Compiler\DependencyGraph;
 use Suhock\DependencyInjection\Compiler\DependencyGraphEdge;
 use Suhock\DependencyInjection\Compiler\ResolutionPlan;
 use Suhock\DependencyInjection\Compiler\ResolutionPlanEdge;
 use Suhock\DependencyInjection\Compiler\ResolutionPlanKind;
+use Suhock\DependencyInjection\Descriptor;
 use Suhock\DependencyInjection\DescriptorId;
 use Suhock\DependencyInjection\Key;
 use Suhock\DependencyInjection\Lifetime\ScopedStrategy;

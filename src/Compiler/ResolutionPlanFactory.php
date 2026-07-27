@@ -16,7 +16,7 @@ use ReflectionClass;
 use ReflectionFunction;
 use ReflectionNamedType;
 use ReflectionParameter;
-use Suhock\DependencyInjection\Builder\Descriptor;
+use Suhock\DependencyInjection\Descriptor;
 use Suhock\DependencyInjection\DescriptorId;
 use Suhock\DependencyInjection\InstanceProvider\InstanceProviders;
 use Suhock\DependencyInjection\Lazy;

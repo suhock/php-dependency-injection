@@ -12,7 +12,6 @@ declare(strict_types=1);
 namespace Suhock\DependencyInjection;
 
 use Override;
-use Suhock\DependencyInjection\Builder\Descriptor;
 use Suhock\DependencyInjection\Cache\CacheInterface;
 use Suhock\DependencyInjection\Compiler\ContainerCompiler;
 use Suhock\DependencyInjection\Compiler\ContainerCompilerInterface;

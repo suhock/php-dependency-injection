@@ -9,7 +9,7 @@
 
 declare(strict_types=1);
 
-namespace Suhock\DependencyInjection\Builder;
+namespace Suhock\DependencyInjection;
 
 use Suhock\DependencyInjection\InstanceProvider\InstanceProviderInterface;
 use Suhock\DependencyInjection\Lifetime\LifetimeStrategy;

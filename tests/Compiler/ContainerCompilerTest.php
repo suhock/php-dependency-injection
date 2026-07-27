@@ -12,9 +12,9 @@ declare(strict_types=1);
 namespace Suhock\DependencyInjection\Compiler;
 
 use Suhock\DependencyInjection\AbstractDependencyInjectionTestCase;
-use Suhock\DependencyInjection\Builder\Descriptor;
 use Suhock\DependencyInjection\ContainerBuilder;
 use Suhock\DependencyInjection\ContainerInterface;
+use Suhock\DependencyInjection\Descriptor;
 use Suhock\DependencyInjection\DescriptorId;
 use Suhock\DependencyInjection\Fakes\FakeCache;
 use Suhock\DependencyInjection\Fakes\FakeClassImplementsInterfaces;

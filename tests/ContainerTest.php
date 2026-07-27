@@ -12,7 +12,6 @@ declare(strict_types=1);
 namespace Suhock\DependencyInjection;
 
 use Closure;
-use Suhock\DependencyInjection\Builder\Descriptor;
 use Suhock\DependencyInjection\Fakes\FakeClassNoConstructor;
 use Suhock\DependencyInjection\Fakes\FakeClassWithConstructor;
 use Suhock\DependencyInjection\Fakes\FakeInterfaceOne;

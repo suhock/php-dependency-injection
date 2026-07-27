@@ -14,7 +14,7 @@ namespace Suhock\DependencyInjection\Compiler;
 use Closure;
 use ReflectionFunction;
 use ReflectionParameter;
-use Suhock\DependencyInjection\Builder\Descriptor;
+use Suhock\DependencyInjection\Descriptor;
 use Suhock\DependencyInjection\InstanceProvider\ClassInstanceProvider;
 use Suhock\DependencyInjection\InstanceProvider\ClosureInstanceProvider;
 use Suhock\DependencyInjection\InstanceProvider\ImplementationInstanceProvider;

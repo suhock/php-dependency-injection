@@ -11,8 +11,8 @@ declare(strict_types=1);
 
 namespace Suhock\DependencyInjection\Compiler;
 
-use Suhock\DependencyInjection\Builder\Descriptor;
 use Suhock\DependencyInjection\Container;
+use Suhock\DependencyInjection\Descriptor;
 use Suhock\DependencyInjection\Validation\ContainerValidationException;
 
 /**

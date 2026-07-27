@@ -13,10 +13,10 @@ namespace Suhock\DependencyInjection\Compiler;
 
 use Closure;
 use Override;
-use Suhock\DependencyInjection\Builder\Descriptor;
 use Suhock\DependencyInjection\Cache\CacheInterface;
 use Suhock\DependencyInjection\Container;
 use Suhock\DependencyInjection\ContainerInterface;
+use Suhock\DependencyInjection\Descriptor;
 use Suhock\DependencyInjection\InstanceProvider\ContextInstanceProvider;
 use Suhock\DependencyInjection\Lifetime\TransientStrategy;
 use Suhock\DependencyInjection\ResolutionContext;

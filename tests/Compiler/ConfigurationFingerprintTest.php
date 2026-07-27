@@ -14,7 +14,7 @@ namespace Suhock\DependencyInjection\Compiler;
 use Closure;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
-use Suhock\DependencyInjection\Builder\Descriptor;
+use Suhock\DependencyInjection\Descriptor;
 use Suhock\DependencyInjection\Fakes\FakeBaseClass;
 use Suhock\DependencyInjection\Fakes\FakeClassExtendsBaseClass;
 use Suhock\DependencyInjection\Fakes\FakeClassNoConstructor;

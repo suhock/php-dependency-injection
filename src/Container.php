@@ -15,7 +15,6 @@ use Closure;
 use Override;
 use ReflectionClass;
 use ReflectionParameter;
-use Suhock\DependencyInjection\Builder\Descriptor;
 use Suhock\DependencyInjection\Compiler\ResolutionPlan;
 use Suhock\DependencyInjection\Compiler\ResolutionPlanEdge;
 use Suhock\DependencyInjection\Compiler\ResolutionPlanKind;
