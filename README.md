@@ -1203,16 +1203,15 @@ statically known concrete class, the `#[Lazy]` parameter throws an
 
 ## Error handling
 
-Every exception the library throws implements
-`Suhock\DependencyInjection\DependencyInjectionExceptionInterface`, so a single
-`catch` block can handle any failure originating from the container or injector.
+Every exception the library throws extends
+`Suhock\DependencyInjection\DependencyInjectionException`.
 
 ```php
-use Suhock\DependencyInjection\DependencyInjectionExceptionInterface;
+use Suhock\DependencyInjection\DependencyInjectionException;
 
 try {
     $app = $container->get(MyApplication::class);
-} catch (DependencyInjectionExceptionInterface $e) {
+} catch (DependencyInjectionException $e) {
     // Handle any dependency injection failure.
 }
 ```

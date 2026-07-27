@@ -267,7 +267,7 @@ abstract class AbstractDependencyInjectionTestCase extends TestCase
     }
 
     /**
-     * @template TException of DependencyInjectionExceptionInterface
+     * @template TException of DependencyInjectionException
      *
      * @param class-string $expectedClassName
      * @param (callable(TException):void)|null $previousExceptionTest
@@ -290,7 +290,7 @@ abstract class AbstractDependencyInjectionTestCase extends TestCase
     }
 
     /**
-     * @template TException of DependencyInjectionExceptionInterface
+     * @template TException of DependencyInjectionException
      *
      * @param class-string $expectedClassName
      * @param ClassResolutionException<object> $actualException
@@ -314,7 +314,7 @@ abstract class AbstractDependencyInjectionTestCase extends TestCase
     }
 
     /**
-     * @template TException of DependencyInjectionExceptionInterface
+     * @template TException of DependencyInjectionException
      *
      * @param (callable(TException):void)|null $previousTest
      * @param callable():mixed $codeUnderTest
@@ -338,7 +338,7 @@ abstract class AbstractDependencyInjectionTestCase extends TestCase
     }
 
     /**
-     * @template TException of DependencyInjectionExceptionInterface
+     * @template TException of DependencyInjectionException
      *
      * @param (callable(TException):void)|null $previousTest
      */
