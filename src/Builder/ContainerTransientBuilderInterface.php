@@ -25,7 +25,9 @@ interface ContainerTransientBuilderInterface
      * - `null`: autowire $className's constructor.
      * - a `class-string`: the implementation class to resolve in place of $className.
      * - a `Closure`: a factory to call.
-     * - an `object`: the instance to use.
+     *
+     * A supplied instance is a single object, so it can only be a container-wide singleton; see
+     * {@see ContainerSingletonBuilderInterface::addSingletonInstance()}.
      *
      * @template TClass of object
      *
@@ -42,7 +44,9 @@ interface ContainerTransientBuilderInterface
      * - `null`: autowire $className's constructor.
      * - a `class-string`: the implementation class to resolve in place of $className.
      * - a `Closure`: a factory to call.
-     * - an `object`: the instance to use.
+     *
+     * A supplied instance is a single object, so it can only be a container-wide singleton; see
+     * {@see ContainerSingletonBuilderInterface::addKeyedSingletonInstance()}.
      *
      * @template TClass of object
      *

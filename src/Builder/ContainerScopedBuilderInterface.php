@@ -28,30 +28,34 @@ interface ContainerScopedBuilderInterface
      * - `null`: autowire $className's constructor.
      * - a `class-string`: the implementation class to resolve in place of $className.
      * - a `Closure`: a factory to call.
-     * - an `object`: the instance to use.
+     *
+     * A supplied instance is a single object, so it can only be a container-wide singleton; see
+     * {@see ContainerSingletonBuilderInterface::addSingletonInstance()}.
      *
      * @template TClass of object
      *
      * @param class-string<TClass> $className
-     * @param class-string<TClass>|TClass|Closure|null $source
+     * @param class-string<TClass>|Closure|null $source
      *
      * @return $this
      */
     // @phpstan-ignore missingType.callable (Closure parameters are injected)
-    public function addScoped(string $className, string|object|null $source = null): static;
+    public function addScoped(string $className, string|Closure|null $source = null): static;
 
     /**
      * Adds a scoped service under $key. The provider is chosen from the type of $source:
      * - `null`: autowire $className's constructor.
      * - a `class-string`: the implementation class to resolve in place of $className.
      * - a `Closure`: a factory to call.
-     * - an `object`: the instance to use.
+     *
+     * A supplied instance is a single object, so it can only be a container-wide singleton; see
+     * {@see ContainerSingletonBuilderInterface::addKeyedSingletonInstance()}.
      *
      * @template TClass of object
      *
      * @param class-string<TClass> $className
      * @param string|UnitEnum $key The key to add the service under
-     * @param class-string<TClass>|TClass|Closure|null $source
+     * @param class-string<TClass>|Closure|null $source
      *
      * @return $this
      */
@@ -59,7 +63,7 @@ interface ContainerScopedBuilderInterface
     public function addKeyedScoped(
         string $className,
         string|UnitEnum $key,
-        string|object|null $source = null,
+        string|Closure|null $source = null,
     ): static;
 
     /**

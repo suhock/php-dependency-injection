@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace Suhock\DependencyInjection\Builder;
 
+use Closure;
 use Override;
 use Suhock\DependencyInjection\ContainerBuilderInterface;
 use Suhock\DependencyInjection\InstanceProvider\InstanceProviderFactory;
@@ -45,7 +46,7 @@ trait ContainerScopedBuilderTrait
      */
     // @phpstan-ignore missingType.callable (parameters discovered at build-time)
     #[Override]
-    public function addScoped(string $className, string|object|null $source = null): static
+    public function addScoped(string $className, string|Closure|null $source = null): static
     {
         $this->addScopedInstanceProvider(
             $className,
@@ -63,7 +64,7 @@ trait ContainerScopedBuilderTrait
     public function addKeyedScoped(
         string $className,
         string|UnitEnum $key,
-        string|object|null $source = null,
+        string|Closure|null $source = null,
     ): static {
         $this->addKeyedScopedInstanceProvider(
             $className,
