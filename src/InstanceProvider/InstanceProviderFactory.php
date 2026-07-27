@@ -30,6 +30,7 @@ final class InstanceProviderFactory
      *
      * @return InstanceProviderInterface<TClass>
      */
+    // @phpstan-ignore missingType.callable (parameters discovered at build-time)
     public static function createInstanceProvider(
         string $className,
         string|object|null $source = null,
@@ -56,6 +57,7 @@ final class InstanceProviderFactory
      *
      * @return ClassInstanceProvider<TClass>
      */
+    // @phpstan-ignore missingType.callable (a mutator's parameters are injected)
     public static function createClassInstanceProvider(
         string $className,
         ?callable $mutator = null,
@@ -100,6 +102,7 @@ final class InstanceProviderFactory
      *
      * @return ClosureInstanceProvider<TClass>
      */
+    // @phpstan-ignore missingType.callable (parameters discovered at build-time)
     public static function createClosureInstanceProvider(
         string $className,
         callable $closure,

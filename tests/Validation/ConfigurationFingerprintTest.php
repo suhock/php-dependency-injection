@@ -70,6 +70,7 @@ final class ConfigurationFingerprintTest extends TestCase
      *
      * @return Descriptor<object>
      */
+    // @phpstan-ignore missingType.callable (parameters discovered at build-time)
     private static function transientClosure(string $className, Closure $factory): Descriptor
     {
         return new Descriptor(
@@ -271,6 +272,7 @@ final class ConfigurationFingerprintTest extends TestCase
      *
      * @return Descriptor<object>
      */
+    // @phpstan-ignore missingType.callable (a mutator's parameters are injected)
     private static function autowireClass(string $className, ?Closure $mutator = null): Descriptor
     {
         return new Descriptor(

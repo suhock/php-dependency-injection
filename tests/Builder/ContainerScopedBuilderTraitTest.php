@@ -79,6 +79,7 @@ final class ContainerScopedBuilderTraitTest extends AbstractDependencyInjectionT
         $builder = self::createBuilder();
 
         // Act
+        // @phpstan-ignore suhock.implementationType (the invalid implementation is the case under test)
         $fn = static fn() => $builder->addScopedImplementation(
             FakeClassExtendsBaseClass::class,
             FakeClassNoConstructor::class,

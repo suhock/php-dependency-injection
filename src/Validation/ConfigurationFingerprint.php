@@ -116,6 +116,7 @@ final class ConfigurationFingerprint
      * @return string|null <code>null</code> if the closure has no file (an internal function or one defined in
      *     eval'd code), and so cannot be fingerprinted
      */
+    // @phpstan-ignore missingType.callable (fingerprints factory and mutator closures alike)
     private static function closureSignature(Closure $closure): ?string
     {
         $rFunction = new ReflectionFunction($closure);

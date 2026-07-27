@@ -2,11 +2,26 @@ includes:
     - phar://vendor/phpstan/phpstan/phpstan.phar/conf/bleedingEdge.neon
     - vendor/phpstan/phpstan-strict-rules/rules.neon
     - vendor/ergebnis/phpstan-rules/rules.neon
-    - vendor/suhock/phpstan-rules/rules.neon
+    - vendor/suhock/dependency-injection-phpstan/extension.neon
 
 parameters:
-    # ergebnis/phpstan-rules ships ~30 opinionated rules, all on by default.
-    # Opt out of the whole set, then enable only the ones we want.
+    level: 10
+    paths:
+        - src
+        - tests
+    excludePaths:
+        - tests/*/data/*
+
+    checkImplicitMixed: true
+    checkMissingOverrideMethodAttribute: true
+    checkBenevolentUnionTypes: true
+    checkUninitializedProperties: true
+    checkMissingCallableSignature: true
+    reportAnyTypeWideningInVarTag: true
+    reportIgnoresWithoutComments: true
+    reportPossiblyNonexistentGeneralArrayOffset: true
+    reportPossiblyNonexistentConstantArrayOffset: true
+    reportWrongPhpDocTypeInVarTag: true
     ergebnis:
         allRules: false
         declareStrictTypes:
@@ -23,16 +38,3 @@ parameters:
             enabled: true
         noEval:
             enabled: true
-    level: 10
-    paths:
-        - src
-        - tests
-    checkImplicitMixed: true
-    checkBenevolentUnionTypes: true
-    checkUninitializedProperties: true
-    checkMissingCallableSignature: false
-    reportAnyTypeWideningInVarTag: true
-    reportIgnoresWithoutComments: true
-    reportPossiblyNonexistentGeneralArrayOffset: true
-    reportPossiblyNonexistentConstantArrayOffset: true
-    reportWrongPhpDocTypeInVarTag: true

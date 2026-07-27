@@ -43,6 +43,7 @@ trait ContainerSingletonBuilderTrait
     /**
      * @inheritDoc
      */
+    // @phpstan-ignore missingType.callable (parameters discovered at build-time)
     #[Override]
     public function addSingleton(string $className, string|object|null $source = null): static
     {
@@ -57,6 +58,7 @@ trait ContainerSingletonBuilderTrait
     /**
      * @inheritDoc
      */
+    // @phpstan-ignore missingType.callable (parameters discovered at build-time)
     #[Override]
     public function addKeyedSingleton(
         string $className,
@@ -75,6 +77,7 @@ trait ContainerSingletonBuilderTrait
     /**
      * @inheritDoc
      */
+    // @phpstan-ignore missingType.callable (parameters discovered at build-time), missingType.callable (likewise)
     #[Override]
     public function addSingletonClass(string $className, ?callable $mutator = null): static
     {
@@ -89,6 +92,7 @@ trait ContainerSingletonBuilderTrait
     /**
      * @inheritDoc
      */
+    // @phpstan-ignore missingType.callable (parameters discovered at build-time), missingType.callable (likewise)
     #[Override]
     public function addKeyedSingletonClass(
         string $className,
@@ -137,6 +141,7 @@ trait ContainerSingletonBuilderTrait
     /**
      * @inheritDoc
      */
+    // @phpstan-ignore missingType.callable (parameters discovered at build-time)
     #[Override]
     public function addSingletonFactory(string $className, callable $factory): static
     {
@@ -151,6 +156,7 @@ trait ContainerSingletonBuilderTrait
     /**
      * @inheritDoc
      */
+    // @phpstan-ignore missingType.callable (parameters discovered at build-time)
     #[Override]
     public function addKeyedSingletonFactory(string $className, string|UnitEnum $key, callable $factory): static
     {

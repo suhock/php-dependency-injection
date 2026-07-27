@@ -24,6 +24,7 @@ use Closure;
  */
 final class ClassInstanceProvider implements InstanceProviderInterface
 {
+    // @phpstan-ignore missingType.callable (a mutator's parameters are injected)
     public readonly ?Closure $mutator;
 
     /**
@@ -32,6 +33,7 @@ final class ClassInstanceProvider implements InstanceProviderInterface
      *     instantiated instance. The first parameter will be the new object instance. Any other parameters will be
      *     injected.
      */
+    // @phpstan-ignore missingType.callable (parameters discovered at build-time), missingType.callable (likewise)
     public function __construct(
         public readonly string $className,
         ?callable $mutator = null,

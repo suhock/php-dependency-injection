@@ -44,6 +44,7 @@ trait ContainerTransientBuilderTrait
     /**
      * @inheritDoc
      */
+    // @phpstan-ignore missingType.callable (parameters discovered at build-time)
     #[Override]
     public function addTransient(string $className, string|Closure|null $source = null): static
     {
@@ -58,6 +59,7 @@ trait ContainerTransientBuilderTrait
     /**
      * @inheritDoc
      */
+    // @phpstan-ignore missingType.callable (parameters discovered at build-time)
     #[Override]
     public function addKeyedTransient(
         string $className,
@@ -76,6 +78,7 @@ trait ContainerTransientBuilderTrait
     /**
      * @inheritDoc
      */
+    // @phpstan-ignore missingType.callable (parameters discovered at build-time), missingType.callable (likewise)
     #[Override]
     public function addTransientClass(string $className, ?callable $mutator = null): static
     {
@@ -90,6 +93,7 @@ trait ContainerTransientBuilderTrait
     /**
      * @inheritDoc
      */
+    // @phpstan-ignore missingType.callable (parameters discovered at build-time), missingType.callable (likewise)
     #[Override]
     public function addKeyedTransientClass(
         string $className,
@@ -138,6 +142,7 @@ trait ContainerTransientBuilderTrait
     /**
      * @inheritDoc
      */
+    // @phpstan-ignore missingType.callable (parameters discovered at build-time)
     #[Override]
     public function addTransientFactory(string $className, callable $factory): static
     {
@@ -152,6 +157,7 @@ trait ContainerTransientBuilderTrait
     /**
      * @inheritDoc
      */
+    // @phpstan-ignore missingType.callable (parameters discovered at build-time)
     #[Override]
     public function addKeyedTransientFactory(string $className, string|UnitEnum $key, callable $factory): static
     {

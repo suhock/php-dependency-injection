@@ -57,6 +57,7 @@ final class Container implements
      *
      * @var array<string, Closure>
      */
+    // @phpstan-ignore missingType.callable (holds both factory and mutator closures)
     private array $closures = [];
 
     private readonly InstanceStore $instances;
@@ -103,6 +104,7 @@ final class Container implements
      *
      * @param Descriptor<object>|null $descriptor
      */
+    // @phpstan-ignore missingType.callable (returns either a factory or a mutator closure)
     private static function executableClosure(ResolutionPlan $plan, ?Descriptor $descriptor): ?Closure
     {
         $provider = $descriptor?->instanceProvider;
@@ -448,6 +450,7 @@ final class Container implements
     /**
      * Invokes a factory with its resolved arguments and verifies the result is an instance of the service class.
      */
+    // @phpstan-ignore missingType.callable (comes from the untyped closure map above)
     private function invokeFactory(ResolutionPlan $plan, Closure $factory, ResolutionContext $ctx): object
     {
         $result = $factory(...$this->resolveArguments($plan->argumentEdges, $ctx, $factory));
@@ -498,6 +501,7 @@ final class Container implements
      *
      * @return list<mixed>
      */
+    // @phpstan-ignore missingType.callable (a reflectable reference to any injected function)
     private function resolveArguments(
         array $edges,
         ResolutionContext $ctx,

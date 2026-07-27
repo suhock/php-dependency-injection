@@ -306,6 +306,7 @@ final class ContainerBuilderTest extends AbstractDependencyInjectionTestCase
         $cache = new FakeCache();
 
         // Act
+        // @phpstan-ignore suhock.factoryReturnType (an internal function has no definition site to fingerprint)
         $container = ContainerBuilder::createDefault($cache)->addSingletonFactory(FakeClassNoConstructor::class, phpversion(...))
             ->build();
 

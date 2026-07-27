@@ -48,6 +48,7 @@ final class ResolutionPlanFactoryTest extends TestCase
      *
      * @return Descriptor<object>
      */
+    // @phpstan-ignore missingType.callable (a mutator's parameters are injected)
     private static function autowireDescriptor(string $className, ?Closure $mutator = null): Descriptor
     {
         return new Descriptor(
@@ -62,6 +63,7 @@ final class ResolutionPlanFactoryTest extends TestCase
      *
      * @return Descriptor<object>
      */
+    // @phpstan-ignore missingType.callable (parameters discovered at build-time)
     private static function closureDescriptor(string $className, Closure $factory): Descriptor
     {
         return new Descriptor(

@@ -93,6 +93,7 @@ final class ResolutionPlanFactory
     /**
      * @param class-string $className
      */
+    // @phpstan-ignore missingType.callable (a mutator's parameters are injected)
     private function compileAutowireClass(string $className, ?Closure $mutator): ResolutionPlan
     {
         $parts = $this->classParts($className);
@@ -119,6 +120,7 @@ final class ResolutionPlanFactory
     /**
      * @param class-string $className
      */
+    // @phpstan-ignore missingType.callable (parameters discovered at build-time)
     private static function compileCallable(string $className, Closure $factory): ResolutionPlan
     {
         $rFunction = new ReflectionFunction($factory);

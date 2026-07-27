@@ -60,6 +60,7 @@ final class Injector implements InjectorInterface
     /**
      * @inheritDoc
      */
+    // @phpstan-ignore missingType.callable (any callable is valid here; $params supplies what injection cannot)
     #[Override]
     public function call(callable $function, array $params = []): mixed
     {

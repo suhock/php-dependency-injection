@@ -43,6 +43,7 @@ trait ContainerScopedBuilderTrait
     /**
      * @inheritDoc
      */
+    // @phpstan-ignore missingType.callable (parameters discovered at build-time)
     #[Override]
     public function addScoped(string $className, string|object|null $source = null): static
     {
@@ -57,6 +58,7 @@ trait ContainerScopedBuilderTrait
     /**
      * @inheritDoc
      */
+    // @phpstan-ignore missingType.callable (parameters discovered at build-time)
     #[Override]
     public function addKeyedScoped(
         string $className,
@@ -75,6 +77,7 @@ trait ContainerScopedBuilderTrait
     /**
      * @inheritDoc
      */
+    // @phpstan-ignore missingType.callable (parameters discovered at build-time), missingType.callable (likewise)
     #[Override]
     public function addScopedClass(string $className, ?callable $mutator = null): static
     {
@@ -89,6 +92,7 @@ trait ContainerScopedBuilderTrait
     /**
      * @inheritDoc
      */
+    // @phpstan-ignore missingType.callable (parameters discovered at build-time), missingType.callable (likewise)
     #[Override]
     public function addKeyedScopedClass(
         string $className,
@@ -137,6 +141,7 @@ trait ContainerScopedBuilderTrait
     /**
      * @inheritDoc
      */
+    // @phpstan-ignore missingType.callable (parameters discovered at build-time)
     #[Override]
     public function addScopedFactory(string $className, callable $factory): static
     {
@@ -151,6 +156,7 @@ trait ContainerScopedBuilderTrait
     /**
      * @inheritDoc
      */
+    // @phpstan-ignore missingType.callable (parameters discovered at build-time)
     #[Override]
     public function addKeyedScopedFactory(string $className, string|UnitEnum $key, callable $factory): static
     {

@@ -79,6 +79,7 @@ final class ContainerValidatorTest extends TestCase
     /**
      * @param class-string $className
      */
+    // @phpstan-ignore missingType.callable (parameters discovered at build-time)
     private function addFactory(
         string $className,
         Closure $factory,

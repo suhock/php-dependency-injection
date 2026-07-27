@@ -37,6 +37,7 @@ interface ContainerTransientBuilderInterface
      *
      * @return $this
      */
+    // @phpstan-ignore missingType.callable (parameters discovered at build-time)
     public function addTransient(string $className, string|Closure|null $source = null): static;
 
     /**
@@ -57,6 +58,7 @@ interface ContainerTransientBuilderInterface
      *
      * @return $this
      */
+    // @phpstan-ignore missingType.callable (parameters discovered at build-time)
     public function addKeyedTransient(
         string $className,
         string|UnitEnum $key,
@@ -77,6 +79,7 @@ interface ContainerTransientBuilderInterface
      *
      * @return $this
      */
+    // @phpstan-ignore missingType.callable (parameters discovered at build-time), missingType.callable (likewise)
     public function addTransientClass(string $className, ?callable $mutator = null): static;
 
     /**
@@ -94,6 +97,7 @@ interface ContainerTransientBuilderInterface
      *
      * @return $this
      */
+    // @phpstan-ignore missingType.callable (parameters discovered at build-time), missingType.callable (likewise)
     public function addKeyedTransientClass(
         string $className,
         string|UnitEnum $key,
@@ -143,24 +147,30 @@ interface ContainerTransientBuilderInterface
      * Indicates that the container should provide a transient instance of the given class by calling the specified
      * factory method.
      *
-     * @param class-string $className The fully qualified name of the class to add
-     * @param callable $factory A factory method that returns an instance of the class specified by {@see $className}.
-     *     Any method parameters will be injected.
+     * @template TClass of object
+     *
+     * @param class-string<TClass> $className The fully qualified name of the class to add
+     * @param callable $factory A factory method that returns an instance of the class specified by
+     *     {@see $className}. Any method parameters will be injected.
      *
      * @return $this
      */
+    // @phpstan-ignore missingType.callable (parameters discovered at build-time)
     public function addTransientFactory(string $className, callable $factory): static;
 
     /**
      * Indicates that the container should provide a transient instance of the given class under the given key by
      * calling the specified factory method.
      *
-     * @param class-string $className The fully qualified name of the class to add
+     * @template TClass of object
+     *
+     * @param class-string<TClass> $className The fully qualified name of the class to add
      * @param string|UnitEnum $key The key to add the service under
-     * @param callable $factory A factory method that returns an instance of the class specified by {@see $className}.
-     *     Any method parameters will be injected.
+     * @param callable $factory A factory method that returns an instance of the class specified by
+     *     {@see $className}. Any method parameters will be injected.
      *
      * @return $this
      */
+    // @phpstan-ignore missingType.callable (parameters discovered at build-time)
     public function addKeyedTransientFactory(string $className, string|UnitEnum $key, callable $factory): static;
 }

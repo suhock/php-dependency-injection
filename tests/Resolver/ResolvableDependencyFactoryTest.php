@@ -38,6 +38,7 @@ final class ResolvableDependencyFactoryTest extends TestCase
 
     private function fakeKeyedParam(#[Key('key1')] FakeClassNoConstructor $keyedParam): void {}
 
+    // @phpstan-ignore missingType.callable (reflected for its parameters, never called)
     private function createParameter(Closure $fakeMethod, string $parameterName): ReflectionParameter
     {
         return new ReflectionParameter($fakeMethod, $parameterName);

@@ -39,6 +39,7 @@ interface ContainerSingletonBuilderInterface
      *
      * @return $this
      */
+    // @phpstan-ignore missingType.callable (parameters discovered at build-time)
     public function addSingleton(string $className, string|object|null $source = null): static;
 
     /**
@@ -60,6 +61,7 @@ interface ContainerSingletonBuilderInterface
      *
      * @return $this
      */
+    // @phpstan-ignore missingType.callable (parameters discovered at build-time)
     public function addKeyedSingleton(
         string $className,
         string|UnitEnum $key,
@@ -82,6 +84,7 @@ interface ContainerSingletonBuilderInterface
      *
      * @return $this
      */
+    // @phpstan-ignore missingType.callable (parameters discovered at build-time), missingType.callable (likewise)
     public function addSingletonClass(string $className, ?callable $mutator = null): static;
 
     /**
@@ -101,6 +104,7 @@ interface ContainerSingletonBuilderInterface
      *
      * @return $this
      */
+    // @phpstan-ignore missingType.callable (parameters discovered at build-time), missingType.callable (likewise)
     public function addKeyedSingletonClass(
         string $className,
         string|UnitEnum $key,
@@ -160,6 +164,7 @@ interface ContainerSingletonBuilderInterface
      *
      * @return $this
      */
+    // @phpstan-ignore missingType.callable (parameters discovered at build-time)
     public function addSingletonFactory(string $className, callable $factory): static;
 
     /**
@@ -175,6 +180,7 @@ interface ContainerSingletonBuilderInterface
      *
      * @return $this
      */
+    // @phpstan-ignore missingType.callable (parameters discovered at build-time)
     public function addKeyedSingletonFactory(string $className, string|UnitEnum $key, callable $factory): static;
 
     /**

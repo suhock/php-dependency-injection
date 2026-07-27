@@ -19,6 +19,17 @@
             "email": "matt@suhock.net"
         }
     ],
+    "repositories": [
+        {
+            "type": "path",
+            "url": "../dependency-injection-phpstan",
+            "options": {
+                "versions": {
+                    "suhock/dependency-injection-phpstan": "1.0.0"
+                }
+            }
+        }
+    ],
     "require": {
         "php": "^8.4",
         "suhock/disposable": "^1.0"
@@ -29,6 +40,7 @@
         "phpstan/phpstan": "^2.2",
         "phpstan/phpstan-strict-rules": "^2.0",
         "phpunit/phpunit": "^13.2",
+        "suhock/dependency-injection-phpstan": "@dev",
         "suhock/php-cs-fixer-rules": "^1.0.0",
         "suhock/phpstan-rules": "^1.0.0"
     },

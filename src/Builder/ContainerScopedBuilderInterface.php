@@ -40,6 +40,7 @@ interface ContainerScopedBuilderInterface
      *
      * @return $this
      */
+    // @phpstan-ignore missingType.callable (Closure parameters are injected)
     public function addScoped(string $className, string|object|null $source = null): static;
 
     /**
@@ -60,6 +61,7 @@ interface ContainerScopedBuilderInterface
      *
      * @return $this
      */
+    // @phpstan-ignore missingType.callable (parameters discovered at build-time)
     public function addKeyedScoped(
         string $className,
         string|UnitEnum $key,
@@ -82,6 +84,7 @@ interface ContainerScopedBuilderInterface
      *
      * @return $this
      */
+    // @phpstan-ignore missingType.callable (parameters discovered at build-time), missingType.callable (likewise)
     public function addScopedClass(string $className, ?callable $mutator = null): static;
 
     /**
@@ -101,6 +104,7 @@ interface ContainerScopedBuilderInterface
      *
      * @return $this
      */
+    // @phpstan-ignore missingType.callable (parameters discovered at build-time), missingType.callable (likewise)
     public function addKeyedScopedClass(
         string $className,
         string|UnitEnum $key,
@@ -160,6 +164,7 @@ interface ContainerScopedBuilderInterface
      *
      * @return $this
      */
+    // @phpstan-ignore missingType.callable (parameters discovered at build-time)
     public function addScopedFactory(string $className, callable $factory): static;
 
     /**
@@ -175,5 +180,6 @@ interface ContainerScopedBuilderInterface
      *
      * @return $this
      */
+    // @phpstan-ignore missingType.callable (parameters discovered at build-time)
     public function addKeyedScopedFactory(string $className, string|UnitEnum $key, callable $factory): static;
 }

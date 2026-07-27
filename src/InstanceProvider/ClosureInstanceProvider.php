@@ -28,6 +28,7 @@ final class ClosureInstanceProvider implements InstanceProviderInterface
      * @param class-string<TClass> $className The name of the class this factory will provide
      * @param Closure $factory The factory that will be used for providing instances
      */
+    // @phpstan-ignore missingType.callable (parameters discovered at build-time)
     public function __construct(
         public readonly string $className,
         public readonly Closure $factory,

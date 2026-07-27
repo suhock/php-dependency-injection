@@ -110,6 +110,7 @@ abstract class AbstractDependencyInjectionTestCase extends TestCase
      *
      * @param class-string<TClass> $expectedException
      * @param callable(TClass):void $exceptionTest
+     * @param callable():mixed $codeUnderTest
      */
     private static function assertThrowsThrowable(
         string $expectedException,
@@ -131,6 +132,7 @@ abstract class AbstractDependencyInjectionTestCase extends TestCase
 
     /**
      * @param class-string $exClassName
+     * @param callable():mixed $codeUnderTest
      */
     final public static function assertThrowsCircularDependencyException(
         string $exClassName,
@@ -164,6 +166,7 @@ abstract class AbstractDependencyInjectionTestCase extends TestCase
     /**
      * @param class-string $exExpectedClassName
      * @param class-string $exActualClassName
+     * @param callable():mixed $codeUnderTest
      */
     final public static function assertThrowsImplementationException(
         string $exExpectedClassName,
@@ -209,6 +212,7 @@ abstract class AbstractDependencyInjectionTestCase extends TestCase
     /**
      * @param class-string $exExpectedClassName
      * @param class-string|null $exActualClassName
+     * @param callable():mixed $codeUnderTest
      */
     final public static function assertThrowsInstanceTypeException(
         string $exExpectedClassName,
@@ -258,6 +262,7 @@ abstract class AbstractDependencyInjectionTestCase extends TestCase
 
     /**
      * @param class-string $expectedClassName
+     * @param callable():mixed $codeUnderTest
      */
     final public static function assertThrowsClassNotFoundException(
         string $expectedClassName,
@@ -289,7 +294,11 @@ abstract class AbstractDependencyInjectionTestCase extends TestCase
     }
 
     /**
+     * @template TException of DependencyInjectionExceptionInterface
+     *
      * @param class-string $expectedClassName
+     * @param (callable(TException):void)|null $previousExceptionTest
+     * @param callable():mixed $codeUnderTest
      */
     final public static function assertThrowsClassResolutionException(
         string $expectedClassName,
@@ -308,8 +317,11 @@ abstract class AbstractDependencyInjectionTestCase extends TestCase
     }
 
     /**
+     * @template TException of DependencyInjectionExceptionInterface
+     *
      * @param class-string $expectedClassName
      * @param ClassResolutionException<object> $actualException
+     * @param (callable(TException):void)|null $previousExceptionTest
      */
     final public static function assertClassResolutionException(
         string $expectedClassName,
@@ -323,10 +335,17 @@ abstract class AbstractDependencyInjectionTestCase extends TestCase
         );
 
         if ($previousExceptionTest !== null) {
+            // @phpstan-ignore argument.type (the callback asserts the concrete exception type it expects)
             $previousExceptionTest($actualException->getConsolidatedException());
         }
     }
 
+    /**
+     * @template TException of DependencyInjectionExceptionInterface
+     *
+     * @param (callable(TException):void)|null $previousTest
+     * @param callable():mixed $codeUnderTest
+     */
     final public static function assertThrowsParameterResolutionException(
         string $exFunctionName,
         string $exParameterName,
@@ -345,6 +364,11 @@ abstract class AbstractDependencyInjectionTestCase extends TestCase
         );
     }
 
+    /**
+     * @template TException of DependencyInjectionExceptionInterface
+     *
+     * @param (callable(TException):void)|null $previousTest
+     */
     final public static function assertParameterResolutionException(
         string $exFunctionName,
         string $exParameterName,
@@ -377,6 +401,7 @@ abstract class AbstractDependencyInjectionTestCase extends TestCase
         );
 
         if ($previousTest !== null) {
+            // @phpstan-ignore argument.type (the callback asserts the concrete exception type it expects)
             $previousTest($actualException->getConsolidatedException());
         }
     }

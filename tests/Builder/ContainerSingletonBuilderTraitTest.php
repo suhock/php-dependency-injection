@@ -77,6 +77,7 @@ final class ContainerSingletonBuilderTraitTest extends AbstractDependencyInjecti
         $builder = self::createBuilder();
 
         // Act
+        // @phpstan-ignore suhock.implementationType (the invalid implementation is the case under test)
         $fn = static fn() => $builder->addSingletonImplementation(
             FakeClassNoConstructor::class,
             FakeClassNoConstructor::class,
@@ -96,6 +97,7 @@ final class ContainerSingletonBuilderTraitTest extends AbstractDependencyInjecti
         $builder = self::createBuilder();
 
         // Act
+        // @phpstan-ignore suhock.implementationType (the invalid implementation is the case under test)
         $fn = static fn() => $builder->addSingletonImplementation(
             FakeClassExtendsBaseClass::class,
             FakeClassNoConstructor::class,
@@ -130,6 +132,7 @@ final class ContainerSingletonBuilderTraitTest extends AbstractDependencyInjecti
     public function testAddSingletonFactory_WhenFactoryReturnsNull_GetThrowsInstanceTypeException(): void
     {
         // Arrange
+        // @phpstan-ignore suhock.factoryReturnType (the wrong return type is the case under test)
         $container = self::createBuilder()->addSingletonFactory(FakeClassNoConstructor::class, fn() => null)
             ->build();
 
@@ -151,6 +154,7 @@ final class ContainerSingletonBuilderTraitTest extends AbstractDependencyInjecti
     public function testAddSingletonFactory_WhenReturnTypeIsWrong_GetThrowsInstanceTypeException(): void
     {
         // Arrange
+        // @phpstan-ignore suhock.factoryReturnType (the wrong return type is the case under test)
         $container = self::createBuilder()->addSingletonFactory(
             FakeClassNoConstructor::class,
             fn() => new LogicException(),
@@ -193,6 +197,7 @@ final class ContainerSingletonBuilderTraitTest extends AbstractDependencyInjecti
         $builder = self::createBuilder();
 
         // Act
+        // @phpstan-ignore suhock.instanceType (the mismatched instance is the case under test)
         $fn = static fn() => $builder->addSingletonInstance(
             FakeClassExtendsBaseClass::class,
             new FakeClassNoConstructor(),
@@ -363,6 +368,7 @@ final class ContainerSingletonBuilderTraitTest extends AbstractDependencyInjecti
         $builder = self::createBuilder();
 
         // Act
+        // @phpstan-ignore suhock.instanceType (the mismatched instance is the case under test)
         $fn = static fn() => $builder->addKeyedSingletonInstance(
             FakeClassExtendsBaseClass::class,
             'key1',

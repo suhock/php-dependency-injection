@@ -28,6 +28,7 @@ interface InjectorInterface
      *
      * @return mixed The value returned by the function
      */
+    // @phpstan-ignore missingType.callable (any callable is valid here; $params supplies what injection cannot)
     public function call(callable $function, array $params = []): mixed;
 
     /**

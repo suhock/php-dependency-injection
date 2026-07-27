@@ -79,6 +79,7 @@ final class ContainerTransientBuilderTraitTest extends AbstractDependencyInjecti
         $builder = self::createBuilder();
 
         // Act
+        // @phpstan-ignore suhock.implementationType (the invalid implementation is the case under test)
         $fn = static fn() => $builder->addTransientImplementation(
             FakeClassNoConstructor::class,
             FakeClassNoConstructor::class,
@@ -98,6 +99,7 @@ final class ContainerTransientBuilderTraitTest extends AbstractDependencyInjecti
         $builder = self::createBuilder();
 
         // Act
+        // @phpstan-ignore suhock.implementationType (the invalid implementation is the case under test)
         $fn = static fn() => $builder->addTransientImplementation(
             FakeClassExtendsBaseClass::class,
             FakeClassNoConstructor::class,
@@ -133,6 +135,7 @@ final class ContainerTransientBuilderTraitTest extends AbstractDependencyInjecti
     public function testAddTransientFactory_WhenFactoryReturnsNull_GetThrowsWrappedInstanceTypeException(): void
     {
         // Arrange
+        // @phpstan-ignore suhock.factoryReturnType (the wrong return type is the case under test)
         $container = self::createBuilder()->addTransientFactory(FakeClassNoConstructor::class, fn() => null)
             ->build();
 
@@ -154,6 +157,7 @@ final class ContainerTransientBuilderTraitTest extends AbstractDependencyInjecti
     public function testAddTransientFactory_WhenReturnTypeIsWrong_GetThrowsWrappedInstanceTypeException(): void
     {
         // Arrange
+        // @phpstan-ignore suhock.factoryReturnType (the wrong return type is the case under test)
         $container = self::createBuilder()->addTransientFactory(
             FakeClassNoConstructor::class,
             fn() => new LogicException(),
