@@ -38,6 +38,7 @@ use Suhock\DependencyInjection\Fakes\FakeLazyService;
 use Suhock\DependencyInjection\Instantiation\InstantiationStrategyInterface;
 use Suhock\DependencyInjection\Instantiation\ReflectionInstantiationStrategy;
 use Suhock\DependencyInjection\Resolver\ContainerParameterResolver;
+use Suhock\DependencyInjection\Resolver\ParameterResolutionException;
 use Suhock\DependencyInjection\Resolver\ParameterResolverInterface;
 use Throwable;
 
@@ -121,14 +122,14 @@ final class InjectorTest extends AbstractDependencyInjectionTestCase
         $injector->instantiate(FakeAbstractClass::class);
     }
 
-    public function testInstantiate_WithMissingDependency_ThrowsInjectorException(): void
+    public function testInstantiate_WithMissingDependency_ThrowsParameterResolutionException(): void
     {
         // Arrange
         $injector = $this->createInjector();
 
         // Act & Assert
         // missing argument of type RuntimeException
-        $this->expectException(InjectorException::class);
+        $this->expectException(ParameterResolutionException::class);
         $injector->instantiate(FakeClassWithDependencies::class);
     }
 
@@ -379,17 +380,17 @@ final class InjectorTest extends AbstractDependencyInjectionTestCase
         self::assertNull($result);
     }
 
-    public function testCall_WithUnresolvableDependency_ThrowsInjectorException(): void
+    public function testCall_WithUnresolvableDependency_ThrowsParameterResolutionException(): void
     {
         // Arrange
         $injector = $this->createInjector();
 
         // Act & Assert
-        $this->expectException(InjectorException::class);
+        $this->expectException(ParameterResolutionException::class);
         $injector->call(fn(FakeClassNoConstructor $obj) => $obj);
     }
 
-    public function testCall_WithDependencyWithUnresolvableDependency_ThrowsInjectorException(): void
+    public function testCall_WithDependencyWithUnresolvableDependency_ThrowsParameterResolutionException(): void
     {
         // Arrange: FakeClassWithConstructor is deliberately left unregistered, since registering an autowired class
         // whose own dependency is unresolvable would now fail ContainerBuilder::build() itself (see
@@ -399,7 +400,7 @@ final class InjectorTest extends AbstractDependencyInjectionTestCase
         $injector = Injector::createDefault($container);
 
         // Act & Assert
-        $this->expectException(InjectorException::class);
+        $this->expectException(ParameterResolutionException::class);
         $injector->call(fn(FakeClassWithConstructor $obj) => $obj);
     }
 
