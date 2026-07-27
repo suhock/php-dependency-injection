@@ -13,35 +13,28 @@ namespace Suhock\DependencyInjection;
 
 use LogicException;
 use RuntimeException;
+use Suhock\DependencyInjection\Compiler\ContainerCompilerInterface;
 use Suhock\DependencyInjection\Fakes\FakeBaseClass;
-use Suhock\DependencyInjection\Fakes\FakeCache;
 use Suhock\DependencyInjection\Fakes\FakeClassExtendsBaseClass;
-use Suhock\DependencyInjection\Fakes\FakeClassImplementsInterfaces;
 use Suhock\DependencyInjection\Fakes\FakeClassNoConstructor;
 use Suhock\DependencyInjection\Fakes\FakeClassWithConstructor;
 use Suhock\DependencyInjection\Fakes\FakeClassWithDependencies;
-use Suhock\DependencyInjection\Fakes\FakeClassWithKeyedDependency;
-use Suhock\DependencyInjection\Fakes\FakeClassWithStringDependency;
-use Suhock\DependencyInjection\Fakes\FakeClassWithUnionDependency;
 use Suhock\DependencyInjection\Fakes\FakeConfigurator;
-use Suhock\DependencyInjection\Fakes\FakeInterfaceOne;
-use Suhock\DependencyInjection\Fakes\FakeInterfaceTwo;
 use Suhock\DependencyInjection\Fakes\FakeInvokableBaseClass;
 use Suhock\DependencyInjection\Fakes\FakeInvokableFactory;
 use Suhock\DependencyInjection\Fakes\FakeStaticFactory;
 use Suhock\DependencyInjection\Fakes\FakeUnitEnum;
 use Suhock\DependencyInjection\InstanceProvider\InstanceTypeException;
 use Suhock\DependencyInjection\Validation\ContainerValidationException;
-use Suhock\DependencyInjection\Validation\DependencyGraphEdge;
-use Suhock\DependencyInjection\Validation\ValidationIssue;
-use Suhock\DependencyInjection\Validation\ValidationIssueKind;
+use Suhock\DependencyInjection\Validation\DependencyGraph;
 use Throwable;
 
-use function array_map;
+use function array_keys;
 
 /**
  * Test suite for {@see ContainerBuilder}: the add methods, the mutable configuration surface, duplicate detection,
- * pre-build removal, and the compile-validate-produce pipeline of {@see ContainerBuilder::build()}.
+ * pre-build removal, and the configuration it hands to its compiler. The compile pipeline itself is covered by
+ * {@see Compiler\ContainerCompilerTest}.
  */
 final class ContainerBuilderTest extends AbstractDependencyInjectionTestCase
 {
@@ -966,25 +959,48 @@ final class ContainerBuilderTest extends AbstractDependencyInjectionTestCase
         self::assertSame($expectedInstance, $container->get(FakeClassNoConstructor::class, 'key1'));
     }
 
-    public function testBuild_WithDefectiveConfiguration_ThrowsAggregatedValidationException(): void
+    public function testBuild_WithConfiguredServices_PassesTheDescriptorsToTheCompiler(): void
     {
-        // Arrange: two independent defects, a missing required dependency and an unresolvable builtin parameter.
-        $builder = self::createBuilder()->addTransient(FakeClassWithDependencies::class)
-            ->addTransient(FakeClassWithStringDependency::class);
+        // Arrange
+        $expectedContainer = self::createBuilder()->build();
+        $compiler = $this->createMock(ContainerCompilerInterface::class);
+        $compiler->expects($this->once())
+            ->method('compile')
+            ->with(self::callback(static fn(array $descriptors): bool => array_keys($descriptors) === [
+                FakeClassNoConstructor::class,
+                DescriptorId::compute(FakeClassNoConstructor::class, 'key1'),
+            ]))
+            ->willReturn($expectedContainer);
+        $builder = new ContainerBuilder($compiler);
 
         // Act
-        try {
-            $builder->build();
-            self::fail('Expected ' . ContainerValidationException::class);
-        } catch (ContainerValidationException $exception) {
-            // Assert
-            $kinds = array_map(
-                static fn(ValidationIssue $issue) => $issue->kind,
-                $exception->getIssues(),
-            );
-            self::assertContains(ValidationIssueKind::MissingDependency, $kinds);
-            self::assertContains(ValidationIssueKind::UnresolvableParameter, $kinds);
-        }
+        $container = $builder->addSingleton(FakeClassNoConstructor::class)
+            ->addKeyedSingleton(FakeClassNoConstructor::class, 'key1')
+            ->build();
+
+        // Assert
+        self::assertSame($expectedContainer, $container);
+    }
+
+    public function testExportDependencyGraph_WithConfiguredServices_PassesTheDescriptorsToTheCompiler(): void
+    {
+        // Arrange
+        $expectedGraph = new DependencyGraph([], []);
+        $compiler = $this->createMock(ContainerCompilerInterface::class);
+        $compiler->expects($this->once())
+            ->method('exportGraph')
+            ->with(self::callback(
+                static fn(array $descriptors): bool
+                    => array_keys($descriptors) === [FakeClassNoConstructor::class],
+            ))
+            ->willReturn($expectedGraph);
+        $builder = new ContainerBuilder($compiler);
+
+        // Act
+        $graph = $builder->addSingleton(FakeClassNoConstructor::class)->exportDependencyGraph();
+
+        // Assert
+        self::assertSame($expectedGraph, $graph);
     }
 
     public function testBuild_AfterFixingAFailedBuild_Succeeds(): void
@@ -1011,23 +1027,6 @@ final class ContainerBuilderTest extends AbstractDependencyInjectionTestCase
         );
     }
 
-    public function testBuild_CalledTwice_ProducesIndependentProducts(): void
-    {
-        // Arrange
-        $builder = self::createBuilder()->addSingleton(FakeClassNoConstructor::class);
-
-        // Act
-        $first = $builder->build();
-        $second = $builder->build();
-
-        // Assert: each product caches its own singleton.
-        self::assertNotSame($first, $second);
-        self::assertNotSame(
-            $first->get(FakeClassNoConstructor::class),
-            $second->get(FakeClassNoConstructor::class),
-        );
-    }
-
     public function testBuild_AfterBuild_AddedServicesDoNotAffectEarlierProducts(): void
     {
         // Arrange
@@ -1040,213 +1039,5 @@ final class ContainerBuilderTest extends AbstractDependencyInjectionTestCase
         // Assert
         self::assertFalse($first->has(FakeClassNoConstructor::class, 'key1'));
         self::assertTrue($second->has(FakeClassNoConstructor::class, 'key1'));
-    }
-
-    public function testBuild_WithCache_StoresTheCompiledGraphUnderTheConfigurationFingerprint(): void
-    {
-        // Arrange
-        $cache = new FakeCache();
-
-        // Act
-        ContainerBuilder::createDefault($cache)->addSingleton(FakeClassNoConstructor::class)->build();
-
-        // Assert
-        self::assertCount(1, $cache->idsWithPrefix('sdi:graph:'));
-    }
-
-    public function testBuild_WithIdenticalConfigurationAndWarmCache_ReusesTheStoredGraph(): void
-    {
-        // Arrange: two builders, same configuration shape, same cache.
-        $cache = new FakeCache();
-        ContainerBuilder::createDefault($cache)->addSingleton(FakeClassNoConstructor::class)->build();
-        $storesAfterFirstBuild = count($cache->storedIds);
-
-        // Act
-        $container = ContainerBuilder::createDefault($cache)->addSingleton(FakeClassNoConstructor::class)
-            ->build();
-
-        // Assert: the second build stored nothing new and its product still resolves.
-        self::assertCount($storesAfterFirstBuild, $cache->storedIds);
-        self::assertInstanceOf(FakeClassNoConstructor::class, $container->get(FakeClassNoConstructor::class));
-    }
-
-    public function testBuild_WithChangedConfiguration_StoresASecondGraph(): void
-    {
-        // Arrange
-        $cache = new FakeCache();
-        ContainerBuilder::createDefault($cache)->addSingleton(FakeClassNoConstructor::class)->build();
-
-        // Act
-        ContainerBuilder::createDefault($cache)->addTransient(FakeClassNoConstructor::class)->build();
-
-        // Assert
-        self::assertCount(2, $cache->idsWithPrefix('sdi:graph:'));
-    }
-
-    public function testBuild_WithDefectiveConfigurationAndCache_StoresNoGraph(): void
-    {
-        // Arrange
-        $cache = new FakeCache();
-        $builder = ContainerBuilder::createDefault($cache)->addTransient(FakeClassWithStringDependency::class);
-
-        // Act
-        try {
-            $builder->build();
-            self::fail('Expected ' . ContainerValidationException::class);
-        } catch (ContainerValidationException) {
-        }
-
-        // Assert
-        self::assertSame([], $cache->idsWithPrefix('sdi:graph:'));
-    }
-
-    public function testBuild_WithUnfingerprintableConfiguration_BuildsWithoutStoringAGraph(): void
-    {
-        // Arrange: a factory from an internal function has no definition site to fingerprint. Its parameter is
-        // optional and its return is unchecked, so the configuration still validates.
-        $cache = new FakeCache();
-
-        // Act
-        // @phpstan-ignore suhock.factoryReturnType (an internal function has no definition site to fingerprint)
-        $container = ContainerBuilder::createDefault($cache)->addSingleton(FakeClassNoConstructor::class, phpversion(...))
-            ->build();
-
-        // Assert
-        self::assertTrue($container->has(FakeClassNoConstructor::class));
-        self::assertSame([], $cache->idsWithPrefix('sdi:graph:'));
-    }
-
-    public function testExportDependencyGraph_WithLinearChain_ExportsTheEdge(): void
-    {
-        // Arrange: FakeClassWithConstructor requires FakeClassNoConstructor via parameter $obj.
-        $builder = self::createBuilder()->addSingleton(FakeClassWithConstructor::class)
-            ->addSingleton(FakeClassNoConstructor::class);
-
-        // Act
-        $graph = $builder->exportDependencyGraph();
-
-        // Assert
-        self::assertCount(1, $graph->edges);
-        $edge = $graph->edges[0] ?? null;
-        self::assertSame(FakeClassWithConstructor::class, $edge?->sourceId);
-        self::assertSame(FakeClassNoConstructor::class, $edge->targetId);
-        self::assertTrue($edge->required);
-        self::assertSame('parameter $obj of __construct()', $edge->injectionPoint);
-    }
-
-    public function testExportDependencyGraph_ServiceIds_IncludeUserServicesAndAutoBindings(): void
-    {
-        // Arrange
-        $builder = self::createBuilder()->addSingleton(FakeClassNoConstructor::class);
-
-        // Act
-        $graph = $builder->exportDependencyGraph();
-
-        // Assert
-        self::assertContains(FakeClassNoConstructor::class, $graph->serviceIds);
-        self::assertContains(ContainerInterface::class, $graph->serviceIds);
-        self::assertContains(ScopeFactoryInterface::class, $graph->serviceIds);
-    }
-
-    public function testExportDependencyGraph_WithKeyedDependency_RendersTheKeyedTargetId(): void
-    {
-        // Arrange: FakeClassWithKeyedDependency injects FakeClassNoConstructor under 'key1'.
-        $builder = self::createBuilder()->addTransient(FakeClassWithKeyedDependency::class)
-            ->addKeyedSingleton(FakeClassNoConstructor::class, 'key1');
-
-        // Act
-        $graph = $builder->exportDependencyGraph();
-
-        // Assert
-        self::assertCount(1, $graph->edges);
-        self::assertSame(FakeClassNoConstructor::class . '#key1', ($graph->edges[0] ?? null)?->targetId);
-        self::assertContains(FakeClassNoConstructor::class . '#key1', $graph->serviceIds);
-    }
-
-    public function testExportDependencyGraph_WithImplementation_ExportsTheImplementationEdge(): void
-    {
-        // Arrange
-        $builder = self::createBuilder()->addTransient(FakeInterfaceOne::class, FakeClassImplementsInterfaces::class)
-            ->addTransient(FakeClassImplementsInterfaces::class);
-
-        // Act
-        $graph = $builder->exportDependencyGraph();
-
-        // Assert
-        self::assertCount(1, $graph->edges);
-        $edge = $graph->edges[0] ?? null;
-        self::assertSame(FakeInterfaceOne::class, $edge?->sourceId);
-        self::assertSame(FakeClassImplementsInterfaces::class, $edge->targetId);
-        self::assertSame('the implementation class', $edge->injectionPoint);
-    }
-
-    public function testExportDependencyGraph_WithSatisfiedSoftDependency_ExportsANonRequiredEdge(): void
-    {
-        // Arrange: the factory's nullable parameter is soft, but its dependency is added, so the edge exists.
-        $builder = self::createBuilder()->addSingleton(
-            FakeClassWithConstructor::class,
-            static fn(?FakeClassNoConstructor $obj): FakeClassWithConstructor
-                    => new FakeClassWithConstructor($obj ?? new FakeClassNoConstructor()),
-        )
-            ->addSingleton(FakeClassNoConstructor::class);
-
-        // Act
-        $graph = $builder->exportDependencyGraph();
-
-        // Assert
-        self::assertCount(1, $graph->edges);
-        self::assertFalse(($graph->edges[0] ?? null)?->required);
-    }
-
-    public function testExportDependencyGraph_WithUnionDependency_ExportsOnlyTheChosenEdge(): void
-    {
-        // Arrange: the union FakeInterfaceOne|FakeInterfaceTwo always chooses its first resolvable member.
-        $builder = self::createBuilder()->addTransient(FakeClassWithUnionDependency::class)
-            ->addTransient(FakeInterfaceOne::class, FakeClassImplementsInterfaces::class)
-            ->addTransient(FakeInterfaceTwo::class, FakeClassImplementsInterfaces::class)
-            ->addTransient(FakeClassImplementsInterfaces::class);
-
-        // Act
-        $graph = $builder->exportDependencyGraph();
-
-        $unionTargets = [];
-
-        foreach ($graph->edges as $edge) {
-            if ($edge->sourceId === FakeClassWithUnionDependency::class) {
-                $unionTargets[] = $edge->targetId;
-            }
-        }
-
-        // Assert
-        self::assertSame([FakeInterfaceOne::class], $unionTargets);
-    }
-
-    public function testExportDependencyGraph_WithDefectiveConfiguration_StillExportsWithoutTheBrokenEdge(): void
-    {
-        // Arrange: FakeClassWithDependencies is missing its required dependencies, so build() would throw.
-        $builder = self::createBuilder()->addTransient(FakeClassWithDependencies::class);
-
-        // Act
-        $graph = $builder->exportDependencyGraph();
-
-        // Assert
-        self::assertContains(FakeClassWithDependencies::class, $graph->serviceIds);
-        self::assertSame([], $graph->edges);
-    }
-
-    public function testExportDependencyGraph_RootsAreDerivable(): void
-    {
-        // Arrange: the roots (services nothing injects) are the ids that appear as no edge's target.
-        $builder = self::createBuilder()->addSingleton(FakeClassWithConstructor::class)
-            ->addSingleton(FakeClassNoConstructor::class);
-
-        // Act
-        $graph = $builder->exportDependencyGraph();
-        $targets = array_map(static fn(DependencyGraphEdge $edge) => $edge->targetId, $graph->edges);
-        $roots = array_values(array_diff($graph->serviceIds, $targets));
-
-        // Assert: the auto-bindings surface as roots too; the user's root is the chain head.
-        self::assertContains(FakeClassWithConstructor::class, $roots);
-        self::assertNotContains(FakeClassNoConstructor::class, $roots);
     }
 }

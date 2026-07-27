@@ -35,7 +35,7 @@ final class ContainerParameterResolverTest extends AbstractDependencyInjectionTe
      */
     private function createContainerAndInjector(?callable $configure = null): array
     {
-        $builder = new ContainerBuilder();
+        $builder = ContainerBuilder::createDefault();
 
         if ($configure !== null) {
             $configure($builder);
