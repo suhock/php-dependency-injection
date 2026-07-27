@@ -14,6 +14,7 @@ namespace Suhock\DependencyInjection;
 use Closure;
 use Override;
 use Suhock\DependencyInjection\Lifetime\InstanceStore;
+use Suhock\DependencyInjection\Resolver\ConcreteClassNameProviderInterface;
 use UnitEnum;
 
 /**

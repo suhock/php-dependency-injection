@@ -9,9 +9,10 @@
 
 declare(strict_types=1);
 
-namespace Suhock\DependencyInjection\Resolver;
+namespace Suhock\DependencyInjection\Injector;
 
 use ReflectionParameter;
+use Suhock\DependencyInjection\ParameterResolutionException;
 
 /**
  * Provides a method for resolving a function parameter to a concrete value.

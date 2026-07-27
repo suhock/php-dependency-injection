@@ -9,10 +9,7 @@
 
 declare(strict_types=1);
 
-namespace Suhock\DependencyInjection\Instantiation;
-
-use Suhock\DependencyInjection\Injector;
-use Suhock\DependencyInjection\InjectorException;
+namespace Suhock\DependencyInjection\Injector;
 
 /**
  * A strategy for constructing an instance of a class, injecting its constructor dependencies. The {@see Injector} tries

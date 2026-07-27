@@ -9,17 +9,20 @@
 
 declare(strict_types=1);
 
-namespace Suhock\DependencyInjection\Resolver;
+namespace Suhock\DependencyInjection\Injector;
 
 use Override;
 use ReflectionClass;
 use ReflectionParameter;
 use Suhock\DependencyInjection\ClassResolutionException;
-use Suhock\DependencyInjection\ConcreteClassNameProviderInterface;
 use Suhock\DependencyInjection\ContainerInterface;
-use Suhock\DependencyInjection\InjectorException;
 use Suhock\DependencyInjection\Key;
 use Suhock\DependencyInjection\Lazy;
+use Suhock\DependencyInjection\ParameterResolutionException;
+use Suhock\DependencyInjection\Resolver\ConcreteClassNameProviderInterface;
+use Suhock\DependencyInjection\Resolver\DependencyResolver;
+use Suhock\DependencyInjection\Resolver\ResolvableDependency;
+use Suhock\DependencyInjection\Resolver\ResolvableDependencyFactory;
 use UnitEnum;
 
 use function class_exists;

@@ -35,11 +35,11 @@ use Suhock\DependencyInjection\Fakes\FakeLazyCounter;
 use Suhock\DependencyInjection\Fakes\FakeLazyInterface;
 use Suhock\DependencyInjection\Fakes\FakeLazyInterfaceConsumer;
 use Suhock\DependencyInjection\Fakes\FakeLazyService;
-use Suhock\DependencyInjection\Instantiation\InstantiationStrategyInterface;
-use Suhock\DependencyInjection\Instantiation\ReflectionInstantiationStrategy;
-use Suhock\DependencyInjection\Resolver\ContainerParameterResolver;
-use Suhock\DependencyInjection\Resolver\ParameterResolutionException;
-use Suhock\DependencyInjection\Resolver\ParameterResolverInterface;
+use Suhock\DependencyInjection\Injector\ContainerParameterResolver;
+use Suhock\DependencyInjection\Injector\InjectorException;
+use Suhock\DependencyInjection\Injector\InstantiationStrategyInterface;
+use Suhock\DependencyInjection\Injector\ParameterResolverInterface;
+use Suhock\DependencyInjection\Injector\ReflectionInstantiationStrategy;
 use Throwable;
 
 /**

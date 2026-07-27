@@ -9,7 +9,7 @@
 
 declare(strict_types=1);
 
-namespace Suhock\DependencyInjection\Resolver;
+namespace Suhock\DependencyInjection;
 
 use ReflectionIntersectionType;
 use ReflectionMethod;
@@ -17,7 +17,6 @@ use ReflectionNamedType;
 use ReflectionParameter;
 use ReflectionType;
 use ReflectionUnionType;
-use Suhock\DependencyInjection\ContainerException;
 use Throwable;
 
 /**

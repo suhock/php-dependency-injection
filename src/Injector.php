@@ -13,11 +13,12 @@ namespace Suhock\DependencyInjection;
 
 use Override;
 use ReflectionFunction;
-use Suhock\DependencyInjection\Instantiation\InstantiationStrategyInterface;
-use Suhock\DependencyInjection\Instantiation\ReflectionInstantiationStrategy;
-use Suhock\DependencyInjection\Resolver\ArgumentResolver;
-use Suhock\DependencyInjection\Resolver\ContainerParameterResolver;
-use Suhock\DependencyInjection\Resolver\ParameterResolverInterface;
+use Suhock\DependencyInjection\Injector\ArgumentResolver;
+use Suhock\DependencyInjection\Injector\ContainerParameterResolver;
+use Suhock\DependencyInjection\Injector\InjectorException;
+use Suhock\DependencyInjection\Injector\InstantiationStrategyInterface;
+use Suhock\DependencyInjection\Injector\ParameterResolverInterface;
+use Suhock\DependencyInjection\Injector\ReflectionInstantiationStrategy;
 
 /**
  * Default implementation for {@see InjectorInterface} that resolves missing parameter values using a
@@ -78,12 +79,7 @@ final class Injector implements InjectorInterface
     #[Override]
     public function instantiate(string $className, array $params = []): object
     {
-        $instance = $this->strategy->tryInstantiate($className, $params);
-
-        if ($instance === null) {
-            throw new InjectorException("$className could not be instantiated");
-        }
-
-        return $instance;
+        return $this->strategy->tryInstantiate($className, $params)
+            ?? throw new InjectorException("$className could not be instantiated");
     }
 }

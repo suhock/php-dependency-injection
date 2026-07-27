@@ -17,7 +17,6 @@ use Suhock\DependencyInjection\Compiler\ResolutionPlanFactory;
 use Suhock\DependencyInjection\InstanceProvider\ImplementationException;
 use Suhock\DependencyInjection\InstanceProvider\InstanceTypeException;
 use Suhock\DependencyInjection\Lifetime\InstanceStore;
-use Suhock\DependencyInjection\Resolver\ParameterResolutionException;
 use Throwable;
 
 /**

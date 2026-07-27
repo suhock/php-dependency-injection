@@ -9,8 +9,10 @@
 
 declare(strict_types=1);
 
-namespace Suhock\DependencyInjection;
+namespace Suhock\DependencyInjection\Resolver;
 
+use Suhock\DependencyInjection\ContainerInterface;
+use Suhock\DependencyInjection\Injector;
 use UnitEnum;
 
 /**

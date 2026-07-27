@@ -11,6 +11,8 @@ declare(strict_types=1);
 
 namespace Suhock\DependencyInjection;
 
+use Suhock\DependencyInjection\Injector\InjectorException;
+
 /**
  * Provides methods for injecting dependencies into function and constructor calls.
  */

@@ -9,7 +9,9 @@
 
 declare(strict_types=1);
 
-namespace Suhock\DependencyInjection;
+namespace Suhock\DependencyInjection\Injector;
+
+use Suhock\DependencyInjection\DependencyInjectionException;
 
 /**
  * Exception that indicates an error occurred as part of the dependency injection process (i.e., while resolving or

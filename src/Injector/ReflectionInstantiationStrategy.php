@@ -9,14 +9,11 @@
 
 declare(strict_types=1);
 
-namespace Suhock\DependencyInjection\Instantiation;
+namespace Suhock\DependencyInjection\Injector;
 
 use Override;
 use ReflectionClass;
 use ReflectionException;
-use Suhock\DependencyInjection\InjectorException;
-use Suhock\DependencyInjection\Resolver\ArgumentResolver;
-use Suhock\DependencyInjection\Resolver\ParameterResolverInterface;
 
 /**
  * Instantiates a class by reflecting its constructor and resolving each parameter through the
