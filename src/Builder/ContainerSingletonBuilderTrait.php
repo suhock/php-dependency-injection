@@ -77,65 +77,6 @@ trait ContainerSingletonBuilderTrait
     /**
      * @inheritDoc
      */
-    #[Override]
-    public function addSingletonClass(string $className): static
-    {
-        $this->addSingletonInstanceProvider(
-            $className,
-            InstanceProviderFactory::createClassInstanceProvider($className),
-        );
-
-        return $this;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    #[Override]
-    public function addKeyedSingletonClass(string $className, string|UnitEnum $key): static
-    {
-        $this->addKeyedSingletonInstanceProvider(
-            $className,
-            $key,
-            InstanceProviderFactory::createClassInstanceProvider($className),
-        );
-
-        return $this;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function addSingletonImplementation(string $className, string $implementationClassName): static
-    {
-        $this->addSingletonInstanceProvider(
-            $className,
-            InstanceProviderFactory::createImplementationInstanceProvider($className, $implementationClassName),
-        );
-
-        return $this;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function addKeyedSingletonImplementation(
-        string $className,
-        string|UnitEnum $key,
-        string $implementationClassName,
-    ): static {
-        $this->addKeyedSingletonInstanceProvider(
-            $className,
-            $key,
-            InstanceProviderFactory::createImplementationInstanceProvider($className, $implementationClassName),
-        );
-
-        return $this;
-    }
-
-    /**
-     * @inheritDoc
-     */
     // @phpstan-ignore missingType.callable (parameters discovered at build-time)
     #[Override]
     public function addSingletonFactory(string $className, callable $factory): static

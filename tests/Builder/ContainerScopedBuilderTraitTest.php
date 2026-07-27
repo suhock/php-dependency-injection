@@ -23,10 +23,10 @@ use Suhock\DependencyInjection\Key;
  */
 final class ContainerScopedBuilderTraitTest extends AbstractDependencyInjectionTestCase
 {
-    public function testAddScopedClass_WithValidClassName_GetReturnsPerScopeInstance(): void
+    public function testAddScoped_WithClassName_GetReturnsPerScopeInstance(): void
     {
         // Arrange
-        $container = self::createBuilder()->addScopedClass(FakeClassNoConstructor::class)->build();
+        $container = self::createBuilder()->addScoped(FakeClassNoConstructor::class)->build();
         $scope = $container->createScope();
 
         // Act
@@ -60,11 +60,11 @@ final class ContainerScopedBuilderTraitTest extends AbstractDependencyInjectionT
         self::assertSame('test', $result->string);
     }
 
-    public function testAddScopedImplementation_WithSubclass_GetReturnsInstanceOfSubclass(): void
+    public function testAddScoped_WithImplementation_GetReturnsInstanceOfSubclass(): void
     {
         // Arrange
-        $container = self::createBuilder()->addScopedClass(FakeClassExtendsBaseClass::class)
-            ->addScopedImplementation(FakeBaseClass::class, FakeClassExtendsBaseClass::class)
+        $container = self::createBuilder()->addScoped(FakeClassExtendsBaseClass::class)
+            ->addScoped(FakeBaseClass::class, FakeClassExtendsBaseClass::class)
             ->build();
         $scope = $container->createScope();
 
@@ -76,14 +76,14 @@ final class ContainerScopedBuilderTraitTest extends AbstractDependencyInjectionT
         self::assertSame($scope->get(FakeClassExtendsBaseClass::class), $instance);
     }
 
-    public function testAddScopedImplementation_WithImplementationNotSubclass_ThrowsImplementationException(): void
+    public function testAddScoped_WithImplementationNotSubclass_ThrowsImplementationException(): void
     {
         // Arrange
         $builder = self::createBuilder();
 
         // Act
         // @phpstan-ignore suhock.implementationType (the invalid implementation is the case under test)
-        $fn = static fn() => $builder->addScopedImplementation(
+        $fn = static fn() => $builder->addScoped(
             FakeClassExtendsBaseClass::class,
             FakeClassNoConstructor::class,
         );
@@ -151,11 +151,11 @@ final class ContainerScopedBuilderTraitTest extends AbstractDependencyInjectionT
         self::assertSame($instance, $scope->get(FakeClassNoConstructor::class, 'key1'));
     }
 
-    public function testAddKeyedScopedImplementation_WithSubclass_GetByKeyReturnsInstanceOfSubclass(): void
+    public function testAddKeyedScoped_WithImplementation_GetByKeyReturnsInstanceOfSubclass(): void
     {
         // Arrange
-        $container = self::createBuilder()->addScopedClass(FakeClassExtendsBaseClass::class)
-            ->addKeyedScopedImplementation(FakeBaseClass::class, 'key1', FakeClassExtendsBaseClass::class)
+        $container = self::createBuilder()->addScoped(FakeClassExtendsBaseClass::class)
+            ->addKeyedScoped(FakeBaseClass::class, 'key1', FakeClassExtendsBaseClass::class)
             ->build();
         $scope = $container->createScope();
 

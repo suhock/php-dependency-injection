@@ -247,7 +247,7 @@ use Suhock\DependencyInjection\Cache\ApcuCache;
 use Suhock\DependencyInjection\ContainerBuilder;
 
 $container = ContainerBuilder::createDefault(new ApcuCache())
-    ->addSingletonClass(MyApplication::class)
+    ->addSingleton(MyApplication::class)
     ->build();
 ```
 
@@ -334,9 +334,9 @@ use Suhock\DependencyInjection\ContainerBuilder;
 
 $container = ContainerBuilder::createDefault()
     ->addSingleton(LoggerInterface::class, FileLogger::class)
-    ->addSingletonClass(FileLogger::class)
-    ->addScopedClass(RequestContext::class)
-    ->addTransientClass(RequestHandler::class)
+    ->addSingleton(FileLogger::class)
+    ->addScoped(RequestContext::class)
+    ->addTransient(RequestHandler::class)
     ->build();
 
 $scope = $container->createScope();
@@ -431,11 +431,11 @@ require dirname(__DIR__) . '/vendor/autoload.php';
 // compilation and validation cost is paid a single time, before the loop
 // starts, not per request.
 $container = ContainerBuilder::createDefault()
-    ->addSingletonClass(FileLogger::class)
-    ->addSingletonImplementation(Logger::class, FileLogger::class)
+    ->addSingleton(FileLogger::class)
+    ->addSingleton(Logger::class, FileLogger::class)
     // FrankenPHP refreshes the superglobals before each request.
     ->addScopedFactory(RequestContext::class, fn () => RequestContext::fromGlobals())
-    ->addTransientClass(RequestHandler::class)
+    ->addTransient(RequestHandler::class)
     ->build();
 
 $handler = static function () use ($container): void {
@@ -501,8 +501,8 @@ resolves are ever disposed:
 use Suhock\DependencyInjection\ContainerBuilder;
 
 $container = ContainerBuilder::createDefault()
-    ->addScopedClass(Connection::class)
-    ->addScopedClass(UnitOfWork::class)
+    ->addScoped(Connection::class)
+    ->addScoped(UnitOfWork::class)
     ->build();
 
 $scope = $container->createScope();
@@ -520,7 +520,7 @@ created) when the container itself is disposed:
 
 ```php
 $container = ContainerBuilder::createDefault()
-    ->addSingletonClass(ConnectionPool::class) // implements DisposableInterface
+    ->addSingleton(ConnectionPool::class) // implements DisposableInterface
     ->build();
 
 // ... run the application ...
@@ -576,35 +576,38 @@ There are a number of built-in ways to specify how services should be resolved:
  - [Provide a factory callback](#provide-a-factory-callback)
  - [Provide a concrete instance](#provide-a-concrete-instance)
 
-#### Specify the class name
-
-The container will construct the named class by calling the class's constructor,
-automatically resolving any dependencies in the constructor's parameter list.
+One method per lifetime covers the first three, choosing the provider from the
+type of `$source`:
 
 ```php
 class ContainerBuilder
 {
     /**
      * @template TClass of object
+     * @template TImplementation of TClass
      * @param class-string<TClass> $className
+     * @param class-string<TImplementation>|(Closure(mixed...): TClass)|TClass|null $source
      * @return $this
      */
-    public function addSingletonClass(string $className): self;
+    public function addSingleton(string $className, string|object|null $source = null): self;
 
-    public function addScopedClass(string $className): self;
+    public function addScoped(string $className, string|Closure|null $source = null): self;
 
-    public function addTransientClass(string $className): self;
+    public function addTransient(string $className, string|Closure|null $source = null): self;
 }
 ```
 
-> [!TIP]
-> The shorthand forms are equivalent:
->
-> ```php
-> $builder->addSingleton(MyService::class); // equivalent to $builder->addSingletonClass(MyService::class);
-> $builder->addScoped(MyService::class);    // equivalent to $builder->addScopedClass(MyService::class);
-> $builder->addTransient(MyService::class); // equivalent to $builder->addTransientClass(MyService::class);
-> ```
+A `callable` that is not a `Closure` — an array callable, or an invokable
+object — cannot be told apart from the other source kinds, so pass those to
+[`add*Factory()`](#provide-a-factory-callback). Use
+[`addSingletonInstance()`](#provide-a-concrete-instance) to keep disposal
+responsibility for a supplied instance.
+
+#### Specify the class name
+
+Omit the source and the container will construct the named class by calling the
+class's constructor, automatically resolving any dependencies in the
+constructor's parameter list.
 
 ##### Examples
 
@@ -615,7 +618,7 @@ it will automatically inject all dependencies into its constructor to create an
 instance.
 
 ```php
-$builder->addSingletonClass(MyService::class);
+$builder->addSingleton(MyService::class);
 ```
 
 To do more than construct the class — decorate it, or configure it in a way the
@@ -631,23 +634,7 @@ subclass in its place.
 > You must also add the implementing class to the container as its own
 > resolvable service, or `build()` will reject the configuration.
 
-```php
-class ContainerBuilder
-{
-    /**
-     * @template TClass of object
-     * @template TImplementation of TClass
-     * @param class-string<TClass> $className
-     * @param class-string<TImplementation> $implementationClassName
-     * @return $this
-     */
-    public function addSingletonImplementation(string $className, string $implementationClassName): self;
-
-    public function addScopedImplementation(string $className, string $implementationClassName): self;
-
-    public function addTransientImplementation(string $className, string $implementationClassName): self;
-}
-```
+Pass the implementing class name as the source.
 
 ##### Examples
 
@@ -655,8 +642,8 @@ class ContainerBuilder
 
 ```php
 $builder
-    ->addSingletonImplementation(HttpClient::class, CurlHttpClient::class)
-    ->addSingletonClass(CurlHttpClient::class);
+    ->addSingleton(HttpClient::class, CurlHttpClient::class)
+    ->addSingleton(CurlHttpClient::class);
 ```
 
 When your application requests an instance of `HttpClient`, the container will
@@ -667,9 +654,9 @@ then inject the `CurlHttpClient` constructor's dependencies to provide an instan
 
 ```php
 $builder
-    ->addTransientImplementation(Throwable::class, Exception::class)
-    ->addTransientImplementation(Exception::class, LogicException::class)
-    ->addTransientClass(LogicException::class);
+    ->addTransient(Throwable::class, Exception::class)
+    ->addTransient(Exception::class, LogicException::class)
+    ->addTransient(LogicException::class);
 ```
 
 When your application requests an instance of `Throwable`, the container will
@@ -686,7 +673,7 @@ The container must know how to provide the implementation, or `build()` will
 reject the configuration:
 
 ```php
-$builder->addSingletonImplementation(HttpClient::class, CurlHttpClient::class);
+$builder->addSingleton(HttpClient::class, CurlHttpClient::class);
 
 /*
  * build() throws a ContainerValidationException because CurlHttpClient is
@@ -925,11 +912,13 @@ The `$source` parameter determines how the container provides the instance:
  - If a class name, the container maps the class to that implementation, which
    must also be added to the container.
  - If a closure, the container calls it as a factory, injecting its parameters.
- - If any other object, the container provides that object directly.
+ - If any other object, the container provides that object directly. Only
+   `addKeyedSingleton()` accepts one, since a single object can only be a
+   container-wide singleton.
 
-Each explicit `add*` variant also has a keyed counterpart:
-`addKeyedSingletonFactory()`, `addKeyedTransientClass()`,
-`addKeyedScopedImplementation()`, and so on.
+The explicit `add*Factory()` and `add*Instance()` variants have keyed
+counterparts too: `addKeyedSingletonFactory()`, `addKeyedScopedFactory()`,
+`addKeyedTransientFactory()`, and `addKeyedSingletonInstance()`.
 
 ### Examples
 

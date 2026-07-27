@@ -623,8 +623,8 @@ final class InjectorTest extends AbstractDependencyInjectionTestCase
         $counter = new FakeLazyCounter();
         $container = self::buildContainer(
             static fn(ContainerBuilder $builder) => $builder->addSingletonInstance(FakeLazyCounter::class, $counter)
-                ->addTransientClass(FakeLazyService::class)
-                ->addTransientImplementation(FakeLazyInterface::class, FakeLazyService::class),
+                ->addTransient(FakeLazyService::class)
+                ->addTransient(FakeLazyInterface::class, FakeLazyService::class),
         );
         $injector = Injector::createDefault($container);
 

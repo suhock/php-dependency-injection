@@ -24,10 +24,10 @@ use Suhock\DependencyInjection\Key;
  */
 final class ContainerTransientBuilderTraitTest extends AbstractDependencyInjectionTestCase
 {
-    public function testAddTransientClass_WithValidClassName_GetReturnsInstanceOfClass(): void
+    public function testAddTransient_WithClassName_GetReturnsInstanceOfClass(): void
     {
         // Arrange
-        $container = self::createBuilder()->addTransientClass(FakeClassNoConstructor::class)->build();
+        $container = self::createBuilder()->addTransient(FakeClassNoConstructor::class)->build();
 
         // Act
         $instance = $container->get(FakeClassNoConstructor::class);
@@ -59,11 +59,11 @@ final class ContainerTransientBuilderTraitTest extends AbstractDependencyInjecti
         self::assertSame('test', $result->string);
     }
 
-    public function testAddTransientImplementation_WithSubclass_GetReturnsInstanceOfSubclass(): void
+    public function testAddTransient_WithImplementation_GetReturnsInstanceOfSubclass(): void
     {
         // Arrange
-        $container = self::createBuilder()->addTransientClass(FakeClassExtendsBaseClass::class)
-            ->addTransientImplementation(FakeBaseClass::class, FakeClassExtendsBaseClass::class)
+        $container = self::createBuilder()->addTransient(FakeClassExtendsBaseClass::class)
+            ->addTransient(FakeBaseClass::class, FakeClassExtendsBaseClass::class)
             ->build();
 
         // Act
@@ -76,14 +76,14 @@ final class ContainerTransientBuilderTraitTest extends AbstractDependencyInjecti
         self::assertNotSame($instance, $newInstance);
     }
 
-    public function testAddTransientImplementation_WithImplementationSameAsClass_ThrowsImplementationException(): void
+    public function testAddTransient_WithImplementationSameAsClass_ThrowsImplementationException(): void
     {
         // Arrange
         $builder = self::createBuilder();
 
         // Act
         // @phpstan-ignore suhock.implementationType (the invalid implementation is the case under test)
-        $fn = static fn() => $builder->addTransientImplementation(
+        $fn = static fn() => $builder->addTransient(
             FakeClassNoConstructor::class,
             FakeClassNoConstructor::class,
         );
@@ -96,14 +96,14 @@ final class ContainerTransientBuilderTraitTest extends AbstractDependencyInjecti
         );
     }
 
-    public function testAddTransientImplementation_WithImplementationNotSubclass_ThrowsImplementationException(): void
+    public function testAddTransient_WithImplementationNotSubclass_ThrowsImplementationException(): void
     {
         // Arrange
         $builder = self::createBuilder();
 
         // Act
         // @phpstan-ignore suhock.implementationType (the invalid implementation is the case under test)
-        $fn = static fn() => $builder->addTransientImplementation(
+        $fn = static fn() => $builder->addTransient(
             FakeClassExtendsBaseClass::class,
             FakeClassNoConstructor::class,
         );
@@ -200,7 +200,7 @@ final class ContainerTransientBuilderTraitTest extends AbstractDependencyInjecti
     public function testAddKeyedTransient_WithImplementation_GetReturnsInstanceOfSubclass(): void
     {
         // Arrange
-        $container = self::createBuilder()->addTransientClass(FakeClassExtendsBaseClass::class)
+        $container = self::createBuilder()->addTransient(FakeClassExtendsBaseClass::class)
             ->addKeyedTransient(FakeBaseClass::class, 'key1', FakeClassExtendsBaseClass::class)
             ->build();
 
@@ -254,22 +254,6 @@ final class ContainerTransientBuilderTraitTest extends AbstractDependencyInjecti
 
         // Assert
         self::assertSame('test', $instance->string);
-        self::assertNotSame($instance, $newInstance);
-    }
-
-    public function testAddKeyedTransientImplementation_WithSubclass_GetByKeyReturnsInstanceOfSubclass(): void
-    {
-        // Arrange
-        $container = self::createBuilder()->addTransientClass(FakeClassExtendsBaseClass::class)
-            ->addKeyedTransientImplementation(FakeBaseClass::class, 'key1', FakeClassExtendsBaseClass::class)
-            ->build();
-
-        // Act
-        $instance = $container->get(FakeBaseClass::class, 'key1');
-        $newInstance = $container->get(FakeBaseClass::class, 'key1');
-
-        // Assert
-        self::assertInstanceOf(FakeClassExtendsBaseClass::class, $instance);
         self::assertNotSame($instance, $newInstance);
     }
 

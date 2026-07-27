@@ -78,65 +78,6 @@ trait ContainerScopedBuilderTrait
     /**
      * @inheritDoc
      */
-    #[Override]
-    public function addScopedClass(string $className): static
-    {
-        $this->addScopedInstanceProvider(
-            $className,
-            InstanceProviderFactory::createClassInstanceProvider($className),
-        );
-
-        return $this;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    #[Override]
-    public function addKeyedScopedClass(string $className, string|UnitEnum $key): static
-    {
-        $this->addKeyedScopedInstanceProvider(
-            $className,
-            $key,
-            InstanceProviderFactory::createClassInstanceProvider($className),
-        );
-
-        return $this;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function addScopedImplementation(string $className, string $implementationClassName): static
-    {
-        $this->addScopedInstanceProvider(
-            $className,
-            InstanceProviderFactory::createImplementationInstanceProvider($className, $implementationClassName),
-        );
-
-        return $this;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function addKeyedScopedImplementation(
-        string $className,
-        string|UnitEnum $key,
-        string $implementationClassName,
-    ): static {
-        $this->addKeyedScopedInstanceProvider(
-            $className,
-            $key,
-            InstanceProviderFactory::createImplementationInstanceProvider($className, $implementationClassName),
-        );
-
-        return $this;
-    }
-
-    /**
-     * @inheritDoc
-     */
     // @phpstan-ignore missingType.callable (parameters discovered at build-time)
     #[Override]
     public function addScopedFactory(string $className, callable $factory): static

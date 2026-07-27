@@ -78,65 +78,6 @@ trait ContainerTransientBuilderTrait
     /**
      * @inheritDoc
      */
-    #[Override]
-    public function addTransientClass(string $className): static
-    {
-        $this->addTransientInstanceProvider(
-            $className,
-            InstanceProviderFactory::createClassInstanceProvider($className),
-        );
-
-        return $this;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    #[Override]
-    public function addKeyedTransientClass(string $className, string|UnitEnum $key): static
-    {
-        $this->addKeyedTransientInstanceProvider(
-            $className,
-            $key,
-            InstanceProviderFactory::createClassInstanceProvider($className),
-        );
-
-        return $this;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function addTransientImplementation(string $className, string $implementationClassName): static
-    {
-        $this->addTransientInstanceProvider(
-            $className,
-            InstanceProviderFactory::createImplementationInstanceProvider($className, $implementationClassName),
-        );
-
-        return $this;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function addKeyedTransientImplementation(
-        string $className,
-        string|UnitEnum $key,
-        string $implementationClassName,
-    ): static {
-        $this->addKeyedTransientInstanceProvider(
-            $className,
-            $key,
-            InstanceProviderFactory::createImplementationInstanceProvider($className, $implementationClassName),
-        );
-
-        return $this;
-    }
-
-    /**
-     * @inheritDoc
-     */
     // @phpstan-ignore missingType.callable (parameters discovered at build-time)
     #[Override]
     public function addTransientFactory(string $className, callable $factory): static

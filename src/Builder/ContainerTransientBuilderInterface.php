@@ -34,6 +34,8 @@ interface ContainerTransientBuilderInterface
      * @param class-string<TClass> $className
      * @param class-string<TClass>|Closure|null $source
      *
+     * @throws ImplementationException If $source names a class that is not a subclass of $className
+     *
      * @return $this
      */
     // @phpstan-ignore missingType.callable (parameters discovered at build-time)
@@ -54,6 +56,8 @@ interface ContainerTransientBuilderInterface
      * @param string|UnitEnum $key The key to add the service under
      * @param class-string<TClass>|Closure|null $source
      *
+     * @throws ImplementationException If $source names a class that is not a subclass of $className
+     *
      * @return $this
      */
     // @phpstan-ignore missingType.callable (parameters discovered at build-time)
@@ -61,74 +65,6 @@ interface ContainerTransientBuilderInterface
         string $className,
         string|UnitEnum $key,
         string|Closure|null $source = null,
-    ): static;
-
-    /**
-     * Indicates that the container should provide a transient instance of the given class by autowiring its
-     * constructor.
-     *
-     * @template TClass of object
-     *
-     * @param class-string<TClass> $className The fully qualified name of the class to add
-     *
-     * @throws ImplementationException
-     *
-     * @return $this
-     */
-    public function addTransientClass(string $className): static;
-
-    /**
-     * Indicates that the container should provide a transient instance of the given class under the given key by
-     * autowiring its constructor.
-     *
-     * @template TClass of object
-     *
-     * @param class-string<TClass> $className The fully qualified name of the class to add
-     * @param string|UnitEnum $key The key to add the service under
-     *
-     * @throws ImplementationException
-     *
-     * @return $this
-     */
-    public function addKeyedTransientClass(string $className, string|UnitEnum $key): static;
-
-    /**
-     * Indicates that the container should provide a transient instance of the given class by retrieving an instance of
-     * the specified implementation class from the container. The container must also specify how to resolve the
-     * implementation class.
-     *
-     * @template TClass of object
-     *
-     * @param class-string<TClass> $className The fully qualified name of the class to add
-     * @param class-string<TClass> $implementationClassName The fully qualified name of a class that implements
-     *     or extends {@see $className}.
-     *
-     * @throws ImplementationException If the implementation class is not a subclass of the class being added
-     *
-     * @return $this
-     */
-    public function addTransientImplementation(string $className, string $implementationClassName): static;
-
-    /**
-     * Indicates that the container should provide a transient instance of the given class under the given key by
-     * retrieving an instance of the specified implementation class from the container. The container must also
-     * specify how to resolve the implementation class.
-     *
-     * @template TClass of object
-     *
-     * @param class-string<TClass> $className The fully qualified name of the class to add
-     * @param string|UnitEnum $key The key to add the service under
-     * @param class-string<TClass> $implementationClassName The fully qualified name of a class that
-     *     implements or extends {@see $className}.
-     *
-     * @throws ImplementationException If the implementation class is not a subclass of the class being added
-     *
-     * @return $this
-     */
-    public function addKeyedTransientImplementation(
-        string $className,
-        string|UnitEnum $key,
-        string $implementationClassName,
     ): static;
 
     /**

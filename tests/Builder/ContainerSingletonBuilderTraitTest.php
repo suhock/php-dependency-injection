@@ -24,10 +24,10 @@ use Suhock\DependencyInjection\Key;
  */
 final class ContainerSingletonBuilderTraitTest extends AbstractDependencyInjectionTestCase
 {
-    public function testAddSingletonClass_WithValidClassName_GetReturnsInstanceOfClass(): void
+    public function testAddSingleton_WithClassName_GetReturnsInstanceOfClass(): void
     {
         // Arrange
-        $container = self::createBuilder()->addSingletonClass(FakeClassNoConstructor::class)->build();
+        $container = self::createBuilder()->addSingleton(FakeClassNoConstructor::class)->build();
 
         // Act
         $instance = $container->get(FakeClassNoConstructor::class);
@@ -58,11 +58,11 @@ final class ContainerSingletonBuilderTraitTest extends AbstractDependencyInjecti
         self::assertSame('test', $result->string);
     }
 
-    public function testAddSingletonImplementation_WithSubclass_GetReturnsInstanceOfSubclass(): void
+    public function testAddSingleton_WithImplementation_GetReturnsInstanceOfSubclass(): void
     {
         // Arrange
-        $container = self::createBuilder()->addSingletonClass(FakeClassExtendsBaseClass::class)
-            ->addSingletonImplementation(FakeBaseClass::class, FakeClassExtendsBaseClass::class)
+        $container = self::createBuilder()->addSingleton(FakeClassExtendsBaseClass::class)
+            ->addSingleton(FakeBaseClass::class, FakeClassExtendsBaseClass::class)
             ->build();
 
         // Act
@@ -74,14 +74,14 @@ final class ContainerSingletonBuilderTraitTest extends AbstractDependencyInjecti
         self::assertSame($instance, $sameInstance);
     }
 
-    public function testAddSingletonImplementation_WithImplementationSameAsClass_ThrowsImplementationException(): void
+    public function testAddSingleton_WithImplementationSameAsClass_ThrowsImplementationException(): void
     {
         // Arrange
         $builder = self::createBuilder();
 
         // Act
         // @phpstan-ignore suhock.implementationType (the invalid implementation is the case under test)
-        $fn = static fn() => $builder->addSingletonImplementation(
+        $fn = static fn() => $builder->addSingleton(
             FakeClassNoConstructor::class,
             FakeClassNoConstructor::class,
         );
@@ -94,14 +94,14 @@ final class ContainerSingletonBuilderTraitTest extends AbstractDependencyInjecti
         );
     }
 
-    public function testAddSingletonImplementation_WithImplementationNotSubclass_ThrowsImplementationException(): void
+    public function testAddSingleton_WithImplementationNotSubclass_ThrowsImplementationException(): void
     {
         // Arrange
         $builder = self::createBuilder();
 
         // Act
         // @phpstan-ignore suhock.implementationType (the invalid implementation is the case under test)
-        $fn = static fn() => $builder->addSingletonImplementation(
+        $fn = static fn() => $builder->addSingleton(
             FakeClassExtendsBaseClass::class,
             FakeClassNoConstructor::class,
         );
@@ -249,7 +249,7 @@ final class ContainerSingletonBuilderTraitTest extends AbstractDependencyInjecti
     public function testAddKeyedSingleton_WithImplementation_GetReturnsInstanceOfSubclass(): void
     {
         // Arrange
-        $container = self::createBuilder()->addSingletonClass(FakeClassExtendsBaseClass::class)
+        $container = self::createBuilder()->addSingleton(FakeClassExtendsBaseClass::class)
             ->addKeyedSingleton(FakeBaseClass::class, 'key1', FakeClassExtendsBaseClass::class)
             ->build();
 
@@ -315,22 +315,6 @@ final class ContainerSingletonBuilderTraitTest extends AbstractDependencyInjecti
 
         // Assert
         self::assertSame('test', $instance->string);
-        self::assertSame($instance, $sameInstance);
-    }
-
-    public function testAddKeyedSingletonImplementation_WithSubclass_GetByKeyReturnsInstanceOfSubclass(): void
-    {
-        // Arrange
-        $container = self::createBuilder()->addSingletonClass(FakeClassExtendsBaseClass::class)
-            ->addKeyedSingletonImplementation(FakeBaseClass::class, 'key1', FakeClassExtendsBaseClass::class)
-            ->build();
-
-        // Act
-        $instance = $container->get(FakeBaseClass::class, 'key1');
-        $sameInstance = $container->get(FakeBaseClass::class, 'key1');
-
-        // Assert
-        self::assertInstanceOf(FakeClassExtendsBaseClass::class, $instance);
         self::assertSame($instance, $sameInstance);
     }
 
