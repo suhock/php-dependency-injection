@@ -56,7 +56,7 @@ final class ContainerValidator
     ) {}
 
     /**
-     * @param array<string, ResolutionPlan<object>> $plans The compiled plans, keyed by descriptor id
+     * @param array<string, ResolutionPlan> $plans The compiled plans, keyed by descriptor id
      *
      * @throws ContainerValidationException If the configuration contains any guaranteed-failure defect
      */
@@ -70,9 +70,9 @@ final class ContainerValidator
     }
 
     /**
-     * @param array<string, ResolutionPlan<object>> $plans
+     * @param array<string, ResolutionPlan> $plans
      *
-     * @return list<ValidationIssue<object>>
+     * @return list<ValidationIssue>
      */
     private function collect(array $plans): array
     {
@@ -109,7 +109,7 @@ final class ContainerValidator
      * injection points produce no edge. Purely informational: a
      * defective configuration still exports.
      *
-     * @param array<string, ResolutionPlan<object>> $plans The compiled plans, keyed by descriptor id
+     * @param array<string, ResolutionPlan> $plans The compiled plans, keyed by descriptor id
      */
     public function exportGraph(array $plans): DependencyGraph
     {
@@ -158,10 +158,6 @@ final class ContainerValidator
      * Every edge of a plan paired with a description of its injection point, e.g.
      * <code>["parameter $x of __construct()", $edge]</code>.
      *
-     * @template TClass of object
-     *
-     * @param ResolutionPlan<TClass> $plan
-     *
      * @return iterable<array{string, ResolutionPlanEdge}>
      */
     private static function describedEdges(ResolutionPlan $plan): iterable
@@ -181,12 +177,9 @@ final class ContainerValidator
      * The defects local to one service: non-instantiable classes, factory return-type mismatches, an unresolvable
      * implementation target, and unsatisfiable required edges.
      *
-     * @template TClass of object
+     * @param Descriptor<object> $descriptor
      *
-     * @param Descriptor<TClass> $descriptor
-     * @param ResolutionPlan<TClass> $plan
-     *
-     * @return list<ValidationIssue<TClass>>
+     * @return list<ValidationIssue>
      */
     private function planIssues(string $id, Descriptor $descriptor, ResolutionPlan $plan): array
     {
@@ -256,13 +249,10 @@ final class ContainerValidator
      * A lazy edge that is simply unresolvable is not a lazy defect: a required one is reported as a missing
      * dependency, a soft one self-heals, and neither ever builds a lazy object.
      *
-     * @template TClass of object
+     * @param Descriptor<object> $descriptor
+     * @param array<string, ResolutionPlan> $plans
      *
-     * @param Descriptor<TClass> $descriptor
-     * @param ResolutionPlan<TClass> $plan
-     * @param array<string, ResolutionPlan<object>> $plans
-     *
-     * @return list<ValidationIssue<TClass>>
+     * @return list<ValidationIssue>
      */
     private function lazyIssues(string $id, Descriptor $descriptor, ResolutionPlan $plan, array $plans): array
     {
@@ -292,7 +282,7 @@ final class ContainerValidator
     /**
      * The reason a lazy edge cannot be built, or <code>null</code> if it can (or is unresolvable, handled elsewhere).
      *
-     * @param array<string, ResolutionPlan<object>> $plans
+     * @param array<string, ResolutionPlan> $plans
      */
     private function lazyDefect(ResolutionPlanEdge $edge, string $description, array $plans): ?string
     {
@@ -317,7 +307,7 @@ final class ContainerValidator
      * instance (already constructed) always can; a factory (proxy) can only when its concrete class is statically
      * known; an implementation defers to its target. Guards against an implementation cycle.
      *
-     * @param array<string, ResolutionPlan<object>> $plans
+     * @param array<string, ResolutionPlan> $plans
      * @param array<string, true> $seen
      */
     private function targetIsLazyBuildable(string $targetId, array $plans, array $seen): bool
@@ -347,10 +337,6 @@ final class ContainerValidator
     /**
      * Whether a factory-produced service can be proxied lazily: a concrete class must be statically known (the
      * declared return class if concrete, otherwise the service's own class) and that class must itself be lazy-able.
-     *
-     * @template TClass of object
-     *
-     * @param ResolutionPlan<TClass> $plan
      */
     private static function factoryTargetCanBeLazy(ResolutionPlan $plan): bool
     {
@@ -360,27 +346,17 @@ final class ContainerValidator
     }
 
     /**
-     * The statically known concrete, instantiable class a lazy proxy of a factory-produced service can reflect, or
+     * The statically-known concrete, instantiable class a lazy proxy of a factory-produced service can reflect, or
      * <code>null</code> when neither the declared return type nor the service class is a concrete class.
      *
-     * @template TClass of object
-     *
-     * @param ResolutionPlan<TClass> $plan
-     *
-     * @return class-string<TClass>|null
+     * @return class-string|null
      */
     private static function factoryLazyClass(ResolutionPlan $plan): ?string
     {
-        if (
-            $plan->declaredFactoryReturnType !== null
-            && class_exists($plan->declaredFactoryReturnType)
-            && (new ReflectionClass($plan->declaredFactoryReturnType))->isInstantiable()
-        ) {
-            return $plan->declaredFactoryReturnType;
-        }
-
-        if (class_exists($plan->className) && (new ReflectionClass($plan->className))->isInstantiable()) {
-            return $plan->className;
+        foreach ([$plan->declaredFactoryReturnType, $plan->className] as $candidate) {
+            if ($candidate !== null && class_exists($candidate) && (new ReflectionClass($candidate))->isInstantiable()) {
+                return $candidate;
+            }
         }
 
         return null;
@@ -411,11 +387,11 @@ final class ContainerValidator
     /**
      * All-required-edge cycle detection over the chosen-edge graph, by depth-first search with a recursion stack. A
      * cycle containing a soft edge self-heals at runtime and is not reported. Each distinct cycle is reported once,
-     * on its lexicographically smallest member.
+     * on its lexicographically-smallest member.
      *
      * @param array<string, list<array{string, bool}>> $adjacency
      *
-     * @return list<ValidationIssue<object>>
+     * @return list<ValidationIssue>
      */
     private function cycleIssues(array $adjacency): array
     {
@@ -438,7 +414,7 @@ final class ContainerValidator
      * @param array<string, true> $visited
      * @param list<string> $stack
      * @param array<string, true> $reported
-     * @param list<ValidationIssue<object>> $issues
+     * @param list<ValidationIssue> $issues
      */
     private function visitForCycles(
         string $id,
@@ -483,8 +459,6 @@ final class ContainerValidator
      * @param non-empty-list<string> $cycle The descriptor ids on the cycle, in dependency order
      * @param array<string, list<array{string, bool}>> $adjacency
      * @param array<string, true> $reported Canonical cycle keys already reported, updated on report
-     *
-     * @return ValidationIssue<object>|null
      */
     private function cycleIssue(array $cycle, array $adjacency, array &$reported): ?ValidationIssue
     {
@@ -533,7 +507,7 @@ final class ContainerValidator
      *
      * @param array<string, list<array{string, bool}>> $adjacency
      *
-     * @return list<ValidationIssue<object>>
+     * @return list<ValidationIssue>
      */
     private function captiveIssues(array $adjacency): array
     {
@@ -588,12 +562,8 @@ final class ContainerValidator
     }
 
     /**
-     * @template TClass of object
-     *
-     * @param Descriptor<TClass> $descriptor The singleton's descriptor
+     * @param Descriptor<object> $descriptor The singleton's descriptor
      * @param array<string, string|null> $parents
-     *
-     * @return ValidationIssue<TClass>
      */
     private function captiveIssue(
         string $singletonId,
@@ -620,8 +590,6 @@ final class ContainerValidator
      * The out-edges the runtime would choose against the frozen descriptor map: per satisfied dependency, the first
      * satisfiable alternative's first member present in the map; plus the implementation target, when present.
      * Unsatisfied and never-consulted edges produce no graph edge.
-     *
-     * @param ResolutionPlan<object> $plan
      *
      * @return list<array{string, bool}>
      */

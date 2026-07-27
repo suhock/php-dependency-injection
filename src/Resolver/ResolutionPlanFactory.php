@@ -41,7 +41,7 @@ final class ResolutionPlanFactory
      * @var array<class-string, array{
      *     argumentEdges: list<ResolutionPlanEdge>,
      *     nonInstantiableMessage: string|null
-     * }>
+     *     }>
      */
     private array $classParts = [];
 
@@ -50,7 +50,7 @@ final class ResolutionPlanFactory
      *
      * @param array<string, Descriptor<object>> $descriptors
      *
-     * @return array<string, ResolutionPlan<object>>
+     * @return array<string, ResolutionPlan>
      */
     public function compile(array $descriptors): array
     {
@@ -64,11 +64,7 @@ final class ResolutionPlanFactory
     }
 
     /**
-     * @template TClass of object
-     *
-     * @param Descriptor<TClass> $descriptor
-     *
-     * @return ResolutionPlan<TClass>
+     * @param Descriptor<object> $descriptor
      */
     private function compileDescriptor(Descriptor $descriptor): ResolutionPlan
     {
@@ -95,12 +91,7 @@ final class ResolutionPlanFactory
     }
 
     /**
-     * @template TClass of object
-     *
-     * @param class-string<TClass> $className
-     * @param Closure(TClass,mixed...):mixed|null $mutator
-     *
-     * @return ResolutionPlan<TClass>
+     * @param class-string $className
      */
     private function compileAutowireClass(string $className, ?Closure $mutator): ResolutionPlan
     {
@@ -126,12 +117,7 @@ final class ResolutionPlanFactory
     }
 
     /**
-     * @template TClass of object
-     *
-     * @param class-string<TClass> $className
-     * @param Closure(mixed...):TClass $factory
-     *
-     * @return ResolutionPlan<TClass>
+     * @param class-string $className
      */
     private static function compileCallable(string $className, Closure $factory): ResolutionPlan
     {
@@ -142,14 +128,11 @@ final class ResolutionPlanFactory
             $edges[] = self::parameterEdge($rParam);
         }
 
-        /** @var class-string<TClass>|null $declaredReturnClass */
-        $declaredReturnClass = self::declaredReturnClass($rFunction);
-
         return new ResolutionPlan(
             $className,
             ResolutionPlanKind::Factory,
             argumentEdges: $edges,
-            declaredFactoryReturnType: $declaredReturnClass,
+            declaredFactoryReturnType: self::declaredReturnClass($rFunction),
         );
     }
 
@@ -210,11 +193,9 @@ final class ResolutionPlanFactory
     }
 
     /**
-     * The factory's declared return class, when it declares a single named type naming an existing class or interface.
-     * Builtin, composite, absent, and unloadable (e.g. <code>self</code>/<code>static</code>) return types yield
-     * <code>null</code>; their compatibility is unknowable without invoking the factory.
-     *
-     * @return class-string|null
+     * The factory's declared return class, when it declares a single named type naming an existing class or
+     * interface. Builtin, composite, absent, and unloadable (e.g. <code>self</code>/<code>static</code>) return
+     * types yield <code>null</code>; their compatibility is unknowable without invoking the factory.
      */
     private static function declaredReturnClass(ReflectionFunction $rFunction): ?string
     {

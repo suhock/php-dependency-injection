@@ -26,7 +26,7 @@ final class InstanceProviderFactory
      * @template TClass of object
      *
      * @param class-string<TClass> $className
-     * @param class-string<TClass>|TClass|Closure(mixed...):TClass|null $source
+     * @param class-string<TClass>|TClass|Closure|null $source
      *
      * @return InstanceProviderInterface<TClass>
      */
@@ -53,7 +53,6 @@ final class InstanceProviderFactory
      * @template TClass of object
      *
      * @param class-string<TClass> $className
-     * @param callable(TClass,mixed...):mixed|null $mutator
      *
      * @return ClassInstanceProvider<TClass>
      */
@@ -98,7 +97,6 @@ final class InstanceProviderFactory
      * @template TClass of object
      *
      * @param class-string<TClass> $className
-     * @param callable(mixed...):TClass $closure
      *
      * @return ClosureInstanceProvider<TClass>
      */

@@ -113,8 +113,6 @@ final class ConfigurationFingerprint
      * The validation-relevant identity of a closure: where it is declared and its declared parameter/return
      * signature.
      *
-     * @param Closure(mixed...):object|Closure(object, mixed...):mixed $closure
-     *
      * @return string|null <code>null</code> if the closure has no file (an internal function or one defined in
      *     eval'd code), and so cannot be fingerprinted
      */

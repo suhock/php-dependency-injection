@@ -23,7 +23,7 @@ use function count;
 final class ContainerValidationException extends DependencyInjectionException
 {
     /**
-     * @param non-empty-list<ValidationIssue<object>> $issues The defects found, in discovery order
+     * @param non-empty-list<ValidationIssue> $issues The defects found, in discovery order
      */
     public function __construct(
         private readonly array $issues,
@@ -32,7 +32,7 @@ final class ContainerValidationException extends DependencyInjectionException
     }
 
     /**
-     * @return non-empty-list<ValidationIssue<object>> The defects found, in discovery order
+     * @return non-empty-list<ValidationIssue> The defects found, in discovery order
      */
     public function getIssues(): array
     {
@@ -40,7 +40,7 @@ final class ContainerValidationException extends DependencyInjectionException
     }
 
     /**
-     * @param non-empty-list<ValidationIssue<object>> $issues
+     * @param non-empty-list<ValidationIssue> $issues
      */
     private static function buildMessage(array $issues): string
     {

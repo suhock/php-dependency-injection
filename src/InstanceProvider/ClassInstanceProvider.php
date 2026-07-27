@@ -24,14 +24,13 @@ use Closure;
  */
 final class ClassInstanceProvider implements InstanceProviderInterface
 {
-    /** @var Closure(TClass, mixed...):mixed|null */
     public readonly ?Closure $mutator;
 
     /**
      * @param class-string<TClass> $className The name of the class this factory will instantiate
-     * @param callable(TClass, mixed...):mixed|null $mutator [optional] Mutator function that allows additional changes
-     *     to the instantiated instance. The first parameter will be the new object instance. Any other parameters will
-     *     be injected.
+     * @param Closure|callable-string|null $mutator [optional] Mutator function that allows additional changes to the
+     *     instantiated instance. The first parameter will be the new object instance. Any other parameters will be
+     *     injected.
      */
     public function __construct(
         public readonly string $className,

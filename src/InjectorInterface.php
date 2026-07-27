@@ -19,7 +19,7 @@ interface InjectorInterface
     /**
      * Calls the specified function, injecting any function parameter values.
      *
-     * @param callable(mixed...):mixed $function The function to call
+     * @param callable $function The function to call
      * @param array<mixed> $params [optional] A list of parameter values to provide to the function. String keys will be
      *     matched by name; integer keys will be matched by position.
      *

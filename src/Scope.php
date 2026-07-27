@@ -28,10 +28,8 @@ use UnitEnum;
 final class Scope implements ScopeInterface, ConcreteClassNameProviderInterface
 {
     private readonly ResolutionContext $resolutionContext;
-
     /** @var Closure(class-string, string|UnitEnum|null, ResolutionContext):object */
     private readonly Closure $resolve;
-
     private bool $disposed = false;
 
     /**
@@ -52,24 +50,15 @@ final class Scope implements ScopeInterface, ConcreteClassNameProviderInterface
     /**
      * @inheritDoc
      *
-     * @template TClass of object
-     *
-     * @param class-string<TClass> $className The fully qualified class name of the service to retrieve.
-     * @param string|UnitEnum|null $key [optional] The key of the service to retrieve.
-     *
      * @throws ScopeException If the scope has been disposed
-     *
-     * @return TClass An instance of {@see $className}
      */
     #[Override]
     public function get(string $className, string|UnitEnum|null $key = null): object
     {
         $this->ensureNotDisposed();
 
-        /** @var TClass $instance */
-        $instance = ($this->resolve)($className, $key, $this->resolutionContext);
-
-        return $instance;
+        // @phpstan-ignore return.type (phpstan does not support generics on Closures)
+        return ($this->resolve)($className, $key, $this->resolutionContext);
     }
 
     /**
