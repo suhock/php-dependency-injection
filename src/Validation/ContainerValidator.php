@@ -12,11 +12,11 @@ declare(strict_types=1);
 namespace Suhock\DependencyInjection\Validation;
 
 use ReflectionClass;
-use Suhock\DependencyInjection\Compiler\DependencyGraph;
-use Suhock\DependencyInjection\Compiler\DependencyGraphEdge;
+use Suhock\DependencyInjection\Compiler\PlanEdgeResolver;
 use Suhock\DependencyInjection\Compiler\ResolutionPlan;
 use Suhock\DependencyInjection\Compiler\ResolutionPlanEdge;
 use Suhock\DependencyInjection\Compiler\ResolutionPlanKind;
+use Suhock\DependencyInjection\Compiler\ResolvedEdge;
 use Suhock\DependencyInjection\Descriptor;
 use Suhock\DependencyInjection\DescriptorId;
 use Suhock\DependencyInjection\Key;
@@ -36,7 +36,6 @@ use function implode;
 use function interface_exists;
 use function is_a;
 use function min;
-use function sprintf;
 
 /**
  * Runs the guaranteed-failure graph checks over a set of compiled {@see ResolutionPlan}s: unresolvable required
@@ -52,10 +51,23 @@ final class ContainerValidator
     /**
      * @param array<string, Descriptor<object>> $descriptors The full descriptor map the plans were compiled from,
      *     keyed by descriptor id
+     * @param PlanEdgeResolver $edgeResolver Resolves each plan's edges against $descriptors
      */
     public function __construct(
         private readonly array $descriptors,
+        private readonly PlanEdgeResolver $edgeResolver,
     ) {}
+
+    /**
+     * Creates a validator with the default configuration.
+     *
+     * @param array<string, Descriptor<object>> $descriptors The full descriptor map the plans were compiled from,
+     *     keyed by descriptor id
+     */
+    public static function createDefault(array $descriptors): self
+    {
+        return new self($descriptors, new PlanEdgeResolver($descriptors));
+    }
 
     /**
      * @param array<string, ResolutionPlan> $plans The compiled plans, keyed by descriptor id
@@ -95,7 +107,7 @@ final class ContainerValidator
                 ...$this->planIssues($id, $descriptor, $plan),
                 ...$this->lazyIssues($id, $descriptor, $plan, $plans),
             ];
-            $adjacency[$id] = $this->chosenEdges($plan);
+            $adjacency[$id] = $this->constructionEdges($plan);
         }
 
         return [
@@ -103,83 +115,6 @@ final class ContainerValidator
             ...$this->cycleIssues($adjacency),
             ...$this->captiveIssues($adjacency),
         ];
-    }
-
-    /**
-     * Exports the configuration's dependency graph: every service and every satisfied, chosen edge, with the
-     * injection point each edge flows through. Mirrors exactly what resolution would traverse; unsatisfiable
-     * injection points produce no edge. Purely informational: a
-     * defective configuration still exports.
-     *
-     * @param array<string, ResolutionPlan> $plans The compiled plans, keyed by descriptor id
-     */
-    public function exportGraph(array $plans): DependencyGraph
-    {
-        $serviceIds = [];
-
-        foreach ($this->descriptors as $id => $descriptor) {
-            $serviceIds[] = DescriptorId::display($id);
-        }
-
-        $edges = [];
-
-        foreach ($plans as $id => $plan) {
-            if (!isset($this->descriptors[$id])) {
-                continue;
-            }
-
-            $sourceId = DescriptorId::display($id);
-
-            if ($plan->implementationTarget !== null && isset($this->descriptors[$plan->implementationTarget])) {
-                $edges[] = new DependencyGraphEdge(
-                    $sourceId,
-                    DescriptorId::display($plan->implementationTarget),
-                    required: true,
-                    injectionPoint: 'the implementation class',
-                );
-            }
-
-            foreach (self::describedEdges($plan) as [$description, $edge]) {
-                // A self edge constructs the service rather than resolving it, so resolution traverses nothing here.
-                if ($edge->self) {
-                    continue;
-                }
-
-                $target = $this->chosenTarget($edge);
-
-                if ($target !== null) {
-                    $edges[] = new DependencyGraphEdge(
-                        $sourceId,
-                        DescriptorId::display($target),
-                        required: !$edge->soft,
-                        injectionPoint: $description,
-                    );
-                }
-            }
-        }
-
-        return new DependencyGraph($serviceIds, $edges);
-    }
-
-    /**
-     * Every edge of a plan paired with a description of its injection point, e.g.
-     * <code>["parameter $x of __construct()", $edge]</code>.
-     *
-     * @return iterable<array{string, ResolutionPlanEdge}>
-     */
-    private static function describedEdges(ResolutionPlan $plan): iterable
-    {
-        $argumentLocation = $plan->kind === ResolutionPlanKind::Factory ? 'the factory' : '__construct()';
-
-        foreach ($plan->argumentEdges as $edge) {
-            yield [sprintf('parameter $%s of %s', $edge->name, $argumentLocation), $edge];
-        }
-
-        // A factory naming the service it produces constructs that service's class, so the class's constructor
-        // arguments are edges of this service exactly as they are for an autowired class.
-        foreach ($plan->selfConstructorEdges as $edge) {
-            yield [sprintf('parameter $%s of __construct()', $edge->name), $edge];
-        }
     }
 
     /**
@@ -226,10 +161,10 @@ final class ContainerValidator
             );
         }
 
-        foreach (self::describedEdges($plan) as [$description, $edge]) {
+        foreach (PlanEdgeResolver::describedEdges($plan) as [$description, $edge]) {
             // A self edge is satisfied by constructing the service's own class, never by a lookup, so the only way
             // it can fail is a class that cannot be constructed at all — already reported above.
-            if ($edge->soft || $edge->self || $this->edgeIsSatisfied($edge)) {
+            if ($edge->soft || $edge->self || $this->edgeResolver->isSatisfied($edge)) {
                 continue;
             }
 
@@ -271,7 +206,7 @@ final class ContainerValidator
         $issues = [];
         $key = DescriptorId::keyOf($id);
 
-        foreach (self::describedEdges($plan) as [$description, $edge]) {
+        foreach (PlanEdgeResolver::describedEdges($plan) as [$description, $edge]) {
             if (!$edge->lazy) {
                 continue;
             }
@@ -306,7 +241,7 @@ final class ContainerValidator
                 . ') has no class type the container can construct lazily';
         }
 
-        $target = $this->chosenTarget($edge);
+        $target = $this->edgeResolver->chosenTarget($edge);
 
         if ($target === null || $this->targetIsLazyBuildable($target, $plans, [])) {
             return null;
@@ -602,62 +537,19 @@ final class ContainerValidator
     }
 
     /**
-     * The out-edges the runtime would choose against the frozen descriptor map: per satisfied dependency, the first
-     * satisfiable alternative's first member present in the map; plus the implementation target, when present.
-     * Unsatisfied and never-consulted edges produce no graph edge.
+     * The construction-order adjacency of one plan: the resolved out-edges, with each edge's required flag narrowed to
+     * the edges that constrain construction.
      *
      * @return list<array{string, bool}>
      */
-    private function chosenEdges(ResolutionPlan $plan): array
+    private function constructionEdges(ResolutionPlan $plan): array
     {
-        $edges = [];
-
-        if ($plan->implementationTarget !== null && isset($this->descriptors[$plan->implementationTarget])) {
-            $edges[] = [$plan->implementationTarget, true];
-        }
-
-        foreach (self::describedEdges($plan) as [$description, $edge]) {
-            // A self edge does not resolve the service, it constructs it, so it is not a dependency on anything and
-            // must not register as a self-loop. What the construction really depends on is already yielded above, as
-            // the class's constructor edges.
-            if ($edge->self) {
-                continue;
-            }
-
-            $target = $this->chosenTarget($edge);
-
-            if ($target !== null) {
-                // A lazy edge does not construct its target while the service itself is built, so it can neither
-                // form an all-required construction cycle nor drag a scoped service captive into a singleton.
-                $edges[] = [$target, !$edge->soft && !$edge->lazy];
-            }
-        }
-
-        return $edges;
-    }
-
-    private function chosenTarget(ResolutionPlanEdge $edge): ?string
-    {
-        if ($edge->dependency === null) {
-            return null;
-        }
-
-        foreach ($edge->dependency->alternatives as $alternative) {
-            foreach ($alternative as $className) {
-                $targetId = DescriptorId::compute($className, $edge->dependency->key);
-
-                if (isset($this->descriptors[$targetId])) {
-                    return $targetId;
-                }
-            }
-        }
-
-        return null;
-    }
-
-    private function edgeIsSatisfied(ResolutionPlanEdge $edge): bool
-    {
-        return $edge->dependency !== null && $this->chosenTarget($edge) !== null;
+        return array_map(
+            // A lazy edge does not construct its target while the service itself is built, so it can neither form an
+            // all-required construction cycle nor drag a scoped service captive into a singleton.
+            static fn(ResolvedEdge $edge): array => [$edge->targetId, $edge->required && !$edge->lazy],
+            $this->edgeResolver->resolve($plan),
+        );
     }
 
     private static function describeAlternatives(ResolutionPlanEdge $edge): string

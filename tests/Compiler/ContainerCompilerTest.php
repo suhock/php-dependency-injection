@@ -26,6 +26,8 @@ use Suhock\DependencyInjection\Fakes\FakeClassWithStringDependency;
 use Suhock\DependencyInjection\Fakes\FakeClassWithUnionDependency;
 use Suhock\DependencyInjection\Fakes\FakeInterfaceOne;
 use Suhock\DependencyInjection\Fakes\FakeInterfaceTwo;
+use Suhock\DependencyInjection\Fakes\FakeLazyConsumer;
+use Suhock\DependencyInjection\Fakes\FakeLazyService;
 use Suhock\DependencyInjection\InstanceProvider\InstanceProviderFactory;
 use Suhock\DependencyInjection\Lifetime\SingletonStrategy;
 use Suhock\DependencyInjection\Lifetime\TransientStrategy;
@@ -391,6 +393,56 @@ final class ContainerCompilerTest extends AbstractDependencyInjectionTestCase
         // Assert: the auto-bindings surface as roots too; the user's root is the chain head.
         self::assertContains(FakeClassWithConstructor::class, $roots);
         self::assertNotContains(FakeClassNoConstructor::class, $roots);
+    }
+
+    public function testExportGraph_WithEveryEdgeKind_KeepsEveryEndpointInServiceIds(): void
+    {
+        // Arrange: an implementation edge, a union edge, a keyed edge, a lazy edge, and a plain required edge, plus a
+        // service whose required dependencies are missing entirely.
+        $descriptors = self::unkeyed(
+            self::transient(FakeInterfaceOne::class, FakeClassImplementsInterfaces::class),
+            self::transient(FakeInterfaceTwo::class, FakeClassImplementsInterfaces::class),
+            self::transient(FakeClassImplementsInterfaces::class),
+            self::transient(FakeClassWithUnionDependency::class),
+            self::transient(FakeClassWithKeyedDependency::class),
+            self::transient(FakeLazyConsumer::class),
+            self::transient(FakeLazyService::class),
+            self::singleton(FakeClassWithConstructor::class),
+            self::singleton(FakeClassNoConstructor::class),
+            self::transient(FakeClassWithDependencies::class),
+        );
+        $descriptors[DescriptorId::compute(FakeClassNoConstructor::class, 'key1')]
+            = self::singleton(FakeClassNoConstructor::class);
+
+        // Act
+        $graph = ContainerCompiler::createDefault()->exportGraph($descriptors);
+
+        // Assert: an edge naming an id absent from serviceIds would be unusable to any consumer of the export.
+        self::assertNotSame([], $graph->edges);
+
+        foreach ($graph->edges as $edge) {
+            self::assertContains($edge->sourceId, $graph->serviceIds);
+            self::assertContains($edge->targetId, $graph->serviceIds);
+        }
+    }
+
+    public function testExportGraph_WithLazyDependency_ExportsARequiredEdge(): void
+    {
+        // Arrange: a #[Lazy] parameter defers construction, but resolution still fails without the dependency, so the
+        // export reports it required. Validation's construction-order checks treat the same edge as non-required.
+        $descriptors = self::unkeyed(
+            self::transient(FakeLazyConsumer::class),
+            self::transient(FakeLazyService::class),
+        );
+
+        // Act
+        $graph = ContainerCompiler::createDefault()->exportGraph($descriptors);
+
+        // Assert
+        self::assertCount(1, $graph->edges);
+        $edge = $graph->edges[0] ?? null;
+        self::assertSame(FakeLazyService::class, $edge?->targetId);
+        self::assertTrue($edge->required);
     }
 
     /**

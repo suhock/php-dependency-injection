@@ -132,7 +132,7 @@ final class ContainerValidatorTest extends TestCase
         $plans = (new ResolutionPlanFactory())->compile($this->descriptors);
 
         try {
-            (new ContainerValidator($this->descriptors))->validate($plans);
+            ContainerValidator::createDefault($this->descriptors)->validate($plans);
         } catch (ContainerValidationException $exception) {
             return $exception->getIssues();
         }

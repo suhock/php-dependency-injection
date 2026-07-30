@@ -75,7 +75,7 @@ final class ContainerCompiler implements ContainerCompilerInterface
 
         // Cache miss. Compile the plans.
         $plans = new ResolutionPlanFactory()->compile($descriptors);
-        new ContainerValidator($descriptors)->validate($plans);
+        ContainerValidator::createDefault($descriptors)->validate($plans);
 
         if ($cacheKey !== null) {
             $this->cache?->set($cacheKey, $plans);
@@ -108,10 +108,12 @@ final class ContainerCompiler implements ContainerCompilerInterface
     #[Override]
     public function exportGraph(array $descriptors): DependencyGraph
     {
+        // The same preparation {@see compile()} performs, minus the two steps an export must not take: the plan cache
+        // (whose entries only ever back a container) and validation (a defective configuration still exports).
         self::addAutoBindings($descriptors);
         $plans = new ResolutionPlanFactory()->compile($descriptors);
 
-        return new ContainerValidator($descriptors)->exportGraph($plans);
+        return DependencyGraphFactory::createDefault($descriptors)->create($plans);
     }
 
     /**
