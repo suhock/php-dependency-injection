@@ -16,12 +16,12 @@ composer install
 All checks must pass before a change can be merged:
 
 ```bash
-composer test          # PHPUnit test suite
-composer phpstan       # PHPStan, level 10
-composer php-cs-fixer  # php-cs-fixer (coding standard)
+composer test
+composer phpstan
+composer php-cs-fixer
 ```
 
-CI runs the suite across PHP 8.4 and 8.5.
+CI runs the suite across all versions of PHP supported by this library.
 
 ## Branch model
 
@@ -32,6 +32,6 @@ CI runs the suite across PHP 8.4 and 8.5.
 ## Expectations
 
 - Add or update tests to cover your change; the suite must pass.
-- PHPStan must pass at level 10.
+- PHPStan must pass with zero issues.
 - Follow the existing code style; run `composer php-cs-fixer` before pushing.
 - Keep commits focused, with clear, imperative commit messages.
