@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace Suhock\DependencyInjection\Compiler;
 
 use Suhock\DependencyInjection\AbstractDependencyInjectionTestCase;
+use Suhock\DependencyInjection\Cache\OpcacheCache;
 use Suhock\DependencyInjection\ContainerBuilder;
 use Suhock\DependencyInjection\ContainerInterface;
 use Suhock\DependencyInjection\Descriptor;
@@ -41,6 +42,13 @@ use function array_keys;
 use function array_map;
 use function array_values;
 use function count;
+use function glob;
+use function is_dir;
+use function rmdir;
+use function scandir;
+use function sys_get_temp_dir;
+use function uniqid;
+use function unlink;
 
 /**
  * Test suite for {@see ContainerCompiler}, exercised directly on hand-assembled descriptor maps: the container's
@@ -152,6 +160,48 @@ final class ContainerCompilerTest extends AbstractDependencyInjectionTestCase
 
         // Assert
         self::assertCount(1, $cache->idsWithPrefix('sdi:graph:'));
+    }
+
+    public function testCompile_WithOpcacheCacheAndIdenticalConfiguration_ReusesTheStoredGraphFile(): void
+    {
+        // Arrange: two builders, same configuration, same on-disk cache directory.
+        $directory = sys_get_temp_dir() . '/suhock-di-' . uniqid('', true);
+
+        try {
+            $configure = static fn(ContainerBuilder $builder) => $builder
+                ->addSingleton(FakeClassNoConstructor::class)
+                ->addTransient(FakeClassWithConstructor::class);
+            $configure(ContainerBuilder::createDefault(new OpcacheCache($directory)))->build();
+
+            // Act
+            $container = $configure(ContainerBuilder::createDefault(new OpcacheCache($directory)))->build();
+
+            // Assert
+            self::assertInstanceOf(FakeClassWithConstructor::class, $container->get(FakeClassWithConstructor::class));
+            $graphFiles = glob($directory . '/sdi_graph_*.php');
+            self::assertCount(1, $graphFiles === false ? [] : $graphFiles);
+        } finally {
+            self::removeDirectoryRecursively($directory);
+        }
+    }
+
+    private static function removeDirectoryRecursively(string $directory): void
+    {
+        if (!is_dir($directory)) {
+            return;
+        }
+
+        $entries = scandir($directory);
+
+        foreach ($entries === false ? [] : $entries as $entry) {
+            if ($entry === '.' || $entry === '..') {
+                continue;
+            }
+
+            unlink($directory . '/' . $entry);
+        }
+
+        rmdir($directory);
     }
 
     public function testCompile_WithIdenticalConfigurationAndWarmCache_ReusesTheStoredGraph(): void

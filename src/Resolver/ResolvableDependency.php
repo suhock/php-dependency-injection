@@ -34,4 +34,15 @@ final class ResolvableDependency
         public readonly array $alternatives,
         public readonly string|UnitEnum|null $key = null,
     ) {}
+
+    /**
+     * Restores an instance from <code>var_export</code> output, which emits the promoted properties by name.
+     *
+     * @param array<string, mixed> $state
+     */
+    public static function __set_state(array $state): self
+    {
+        // @phpstan-ignore argument.type (var_export output of an instance of this class)
+        return new self(...$state);
+    }
 }

@@ -46,7 +46,8 @@
         "suhock/phpstan-rules": "^1.0.0"
     },
     "suggest": {
-        "ext-apcu": "To cache resolved dependencies with ApcuCache"
+        "ext-apcu": "To cache resolved dependencies with ApcuCache",
+        "ext-zend-opcache": "To cache resolved dependencies with OpcacheCache"
     },
     "autoload": {
         "psr-4": {

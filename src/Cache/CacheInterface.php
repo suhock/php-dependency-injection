@@ -17,7 +17,7 @@ use Suhock\DependencyInjection\Compiler\ContainerCompiler;
  * A minimal key/value store the {@see ContainerCompiler} uses to reuse compiled resolution plans across builds of an
  * unchanged configuration. Values are treated as opaque: an implementation must return what it was given, unchanged,
  * so any type may be stored, including <code>null</code> and <code>false</code>. A persistent implementation such as
- * {@see ApcuCache} lets the plans survive between requests.
+ * {@see OpcacheCache} or {@see ApcuCache} lets the plans survive between requests.
  */
 interface CacheInterface
 {

@@ -47,4 +47,15 @@ final class ResolutionPlan
         public readonly ?string $nonInstantiableMessage = null,
         public readonly ?string $declaredFactoryReturnType = null,
     ) {}
+
+    /**
+     * Restores an instance from <code>var_export</code> output, which emits the promoted properties by name.
+     *
+     * @param array<string, mixed> $state
+     */
+    public static function __set_state(array $state): self
+    {
+        // @phpstan-ignore argument.type (var_export output of an instance of this class)
+        return new self(...$state);
+    }
 }

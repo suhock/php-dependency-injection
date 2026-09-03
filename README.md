@@ -82,8 +82,9 @@ composer require "suhock/dependency-injection"
 The library requires PHP 8.4 or later and is tested on PHP 8.4 and 8.5.
 
 The only required runtime dependency is the first-party `suhock/disposable`
-package; there are no third-party runtime dependencies. The optional `ext-apcu`
-extension enables persistent caching of compiled plans; see
+package; there are no third-party runtime dependencies. Persistent caching of
+compiled plans is available through OPcache (which ships with PHP) or the
+optional `ext-apcu` extension; see
 [Caching compiled plans](#caching-compiled-plans).
 
 ## Basic usage
@@ -240,23 +241,24 @@ The builder is still usable after a failed build: fix the configuration and call
 Without a cache, `build()` recompiles and revalidates the whole graph every time
 it is called. That is inexpensive for most applications, but on a per-request
 lifecycle such as PHP-FPM you pay that cost on every request. Supplying a
-`CacheInterface` (e.g. `ApcuCache`) lets `build()` store the validated plans
-under a fingerprint of the configuration; rebuilding an unchanged configuration
-loads the stored plans and skips compilation and validation entirely:
+`CacheInterface` (e.g. `OpcacheCache` or `ApcuCache`) lets `build()` store the
+validated plans under a fingerprint of the configuration; rebuilding an
+unchanged configuration loads the stored plans and skips compilation and
+validation entirely:
 
 ```php
-use Suhock\DependencyInjection\Cache\ApcuCache;
+use Suhock\DependencyInjection\Cache\OpcacheCache;
 use Suhock\DependencyInjection\ContainerBuilder;
 
-$container = ContainerBuilder::createDefault(new ApcuCache())
+$container = ContainerBuilder::createDefault(new OpcacheCache(__DIR__ . '/var/cache'))
     ->addSingleton(MyApplication::class)
     ->build();
 ```
 
-With APCu, each later `build()` of an unchanged configuration costs little more
-than a hash and a cache lookup; the first build after a deploy or a
-configuration change still pays for full compilation and validation. A
-worker-mode runtime that builds once at boot (see
+With a persistent cache, each later `build()` of an unchanged configuration
+costs little more than a hash and a cache lookup; the first build after a
+deploy or a configuration change still pays for full compilation and
+validation. A worker-mode runtime that builds once at boot (see
 [FrankenPHP worker mode](#example-frankenphp-worker-mode)) pays that cost once
 regardless of caching. See [Caching compiled plans](#caching-compiled-plans)
 for the available cache backends.
@@ -1198,6 +1200,26 @@ use Suhock\DependencyInjection\ContainerBuilder;
 
 $builder = ContainerBuilder::createDefault(new ApcuCache());
 ```
+
+`Suhock\DependencyInjection\Cache\OpcacheCache` implements `CacheInterface` by
+writing each entry as a PHP file in a directory and loading it with `include`,
+so OPcache keeps the compiled entry in shared memory. OPcache ships with PHP;
+without OPcache it still works as a plain file cache. The constructor takes
+the directory to write to, creating it if missing, and throws a
+`RuntimeException` if it cannot be created or is not writable.
+
+```php
+use Suhock\DependencyInjection\Cache\OpcacheCache;
+use Suhock\DependencyInjection\ContainerBuilder;
+
+$builder = ContainerBuilder::createDefault(new OpcacheCache(__DIR__ . '/var/cache'));
+```
+
+The directory must be one the application owns, such as a `var/cache` path
+inside the project, never a shared temp directory, because the included files
+execute as code; this is why there is no default. Each distinct configuration
+adds a file rather than replacing one, so the directory should be cleared on
+deploy.
 
 Consumers can also implement `CacheInterface` themselves to back the cache with
 another store.
