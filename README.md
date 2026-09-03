@@ -66,7 +66,7 @@ $container->get(MyApplication::class)->run();
     - [Intersection types](#intersection-types)
     - [Lazy dependencies](#lazy-dependencies)
 - [Error handling](#error-handling)
-- [Caching reflected metadata](#caching-reflected-metadata)
+- [Caching compiled plans](#caching-compiled-plans)
 - [Appendix](#appendix)
     - [PSR-11 compatibility](#psr-11-compatibility)
     - [PHPStan extensions](#phpstan-extensions)
@@ -83,8 +83,8 @@ The library requires PHP 8.4 or later and is tested on PHP 8.4 and 8.5.
 
 The only required runtime dependency is the first-party `suhock/disposable`
 package; there are no third-party runtime dependencies. The optional `ext-apcu`
-extension enables persistent caching of reflected metadata; see
-[Caching reflected metadata](#caching-reflected-metadata).
+extension enables persistent caching of compiled plans; see
+[Caching compiled plans](#caching-compiled-plans).
 
 ## Basic usage
 
@@ -258,8 +258,8 @@ than a hash and a cache lookup; the first build after a deploy or a
 configuration change still pays for full compilation and validation. A
 worker-mode runtime that builds once at boot (see
 [FrankenPHP worker mode](#example-frankenphp-worker-mode)) pays that cost once
-regardless of caching. The same cache also memoizes the reflected metadata used
-by the injector; see [Caching reflected metadata](#caching-reflected-metadata).
+regardless of caching. See [Caching compiled plans](#caching-compiled-plans)
+for the available cache backends.
 
 ### Graph diagnostics
 
@@ -1157,25 +1157,19 @@ available via `getConsolidatedException()`. `ContainerValidationException`
 does not chain a previous exception; its issue list carries every problem found
 instead.
 
-## Caching reflected metadata
+## Caching compiled plans
 
-To resolve dependencies, the container and injector reflect over constructor and
-method signatures. This reflected metadata can be memoized so it survives
-between requests instead of being recomputed each time.
+`build()` compiles and validates the configuration into resolution plans (see
+[Build performance](#build-performance)). A cache lets those plans be stored
+under a fingerprint of the configuration and reused by later `build()` calls
+of the same configuration, which matters on a per-request lifecycle such as
+PHP-FPM where `build()` would otherwise run on every request.
 
-`ContainerBuilder::createDefault()` and `Injector::createDefault()` each accept
-an optional cache:
+`ContainerBuilder::createDefault()` accepts an optional cache:
 
 ```php
 ContainerBuilder::createDefault(?CacheInterface $cache = null): self
-
-Injector::createDefault(ContainerInterface $container, ?CacheInterface $cache = null): self
 ```
-
-The same `CacheInterface` instance backs two independent things: the reflected
-metadata memoized here, and `build()`'s compiled-graph reuse described in
-[Build performance](#build-performance); supplying one cache to
-`ContainerBuilder::createDefault()` gets you both.
 
 `Suhock\DependencyInjection\Cache\CacheInterface` is a minimal key/value store
 with two methods:

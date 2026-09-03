@@ -47,8 +47,8 @@ final class ContainerBuilder implements ContainerBuilderInterface
     /**
      * Creates a builder with the default configuration.
      *
-     * @param CacheInterface|null $cache [optional] Cache used to memoize reflected metadata and to reuse the
-     *     compiled graph across builds of an unchanged configuration
+     * @param CacheInterface|null $cache [optional] Cache used to reuse the compiled graph across builds of an
+     *     unchanged configuration
      */
     public static function createDefault(?CacheInterface $cache = null): self
     {
