@@ -159,7 +159,7 @@ final class ResolutionPlanFactory
     /**
      * The self edge for a matching parameter. A self edge is never soft: it is satisfied by constructing the class,
      * which does not fail the way a container lookup can, so a nullable or defaulted parameter still receives the
-     * instance rather than its fallback. Its default value and declared type are dropped with the softness they
+     * instance rather than its fallback. Its default flag and declared type are dropped with the softness they
      * described.
      */
     private static function selfEdge(ResolutionPlanEdge $edge): ResolutionPlanEdge
@@ -230,7 +230,6 @@ final class ResolutionPlanFactory
             $dependency,
             soft: $hasDefault || $rParam->allowsNull(),
             hasDefault: $hasDefault,
-            defaultValue: $hasDefault ? $rParam->getDefaultValue() : null,
             declaredType: $dependency === null && $rType !== null ? (string) $rType : null,
             lazy: count($rParam->getAttributes(Lazy::class)) > 0,
         );

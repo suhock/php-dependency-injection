@@ -12,8 +12,11 @@ declare(strict_types=1);
 namespace Suhock\DependencyInjection;
 
 use Closure;
+use Suhock\DependencyInjection\Cache\CacheInterface;
+use Suhock\DependencyInjection\Fakes\FakeCache;
 use Suhock\DependencyInjection\Fakes\FakeClassNoConstructor;
 use Suhock\DependencyInjection\Fakes\FakeClassWithConstructor;
+use Suhock\DependencyInjection\Fakes\FakeClassWithDefaultedDependency;
 use Suhock\DependencyInjection\Fakes\FakeInterfaceOne;
 use Suhock\DependencyInjection\InstanceProvider\ContextInstanceProvider;
 use Suhock\DependencyInjection\InstanceProvider\InstanceTypeException;
@@ -38,6 +41,14 @@ final class ContainerTest extends AbstractDependencyInjectionTestCase
             new TransientStrategy($className),
             new ContextInstanceProvider($className, $select),
         );
+    }
+
+    private static function buildCachedContainer(CacheInterface $cache): Container
+    {
+        $builder = ContainerBuilder::createDefault($cache);
+        $builder->addTransient(FakeClassWithDefaultedDependency::class);
+
+        return $builder->build();
     }
 
     public function testGet_WhenClassNotInContainer_ThrowsClassNotFoundException(): void
@@ -360,5 +371,52 @@ final class ContainerTest extends AbstractDependencyInjectionTestCase
         $container = self::buildContainer(static fn(ContainerBuilder $builder) => null);
 
         self::assertNull($container->getConcreteClassName(FakeClassNoConstructor::class));
+    }
+
+    public function testGet_WithDefaultedParameterWhoseDependencyIsNotAdded_InjectsTheDeclaredDefault(): void
+    {
+        // Arrange
+        $container = self::buildContainer(
+            static fn(ContainerBuilder $builder) => $builder->addTransient(
+                FakeClassWithDefaultedDependency::class,
+            ),
+        );
+
+        // Act
+        $result = $container->get(FakeClassWithDefaultedDependency::class);
+
+        // Assert
+        self::assertSame('fallback', $result->string);
+    }
+
+    public function testGet_WithNewInitializerDefault_InjectsADistinctInstancePerResolution(): void
+    {
+        // Arrange
+        $container = self::buildContainer(
+            static fn(ContainerBuilder $builder) => $builder->addTransient(
+                FakeClassWithDefaultedDependency::class,
+            ),
+        );
+
+        // Act
+        $first = $container->get(FakeClassWithDefaultedDependency::class);
+        $second = $container->get(FakeClassWithDefaultedDependency::class);
+
+        // Assert
+        self::assertNotSame($first->obj, $second->obj);
+    }
+
+    public function testGet_WithDefaultedParameterAndPlansRestoredFromCache_InjectsTheDeclaredDefault(): void
+    {
+        // Arrange: the second builder compiles nothing, resolving from the plans the first one stored.
+        $cache = new FakeCache();
+        self::buildCachedContainer($cache);
+
+        // Act
+        $result = self::buildCachedContainer($cache)->get(FakeClassWithDefaultedDependency::class);
+
+        // Assert
+        self::assertSame('fallback', $result->string);
+        self::assertCount(1, $cache->idsWithPrefix('sdi:graph:'));
     }
 }

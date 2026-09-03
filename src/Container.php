@@ -522,7 +522,7 @@ final class Container implements
      *
      * @param list<ResolutionPlanEdge> $edges
      * @param array{class-string, string}|Closure $functionRef The reflectable reference to the parameters' function,
-     *     used only to build a precise exception when a required edge fails
+     *     used only when an edge is unsatisfied, to evaluate a declared default or to build a precise exception
      * @param object|null $self The instance satisfying a {@see ResolutionPlanEdge::$self} edge, already constructed
      *
      * @return list<mixed>
@@ -545,7 +545,15 @@ final class Container implements
 
             try {
                 if (!$this->tryResolveEdge($edge, $ctx, $value)) {
-                    throw new ParameterResolutionException(new ReflectionParameter($functionRef, $index));
+                    $rParam = new ReflectionParameter($functionRef, $index);
+
+                    if (!$edge->hasDefault) {
+                        throw new ParameterResolutionException($rParam);
+                    }
+
+                    // Evaluated here rather than captured in the plan so that an initializer such as `new Foo()`
+                    // yields a fresh instance per resolution, as PHP does for an ordinary call.
+                    $value = $rParam->getDefaultValue();
                 }
             } catch (ClassResolutionException $exception) {
                 throw new ParameterResolutionException(
@@ -576,14 +584,15 @@ final class Container implements
 
     /**
      * Resolves one edge: the first candidate present in the descriptor map whose instance satisfies its whole
-     * conjunction wins; a soft edge falls back to its default value or <code>null</code> on failure, mirroring the
-     * self-healing the injector applies to defaulted and nullable injection points.
+     * conjunction wins; a soft edge without a declared default falls back to <code>null</code>, mirroring the
+     * self-healing the injector applies to nullable injection points.
      *
-     * @param mixed $value Receives the resolved value or the soft fallback
+     * @param mixed $value Receives the resolved value or the <code>null</code> fallback
      *
      * @throws ClassResolutionException If a required edge's candidate failed while resolving its own dependencies
      *
-     * @return bool Whether a value was produced; <code>false</code> only for a required edge that cannot be satisfied
+     * @return bool Whether a value was produced; <code>false</code> when the edge is unsatisfied, leaving the caller
+     *     to evaluate a declared default ({@see ResolutionPlanEdge::$hasDefault}) or report the failure
      */
     private function tryResolveEdge(ResolutionPlanEdge $edge, ResolutionContext $ctx, mixed &$value): bool
     {
@@ -616,8 +625,8 @@ final class Container implements
             }
         }
 
-        if ($edge->soft) {
-            $value = $edge->hasDefault ? $edge->defaultValue : null;
+        if ($edge->soft && !$edge->hasDefault) {
+            $value = null;
 
             return true;
         }

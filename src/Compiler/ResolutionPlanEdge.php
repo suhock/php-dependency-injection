@@ -18,11 +18,11 @@ use Suhock\DependencyInjection\Resolver\ResolvableDependency;
  * One dependency edge of a {@see ResolutionPlan}: an injection point the container satisfies when the service
  * resolves. Immutable and free of reflection objects.
  *
- * A soft edge self-heals at runtime: when resolution fails, the injection point falls back to its default value
- * (when {@see $hasDefault}) or <code>null</code>, so it can never be a guaranteed failure on its own. An edge whose
- * {@see $dependency} is <code>null</code> describes an injection point the container is never consulted for (untyped,
- * builtin, or an unsupported composite type); if such an edge is not soft, resolution is guaranteed to throw, which
- * validation reports at build time.
+ * A soft edge self-heals at runtime: when resolution fails, the injection point falls back to its declared
+ * default (when {@see $hasDefault}, evaluated freshly per resolution) or <code>null</code>, so it can never
+ * be a guaranteed failure on its own. An edge whose {@see $dependency} is <code>null</code> describes an
+ * injection point the container is never consulted for (untyped, builtin, or an unsupported composite type);
+ * if such an edge is not soft, resolution is guaranteed to throw, which validation reports at build time.
  *
  * A {@see $lazy} edge (its parameter carries {@see Lazy}) is satisfied with a PHP native lazy object of the resolved
  * type, deferring the dependency's construction until first use.
@@ -41,8 +41,6 @@ final class ResolutionPlanEdge
      *     container is never consulted for this injection point
      * @param bool $soft Whether resolution failure self-heals via the default value or <code>null</code>
      * @param bool $hasDefault Whether the injection point declares a default value
-     * @param mixed $defaultValue The declared default value, resolved at compile time; only meaningful when
-     *     {@see $hasDefault}
      * @param string|null $declaredType The raw declared type, populated only when {@see $dependency} is
      *     <code>null</code> and the injection point has a type, for diagnostics
      * @param bool $lazy Whether the dependency is injected lazily (the parameter carries {@see Lazy})
@@ -54,9 +52,9 @@ final class ResolutionPlanEdge
         public readonly ?ResolvableDependency $dependency,
         public readonly bool $soft,
         public readonly bool $hasDefault = false,
-        public readonly mixed $defaultValue = null,
         public readonly ?string $declaredType = null,
         public readonly bool $lazy = false,
         public readonly bool $self = false,
     ) {}
+
 }

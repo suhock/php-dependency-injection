@@ -218,7 +218,7 @@ final class ResolutionPlanFactoryTest extends TestCase
         self::assertFalse(self::edgeAt($plan->argumentEdges, 0)->soft);
     }
 
-    public function testCompile_WithDefaultedParameter_CapturesTheDefaultValue(): void
+    public function testCompile_WithDefaultedParameter_MarksTheEdgeSoftAndDefaulted(): void
     {
         $plan = self::compileSingle([
             FakeClassNoConstructor::class => self::closureDescriptor(
@@ -230,7 +230,6 @@ final class ResolutionPlanFactoryTest extends TestCase
         $edge = self::edgeAt($plan->argumentEdges, 0);
         self::assertTrue($edge->soft);
         self::assertTrue($edge->hasDefault);
-        self::assertSame('preset', $edge->defaultValue);
     }
 
     public function testCompile_WithAbstractClass_RecordsNonInstantiable(): void
