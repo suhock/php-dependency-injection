@@ -925,7 +925,7 @@ use Suhock\DependencyInjection\ContainerBuilder;
 $builder = ContainerBuilder::createDefault(new ApcuCache());
 ```
 
-`Suhock\DependencyInjection\Cache\OpcacheCache` implements `CacheInterface` by writing each entry as a PHP file in a directory and loading it with `include`, so OPcache keeps the compiled entry in shared memory. OPcache ships with PHP; without OPcache it still works as a plain file cache. The constructor takes the directory to write to, creating it if missing, and throws a `RuntimeException` if it cannot be created or is not writable.
+`Suhock\DependencyInjection\Cache\OpcacheCache` implements `CacheInterface` by writing each entry as a PHP file in a directory and loading it with `include`, so OPcache keeps the compiled entry in shared memory. OPcache ships with PHP but is not always enabled; without it, compiling the file costs about as much as compiling the graph, so use `ApcuCache` where OPcache is off. The constructor takes the directory to write to, creating it if missing, and throws a `RuntimeException` if it cannot be created or is not writable.
 
 ```php
 use Suhock\DependencyInjection\Cache\OpcacheCache;

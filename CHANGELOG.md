@@ -18,6 +18,6 @@ Initial release.
 - Constructor autowiring with full support for union, intersection, and DNF parameter types.
 - `#[Lazy]` attribute for deferring a dependency's construction until first use.
 - Auto-binding of `ContainerInterface` and `ScopeFactoryInterface`, so low-level services can depend on the container or create scopes without configuration.
-- Compilation caching: a configuration fingerprint keys the compiled dependency graph in a `CacheInterface` implementation (`ApcuCache` included), so unchanged configurations skip recompilation across processes.
+- Compilation caching: a configuration fingerprint keys the compiled dependency graph in a `CacheInterface` implementation (`OpcacheCache`, `ApcuCache` included), so unchanged configurations skip recompilation across processes.
 - `ContainerBuilder::exportDependencyGraph()` for diagnostics and tooling.
 - Standalone `Injector` for constructor and callable injection outside the container.
