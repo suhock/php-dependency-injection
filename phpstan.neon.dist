@@ -2,7 +2,6 @@ includes:
     - phar://vendor/phpstan/phpstan/phpstan.phar/conf/bleedingEdge.neon
     - vendor/phpstan/phpstan-strict-rules/rules.neon
     - vendor/ergebnis/phpstan-rules/rules.neon
-    - vendor/suhock/dependency-injection-phpstan/extension.neon
 
 parameters:
     level: 10

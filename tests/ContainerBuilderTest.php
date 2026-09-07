@@ -94,7 +94,6 @@ final class ContainerBuilderTest extends AbstractDependencyInjectionTestCase
         $builder = self::createBuilder();
 
         // Act
-        // @phpstan-ignore suhock.implementationType (the invalid implementation is the case under test)
         $fn = static fn() => $builder->addSingleton(
             FakeClassNoConstructor::class,
             FakeClassNoConstructor::class,
@@ -114,7 +113,6 @@ final class ContainerBuilderTest extends AbstractDependencyInjectionTestCase
         $builder = self::createBuilder();
 
         // Act
-        // @phpstan-ignore suhock.implementationType (the invalid implementation is the case under test)
         $fn = static fn() => $builder->addSingleton(
             FakeClassExtendsBaseClass::class,
             FakeClassNoConstructor::class,
@@ -163,7 +161,6 @@ final class ContainerBuilderTest extends AbstractDependencyInjectionTestCase
     public function testAddSingleton_WhenFactoryReturnsNull_GetThrowsInstanceTypeException(): void
     {
         // Arrange
-        // @phpstan-ignore suhock.factoryReturnType (the wrong return type is the case under test)
         $container = self::createBuilder()->addSingleton(FakeClassNoConstructor::class, fn() => null)
             ->build();
 
@@ -185,7 +182,6 @@ final class ContainerBuilderTest extends AbstractDependencyInjectionTestCase
     public function testAddSingleton_WhenFactoryReturnTypeIsWrong_GetThrowsInstanceTypeException(): void
     {
         // Arrange
-        // @phpstan-ignore suhock.factoryReturnType (the wrong return type is the case under test)
         $container = self::createBuilder()->addSingleton(
             FakeClassNoConstructor::class,
             fn() => new LogicException(),
@@ -228,7 +224,6 @@ final class ContainerBuilderTest extends AbstractDependencyInjectionTestCase
         $builder = self::createBuilder();
 
         // Act
-        // @phpstan-ignore suhock.instanceType (the mismatched instance is the case under test)
         $fn = static fn() => $builder->addSingleton(
             FakeClassExtendsBaseClass::class,
             new FakeClassNoConstructor(),
@@ -386,7 +381,6 @@ final class ContainerBuilderTest extends AbstractDependencyInjectionTestCase
         $builder = self::createBuilder();
 
         // Act
-        // @phpstan-ignore suhock.implementationType (the invalid implementation is the case under test)
         $fn = static fn() => $builder->addScoped(
             FakeClassExtendsBaseClass::class,
             FakeClassNoConstructor::class,
@@ -476,7 +470,6 @@ final class ContainerBuilderTest extends AbstractDependencyInjectionTestCase
         $builder = self::createBuilder();
 
         // Act
-        // @phpstan-ignore suhock.implementationType (the invalid implementation is the case under test)
         $fn = static fn() => $builder->addTransient(
             FakeClassNoConstructor::class,
             FakeClassNoConstructor::class,
@@ -496,7 +489,6 @@ final class ContainerBuilderTest extends AbstractDependencyInjectionTestCase
         $builder = self::createBuilder();
 
         // Act
-        // @phpstan-ignore suhock.implementationType (the invalid implementation is the case under test)
         $fn = static fn() => $builder->addTransient(
             FakeClassExtendsBaseClass::class,
             FakeClassNoConstructor::class,
@@ -532,7 +524,6 @@ final class ContainerBuilderTest extends AbstractDependencyInjectionTestCase
     public function testAddTransient_WhenFactoryReturnsNull_GetThrowsWrappedInstanceTypeException(): void
     {
         // Arrange
-        // @phpstan-ignore suhock.factoryReturnType (the wrong return type is the case under test)
         $container = self::createBuilder()->addTransient(FakeClassNoConstructor::class, fn() => null)
             ->build();
 
@@ -554,7 +545,6 @@ final class ContainerBuilderTest extends AbstractDependencyInjectionTestCase
     public function testAddTransient_WhenFactoryReturnTypeIsWrong_GetThrowsWrappedInstanceTypeException(): void
     {
         // Arrange
-        // @phpstan-ignore suhock.factoryReturnType (the wrong return type is the case under test)
         $container = self::createBuilder()->addTransient(
             FakeClassNoConstructor::class,
             fn() => new LogicException(),
@@ -668,7 +658,6 @@ final class ContainerBuilderTest extends AbstractDependencyInjectionTestCase
         $builder = self::createBuilder();
 
         // Act
-        // @phpstan-ignore suhock.instanceType (the mismatched instance is the case under test)
         $fn = static fn() => $builder->addKeyedSingleton(
             FakeClassExtendsBaseClass::class,
             'key1',
